@@ -3,7 +3,7 @@ Evaluation Module
 Performance metrics and result visualization for the MAS
 """
 
-from .metrics import PerformanceMetrics
+from .metrics import MetricsEvaluator
 from .visualizations import ResultVisualizer
 
-__all__ = ['PerformanceMetrics', 'ResultVisualizer']
+__all__ = ['MetricsEvaluator', 'ResultVisualizer']
