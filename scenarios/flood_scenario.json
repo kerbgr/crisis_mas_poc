@@ -1,0 +1,119 @@
+{
+  "id": "flood_001",
+  "type": "flood",
+  "name": "Urban Flood Emergency",
+  "description": "A severe flooding event in a metropolitan area following heavy rainfall. Multiple neighborhoods are affected, with rising water levels threatening residential areas and critical infrastructure. Emergency services are overwhelmed, and immediate action is required to minimize casualties and property damage.",
+  "severity": 0.8,
+  "affected_population": 25000,
+  "location": {
+    "region": "Metropolitan District",
+    "coordinates": {"lat": 40.7128, "lon": -74.0060}
+  },
+  "tags": ["flood", "natural_disaster", "urban", "emergency", "infrastructure"],
+  "casualties": 5,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_evacuate_immediate",
+      "name": "Immediate Mass Evacuation",
+      "description": "Conduct large-scale evacuation of all residents in flood-prone areas to designated emergency shelters",
+      "required_resources": ["emergency_personnel", "transportation", "shelters", "communication_systems"],
+      "estimated_duration": "4-6 hours",
+      "risk_level": 0.4,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.90,
+        "speed": 0.70,
+        "cost": 0.40,
+        "public_acceptance": 0.65
+      }
+    },
+    {
+      "id": "action_deploy_barriers",
+      "name": "Deploy Flood Barriers",
+      "description": "Deploy temporary flood barriers and sandbags to protect critical infrastructure and contain water spread",
+      "required_resources": ["flood_barriers", "sandbags", "engineering_teams", "heavy_equipment"],
+      "estimated_duration": "3-4 hours",
+      "risk_level": 0.6,
+      "criteria_scores": {
+        "effectiveness": 0.65,
+        "safety": 0.70,
+        "speed": 0.75,
+        "cost": 0.60,
+        "public_acceptance": 0.80
+      }
+    },
+    {
+      "id": "action_rescue_operations",
+      "name": "Prioritized Rescue Operations",
+      "description": "Focus on immediate rescue of trapped individuals and medical emergencies before broader evacuation",
+      "required_resources": ["rescue_teams", "boats", "helicopters", "medical_personnel", "equipment"],
+      "estimated_duration": "2-3 hours",
+      "risk_level": 0.5,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.75,
+        "speed": 0.85,
+        "cost": 0.50,
+        "public_acceptance": 0.95
+      }
+    },
+    {
+      "id": "action_shelter_in_place",
+      "name": "Shelter-in-Place with Supply Distribution",
+      "description": "Instruct residents to shelter in upper floors while distributing emergency supplies and monitoring water levels",
+      "required_resources": ["supply_distribution", "communication_systems", "monitoring_equipment"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.7,
+      "criteria_scores": {
+        "effectiveness": 0.55,
+        "safety": 0.60,
+        "speed": 0.90,
+        "cost": 0.80,
+        "public_acceptance": 0.50
+      }
+    },
+    {
+      "id": "action_hybrid_approach",
+      "name": "Hybrid: Rescue + Selective Evacuation + Barriers",
+      "description": "Combined approach: immediate rescue operations, selective evacuation of high-risk areas, and deployment of flood barriers for infrastructure protection",
+      "required_resources": ["full_emergency_response", "coordination_center", "all_available_resources"],
+      "estimated_duration": "4-8 hours",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.88,
+        "safety": 0.82,
+        "speed": 0.68,
+        "cost": 0.35,
+        "public_acceptance": 0.75
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["limited_rescue_personnel", "limited_shelters", "limited_transportation"],
+    "weather_conditions": "heavy_rain_continuing",
+    "accessibility": "severely_limited",
+    "additional_concerns": [
+      "Power outages in affected areas",
+      "Contaminated water supply",
+      "Potential for levee failure",
+      "Hospital evacuation may be necessary"
+    ]
+  },
+  "real_time_factors": {
+    "water_level_rising": true,
+    "rate_of_rise": "5cm per hour",
+    "forecast": "Rain expected to continue for 6 more hours",
+    "current_evacuations": "Partial - estimated 30% of affected population",
+    "casualties_reported": 5,
+    "missing_persons": 12
+  },
+  "metadata": {
+    "created_date": "2025-01-15",
+    "author": "Crisis MAS Research Team",
+    "version": "1.0",
+    "scenario_complexity": "high",
+    "recommended_expert_domains": ["medical", "logistics", "public_safety", "environmental"]
+  }
+}
