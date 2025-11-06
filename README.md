@@ -382,9 +382,9 @@ If you use this work in your research, please cite:
 ```bibtex
 @mastersthesis{crisis_mas_2025,
   title={Multi-Agent Systems for Crisis Management Decision-Making},
-  author={[Author Name]},
+  author={[Vasileios Kazoukas]},
   year={2025},
-  school={[University Name]},
+  school={[SSE - TUC]},
   type={Master's Thesis},
   note={Operational Research \& Decision Making}
 }
@@ -399,11 +399,11 @@ If you use this work in your research, please cite:
 ## Contact
 
 For questions about this research project, please contact:
-- [Your Email]
-- [Your Institution]
+- kazoukas@gmail.com vkazoukas@tuc.gr
+- SSE-TUC
 
 ---
 
 **Version:** 1.0.0
-**Last Updated:** January 2025
+**Last Updated:** November 2025
 **Status:** Proof of Concept for Master's Thesis
