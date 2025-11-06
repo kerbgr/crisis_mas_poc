@@ -399,11 +399,11 @@ If you use this work in your research, please cite:
 ## Contact
 
 For questions about this research project, please contact:
-- [kazoukas@gmail.com vkazoukas@tuc.gr]
-- [SSE-TUC]
+- kazoukas@gmail.com vkazoukas@tuc.gr
+- SSE-TUC
 
 ---
 
 **Version:** 1.0.0
-**Last Updated:** January 2025
+**Last Updated:** November 2025
 **Status:** Proof of Concept for Master's Thesis
