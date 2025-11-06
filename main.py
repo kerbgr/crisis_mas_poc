@@ -338,32 +338,151 @@ def run_decision_process(
 
 
 def run_single_agent_baseline(
-    expert_agent: ExpertAgent,
+    expert_agents: List[ExpertAgent],
     scenario: Dict[str, Any],
-    alternatives: List[Dict[str, Any]]
+    alternatives: List[Dict[str, Any]],
+    agent_type: str = "first"
 ) -> Dict[str, Any]:
     """
-    Run single-agent baseline for comparison.
+    Run single-agent baseline for comparison with multi-agent approach.
+
+    This provides a baseline to demonstrate the value of multi-agent consensus.
+    Uses only ONE agent with NO consensus building - just direct decision from
+    a single perspective.
 
     Args:
-        expert_agent: Single expert agent to use
+        expert_agents: List of available expert agents
         scenario: Crisis scenario
         alternatives: Response alternatives
+        agent_type: Which agent to use for baseline:
+            - "first": Use first agent in list (default)
+            - "meteorologist": Use meteorologist if available
+            - "logistics": Use logistics coordinator if available
+            - "medical": Use medical expert if available
+            - "operations": Use operations expert if available
 
     Returns:
-        Single-agent assessment
+        Single-agent decision dictionary in similar format to coordinator output
+        for fair comparison, containing:
+            - recommended_alternative: str
+            - confidence: float
+            - final_scores: Dict[str, float]
+            - belief_distribution: Dict[str, float]
+            - reasoning: str
+            - agent_info: Dict with agent details
+            - decision_time_seconds: float
     """
     logger = logging.getLogger(__name__)
+    import time
 
     logger.info("")
-    logger.info("Running single-agent baseline...")
+    logger.info("="*80)
+    logger.info("RUNNING SINGLE-AGENT BASELINE")
+    logger.info("="*80)
 
-    assessment = expert_agent.evaluate_scenario(scenario, alternatives)
+    # Select agent based on type
+    selected_agent = None
 
-    logger.info(f"  Baseline from: {expert_agent.name}")
-    logger.info(f"  Confidence: {assessment['confidence']:.3f}")
+    if agent_type == "first":
+        selected_agent = expert_agents[0]
+    else:
+        # Map agent types to role/expertise keywords
+        type_keywords = {
+            "meteorologist": ["meteorologist", "weather", "environmental"],
+            "logistics": ["logistics", "supply", "operations"],
+            "medical": ["medical", "health", "emergency"],
+            "operations": ["operations", "coordinator", "emergency"]
+        }
 
-    return assessment
+        keywords = type_keywords.get(agent_type.lower(), [])
+
+        # Find matching agent
+        for agent in expert_agents:
+            for keyword in keywords:
+                if (keyword.lower() in agent.role.lower() or
+                    keyword.lower() in agent.expertise.lower()):
+                    selected_agent = agent
+                    break
+            if selected_agent:
+                break
+
+        # Fallback to first agent if no match
+        if not selected_agent:
+            logger.warning(f"No agent found matching type '{agent_type}', using first agent")
+            selected_agent = expert_agents[0]
+
+    logger.info(f"Selected baseline agent: {selected_agent.name} ({selected_agent.role})")
+    logger.info(f"Expertise: {selected_agent.expertise}")
+    logger.info("")
+
+    # Time the decision
+    start_time = time.time()
+
+    # Get single-agent assessment
+    try:
+        assessment = selected_agent.evaluate_scenario(scenario, alternatives)
+    except Exception as e:
+        logger.error(f"Single-agent baseline failed: {e}")
+        # Return error decision
+        return {
+            'recommended_alternative': None,
+            'confidence': 0.0,
+            'final_scores': {},
+            'belief_distribution': {},
+            'reasoning': f"ERROR: Single-agent baseline failed - {str(e)}",
+            'agent_info': {
+                'agent_id': selected_agent.agent_id,
+                'agent_name': selected_agent.name,
+                'agent_role': selected_agent.role
+            },
+            'decision_time_seconds': time.time() - start_time,
+            'error': str(e)
+        }
+
+    end_time = time.time()
+    decision_time = end_time - start_time
+
+    # Extract belief distribution and find top alternative
+    belief_distribution = assessment.get('belief_distribution', {})
+
+    if belief_distribution:
+        # Find alternative with highest belief
+        top_alternative = max(belief_distribution.items(), key=lambda x: x[1])
+        recommended_alternative = top_alternative[0]
+        top_score = top_alternative[1]
+    else:
+        recommended_alternative = None
+        top_score = 0.0
+
+    # Build decision structure similar to coordinator output
+    baseline_decision = {
+        'recommended_alternative': recommended_alternative,
+        'confidence': assessment.get('confidence', 0.0),
+        'final_scores': belief_distribution,  # Single agent's beliefs are the final scores
+        'belief_distribution': belief_distribution,
+        'reasoning': assessment.get('reasoning', ''),
+        'key_concerns': assessment.get('key_concerns', []),
+        'criteria_scores': assessment.get('criteria_scores', {}),
+        'agent_info': {
+            'agent_id': assessment.get('agent_id'),
+            'agent_name': assessment.get('agent_name'),
+            'agent_role': assessment.get('agent_role'),
+            'expertise': assessment.get('expertise')
+        },
+        'decision_time_seconds': decision_time,
+        'timestamp': assessment.get('timestamp'),
+        'scenario_type': assessment.get('scenario_type'),
+        'baseline_type': 'single_agent'
+    }
+
+    logger.info("Single-agent baseline completed:")
+    logger.info(f"  Agent: {assessment.get('agent_name')}")
+    logger.info(f"  Recommended: {recommended_alternative}")
+    logger.info(f"  Confidence: {assessment.get('confidence', 0.0):.3f}")
+    logger.info(f"  Time: {decision_time:.2f}s")
+    logger.info("")
+
+    return baseline_decision
 
 
 # ============================================================================
@@ -431,20 +550,35 @@ def evaluate_decision(
 
     # 5. Compare to baseline if available
     if baseline_assessment:
-        # Convert baseline to same format as multi-agent results
-        baseline_results = {
-            'decision_quality': {
-                'weighted_score': baseline_assessment['confidence'],
-                'confidence': baseline_assessment['confidence']
-            },
-            'confidence': {
-                'decision_confidence': baseline_assessment['confidence']
-            }
-        }
+        logger.info("")
+        logger.info("Comparing with single-agent baseline...")
 
+        # Calculate baseline metrics (same metrics as multi-agent)
+        baseline_metrics = {}
+
+        # Decision quality for baseline
+        baseline_metrics['decision_quality'] = evaluator.calculate_decision_quality(
+            baseline_assessment,
+            ground_truth=ground_truth
+        )
+
+        # Confidence for baseline
+        baseline_metrics['confidence'] = evaluator.calculate_confidence_metrics(
+            baseline_assessment
+        )
+
+        # Store baseline metrics for comparison
+        metrics['baseline_metrics'] = baseline_metrics
+
+        # Perform comparison
         multi_agent_results = {
             'decision_quality': metrics['decision_quality'],
             'confidence': metrics['confidence']
+        }
+
+        baseline_results = {
+            'decision_quality': baseline_metrics['decision_quality'],
+            'confidence': baseline_metrics['confidence']
         }
 
         metrics['baseline_comparison'] = evaluator.compare_to_baseline(
@@ -452,11 +586,44 @@ def evaluate_decision(
             baseline_results
         )
 
+        # Log comparison results
         logger.info("")
-        logger.info("Baseline Comparison:")
-        if 'decision_quality' in metrics['baseline_comparison']:
-            improvement = metrics['baseline_comparison']['decision_quality'].get('improvement_percentage', 0)
-            logger.info(f"  Quality Improvement: {improvement:+.1f}%")
+        logger.info("="*80)
+        logger.info("SINGLE-AGENT vs MULTI-AGENT COMPARISON")
+        logger.info("="*80)
+
+        ma_quality = metrics['decision_quality']['weighted_score']
+        sa_quality = baseline_metrics['decision_quality']['weighted_score']
+        quality_improvement = ((ma_quality - sa_quality) / max(sa_quality, 0.001)) * 100
+
+        ma_confidence = metrics['confidence']['decision_confidence']
+        sa_confidence = baseline_metrics['confidence']['decision_confidence']
+        confidence_improvement = ((ma_confidence - sa_confidence) / max(sa_confidence, 0.001)) * 100
+
+        logger.info("Decision Quality:")
+        logger.info(f"  Single-agent: {sa_quality:.3f}")
+        logger.info(f"  Multi-agent:  {ma_quality:.3f}")
+        logger.info(f"  Improvement:  {quality_improvement:+.1f}%")
+        logger.info("")
+        logger.info("Confidence:")
+        logger.info(f"  Single-agent: {sa_confidence:.3f}")
+        logger.info(f"  Multi-agent:  {ma_confidence:.3f}")
+        logger.info(f"  Improvement:  {confidence_improvement:+.1f}%")
+        logger.info("")
+
+        # Check if decisions differ
+        ma_recommendation = decision.get('recommended_alternative')
+        sa_recommendation = baseline_assessment.get('recommended_alternative')
+
+        if ma_recommendation and sa_recommendation:
+            if ma_recommendation == sa_recommendation:
+                logger.info(f"Both approaches recommend: {ma_recommendation}")
+            else:
+                logger.info(f"Different recommendations:")
+                logger.info(f"  Single-agent: {sa_recommendation}")
+                logger.info(f"  Multi-agent:  {ma_recommendation}")
+
+        logger.info("="*80)
 
     return metrics
 
@@ -627,11 +794,19 @@ def print_summary(
     logger.info(f"  Consensus Level: {metrics['consensus']['consensus_level']:.3f}")
     logger.info(f"  Expert Balance: {metrics['expert_contribution_balance']['balance_score']:.3f}")
 
-    if 'baseline_comparison' in metrics:
-        comp = metrics['baseline_comparison']
-        if 'decision_quality' in comp:
-            improvement = comp['decision_quality'].get('improvement_percentage', 0)
-            logger.info(f"  vs Baseline: {improvement:+.1f}% improvement")
+    if 'baseline_comparison' in metrics and 'baseline_metrics' in metrics:
+        logger.info("")
+        logger.info("BASELINE COMPARISON")
+
+        ma_quality = metrics['decision_quality']['weighted_score']
+        sa_quality = metrics['baseline_metrics']['decision_quality']['weighted_score']
+        quality_improvement = ((ma_quality - sa_quality) / max(sa_quality, 0.001)) * 100
+
+        ma_confidence = metrics['confidence']['decision_confidence']
+        sa_confidence = metrics['baseline_metrics']['confidence']['decision_confidence']
+
+        logger.info(f"  Quality:     {sa_quality:.3f} (single) → {ma_quality:.3f} (multi) [{quality_improvement:+.1f}%]")
+        logger.info(f"  Confidence:  {sa_confidence:.3f} (single) → {ma_confidence:.3f} (multi)")
 
     logger.info("")
 
@@ -663,8 +838,19 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Run with default settings (includes baseline comparison)
   python main.py --scenario flood_scenario
+
+  # Run with specific baseline agent type
+  python main.py --scenario flood_scenario --baseline-agent meteorologist
+
+  # Run without baseline comparison
+  python main.py --scenario wildfire --no-baseline
+
+  # Run with custom output directory and verbose logging
   python main.py --scenario wildfire --output-dir results/test_1 --verbose
+
+  # Run with different LLM provider
   python main.py --scenario flood --llm-provider openai
 
 For more information, see README.md
@@ -717,6 +903,14 @@ For more information, see README.md
         '--no-baseline',
         action='store_true',
         help='Skip single-agent baseline comparison'
+    )
+
+    parser.add_argument(
+        '--baseline-agent',
+        type=str,
+        default='first',
+        choices=['first', 'meteorologist', 'logistics', 'medical', 'operations'],
+        help='Agent type to use for single-agent baseline (default: first)'
     )
 
     parser.add_argument(
@@ -783,9 +977,10 @@ For more information, see README.md
         baseline_assessment = None
         if not args.no_baseline:
             baseline_assessment = run_single_agent_baseline(
-                expert_agents[0],
+                expert_agents,
                 scenario,
-                alternatives
+                alternatives,
+                agent_type=args.baseline_agent
             )
 
         # ===== 4. EVALUATE =====
