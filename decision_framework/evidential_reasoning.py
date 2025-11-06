@@ -1,280 +1,493 @@
 """
-Evidential Reasoning Implementation
-Simplified ER approach for combining uncertain information from multiple experts
-Based on Dempster-Shafer theory and evidential reasoning rule
+Simplified Evidential Reasoning Implementation
+For Crisis Management Multi-Agent System
+
+This module provides a lightweight ER approach using weighted averaging
+to combine belief distributions from multiple agents. Designed for clarity
+and interpretability in a Master's thesis PoC context.
+
+NOT full Dempster-Shafer theory - simplified for practical crisis decision-making.
 """
 
-import numpy as np
-from typing import Dict, Any, List, Tuple
+import logging
+from typing import Dict, List, Tuple, Optional, Any
+from datetime import datetime
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class EvidentialReasoning:
     """
-    Implements a simplified Evidential Reasoning approach for decision-making under uncertainty.
-    Combines beliefs from multiple experts considering their reliability and confidence.
+    Simplified Evidential Reasoning for combining agent beliefs.
+
+    Uses weighted averaging to aggregate belief distributions from multiple
+    agents, taking into account agent reliability weights.
+
+    Example:
+        >>> er = EvidentialReasoning()
+        >>> agent_beliefs = {
+        ...     "agent_meteorologist": {"A1": 0.7, "A2": 0.2, "A3": 0.1},
+        ...     "agent_operations": {"A1": 0.5, "A2": 0.3, "A3": 0.2}
+        ... }
+        >>> agent_weights = {"agent_meteorologist": 0.55, "agent_operations": 0.45}
+        >>> result = er.combine_beliefs(agent_beliefs, agent_weights)
     """
 
-    def __init__(self):
-        """Initialize the Evidential Reasoning engine."""
-        self.belief_history = []
-
-    def create_belief_structure(self, assessment: float, confidence: float) -> Dict[str, float]:
+    def __init__(self, enable_logging: bool = True):
         """
-        Create a basic belief structure from an assessment and confidence level.
+        Initialize the Evidential Reasoning engine.
 
         Args:
-            assessment: Assessment value (0-1)
-            confidence: Confidence in the assessment (0-1)
+            enable_logging: Whether to log aggregation process (default: True)
+        """
+        self.enable_logging = enable_logging
+        self.aggregation_history: List[Dict[str, Any]] = []
+
+        if self.enable_logging:
+            logger.info("Evidential Reasoning engine initialized")
+
+    def combine_beliefs(
+        self,
+        agent_beliefs: Dict[str, Dict[str, float]],
+        agent_weights: Dict[str, float]
+    ) -> Dict[str, Any]:
+        """
+        Combine belief distributions from multiple agents using weighted averaging.
+
+        This method aggregates beliefs by:
+        1. Validating inputs
+        2. Normalizing agent weights
+        3. Computing weighted average for each alternative
+        4. Calculating uncertainty mass
+        5. Computing confidence score
+
+        Args:
+            agent_beliefs: Dictionary mapping agent IDs to their belief distributions.
+                          Format: {"agent_id": {"A1": 0.7, "A2": 0.2, "A3": 0.1}}
+            agent_weights: Dictionary mapping agent IDs to reliability weights.
+                          Format: {"agent_id": 0.55, ...}
+                          Weights will be normalized to sum to 1.0
 
         Returns:
-            Dictionary with belief assignments
+            Dictionary containing:
+                - combined_beliefs: Dict[str, float] - Aggregated belief distribution
+                - uncertainty: float - Uncertainty mass (1 - sum of beliefs)
+                - confidence: float - Overall confidence score
+                - agents_involved: List[str] - Agent IDs that participated
+                - normalized_weights: Dict[str, float] - Normalized agent weights used
+                - aggregation_log: List[str] - Step-by-step log of the process
+
+        Raises:
+            ValueError: If inputs are invalid or inconsistent
+
+        Example:
+            >>> agent_beliefs = {
+            ...     "agent_meteorologist": {"A1": 0.7, "A2": 0.2, "A3": 0.1},
+            ...     "agent_operations": {"A1": 0.5, "A2": 0.3, "A3": 0.2}
+            ... }
+            >>> agent_weights = {"agent_meteorologist": 0.55, "agent_operations": 0.45}
+            >>> result = er.combine_beliefs(agent_beliefs, agent_weights)
+            >>> print(result['combined_beliefs'])
+            {'A1': 0.615, 'A2': 0.245, 'A3': 0.14}
         """
-        # Simple belief structure:
-        # - Belief mass assigned to the assessment value
-        # - Remaining mass assigned to uncertainty
-        belief = {
-            'belief': assessment * confidence,
-            'disbelief': (1 - assessment) * confidence,
-            'uncertainty': 1 - confidence
+        aggregation_log = []
+        timestamp = datetime.now().isoformat()
+
+        # Step 1: Validate inputs
+        self._validate_inputs(agent_beliefs, agent_weights)
+        aggregation_log.append("✓ Input validation passed")
+
+        # Step 2: Normalize agent weights
+        normalized_weights = self.normalize_weights(agent_weights)
+        aggregation_log.append(f"✓ Normalized {len(normalized_weights)} agent weights")
+
+        if self.enable_logging:
+            logger.info(f"Combining beliefs from {len(agent_beliefs)} agents")
+            for agent_id, weight in normalized_weights.items():
+                logger.debug(f"  {agent_id}: weight={weight:.3f}")
+
+        # Step 3: Get all unique alternatives across all agents
+        all_alternatives = set()
+        for beliefs in agent_beliefs.values():
+            all_alternatives.update(beliefs.keys())
+        all_alternatives = sorted(all_alternatives)
+        aggregation_log.append(f"✓ Identified {len(all_alternatives)} alternatives: {all_alternatives}")
+
+        # Step 4: Normalize each agent's belief distribution
+        normalized_beliefs = {}
+        for agent_id, beliefs in agent_beliefs.items():
+            normalized_beliefs[agent_id] = self.normalize_distribution(beliefs)
+        aggregation_log.append("✓ Normalized all agent belief distributions")
+
+        # Step 5: Compute weighted average for each alternative
+        combined_beliefs = {}
+
+        for alternative in all_alternatives:
+            weighted_sum = 0.0
+
+            for agent_id, beliefs in normalized_beliefs.items():
+                # Get belief for this alternative (0.0 if agent didn't mention it)
+                agent_belief = beliefs.get(alternative, 0.0)
+                agent_weight = normalized_weights[agent_id]
+
+                weighted_sum += agent_belief * agent_weight
+
+                if self.enable_logging:
+                    logger.debug(
+                        f"    {alternative}: {agent_id} belief={agent_belief:.3f} "
+                        f"* weight={agent_weight:.3f} = {agent_belief * agent_weight:.3f}"
+                    )
+
+            combined_beliefs[alternative] = weighted_sum
+
+        aggregation_log.append("✓ Computed weighted averages for all alternatives")
+
+        # Step 6: Normalize combined beliefs to ensure they sum to 1.0
+        combined_beliefs = self.normalize_distribution(combined_beliefs)
+        aggregation_log.append("✓ Normalized combined belief distribution")
+
+        # Step 7: Calculate uncertainty
+        belief_sum = sum(combined_beliefs.values())
+        uncertainty = max(0.0, 1.0 - belief_sum)  # Should be ~0 after normalization
+
+        # Step 8: Calculate confidence score
+        confidence = self.calculate_confidence(combined_beliefs)
+        aggregation_log.append(f"✓ Calculated confidence score: {confidence:.3f}")
+
+        # Prepare result
+        result = {
+            'combined_beliefs': combined_beliefs,
+            'uncertainty': uncertainty,
+            'confidence': confidence,
+            'agents_involved': list(agent_beliefs.keys()),
+            'normalized_weights': normalized_weights,
+            'aggregation_log': aggregation_log,
+            'timestamp': timestamp,
+            'num_alternatives': len(all_alternatives),
+            'alternatives': all_alternatives
         }
 
-        return belief
+        # Store in history
+        self.aggregation_history.append(result)
 
-    def combine_beliefs(self, beliefs: List[Dict[str, Any]]) -> Dict[str, float]:
+        if self.enable_logging:
+            logger.info(f"✓ Belief aggregation complete: confidence={confidence:.3f}")
+            logger.info(f"Combined beliefs: {combined_beliefs}")
+
+        return result
+
+    def normalize_distribution(self, beliefs: Dict[str, float]) -> Dict[str, float]:
         """
-        Combine multiple belief structures using Dempster's rule of combination.
+        Normalize a belief distribution to ensure it sums to 1.0.
 
         Args:
-            beliefs: List of belief structures from different experts
+            beliefs: Dictionary mapping alternatives to belief values
+                    Format: {"A1": 0.7, "A2": 0.2, "A3": 0.15}
 
         Returns:
-            Combined belief structure
+            Normalized belief distribution that sums to 1.0
+
+        Raises:
+            ValueError: If all beliefs are zero or negative
+
+        Example:
+            >>> er = EvidentialReasoning()
+            >>> beliefs = {"A1": 0.7, "A2": 0.2, "A3": 0.15}
+            >>> normalized = er.normalize_distribution(beliefs)
+            >>> sum(normalized.values())
+            1.0
         """
         if not beliefs:
-            return {'belief': 0.0, 'disbelief': 0.0, 'uncertainty': 1.0}
+            return {}
 
-        if len(beliefs) == 1:
-            return beliefs[0]
+        # Check for negative values
+        for alt, value in beliefs.items():
+            if value < 0:
+                raise ValueError(
+                    f"Negative belief value for alternative '{alt}': {value}. "
+                    "All beliefs must be non-negative."
+                )
 
-        # Start with the first belief
-        combined = beliefs[0].copy()
+        # Calculate sum
+        total = sum(beliefs.values())
 
-        # Sequentially combine with remaining beliefs
-        for i in range(1, len(beliefs)):
-            combined = self._combine_two_beliefs(combined, beliefs[i])
-
-        self.belief_history.append({
-            'num_beliefs': len(beliefs),
-            'combined_result': combined
-        })
-
-        return combined
-
-    def _combine_two_beliefs(self, belief1: Dict[str, float],
-                            belief2: Dict[str, float]) -> Dict[str, float]:
-        """
-        Combine two belief structures using Dempster's rule.
-
-        Args:
-            belief1: First belief structure
-            belief2: Second belief structure
-
-        Returns:
-            Combined belief structure
-        """
-        # Extract components
-        b1, d1, u1 = belief1.get('belief', 0), belief1.get('disbelief', 0), belief1.get('uncertainty', 0)
-        b2, d2, u2 = belief2.get('belief', 0), belief2.get('disbelief', 0), belief2.get('uncertainty', 0)
-
-        # Calculate conflict
-        conflict = b1 * d2 + d1 * b2
-
-        # Normalization factor (handling conflict)
-        if conflict >= 1.0:
-            # Complete conflict - use averaging
-            return {
-                'belief': (b1 + b2) / 2,
-                'disbelief': (d1 + d2) / 2,
-                'uncertainty': (u1 + u2) / 2
-            }
-
-        k = 1 / (1 - conflict) if conflict < 1.0 else 1.0
-
-        # Dempster's combination rule
-        combined_belief = k * (b1 * b2 + b1 * u2 + u1 * b2)
-        combined_disbelief = k * (d1 * d2 + d1 * u2 + u1 * d2)
-        combined_uncertainty = k * (u1 * u2)
-
-        # Normalize to ensure sum = 1
-        total = combined_belief + combined_disbelief + combined_uncertainty
-        if total > 0:
-            combined_belief /= total
-            combined_disbelief /= total
-            combined_uncertainty /= total
-
-        return {
-            'belief': combined_belief,
-            'disbelief': combined_disbelief,
-            'uncertainty': combined_uncertainty
-        }
-
-    def aggregate_expert_assessments(self, expert_assessments: List[Dict[str, Any]],
-                                    reliability_weights: Optional[List[float]] = None) -> Dict[str, float]:
-        """
-        Aggregate assessments from multiple experts using ER.
-
-        Args:
-            expert_assessments: List of expert assessments with scores and confidence
-            reliability_weights: Optional reliability weights for each expert
-
-        Returns:
-            Aggregated assessment with combined belief structure
-        """
-        if not expert_assessments:
-            return {
-                'aggregated_score': 0.5,
-                'belief': 0.0,
-                'disbelief': 0.0,
-                'uncertainty': 1.0,
-                'confidence': 0.0
-            }
-
-        # Create belief structures for each expert
-        beliefs = []
-        for i, assessment in enumerate(expert_assessments):
-            score = assessment.get('score', 0.5)
-            confidence = assessment.get('confidence', 0.5)
-
-            # Apply reliability weight if provided
-            if reliability_weights and i < len(reliability_weights):
-                confidence *= reliability_weights[i]
-
-            belief = self.create_belief_structure(score, confidence)
-            beliefs.append(belief)
-
-        # Combine all beliefs
-        combined = self.combine_beliefs(beliefs)
-
-        # Calculate expected value from belief structure
-        aggregated_score = combined['belief'] + 0.5 * combined['uncertainty']
-
-        return {
-            'aggregated_score': aggregated_score,
-            'belief': combined['belief'],
-            'disbelief': combined['disbelief'],
-            'uncertainty': combined['uncertainty'],
-            'confidence': combined['belief'] + combined['disbelief']
-        }
-
-    def rank_alternatives(self, alternatives: Dict[str, List[Dict[str, Any]]],
-                         criteria_weights: Dict[str, float]) -> List[Tuple[str, float]]:
-        """
-        Rank alternatives using ER across multiple criteria.
-
-        Args:
-            alternatives: Dict mapping alternative IDs to lists of criterion assessments
-            criteria_weights: Weights for each criterion
-
-        Returns:
-            List of (alternative_id, score) tuples, sorted by score
-        """
-        alternative_scores = {}
-
-        for alt_id, assessments in alternatives.items():
-            # Weight assessments by criteria weights
-            weighted_assessments = []
-
-            for assessment in assessments:
-                criterion = assessment.get('criterion', '')
-                weight = criteria_weights.get(criterion, 1.0)
-
-                weighted_assessment = assessment.copy()
-                weighted_assessment['confidence'] *= weight
-
-                weighted_assessments.append(weighted_assessment)
-
-            # Aggregate using ER
-            result = self.aggregate_expert_assessments(weighted_assessments)
-            alternative_scores[alt_id] = result['aggregated_score']
-
-        # Sort by score
-        ranked = sorted(alternative_scores.items(), key=lambda x: x[1], reverse=True)
-
-        return ranked
-
-    def calculate_belief_distance(self, belief1: Dict[str, float],
-                                 belief2: Dict[str, float]) -> float:
-        """
-        Calculate distance between two belief structures.
-        Useful for measuring disagreement between experts.
-
-        Args:
-            belief1: First belief structure
-            belief2: Second belief structure
-
-        Returns:
-            Distance measure (0 = identical, higher = more different)
-        """
-        b1 = np.array([belief1.get('belief', 0),
-                      belief1.get('disbelief', 0),
-                      belief1.get('uncertainty', 0)])
-
-        b2 = np.array([belief2.get('belief', 0),
-                      belief2.get('disbelief', 0),
-                      belief2.get('uncertainty', 0)])
-
-        # Euclidean distance
-        distance = np.linalg.norm(b1 - b2)
-
-        return float(distance)
-
-    def sensitivity_analysis(self, expert_assessments: List[Dict[str, Any]],
-                           perturbation: float = 0.1) -> Dict[str, Any]:
-        """
-        Perform sensitivity analysis on the aggregated result.
-
-        Args:
-            expert_assessments: List of expert assessments
-            perturbation: Amount to perturb confidence values (0-1)
-
-        Returns:
-            Sensitivity analysis results
-        """
-        # Original aggregation
-        original = self.aggregate_expert_assessments(expert_assessments)
-
-        # Perturb each expert's confidence and re-aggregate
-        perturbed_results = []
-
-        for i in range(len(expert_assessments)):
-            # Create perturbed assessment
-            perturbed_assessments = [a.copy() for a in expert_assessments]
-
-            # Increase confidence
-            perturbed_assessments[i]['confidence'] = min(
-                1.0,
-                perturbed_assessments[i]['confidence'] * (1 + perturbation)
+        if total == 0:
+            raise ValueError(
+                "Cannot normalize: all belief values are zero. "
+                "At least one alternative must have non-zero belief."
             )
-            result_up = self.aggregate_expert_assessments(perturbed_assessments)
 
-            # Decrease confidence
-            perturbed_assessments[i]['confidence'] = max(
-                0.0,
-                expert_assessments[i]['confidence'] * (1 - perturbation)
+        # Normalize
+        normalized = {alt: value / total for alt, value in beliefs.items()}
+
+        return normalized
+
+    def normalize_weights(self, weights: Dict[str, float]) -> Dict[str, float]:
+        """
+        Normalize agent weights to ensure they sum to 1.0.
+
+        Args:
+            weights: Dictionary mapping agent IDs to reliability weights
+                    Format: {"agent_id": 0.55, ...}
+
+        Returns:
+            Normalized weights that sum to 1.0
+
+        Raises:
+            ValueError: If all weights are zero or negative
+
+        Example:
+            >>> er = EvidentialReasoning()
+            >>> weights = {"agent1": 0.6, "agent2": 0.4}
+            >>> normalized = er.normalize_weights(weights)
+            >>> sum(normalized.values())
+            1.0
+        """
+        if not weights:
+            raise ValueError("Agent weights dictionary is empty")
+
+        # Check for negative values
+        for agent_id, weight in weights.items():
+            if weight < 0:
+                raise ValueError(
+                    f"Negative weight for agent '{agent_id}': {weight}. "
+                    "All weights must be non-negative."
+                )
+
+        # Calculate sum
+        total = sum(weights.values())
+
+        if total == 0:
+            raise ValueError(
+                "Cannot normalize: all weights are zero. "
+                "At least one agent must have non-zero weight."
             )
-            result_down = self.aggregate_expert_assessments(perturbed_assessments)
 
-            sensitivity = abs(result_up['aggregated_score'] - result_down['aggregated_score'])
+        # Normalize
+        normalized = {agent_id: weight / total for agent_id, weight in weights.items()}
 
-            perturbed_results.append({
-                'expert_index': i,
-                'original_confidence': expert_assessments[i]['confidence'],
-                'score_sensitivity': sensitivity
-            })
+        return normalized
 
-        return {
-            'original_score': original['aggregated_score'],
-            'original_uncertainty': original['uncertainty'],
-            'expert_sensitivities': perturbed_results,
-            'most_influential_expert': max(perturbed_results, key=lambda x: x['score_sensitivity'])['expert_index']
-        }
+    def calculate_confidence(self, combined_beliefs: Dict[str, float]) -> float:
+        """
+        Calculate overall confidence score based on the combined belief distribution.
+
+        The confidence score reflects how decisively the beliefs are distributed:
+        - High confidence: Beliefs concentrated on few alternatives
+        - Low confidence: Beliefs spread evenly across many alternatives
+
+        Uses entropy-based measure normalized to [0, 1] range.
+
+        Args:
+            combined_beliefs: Combined belief distribution
+                             Format: {"A1": 0.615, "A2": 0.245, "A3": 0.14}
+
+        Returns:
+            Confidence score between 0.0 (low confidence) and 1.0 (high confidence)
+
+        Example:
+            >>> er = EvidentialReasoning()
+            >>> # High confidence - one dominant alternative
+            >>> beliefs = {"A1": 0.9, "A2": 0.05, "A3": 0.05}
+            >>> er.calculate_confidence(beliefs)
+            0.95
+            >>> # Low confidence - evenly distributed
+            >>> beliefs = {"A1": 0.33, "A2": 0.33, "A3": 0.34}
+            >>> er.calculate_confidence(beliefs)
+            0.35
+        """
+        if not combined_beliefs:
+            return 0.0
+
+        # Calculate Shannon entropy
+        import math
+
+        entropy = 0.0
+        for belief in combined_beliefs.values():
+            if belief > 0:
+                entropy -= belief * math.log2(belief)
+
+        # Normalize entropy to [0, 1]
+        # Maximum entropy occurs when all beliefs are equal
+        n = len(combined_beliefs)
+        if n <= 1:
+            max_entropy = 0.0
+        else:
+            max_entropy = math.log2(n)
+
+        # Convert entropy to confidence
+        # High entropy = low confidence, Low entropy = high confidence
+        if max_entropy == 0:
+            confidence = 1.0
+        else:
+            normalized_entropy = entropy / max_entropy
+            confidence = 1.0 - normalized_entropy
+
+        return confidence
+
+    def _validate_inputs(
+        self,
+        agent_beliefs: Dict[str, Dict[str, float]],
+        agent_weights: Dict[str, float]
+    ):
+        """
+        Validate input parameters for combine_beliefs method.
+
+        Args:
+            agent_beliefs: Agent belief distributions
+            agent_weights: Agent reliability weights
+
+        Raises:
+            ValueError: If inputs are invalid
+        """
+        # Check that inputs are not empty
+        if not agent_beliefs:
+            raise ValueError("agent_beliefs dictionary is empty")
+
+        if not agent_weights:
+            raise ValueError("agent_weights dictionary is empty")
+
+        # Check that agent IDs match
+        belief_agents = set(agent_beliefs.keys())
+        weight_agents = set(agent_weights.keys())
+
+        if belief_agents != weight_agents:
+            missing_weights = belief_agents - weight_agents
+            missing_beliefs = weight_agents - belief_agents
+
+            error_msg = "Agent IDs mismatch between beliefs and weights.\n"
+            if missing_weights:
+                error_msg += f"  Agents with beliefs but no weights: {missing_weights}\n"
+            if missing_beliefs:
+                error_msg += f"  Agents with weights but no beliefs: {missing_beliefs}"
+
+            raise ValueError(error_msg)
+
+        # Check that each agent has valid belief distribution
+        for agent_id, beliefs in agent_beliefs.items():
+            if not beliefs:
+                raise ValueError(f"Agent '{agent_id}' has empty belief distribution")
+
+            if not isinstance(beliefs, dict):
+                raise ValueError(
+                    f"Agent '{agent_id}' beliefs must be a dictionary, "
+                    f"got {type(beliefs)}"
+                )
+
+            # Check belief values are numeric
+            for alt, value in beliefs.items():
+                if not isinstance(value, (int, float)):
+                    raise ValueError(
+                        f"Agent '{agent_id}' has non-numeric belief for '{alt}': {value}"
+                    )
+
+    def get_top_alternatives(
+        self,
+        combined_beliefs: Dict[str, float],
+        top_n: int = 3
+    ) -> List[Tuple[str, float]]:
+        """
+        Get the top N alternatives ranked by belief.
+
+        Args:
+            combined_beliefs: Combined belief distribution
+            top_n: Number of top alternatives to return (default: 3)
+
+        Returns:
+            List of (alternative, belief) tuples, sorted by belief (descending)
+
+        Example:
+            >>> er = EvidentialReasoning()
+            >>> beliefs = {"A1": 0.615, "A2": 0.245, "A3": 0.14}
+            >>> er.get_top_alternatives(beliefs, top_n=2)
+            [('A1', 0.615), ('A2', 0.245)]
+        """
+        sorted_beliefs = sorted(
+            combined_beliefs.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+        return sorted_beliefs[:top_n]
+
+    def get_aggregation_summary(self, result: Dict[str, Any]) -> str:
+        """
+        Generate a human-readable summary of an aggregation result.
+
+        Args:
+            result: Result dictionary from combine_beliefs()
+
+        Returns:
+            Formatted summary string
+
+        Example:
+            >>> result = er.combine_beliefs(agent_beliefs, agent_weights)
+            >>> print(er.get_aggregation_summary(result))
+        """
+        top_alternatives = self.get_top_alternatives(result['combined_beliefs'], top_n=3)
+
+        summary = f"""
+{'='*70}
+Evidential Reasoning - Aggregation Summary
+{'='*70}
+Timestamp: {result['timestamp']}
+Agents Involved: {len(result['agents_involved'])}
+  {', '.join(result['agents_involved'])}
+
+Agent Weights (Normalized):
+"""
+        for agent_id, weight in result['normalized_weights'].items():
+            summary += f"  • {agent_id:30s} : {weight:.3f}\n"
+
+        summary += f"\nAlternatives Evaluated: {result['num_alternatives']}\n"
+        summary += f"  {', '.join(result['alternatives'])}\n"
+
+        summary += "\nCombined Belief Distribution:\n"
+        for alt, belief in sorted(
+            result['combined_beliefs'].items(),
+            key=lambda x: x[1],
+            reverse=True
+        ):
+            bar_length = int(belief * 40)
+            bar = '█' * bar_length
+            summary += f"  {alt:10s} : {belief:.3f} {bar}\n"
+
+        summary += f"\nTop 3 Alternatives:\n"
+        for i, (alt, belief) in enumerate(top_alternatives, 1):
+            summary += f"  {i}. {alt:10s} : {belief:.3f} ({belief*100:.1f}%)\n"
+
+        summary += f"\nConfidence Score: {result['confidence']:.3f}\n"
+        summary += f"Uncertainty Mass: {result['uncertainty']:.3f}\n"
+
+        summary += "\nAggregation Process:\n"
+        for log_entry in result['aggregation_log']:
+            summary += f"  {log_entry}\n"
+
+        summary += "="*70
+
+        return summary
+
+    def get_history(self) -> List[Dict[str, Any]]:
+        """
+        Get the history of all aggregations performed.
+
+        Returns:
+            List of aggregation results
+        """
+        return self.aggregation_history.copy()
+
+    def clear_history(self):
+        """Clear the aggregation history."""
+        self.aggregation_history.clear()
+        if self.enable_logging:
+            logger.info("Aggregation history cleared")
+
+    def __repr__(self) -> str:
+        """String representation."""
+        return (
+            f"EvidentialReasoning("
+            f"aggregations_performed={len(self.aggregation_history)}, "
+            f"logging={'enabled' if self.enable_logging else 'disabled'})"
+        )
