@@ -297,17 +297,17 @@ def test_prompt_completeness():
     }
 
     required_elements = [
-        "EXPERT ROLE",
-        "CRISIS SCENARIO",
-        "AVAILABLE RESPONSE ALTERNATIVES",
+        "YOUR EXPERT ROLE",
+        "ACTIVE CRISIS SITUATION",
+        "RESPONSE OPTIONS UNDER CONSIDERATION",
         "EVALUATION CRITERIA",
-        "YOUR TASK",
-        "RESPONSE FORMAT",
+        "YOUR CRITICAL ASSESSMENT TASK",
+        "REQUIRED RESPONSE FORMAT",
         "alternative_rankings",
         "reasoning",
         "confidence",
         "key_concerns",
-        "IMPORTANT INSTRUCTIONS",
+        "RESPONSE GUIDELINES",
         "JSON"
     ]
 
