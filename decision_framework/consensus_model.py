@@ -1,374 +1,572 @@
 """
 Consensus Model
-Implements consensus detection and convergence algorithms for multi-agent decision-making
+Implements consensus detection and conflict resolution for multi-agent decision-making
+
+Specifically designed for crisis management systems where 2+ expert agents
+must reach agreement on action selection.
 """
 
-import numpy as np
+import math
+import logging
 from typing import Dict, Any, List, Tuple, Optional
-from collections import defaultdict
+from datetime import datetime
+from collections import Counter
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class ConsensusModel:
     """
-    Implements consensus-building and detection mechanisms for multi-agent systems.
-    Supports various consensus metrics and convergence algorithms.
+    Consensus detection and conflict resolution for multi-agent systems.
+
+    Uses cosine similarity to measure agreement between agent belief distributions
+    and provides conflict resolution suggestions when disagreement occurs.
+
+    Example:
+        >>> model = ConsensusModel(consensus_threshold=0.75)
+        >>> agent_beliefs = {
+        ...     "agent_1": {"A1": 0.7, "A2": 0.2, "A3": 0.1},
+        ...     "agent_2": {"A1": 0.6, "A2": 0.3, "A3": 0.1}
+        ... }
+        >>> result = model.calculate_consensus_level(agent_beliefs)
     """
 
-    def __init__(self, consensus_threshold: float = 0.7):
+    def __init__(self, consensus_threshold: float = 0.75):
         """
         Initialize the consensus model.
 
         Args:
-            consensus_threshold: Minimum agreement level for consensus (0-1)
-        """
-        self.consensus_threshold = consensus_threshold
-        self.consensus_history = []
+            consensus_threshold: Minimum similarity score for consensus (0-1)
+                               Default: 0.75 (75% similarity required)
 
-    def calculate_agreement_level(self, preferences: List[Dict[str, Any]]) -> float:
+        Raises:
+            ValueError: If threshold not in [0, 1] range
         """
-        Calculate overall agreement level among agents.
+        if not 0 <= consensus_threshold <= 1:
+            raise ValueError(
+                f"Consensus threshold must be between 0 and 1, got {consensus_threshold}"
+            )
+
+        self.consensus_threshold = consensus_threshold
+        self.consensus_history: List[Dict[str, Any]] = []
+
+        logger.info(f"Consensus model initialized with threshold={consensus_threshold:.2f}")
+
+    def calculate_consensus_level(self, agent_beliefs: Dict[str, Dict[str, float]]) -> float:
+        """
+        Calculate consensus level between agents using cosine similarity.
+
+        Cosine similarity measures the angle between two belief vectors:
+        similarity = (A · B) / (||A|| × ||B||)
+
+        Where:
+        - A · B is the dot product of belief vectors
+        - ||A|| is the magnitude (L2 norm) of vector A
+        - ||B|| is the magnitude (L2 norm) of vector B
+
+        Score interpretation:
+        - 1.0: Perfect agreement (identical beliefs)
+        - 0.5-0.9: Moderate to high agreement
+        - 0.0-0.5: Low agreement
+        - 0.0: Complete disagreement (orthogonal beliefs)
 
         Args:
-            preferences: List of agent preferences/rankings
+            agent_beliefs: Dictionary mapping agent IDs to their belief distributions
+                          Format: {"agent_id": {"A1": 0.7, "A2": 0.2, "A3": 0.1}}
 
         Returns:
-            Agreement level (0-1, where 1 = perfect agreement)
+            Consensus level (0.0 to 1.0)
+
+        Raises:
+            ValueError: If insufficient agents or invalid belief distributions
+
+        Example:
+            >>> model = ConsensusModel()
+            >>> beliefs = {
+            ...     "agent_1": {"A1": 0.7, "A2": 0.3},
+            ...     "agent_2": {"A1": 0.6, "A2": 0.4}
+            ... }
+            >>> consensus = model.calculate_consensus_level(beliefs)
+            >>> print(f"Consensus: {consensus:.2f}")
+            Consensus: 0.99
         """
-        if not preferences or len(preferences) < 2:
-            return 1.0
+        if len(agent_beliefs) < 2:
+            raise ValueError(
+                f"Need at least 2 agents for consensus calculation, got {len(agent_beliefs)}"
+            )
 
-        # Extract top choices from each agent
-        top_choices = [
-            pref.get('top_choice') or pref.get('proposed_action', {}).get('id')
-            for pref in preferences
-        ]
+        # Get all unique alternatives mentioned by any agent
+        all_alternatives = set()
+        for beliefs in agent_beliefs.values():
+            all_alternatives.update(beliefs.keys())
 
-        # Remove None values
-        top_choices = [c for c in top_choices if c is not None]
+        all_alternatives = sorted(all_alternatives)
 
-        if not top_choices:
+        # Convert beliefs to vectors (same dimensionality for all agents)
+        belief_vectors = {}
+        for agent_id, beliefs in agent_beliefs.items():
+            vector = [beliefs.get(alt, 0.0) for alt in all_alternatives]
+            belief_vectors[agent_id] = vector
+
+        # Calculate pairwise cosine similarities
+        agent_ids = list(agent_beliefs.keys())
+        similarities = []
+
+        for i in range(len(agent_ids)):
+            for j in range(i + 1, len(agent_ids)):
+                agent_i = agent_ids[i]
+                agent_j = agent_ids[j]
+
+                similarity = self._cosine_similarity(
+                    belief_vectors[agent_i],
+                    belief_vectors[agent_j]
+                )
+                similarities.append(similarity)
+
+                logger.debug(
+                    f"Similarity between {agent_i} and {agent_j}: {similarity:.3f}"
+                )
+
+        # Return average similarity across all pairs
+        if not similarities:
             return 0.0
 
-        # Calculate agreement as proportion of most common choice
-        from collections import Counter
-        choice_counts = Counter(top_choices)
-        most_common_count = choice_counts.most_common(1)[0][1]
+        avg_similarity = sum(similarities) / len(similarities)
+        return avg_similarity
 
-        agreement = most_common_count / len(top_choices)
-
-        return agreement
-
-    def detect_consensus(self, preferences: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _cosine_similarity(self, vector_a: List[float], vector_b: List[float]) -> float:
         """
-        Detect if consensus exists among agents.
+        Calculate cosine similarity between two vectors.
+
+        Formula: cos(θ) = (A · B) / (||A|| × ||B||)
 
         Args:
-            preferences: List of agent preferences
+            vector_a: First belief vector
+            vector_b: Second belief vector
 
         Returns:
-            Dictionary with consensus detection results
+            Cosine similarity (0.0 to 1.0)
         """
-        agreement_level = self.calculate_agreement_level(preferences)
-        consensus_achieved = agreement_level >= self.consensus_threshold
+        if len(vector_a) != len(vector_b):
+            raise ValueError("Vectors must have same length")
 
-        # Get the consensus choice if exists
-        top_choices = [
-            pref.get('top_choice') or pref.get('proposed_action', {}).get('id')
-            for pref in preferences
-        ]
-        top_choices = [c for c in top_choices if c is not None]
+        # Calculate dot product
+        dot_product = sum(a * b for a, b in zip(vector_a, vector_b))
 
-        from collections import Counter
-        if top_choices:
-            choice_counts = Counter(top_choices)
-            consensus_choice = choice_counts.most_common(1)[0][0]
-            support_count = choice_counts[consensus_choice]
+        # Calculate magnitudes (L2 norms)
+        magnitude_a = math.sqrt(sum(a * a for a in vector_a))
+        magnitude_b = math.sqrt(sum(b * b for b in vector_b))
+
+        # Handle zero vectors
+        if magnitude_a == 0 or magnitude_b == 0:
+            return 0.0
+
+        # Calculate cosine similarity
+        similarity = dot_product / (magnitude_a * magnitude_b)
+
+        # Ensure result is in [0, 1] range (handle floating point errors)
+        return max(0.0, min(1.0, similarity))
+
+    def detect_conflicts(
+        self,
+        agent_beliefs: Dict[str, Dict[str, float]],
+        conflict_threshold: float = 0.3
+    ) -> List[Dict[str, Any]]:
+        """
+        Detect conflicts between agents.
+
+        A conflict occurs when:
+        1. Agents have different top-choice alternatives, AND
+        2. The belief difference for their top choices is significant
+
+        Args:
+            agent_beliefs: Dictionary mapping agent IDs to belief distributions
+            conflict_threshold: Minimum belief difference to flag as conflict (default: 0.3)
+
+        Returns:
+            List of conflict dictionaries, each containing:
+                - agent_pair: Tuple of agent IDs in conflict
+                - conflict_score: Severity of disagreement (0-1)
+                - agent_1_top_choice: Top choice for first agent
+                - agent_2_top_choice: Top choice for second agent
+                - disagreement_magnitude: Difference in top choice beliefs
+
+        Example:
+            >>> model = ConsensusModel()
+            >>> beliefs = {
+            ...     "agent_1": {"A1": 0.8, "A2": 0.2},
+            ...     "agent_2": {"A1": 0.2, "A2": 0.8}
+            ... }
+            >>> conflicts = model.detect_conflicts(beliefs)
+            >>> print(f"Found {len(conflicts)} conflicts")
+            Found 1 conflicts
+        """
+        if len(agent_beliefs) < 2:
+            return []
+
+        conflicts = []
+        agent_ids = list(agent_beliefs.keys())
+
+        # Check each pair of agents
+        for i in range(len(agent_ids)):
+            for j in range(i + 1, len(agent_ids)):
+                agent_1_id = agent_ids[i]
+                agent_2_id = agent_ids[j]
+
+                beliefs_1 = agent_beliefs[agent_1_id]
+                beliefs_2 = agent_beliefs[agent_2_id]
+
+                # Get top choices for each agent
+                top_1 = max(beliefs_1.items(), key=lambda x: x[1])
+                top_2 = max(beliefs_2.items(), key=lambda x: x[1])
+
+                top_1_alt, top_1_belief = top_1
+                top_2_alt, top_2_belief = top_2
+
+                # Check if they disagree on top choice
+                if top_1_alt != top_2_alt:
+                    # Calculate conflict severity
+                    # How strongly does agent 1 prefer their choice over agent 2's choice?
+                    agent_1_diff = top_1_belief - beliefs_1.get(top_2_alt, 0.0)
+                    # How strongly does agent 2 prefer their choice over agent 1's choice?
+                    agent_2_diff = top_2_belief - beliefs_2.get(top_1_alt, 0.0)
+
+                    # Average the differences
+                    disagreement_magnitude = (agent_1_diff + agent_2_diff) / 2
+
+                    # Calculate conflict score (inverse of consensus)
+                    consensus = self._cosine_similarity(
+                        [beliefs_1.get(alt, 0.0) for alt in sorted(set(beliefs_1) | set(beliefs_2))],
+                        [beliefs_2.get(alt, 0.0) for alt in sorted(set(beliefs_1) | set(beliefs_2))]
+                    )
+                    conflict_score = 1.0 - consensus
+
+                    # Only flag if disagreement is significant
+                    if disagreement_magnitude >= conflict_threshold:
+                        conflict = {
+                            'agent_pair': (agent_1_id, agent_2_id),
+                            'conflict_score': conflict_score,
+                            'agent_1_top_choice': top_1_alt,
+                            'agent_2_top_choice': top_2_alt,
+                            'agent_1_belief': top_1_belief,
+                            'agent_2_belief': top_2_belief,
+                            'disagreement_magnitude': disagreement_magnitude,
+                            'severity': self._classify_severity(conflict_score)
+                        }
+                        conflicts.append(conflict)
+
+                        logger.info(
+                            f"Conflict detected: {agent_1_id} prefers {top_1_alt} "
+                            f"({top_1_belief:.2f}), {agent_2_id} prefers {top_2_alt} "
+                            f"({top_2_belief:.2f}), severity={conflict['severity']}"
+                        )
+
+        return conflicts
+
+    def _classify_severity(self, conflict_score: float) -> str:
+        """
+        Classify conflict severity based on score.
+
+        Args:
+            conflict_score: Conflict score (0-1)
+
+        Returns:
+            Severity classification: "low", "moderate", or "high"
+        """
+        if conflict_score < 0.3:
+            return "low"
+        elif conflict_score < 0.6:
+            return "moderate"
         else:
-            consensus_choice = None
-            support_count = 0
+            return "high"
 
+    def suggest_resolution(
+        self,
+        conflicts: List[Dict[str, Any]],
+        agent_beliefs: Dict[str, Dict[str, float]],
+        alternatives_data: Optional[Dict[str, Dict[str, Any]]] = None
+    ) -> str:
+        """
+        Generate conflict resolution suggestions.
+
+        Analyzes conflicts and suggests:
+        1. Compromise alternatives that both agents find acceptable
+        2. Sources of disagreement
+        3. Facilitation strategies
+
+        Args:
+            conflicts: List of conflicts from detect_conflicts()
+            agent_beliefs: Original agent belief distributions
+            alternatives_data: Optional detailed data about alternatives
+
+        Returns:
+            Human-readable resolution suggestion string
+
+        Example:
+            >>> conflicts = model.detect_conflicts(agent_beliefs)
+            >>> if conflicts:
+            ...     suggestion = model.suggest_resolution(
+            ...         conflicts, agent_beliefs, alternatives
+            ...     )
+            ...     print(suggestion)
+        """
+        if not conflicts:
+            return "No conflicts detected. Agents are in agreement."
+
+        suggestions = []
+        suggestions.append("="*70)
+        suggestions.append("CONFLICT RESOLUTION SUGGESTIONS")
+        suggestions.append("="*70)
+
+        for idx, conflict in enumerate(conflicts, 1):
+            agent_1, agent_2 = conflict['agent_pair']
+            severity = conflict['severity']
+
+            suggestions.append(f"\nConflict #{idx} - Severity: {severity.upper()}")
+            suggestions.append(f"Between: {agent_1} and {agent_2}")
+            suggestions.append(f"Conflict Score: {conflict['conflict_score']:.3f}")
+
+            suggestions.append(f"\nDisagreement:")
+            suggestions.append(
+                f"  • {agent_1} prefers: {conflict['agent_1_top_choice']} "
+                f"(belief: {conflict['agent_1_belief']:.2f})"
+            )
+            suggestions.append(
+                f"  • {agent_2} prefers: {conflict['agent_2_top_choice']} "
+                f"(belief: {conflict['agent_2_belief']:.2f})"
+            )
+
+            # Find compromise alternatives
+            compromises = self._find_compromise_alternatives(
+                agent_beliefs[agent_1],
+                agent_beliefs[agent_2]
+            )
+
+            if compromises:
+                suggestions.append(f"\nPotential Compromise Alternatives:")
+                for rank, (alt_id, combined_score) in enumerate(compromises[:3], 1):
+                    agent_1_belief = agent_beliefs[agent_1].get(alt_id, 0.0)
+                    agent_2_belief = agent_beliefs[agent_2].get(alt_id, 0.0)
+
+                    suggestions.append(
+                        f"  {rank}. {alt_id}: Combined score={combined_score:.3f} "
+                        f"({agent_1} belief={agent_1_belief:.2f}, "
+                        f"{agent_2} belief={agent_2_belief:.2f})"
+                    )
+
+                    # Add alternative description if available
+                    if alternatives_data and alt_id in alternatives_data:
+                        alt_name = alternatives_data[alt_id].get('name', alt_id)
+                        suggestions.append(f"      Name: {alt_name}")
+
+            # Resolution strategies
+            suggestions.append(f"\nResolution Strategies:")
+
+            if severity == "high":
+                suggestions.append("  • URGENT: Significant disagreement detected")
+                suggestions.append("  • Consider involving additional expert opinion")
+                suggestions.append("  • Review underlying criteria weights")
+                suggestions.append("  • May need human decision-maker intervention")
+            elif severity == "moderate":
+                suggestions.append("  • Explore compromise alternatives listed above")
+                suggestions.append("  • Have agents explain their reasoning")
+                suggestions.append("  • Look for hybrid solutions")
+            else:
+                suggestions.append("  • Minor disagreement, likely resolvable")
+                suggestions.append("  • Consider weighted combination of preferences")
+
+            suggestions.append("-"*70)
+
+        # Overall recommendation
+        suggestions.append(f"\n{'='*70}")
+        suggestions.append("OVERALL RECOMMENDATION")
+        suggestions.append(f"{'='*70}")
+
+        high_severity_count = sum(1 for c in conflicts if c['severity'] == 'high')
+
+        if high_severity_count > 0:
+            suggestions.append(
+                f"\n⚠ {high_severity_count} high-severity conflict(s) detected."
+            )
+            suggestions.append("Recommendation: ESCALATE to human decision-maker")
+        else:
+            suggestions.append("\nRecommendation: PROCEED with compromise alternatives")
+            suggestions.append("Consider weighted voting or hybrid solution")
+
+        return "\n".join(suggestions)
+
+    def _find_compromise_alternatives(
+        self,
+        beliefs_1: Dict[str, float],
+        beliefs_2: Dict[str, float]
+    ) -> List[Tuple[str, float]]:
+        """
+        Find compromise alternatives that both agents find acceptable.
+
+        Compromise score = (belief_1 + belief_2) / 2
+        This identifies alternatives where both agents have moderate agreement.
+
+        Args:
+            beliefs_1: First agent's beliefs
+            beliefs_2: Second agent's beliefs
+
+        Returns:
+            List of (alternative_id, combined_score) tuples, sorted by score
+        """
+        # Get all alternatives
+        all_alternatives = set(beliefs_1.keys()) | set(beliefs_2.keys())
+
+        # Calculate combined scores
+        combined_scores = []
+        for alt in all_alternatives:
+            belief_1 = beliefs_1.get(alt, 0.0)
+            belief_2 = beliefs_2.get(alt, 0.0)
+
+            # Average belief (compromise score)
+            combined_score = (belief_1 + belief_2) / 2
+
+            # Also consider minimum (both must accept)
+            min_acceptance = min(belief_1, belief_2)
+
+            # Weighted combination: favor alternatives acceptable to both
+            final_score = 0.6 * combined_score + 0.4 * min_acceptance
+
+            combined_scores.append((alt, final_score))
+
+        # Sort by combined score
+        combined_scores.sort(key=lambda x: x[1], reverse=True)
+
+        return combined_scores
+
+    def is_consensus_reached(self, consensus_level: float) -> bool:
+        """
+        Check if consensus threshold is met.
+
+        Args:
+            consensus_level: Calculated consensus level (0-1)
+
+        Returns:
+            True if consensus_level >= threshold, False otherwise
+
+        Example:
+            >>> model = ConsensusModel(consensus_threshold=0.75)
+            >>> model.is_consensus_reached(0.82)
+            True
+            >>> model.is_consensus_reached(0.65)
+            False
+        """
+        return consensus_level >= self.consensus_threshold
+
+    def analyze_consensus(
+        self,
+        agent_beliefs: Dict[str, Dict[str, float]],
+        alternatives_data: Optional[Dict[str, Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
+        """
+        Comprehensive consensus analysis.
+
+        Combines consensus level calculation, conflict detection, and resolution
+        suggestions into a single comprehensive report.
+
+        Args:
+            agent_beliefs: Dictionary mapping agent IDs to belief distributions
+            alternatives_data: Optional detailed data about alternatives
+
+        Returns:
+            Dictionary containing:
+                - consensus_level: Similarity score (0-1)
+                - consensus_reached: Boolean flag
+                - conflicts: List of detected conflicts
+                - resolution_needed: Whether resolution is required
+                - resolution_suggestions: Text suggestions (if conflicts exist)
+                - timestamp: Analysis timestamp
+
+        Example:
+            >>> model = ConsensusModel(consensus_threshold=0.75)
+            >>> agent_beliefs = {
+            ...     "agent_1": {"A1": 0.7, "A2": 0.2, "A3": 0.1},
+            ...     "agent_2": {"A1": 0.6, "A2": 0.3, "A3": 0.1}
+            ... }
+            >>> result = model.analyze_consensus(agent_beliefs)
+            >>> print(f"Consensus: {result['consensus_reached']}")
+        """
+        # Calculate consensus level
+        consensus_level = self.calculate_consensus_level(agent_beliefs)
+
+        # Check if consensus reached
+        consensus_reached = self.is_consensus_reached(consensus_level)
+
+        # Detect conflicts
+        conflicts = self.detect_conflicts(agent_beliefs)
+
+        # Generate resolution suggestions if needed
+        resolution_suggestions = None
+        if conflicts:
+            resolution_suggestions = self.suggest_resolution(
+                conflicts, agent_beliefs, alternatives_data
+            )
+
+        # Compile result
         result = {
-            'consensus_achieved': consensus_achieved,
-            'agreement_level': agreement_level,
-            'consensus_threshold': self.consensus_threshold,
-            'consensus_choice': consensus_choice,
-            'support_count': support_count,
-            'total_agents': len(preferences),
-            'dissenting_agents': len(preferences) - support_count
+            'consensus_level': consensus_level,
+            'consensus_reached': consensus_reached,
+            'conflicts': conflicts,
+            'num_conflicts': len(conflicts),
+            'resolution_needed': len(conflicts) > 0,
+            'resolution_suggestions': resolution_suggestions,
+            'timestamp': datetime.now().isoformat(),
+            'threshold_used': self.consensus_threshold,
+            'agents_analyzed': list(agent_beliefs.keys())
         }
 
+        # Store in history
         self.consensus_history.append(result)
+
+        logger.info(
+            f"Consensus analysis complete: level={consensus_level:.3f}, "
+            f"reached={consensus_reached}, conflicts={len(conflicts)}"
+        )
 
         return result
 
-    def calculate_kendall_tau(self, ranking1: List[str], ranking2: List[str]) -> float:
-        """
-        Calculate Kendall's Tau correlation between two rankings.
-        Measures the similarity between two ranking lists.
-
-        Args:
-            ranking1: First ranking list
-            ranking2: Second ranking list
-
-        Returns:
-            Kendall's Tau value (-1 to 1, where 1 = identical rankings)
-        """
-        # Find common elements
-        common = set(ranking1).intersection(set(ranking2))
-
-        if len(common) < 2:
-            return 0.0
-
-        # Create filtered rankings with only common elements
-        filtered1 = [item for item in ranking1 if item in common]
-        filtered2 = [item for item in ranking2 if item in common]
-
-        # Count concordant and discordant pairs
-        concordant = 0
-        discordant = 0
-        n = len(filtered1)
-
-        for i in range(n):
-            for j in range(i + 1, n):
-                # Get positions in both rankings
-                pos1_i = filtered1.index(filtered1[i])
-                pos1_j = filtered1.index(filtered1[j])
-                pos2_i = filtered2.index(filtered1[i])
-                pos2_j = filtered2.index(filtered1[j])
-
-                # Check if pair is concordant or discordant
-                if (pos1_i < pos1_j and pos2_i < pos2_j) or (pos1_i > pos1_j and pos2_i > pos2_j):
-                    concordant += 1
-                else:
-                    discordant += 1
-
-        # Calculate Kendall's Tau
-        total_pairs = n * (n - 1) / 2
-        if total_pairs == 0:
-            return 0.0
-
-        tau = (concordant - discordant) / total_pairs
-
-        return tau
-
-    def calculate_ranking_similarity(self, rankings: List[List[str]]) -> float:
-        """
-        Calculate average pairwise ranking similarity across all agents.
-
-        Args:
-            rankings: List of ranking lists from different agents
-
-        Returns:
-            Average similarity score (0-1)
-        """
-        if len(rankings) < 2:
-            return 1.0
-
-        similarities = []
-
-        for i in range(len(rankings)):
-            for j in range(i + 1, len(rankings)):
-                tau = self.calculate_kendall_tau(rankings[i], rankings[j])
-                # Convert from [-1, 1] to [0, 1]
-                similarity = (tau + 1) / 2
-                similarities.append(similarity)
-
-        return float(np.mean(similarities)) if similarities else 0.0
-
-    def iterative_consensus_building(self, preferences: List[Dict[str, Any]],
-                                   max_iterations: int = 5,
-                                   convergence_rate: float = 0.3) -> Dict[str, Any]:
-        """
-        Simulate iterative consensus building where agents adjust their preferences.
-
-        Args:
-            preferences: Initial agent preferences
-            max_iterations: Maximum number of iterations
-            convergence_rate: Rate at which agents adjust toward group opinion
-
-        Returns:
-            Results of consensus building process
-        """
-        current_preferences = [p.copy() for p in preferences]
-        iteration_history = []
-
-        for iteration in range(max_iterations):
-            # Detect current consensus
-            consensus_result = self.detect_consensus(current_preferences)
-            iteration_history.append({
-                'iteration': iteration,
-                'agreement_level': consensus_result['agreement_level'],
-                'consensus_achieved': consensus_result['consensus_achieved']
-            })
-
-            # Check if consensus achieved
-            if consensus_result['consensus_achieved']:
-                break
-
-            # Simulate preference adjustment
-            # In real system, this would involve agent communication
-            current_preferences = self._adjust_preferences(
-                current_preferences,
-                consensus_result['consensus_choice'],
-                convergence_rate
-            )
-
-        final_consensus = self.detect_consensus(current_preferences)
-
-        return {
-            'initial_agreement': iteration_history[0]['agreement_level'],
-            'final_agreement': final_consensus['agreement_level'],
-            'consensus_achieved': final_consensus['consensus_achieved'],
-            'iterations_required': len(iteration_history),
-            'max_iterations': max_iterations,
-            'iteration_history': iteration_history,
-            'final_preferences': current_preferences
-        }
-
-    def _adjust_preferences(self, preferences: List[Dict[str, Any]],
-                          consensus_choice: str,
-                          convergence_rate: float) -> List[Dict[str, Any]]:
-        """
-        Simulate agents adjusting their preferences toward consensus.
-
-        Args:
-            preferences: Current preferences
-            consensus_choice: The emerging consensus choice
-            convergence_rate: Rate of adjustment
-
-        Returns:
-            Adjusted preferences
-        """
-        adjusted = []
-
-        for pref in preferences:
-            adjusted_pref = pref.copy()
-
-            # Agents may adjust toward consensus based on convergence rate
-            if np.random.random() < convergence_rate:
-                # Agent moves toward consensus
-                adjusted_pref['top_choice'] = consensus_choice
-            else:
-                # Agent maintains preference
-                pass
-
-            adjusted.append(adjusted_pref)
-
-        return adjusted
-
-    def identify_opinion_leaders(self, preferences: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """
-        Identify influential agents (opinion leaders) based on preference alignment.
-
-        Args:
-            preferences: Agent preferences with agent IDs
-
-        Returns:
-            List of agents ranked by influence
-        """
-        # Count how many agents support each agent's top choice
-        influence_scores = []
-
-        for i, pref in enumerate(preferences):
-            agent_id = pref.get('agent_id', f'agent_{i}')
-            agent_choice = pref.get('top_choice') or pref.get('proposed_action', {}).get('id')
-
-            if agent_choice is None:
-                continue
-
-            # Count supporters
-            supporters = sum(
-                1 for other_pref in preferences
-                if (other_pref.get('top_choice') or other_pref.get('proposed_action', {}).get('id')) == agent_choice
-            )
-
-            # Calculate influence (proportion of supporters)
-            influence = supporters / len(preferences) if preferences else 0
-
-            influence_scores.append({
-                'agent_id': agent_id,
-                'choice': agent_choice,
-                'supporters': supporters,
-                'influence_score': influence,
-                'confidence': pref.get('confidence', 0.5)
-            })
-
-        # Sort by influence
-        ranked = sorted(influence_scores, key=lambda x: x['influence_score'], reverse=True)
-
-        return ranked
-
-    def calculate_consensus_quality(self, final_decision: Dict[str, Any],
-                                   preferences: List[Dict[str, Any]]) -> Dict[str, float]:
-        """
-        Assess the quality of the reached consensus.
-
-        Args:
-            final_decision: The final consensus decision
-            preferences: Original agent preferences
-
-        Returns:
-            Dictionary with quality metrics
-        """
-        decision_id = final_decision.get('recommended_action_id') or final_decision.get('consensus_choice')
-
-        # Calculate support level
-        support_count = sum(
-            1 for pref in preferences
-            if (pref.get('top_choice') or pref.get('proposed_action', {}).get('id')) == decision_id
-        )
-        support_level = support_count / len(preferences) if preferences else 0
-
-        # Calculate average confidence of supporters
-        supporter_confidences = [
-            pref.get('confidence', 0.5)
-            for pref in preferences
-            if (pref.get('top_choice') or pref.get('proposed_action', {}).get('id')) == decision_id
-        ]
-        avg_confidence = float(np.mean(supporter_confidences)) if supporter_confidences else 0
-
-        # Calculate disagreement intensity (average confidence of dissenters)
-        dissenter_confidences = [
-            pref.get('confidence', 0.5)
-            for pref in preferences
-            if (pref.get('top_choice') or pref.get('proposed_action', {}).get('id')) != decision_id
-        ]
-        disagreement_intensity = float(np.mean(dissenter_confidences)) if dissenter_confidences else 0
-
-        # Overall consensus quality
-        quality = support_level * avg_confidence * (1 - 0.5 * disagreement_intensity)
-
-        return {
-            'support_level': support_level,
-            'supporter_confidence': avg_confidence,
-            'disagreement_intensity': disagreement_intensity,
-            'consensus_quality': quality,
-            'is_strong_consensus': quality >= 0.7
-        }
-
     def get_consensus_statistics(self) -> Dict[str, Any]:
         """
-        Get statistics about consensus history.
+        Get statistics from consensus history.
 
         Returns:
             Dictionary with consensus statistics
         """
         if not self.consensus_history:
             return {
-                'total_attempts': 0,
-                'success_rate': 0.0,
-                'average_agreement': 0.0
+                'total_analyses': 0,
+                'consensus_rate': 0.0,
+                'average_consensus_level': 0.0,
+                'average_conflicts': 0.0
             }
 
-        total_attempts = len(self.consensus_history)
-        successes = sum(1 for result in self.consensus_history if result['consensus_achieved'])
-        agreement_levels = [result['agreement_level'] for result in self.consensus_history]
+        total = len(self.consensus_history)
+        consensus_count = sum(1 for h in self.consensus_history if h['consensus_reached'])
+        consensus_levels = [h['consensus_level'] for h in self.consensus_history]
+        conflict_counts = [h['num_conflicts'] for h in self.consensus_history]
 
         return {
-            'total_attempts': total_attempts,
-            'successes': successes,
-            'success_rate': successes / total_attempts,
-            'average_agreement': float(np.mean(agreement_levels)),
-            'min_agreement': float(np.min(agreement_levels)),
-            'max_agreement': float(np.max(agreement_levels))
+            'total_analyses': total,
+            'consensus_achieved_count': consensus_count,
+            'consensus_rate': consensus_count / total,
+            'average_consensus_level': sum(consensus_levels) / total,
+            'min_consensus_level': min(consensus_levels),
+            'max_consensus_level': max(consensus_levels),
+            'average_conflicts': sum(conflict_counts) / total,
+            'total_conflicts_detected': sum(conflict_counts)
         }
+
+    def __repr__(self) -> str:
+        """String representation."""
+        return (
+            f"ConsensusModel("
+            f"threshold={self.consensus_threshold:.2f}, "
+            f"analyses_performed={len(self.consensus_history)})"
+        )
