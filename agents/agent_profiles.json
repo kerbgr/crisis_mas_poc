@@ -1,0 +1,77 @@
+{
+  "agents": [
+    {
+      "agent_id": "medical_expert_01",
+      "agent_type": "expert",
+      "expertise_domain": "medical",
+      "expertise_tags": ["health", "emergency_medicine", "triage", "public_health"],
+      "confidence_level": 0.85,
+      "risk_tolerance": 0.3,
+      "criteria_weights": {
+        "effectiveness": 0.35,
+        "safety": 0.30,
+        "speed": 0.20,
+        "cost": 0.10,
+        "public_acceptance": 0.05
+      },
+      "description": "Medical expert specializing in emergency medicine and public health response"
+    },
+    {
+      "agent_id": "logistics_expert_01",
+      "agent_type": "expert",
+      "expertise_domain": "logistics",
+      "expertise_tags": ["supply_chain", "resource_allocation", "transportation", "infrastructure"],
+      "confidence_level": 0.80,
+      "risk_tolerance": 0.5,
+      "criteria_weights": {
+        "effectiveness": 0.25,
+        "safety": 0.15,
+        "speed": 0.25,
+        "cost": 0.25,
+        "public_acceptance": 0.10
+      },
+      "description": "Logistics expert focused on resource allocation and supply chain management"
+    },
+    {
+      "agent_id": "public_safety_expert_01",
+      "agent_type": "expert",
+      "expertise_domain": "public_safety",
+      "expertise_tags": ["evacuation", "emergency_services", "public_order", "communication"],
+      "confidence_level": 0.82,
+      "risk_tolerance": 0.2,
+      "criteria_weights": {
+        "effectiveness": 0.30,
+        "safety": 0.35,
+        "speed": 0.20,
+        "cost": 0.05,
+        "public_acceptance": 0.10
+      },
+      "description": "Public safety expert specializing in emergency response and evacuation procedures"
+    },
+    {
+      "agent_id": "environmental_expert_01",
+      "agent_type": "expert",
+      "expertise_domain": "environmental",
+      "expertise_tags": ["environmental_impact", "sustainability", "natural_disasters", "climate"],
+      "confidence_level": 0.78,
+      "risk_tolerance": 0.4,
+      "criteria_weights": {
+        "effectiveness": 0.25,
+        "safety": 0.20,
+        "speed": 0.15,
+        "cost": 0.15,
+        "public_acceptance": 0.25
+      },
+      "description": "Environmental expert assessing ecological impacts and sustainability concerns"
+    },
+    {
+      "agent_id": "coordinator_01",
+      "agent_type": "coordinator",
+      "expertise_domain": "coordination",
+      "expertise_tags": ["consensus_building", "decision_aggregation", "coordination"],
+      "confidence_level": 0.90,
+      "consensus_threshold": 0.7,
+      "description": "Coordinator agent responsible for aggregating expert opinions and building consensus"
+    }
+  ]
+}
