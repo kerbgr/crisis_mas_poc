@@ -15,6 +15,7 @@ from agents.expert_agent import ExpertAgent
 from decision_framework.evidential_reasoning import EvidentialReasoning
 from decision_framework.mcda_engine import MCDAEngine
 from decision_framework.consensus_model import ConsensusModel
+from decision_framework.gat_aggregator import GATAggregator
 
 
 # Configure logging
@@ -53,7 +54,9 @@ class CoordinatorAgent:
         consensus_model: ConsensusModel,
         agent_weights: Optional[Dict[str, float]] = None,
         consensus_threshold: float = 0.75,
-        parallel_assessment: bool = True
+        parallel_assessment: bool = True,
+        gat_aggregator: Optional[GATAggregator] = None,
+        aggregation_method: str = "ER"
     ):
         """
         Initialize the Coordinator Agent.
@@ -66,6 +69,8 @@ class CoordinatorAgent:
             agent_weights: Optional custom weights for agents (will use equal if not provided)
             consensus_threshold: Minimum consensus level to avoid conflict resolution (0-1)
             parallel_assessment: Whether to collect assessments in parallel (default: True)
+            gat_aggregator: Optional Graph Attention Network aggregator (alternative to ER)
+            aggregation_method: Aggregation method to use: "ER" or "GAT" (default: "ER")
 
         Raises:
             ValueError: If expert_agents list is empty or contains invalid agents
@@ -86,6 +91,25 @@ class CoordinatorAgent:
         self.consensus_model = consensus_model
         self.consensus_threshold = consensus_threshold
         self.parallel_assessment = parallel_assessment
+
+        # GAT aggregation support
+        self.gat_aggregator = gat_aggregator
+        self.aggregation_method = aggregation_method.upper()
+
+        # Validate aggregation method
+        if self.aggregation_method not in ["ER", "GAT"]:
+            logger.warning(
+                f"Invalid aggregation method '{aggregation_method}', defaulting to 'ER'"
+            )
+            self.aggregation_method = "ER"
+
+        # Create GAT aggregator if GAT method selected but not provided
+        if self.aggregation_method == "GAT" and self.gat_aggregator is None:
+            logger.info("GAT method selected, creating default GATAggregator")
+            self.gat_aggregator = GATAggregator(
+                num_attention_heads=4,
+                use_multi_head=True
+            )
 
         # Set up agent weights (equal weights if not provided)
         if agent_weights is None:
@@ -109,7 +133,8 @@ class CoordinatorAgent:
 
         logger.info(
             f"CoordinatorAgent initialized with {len(expert_agents)} expert agents "
-            f"(parallel={parallel_assessment}, consensus_threshold={consensus_threshold:.2f})"
+            f"(aggregation={self.aggregation_method}, parallel={parallel_assessment}, "
+            f"consensus_threshold={consensus_threshold:.2f})"
         )
 
     def collect_assessments(
@@ -214,30 +239,43 @@ class CoordinatorAgent:
 
     def aggregate_beliefs(
         self,
-        agent_assessments: Dict[str, Any]
+        agent_assessments: Dict[str, Any],
+        scenario: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Aggregate belief distributions using Evidential Reasoning.
+        Aggregate belief distributions using configured method (ER or GAT).
 
         Combines individual agent beliefs into a single aggregated belief
-        distribution using weighted averaging based on agent weights.
+        distribution using either Evidential Reasoning or Graph Attention Network.
 
         Args:
             agent_assessments: Dictionary of assessments from collect_assessments
+            scenario: Optional scenario (required for GAT method)
 
         Returns:
             Dictionary containing:
                 - aggregated_beliefs: Dict[alternative_id, belief_score]
                 - uncertainty: float
                 - confidence: float
-                - er_details: Full ER engine output
+                - method: str (ER or GAT)
+                - method_details: Full aggregation engine output
 
         Example:
             >>> results = coordinator.collect_assessments(scenario, alternatives)
-            >>> aggregated = coordinator.aggregate_beliefs(results['assessments'])
+            >>> aggregated = coordinator.aggregate_beliefs(results['assessments'], scenario)
             >>> print(aggregated['aggregated_beliefs'])
             {'A1': 0.65, 'A2': 0.25, 'A3': 0.08, 'A4': 0.02}
         """
+        if self.aggregation_method == "GAT":
+            return self._aggregate_with_gat(agent_assessments, scenario)
+        else:
+            return self._aggregate_with_er(agent_assessments)
+
+    def _aggregate_with_er(
+        self,
+        agent_assessments: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Aggregate beliefs using Evidential Reasoning."""
         logger.info("Aggregating beliefs using Evidential Reasoning")
 
         # Extract belief distributions from assessments
@@ -252,7 +290,8 @@ class CoordinatorAgent:
                 'aggregated_beliefs': {},
                 'uncertainty': 1.0,
                 'confidence': 0.0,
-                'er_details': None
+                'method': 'ER',
+                'method_details': None
             }
 
         # Filter agent weights to only include agents that provided assessments
@@ -274,7 +313,8 @@ class CoordinatorAgent:
                 'aggregated_beliefs': er_result.get('combined_beliefs', {}),
                 'uncertainty': er_result.get('uncertainty', 1.0),
                 'confidence': er_result.get('confidence', 0.0),
-                'er_details': er_result
+                'method': 'ER',
+                'method_details': er_result
             }
 
         except Exception as e:
@@ -283,7 +323,62 @@ class CoordinatorAgent:
                 'aggregated_beliefs': {},
                 'uncertainty': 1.0,
                 'confidence': 0.0,
-                'er_details': None,
+                'method': 'ER',
+                'method_details': None,
+                'error': str(e)
+            }
+
+    def _aggregate_with_gat(
+        self,
+        agent_assessments: Dict[str, Any],
+        scenario: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Aggregate beliefs using Graph Attention Network."""
+        logger.info("Aggregating beliefs using Graph Attention Network (GAT)")
+
+        if self.gat_aggregator is None:
+            logger.error("GAT aggregator not initialized")
+            return {
+                'aggregated_beliefs': {},
+                'uncertainty': 1.0,
+                'confidence': 0.0,
+                'method': 'GAT',
+                'method_details': None,
+                'error': 'GAT aggregator not initialized'
+            }
+
+        if scenario is None:
+            logger.warning("Scenario not provided for GAT, using empty scenario")
+            scenario = {}
+
+        try:
+            gat_result = self.gat_aggregator.aggregate_beliefs_with_gat(
+                agent_assessments,
+                scenario
+            )
+
+            logger.info(
+                f"GAT aggregation complete: confidence={gat_result.get('confidence', 0):.3f}, "
+                f"uncertainty={gat_result.get('uncertainty', 0):.3f}"
+            )
+
+            return {
+                'aggregated_beliefs': gat_result.get('aggregated_beliefs', {}),
+                'uncertainty': gat_result.get('uncertainty', 1.0),
+                'confidence': gat_result.get('confidence', 0.0),
+                'method': 'GAT',
+                'method_details': gat_result,
+                'attention_weights': gat_result.get('attention_weights', {})
+            }
+
+        except Exception as e:
+            logger.error(f"Error in GAT aggregation: {e}")
+            return {
+                'aggregated_beliefs': {},
+                'uncertainty': 1.0,
+                'confidence': 0.0,
+                'method': 'GAT',
+                'method_details': None,
                 'error': str(e)
             }
 
@@ -506,9 +601,9 @@ class CoordinatorAgent:
                 alternatives
             )
 
-        # Step 2: Aggregate beliefs using Evidential Reasoning
-        logger.info("Step 2/6: Aggregating beliefs with ER")
-        aggregated = self.aggregate_beliefs(agent_assessments)
+        # Step 2: Aggregate beliefs using configured method (ER or GAT)
+        logger.info(f"Step 2/6: Aggregating beliefs with {self.aggregation_method}")
+        aggregated = self.aggregate_beliefs(agent_assessments, scenario)
 
         # Step 3: Score alternatives using MCDA
         logger.info("Step 3/6: Scoring alternatives with MCDA")
