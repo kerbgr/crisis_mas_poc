@@ -1,370 +1,774 @@
 """
-Result Visualization
-Visualization tools for MAS decision-making results
+System Visualization Module
+Professional visualizations for Master's thesis on Multi-Agent Crisis Management
+
+Generates publication-quality charts showing system performance:
+1. Agent Belief Distributions (stacked bar chart)
+2. Consensus Convergence (line chart over iterations)
+3. Criteria Importance (radar chart)
+4. Decision Quality Comparison (multi-agent vs single-agent)
+5. Agent Network (network graph showing interaction)
 """
 
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import seaborn as sns
 import numpy as np
-from typing import Dict, Any, List, Optional
-import pandas as pd
+import networkx as nx
+from typing import Dict, Any, List, Optional, Tuple
 from pathlib import Path
+import logging
 
 
-class ResultVisualizer:
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class SystemVisualizer:
     """
-    Creates visualizations for multi-agent system decision-making results.
+    Professional visualization generator for multi-agent system results.
+
+    Creates publication-quality charts suitable for Master's thesis with:
+    - High resolution (300 DPI)
+    - Professional styling
+    - Clear legends and titles
+    - UTF-8 support for Greek letters
+
+    Example:
+        >>> viz = SystemVisualizer(output_dir="thesis_figures")
+        >>> viz.plot_belief_distributions(assessments, "beliefs.png")
+        >>> viz.plot_consensus_evolution(history, "consensus.png")
+        >>> viz.generate_all_plots(results, "output")
     """
 
-    def __init__(self, output_dir: str = "results"):
+    def __init__(
+        self,
+        output_dir: str = "visualizations",
+        style: str = "whitegrid",
+        dpi: int = 300
+    ):
         """
-        Initialize the visualizer.
+        Initialize the system visualizer.
 
         Args:
             output_dir: Directory to save visualizations
+            style: Seaborn style (whitegrid, darkgrid, white, dark, ticks)
+            dpi: Resolution for saved images (default: 300 for print quality)
         """
         self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(exist_ok=True)
+        self.output_dir.mkdir(exist_ok=True, parents=True)
+        self.dpi = dpi
 
-        # Set seaborn style
-        sns.set_style("whitegrid")
-        sns.set_palette("husl")
+        # Set professional styling for thesis
+        sns.set_style(style)
+        sns.set_context("paper", font_scale=1.2)
 
-    def plot_consensus_evolution(self, consensus_history: List[Dict[str, Any]],
-                                 save_path: Optional[str] = None):
+        # Use a professional color palette
+        self.colors = sns.color_palette("Set2", 10)
+        self.agent_colors = sns.color_palette("husl", 8)
+
+        # Configure matplotlib for better fonts
+        plt.rcParams['font.family'] = 'sans-serif'
+        plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'Helvetica']
+        plt.rcParams['axes.unicode_minus'] = False  # Fix minus sign display
+
+        logger.info(f"SystemVisualizer initialized (output: {self.output_dir}, dpi: {self.dpi})")
+
+    def plot_belief_distributions(
+        self,
+        agent_assessments: Dict[str, Any],
+        save_path: str,
+        title: str = "Agent Belief Distributions"
+    ) -> str:
         """
-        Plot how consensus evolves over iterations.
+        Plot agent belief distributions as stacked bar chart.
+
+        Shows how each agent distributes belief across alternatives.
 
         Args:
-            consensus_history: List of consensus results over iterations
-            save_path: Optional path to save the plot
+            agent_assessments: Dictionary of agent assessments with belief_distribution
+            save_path: Filename to save the plot
+            title: Plot title
+
+        Returns:
+            Full path to saved plot
+
+        Example:
+            >>> assessments = {
+            ...     'agent_1': {'belief_distribution': {'A1': 0.7, 'A2': 0.3}},
+            ...     'agent_2': {'belief_distribution': {'A1': 0.5, 'A2': 0.5}}
+            ... }
+            >>> viz.plot_belief_distributions(assessments, "beliefs.png")
         """
-        if not consensus_history:
-            print("No consensus history to plot")
-            return
+        logger.info(f"Plotting belief distributions to {save_path}")
 
-        iterations = [h.get('iteration', i) for i, h in enumerate(consensus_history)]
-        agreement_levels = [h.get('agreement_level', 0) for h in consensus_history]
+        # Extract belief distributions
+        agents = []
+        belief_data = {}
 
-        plt.figure(figsize=(10, 6))
-        plt.plot(iterations, agreement_levels, marker='o', linewidth=2, markersize=8)
-        plt.axhline(y=0.7, color='r', linestyle='--', label='Consensus Threshold (0.7)')
-        plt.xlabel('Iteration', fontsize=12)
-        plt.ylabel('Agreement Level', fontsize=12)
-        plt.title('Consensus Evolution Over Iterations', fontsize=14, fontweight='bold')
-        plt.ylim(0, 1.0)
-        plt.legend()
-        plt.grid(True, alpha=0.3)
+        for agent_id, assessment in agent_assessments.items():
+            if 'belief_distribution' not in assessment:
+                continue
 
-        if save_path:
-            plt.savefig(self.output_dir / save_path, dpi=300, bbox_inches='tight')
-        plt.close()
+            agent_name = assessment.get('agent_name', agent_id)
+            agents.append(agent_name)
 
-    def plot_agent_contributions(self, agent_metrics: Dict[str, Dict[str, float]],
-                                save_path: Optional[str] = None):
-        """
-        Plot agent contribution metrics.
+            beliefs = assessment['belief_distribution']
+            for alt_id, belief in beliefs.items():
+                if alt_id not in belief_data:
+                    belief_data[alt_id] = []
+                belief_data[alt_id].append(belief)
 
-        Args:
-            agent_metrics: Dictionary with metrics for each agent
-            save_path: Optional path to save the plot
-        """
-        if not agent_metrics:
-            print("No agent metrics to plot")
-            return
+        if not agents or not belief_data:
+            logger.warning("No belief distribution data to plot")
+            return ""
 
-        agents = list(agent_metrics.keys())
-        confidences = [m.get('average_confidence', 0) for m in agent_metrics.values()]
-        scores = [m.get('average_score', 0) for m in agent_metrics.values()]
+        # Create figure
+        fig, ax = plt.subplots(figsize=(10, 6))
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+        # Plot stacked bars
+        alternatives = sorted(belief_data.keys())
+        x_pos = np.arange(len(agents))
+        bottom = np.zeros(len(agents))
 
-        # Confidence plot
-        colors = sns.color_palette("husl", len(agents))
-        ax1.bar(agents, confidences, color=colors)
-        ax1.set_xlabel('Agent', fontsize=12)
-        ax1.set_ylabel('Average Confidence', fontsize=12)
-        ax1.set_title('Agent Confidence Levels', fontsize=14, fontweight='bold')
-        ax1.set_ylim(0, 1.0)
-        plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right')
+        for i, alt_id in enumerate(alternatives):
+            values = belief_data[alt_id]
+            bars = ax.bar(
+                x_pos,
+                values,
+                bottom=bottom,
+                label=f"Alternative {alt_id}",
+                color=self.colors[i % len(self.colors)],
+                edgecolor='white',
+                linewidth=0.5
+            )
+            bottom += values
 
-        # Score plot
-        ax2.bar(agents, scores, color=colors)
-        ax2.set_xlabel('Agent', fontsize=12)
-        ax2.set_ylabel('Average Action Score', fontsize=12)
-        ax2.set_title('Agent Action Scores', fontsize=14, fontweight='bold')
-        ax2.set_ylim(0, 1.0)
-        plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
+            # Add value labels on bars if space allows
+            for j, (bar, val) in enumerate(zip(bars, values)):
+                if val > 0.08:  # Only show label if bar is large enough
+                    height = bar.get_height()
+                    y_pos = bar.get_y() + height / 2
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2,
+                        y_pos,
+                        f'{val:.2f}',
+                        ha='center',
+                        va='center',
+                        fontsize=9,
+                        color='white',
+                        weight='bold'
+                    )
+
+        # Customize plot
+        ax.set_xlabel('Expert Agent', fontsize=12, weight='bold')
+        ax.set_ylabel('Belief Distribution', fontsize=12, weight='bold')
+        ax.set_title(title, fontsize=14, weight='bold', pad=20)
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels(agents, rotation=45, ha='right')
+        ax.set_ylim(0, 1.0)
+        ax.legend(loc='upper left', bbox_to_anchor=(1, 1), frameon=True)
+        ax.grid(axis='y', alpha=0.3)
 
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(self.output_dir / save_path, dpi=300, bbox_inches='tight')
+        # Save figure
+        full_path = self.output_dir / save_path
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
 
-    def plot_action_comparison(self, actions: List[Dict[str, Any]],
-                              criteria: List[str],
-                              save_path: Optional[str] = None):
+        logger.info(f"Belief distributions plot saved to {full_path}")
+        return str(full_path)
+
+    def plot_consensus_evolution(
+        self,
+        consensus_history: List[float],
+        save_path: str,
+        threshold: float = 0.75,
+        title: str = "Consensus Evolution Over Iterations"
+    ) -> str:
         """
-        Plot radar chart comparing actions across criteria.
+        Plot consensus convergence as line chart over iterations.
+
+        Shows how consensus level changes over time/iterations.
 
         Args:
-            actions: List of actions with criteria scores
-            criteria: List of criteria names
-            save_path: Optional path to save the plot
+            consensus_history: List of consensus levels (0-1) over iterations
+            save_path: Filename to save the plot
+            threshold: Consensus threshold line (default: 0.75)
+            title: Plot title
+
+        Returns:
+            Full path to saved plot
+
+        Example:
+            >>> history = [0.45, 0.60, 0.72, 0.78, 0.82]
+            >>> viz.plot_consensus_evolution(history, "consensus.png")
         """
-        if not actions or not criteria:
-            print("No actions or criteria to plot")
-            return
+        logger.info(f"Plotting consensus evolution to {save_path}")
+
+        if not consensus_history:
+            logger.warning("No consensus history to plot")
+            return ""
+
+        # Create figure
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        iterations = list(range(1, len(consensus_history) + 1))
+
+        # Plot consensus line
+        ax.plot(
+            iterations,
+            consensus_history,
+            marker='o',
+            linewidth=2.5,
+            markersize=8,
+            color=self.colors[0],
+            label='Consensus Level',
+            markeredgecolor='white',
+            markeredgewidth=1.5
+        )
+
+        # Add threshold line
+        ax.axhline(
+            y=threshold,
+            color='red',
+            linestyle='--',
+            linewidth=2,
+            alpha=0.7,
+            label=f'Consensus Threshold ({threshold:.0%})'
+        )
+
+        # Highlight region above threshold
+        ax.fill_between(
+            iterations,
+            threshold,
+            1.0,
+            alpha=0.1,
+            color='green',
+            label='Consensus Region'
+        )
+
+        # Add annotations for key points
+        # Mark when consensus is first reached
+        for i, level in enumerate(consensus_history):
+            if level >= threshold:
+                ax.annotate(
+                    f'Consensus\nReached',
+                    xy=(iterations[i], level),
+                    xytext=(iterations[i] + 0.5, level + 0.05),
+                    arrowprops=dict(arrowstyle='->', color='green', lw=2),
+                    fontsize=10,
+                    weight='bold',
+                    color='green'
+                )
+                break
+
+        # Customize plot
+        ax.set_xlabel('Iteration', fontsize=12, weight='bold')
+        ax.set_ylabel('Consensus Level', fontsize=12, weight='bold')
+        ax.set_title(title, fontsize=14, weight='bold', pad=20)
+        ax.set_ylim(0, 1.05)
+        ax.set_xlim(0.5, len(iterations) + 0.5)
+        ax.legend(loc='lower right', frameon=True, shadow=True)
+        ax.grid(True, alpha=0.3, linestyle=':')
+
+        # Add percentage formatting to y-axis
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.0%}'))
+
+        plt.tight_layout()
+
+        # Save figure
+        full_path = self.output_dir / save_path
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        logger.info(f"Consensus evolution plot saved to {full_path}")
+        return str(full_path)
+
+    def plot_criteria_importance(
+        self,
+        criteria_weights: Dict[str, float],
+        save_path: str,
+        title: str = "Decision Criteria Importance"
+    ) -> str:
+        """
+        Plot criteria importance as radar chart.
+
+        Visualizes relative importance of different decision criteria.
+
+        Args:
+            criteria_weights: Dictionary mapping criterion name to weight
+            save_path: Filename to save the plot
+            title: Plot title
+
+        Returns:
+            Full path to saved plot
+
+        Example:
+            >>> weights = {
+            ...     'Safety': 0.35,
+            ...     'Cost': 0.25,
+            ...     'Speed': 0.20,
+            ...     'Effectiveness': 0.20
+            ... }
+            >>> viz.plot_criteria_importance(weights, "criteria.png")
+        """
+        logger.info(f"Plotting criteria importance to {save_path}")
+
+        if not criteria_weights:
+            logger.warning("No criteria weights to plot")
+            return ""
 
         # Prepare data
+        criteria = list(criteria_weights.keys())
+        weights = list(criteria_weights.values())
+
+        # Number of variables
         num_vars = len(criteria)
+
+        # Compute angle for each axis
         angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
-        angles += angles[:1]  # Complete the circle
 
-        fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(projection='polar'))
+        # Close the plot
+        weights += weights[:1]
+        angles += angles[:1]
 
-        for action in actions[:5]:  # Plot up to 5 actions
-            values = [action.get('criteria_scores', {}).get(c, 0) for c in criteria]
-            values += values[:1]  # Complete the circle
+        # Create figure
+        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(projection='polar'))
 
-            ax.plot(angles, values, 'o-', linewidth=2,
-                   label=action.get('name', action.get('id', 'Unknown')))
-            ax.fill(angles, values, alpha=0.15)
+        # Plot data
+        ax.plot(angles, weights, 'o-', linewidth=2, color=self.colors[2], label='Weights')
+        ax.fill(angles, weights, alpha=0.25, color=self.colors[2])
 
+        # Fix axis to go in the right order
+        ax.set_theta_offset(np.pi / 2)
+        ax.set_theta_direction(-1)
+
+        # Draw axis lines for each angle and label
         ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(criteria)
-        ax.set_ylim(0, 1.0)
-        ax.set_title('Action Comparison Across Criteria',
-                    fontsize=14, fontweight='bold', pad=20)
-        ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1))
-        ax.grid(True)
+        ax.set_xticklabels(criteria, fontsize=11, weight='bold')
+
+        # Set y-axis limits
+        ax.set_ylim(0, max(weights) * 1.1)
+
+        # Add grid
+        ax.grid(True, linestyle=':', alpha=0.5)
+
+        # Add title
+        ax.set_title(title, fontsize=14, weight='bold', pad=30)
+
+        # Add value labels
+        for angle, weight, criterion in zip(angles[:-1], weights[:-1], criteria):
+            ax.text(
+                angle,
+                weight + 0.03,
+                f'{weight:.2f}',
+                ha='center',
+                va='center',
+                fontsize=10,
+                weight='bold',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8)
+            )
 
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(self.output_dir / save_path, dpi=300, bbox_inches='tight')
+        # Save figure
+        full_path = self.output_dir / save_path
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
 
-    def plot_decision_distribution(self, decisions: List[Dict[str, Any]],
-                                  save_path: Optional[str] = None):
+        logger.info(f"Criteria importance plot saved to {full_path}")
+        return str(full_path)
+
+    def plot_decision_comparison(
+        self,
+        metrics: Dict[str, Any],
+        save_path: str,
+        title: str = "Multi-Agent vs Single-Agent Performance"
+    ) -> str:
         """
-        Plot distribution of decisions made.
+        Plot decision quality comparison bar chart.
+
+        Compares multi-agent system performance against single-agent baseline.
 
         Args:
-            decisions: List of decisions
-            save_path: Optional path to save the plot
-        """
-        if not decisions:
-            print("No decisions to plot")
-            return
+            metrics: Dictionary with 'baseline_comparison' containing comparison data
+            save_path: Filename to save the plot
+            title: Plot title
 
-        # Count decisions by action
-        from collections import Counter
-        action_ids = [
-            d.get('proposed_action', {}).get('id', 'unknown')
-            for d in decisions
+        Returns:
+            Full path to saved plot
+
+        Example:
+            >>> metrics = {
+            ...     'baseline_comparison': {
+            ...         'decision_quality': {
+            ...             'multi_agent': 0.84,
+            ...             'single_agent': 0.72,
+            ...             'improvement': 0.12
+            ...         },
+            ...         'confidence': {
+            ...             'multi_agent': 0.82,
+            ...             'single_agent': 0.70,
+            ...             'improvement': 0.12
+            ...         }
+            ...     }
+            ... }
+            >>> viz.plot_decision_comparison(metrics, "comparison.png")
+        """
+        logger.info(f"Plotting decision comparison to {save_path}")
+
+        if 'baseline_comparison' not in metrics:
+            logger.warning("No baseline comparison data to plot")
+            return ""
+
+        comparison = metrics['baseline_comparison']
+
+        # Extract comparison metrics
+        metric_names = []
+        multi_agent_scores = []
+        single_agent_scores = []
+
+        for metric_type, values in comparison.items():
+            if metric_type in ['decision_quality', 'confidence', 'efficiency']:
+                if isinstance(values, dict) and 'multi_agent' in values:
+                    metric_names.append(metric_type.replace('_', ' ').title())
+                    multi_agent_scores.append(values['multi_agent'])
+                    single_agent_scores.append(values['single_agent'])
+
+        if not metric_names:
+            logger.warning("No valid comparison metrics found")
+            return ""
+
+        # Create figure
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        x = np.arange(len(metric_names))
+        width = 0.35
+
+        # Plot bars
+        bars1 = ax.bar(
+            x - width/2,
+            multi_agent_scores,
+            width,
+            label='Multi-Agent',
+            color=self.colors[0],
+            edgecolor='black',
+            linewidth=1.5
+        )
+
+        bars2 = ax.bar(
+            x + width/2,
+            single_agent_scores,
+            width,
+            label='Single-Agent',
+            color=self.colors[1],
+            edgecolor='black',
+            linewidth=1.5
+        )
+
+        # Add value labels on bars
+        def autolabel(bars):
+            for bar in bars:
+                height = bar.get_height()
+                ax.annotate(
+                    f'{height:.3f}',
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3),
+                    textcoords="offset points",
+                    ha='center',
+                    va='bottom',
+                    fontsize=10,
+                    weight='bold'
+                )
+
+        autolabel(bars1)
+        autolabel(bars2)
+
+        # Add improvement annotations
+        for i, (multi, single) in enumerate(zip(multi_agent_scores, single_agent_scores)):
+            improvement = multi - single
+            if improvement > 0:
+                mid_height = max(multi, single) + 0.05
+                ax.annotate(
+                    f'↑ +{improvement:.1%}',
+                    xy=(x[i], mid_height),
+                    ha='center',
+                    fontsize=10,
+                    weight='bold',
+                    color='green'
+                )
+
+        # Customize plot
+        ax.set_xlabel('Performance Metric', fontsize=12, weight='bold')
+        ax.set_ylabel('Score', fontsize=12, weight='bold')
+        ax.set_title(title, fontsize=14, weight='bold', pad=20)
+        ax.set_xticks(x)
+        ax.set_xticklabels(metric_names)
+        ax.legend(loc='upper left', frameon=True, shadow=True, fontsize=11)
+        ax.set_ylim(0, 1.1)
+        ax.grid(axis='y', alpha=0.3, linestyle=':')
+
+        plt.tight_layout()
+
+        # Save figure
+        full_path = self.output_dir / save_path
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        logger.info(f"Decision comparison plot saved to {full_path}")
+        return str(full_path)
+
+    def plot_agent_network(
+        self,
+        agent_profiles: Dict[str, Any],
+        trust_matrix: Optional[Dict[str, Dict[str, float]]] = None,
+        save_path: str = "agent_network.png",
+        title: str = "Expert Agent Network"
+    ) -> str:
+        """
+        Plot agent network graph showing trust/interaction.
+
+        Visualizes the multi-agent system as a network with agents as nodes
+        and trust/interaction strength as edge weights.
+
+        Args:
+            agent_profiles: Dictionary of agent profiles with metadata
+            trust_matrix: Optional trust/interaction weights between agents
+            save_path: Filename to save the plot
+            title: Plot title
+
+        Returns:
+            Full path to saved plot
+
+        Example:
+            >>> profiles = {
+            ...     'agent_1': {'name': 'Meteorologist', 'expertise': 'weather'},
+            ...     'agent_2': {'name': 'Operations', 'expertise': 'logistics'}
+            ... }
+            >>> trust = {'agent_1': {'agent_2': 0.8}, 'agent_2': {'agent_1': 0.7}}
+            >>> viz.plot_agent_network(profiles, trust, "network.png")
+        """
+        logger.info(f"Plotting agent network to {save_path}")
+
+        if not agent_profiles:
+            logger.warning("No agent profiles to plot")
+            return ""
+
+        # Create network graph
+        G = nx.Graph()
+
+        # Add nodes (agents)
+        for agent_id, profile in agent_profiles.items():
+            agent_name = profile.get('name', agent_id)
+            expertise = profile.get('expertise', 'Unknown')
+            G.add_node(agent_id, name=agent_name, expertise=expertise)
+
+        # Add edges (trust/interaction)
+        if trust_matrix:
+            for agent_i, connections in trust_matrix.items():
+                for agent_j, weight in connections.items():
+                    if agent_i != agent_j and weight > 0:
+                        G.add_edge(agent_i, agent_j, weight=weight)
+        else:
+            # If no trust matrix, create fully connected network
+            agent_ids = list(agent_profiles.keys())
+            for i in range(len(agent_ids)):
+                for j in range(i + 1, len(agent_ids)):
+                    G.add_edge(agent_ids[i], agent_ids[j], weight=0.5)
+
+        # Create figure
+        fig, ax = plt.subplots(figsize=(12, 10))
+
+        # Layout
+        pos = nx.spring_layout(G, k=2, iterations=50, seed=42)
+
+        # Draw nodes
+        node_colors = [self.agent_colors[i % len(self.agent_colors)]
+                       for i in range(len(G.nodes()))]
+
+        nx.draw_networkx_nodes(
+            G, pos,
+            node_color=node_colors,
+            node_size=3000,
+            alpha=0.9,
+            edgecolors='black',
+            linewidths=2,
+            ax=ax
+        )
+
+        # Draw edges with varying thickness based on weight
+        edges = G.edges()
+        weights = [G[u][v]['weight'] for u, v in edges]
+
+        nx.draw_networkx_edges(
+            G, pos,
+            width=[w * 5 for w in weights],
+            alpha=0.4,
+            edge_color='gray',
+            ax=ax
+        )
+
+        # Draw labels
+        labels = {node: G.nodes[node]['name'] for node in G.nodes()}
+        nx.draw_networkx_labels(
+            G, pos,
+            labels,
+            font_size=11,
+            font_weight='bold',
+            font_color='black',
+            ax=ax
+        )
+
+        # Add expertise as sublabels
+        for node, (x, y) in pos.items():
+            expertise = G.nodes[node]['expertise']
+            ax.text(
+                x, y - 0.12,
+                expertise,
+                fontsize=9,
+                ha='center',
+                style='italic',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.7)
+            )
+
+        # Add legend
+        legend_elements = [
+            mpatches.Patch(color=self.agent_colors[i], label=labels[node])
+            for i, node in enumerate(G.nodes())
         ]
-        action_counts = Counter(action_ids)
+        ax.legend(
+            handles=legend_elements,
+            loc='upper left',
+            bbox_to_anchor=(1, 1),
+            frameon=True,
+            shadow=True,
+            title='Agents'
+        )
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
-
-        # Bar chart
-        actions = list(action_counts.keys())
-        counts = list(action_counts.values())
-        ax1.bar(actions, counts, color=sns.color_palette("husl", len(actions)))
-        ax1.set_xlabel('Action', fontsize=12)
-        ax1.set_ylabel('Frequency', fontsize=12)
-        ax1.set_title('Decision Distribution', fontsize=14, fontweight='bold')
-        plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right')
-
-        # Pie chart
-        ax2.pie(counts, labels=actions, autopct='%1.1f%%', startangle=90)
-        ax2.set_title('Decision Proportion', fontsize=14, fontweight='bold')
+        # Customize plot
+        ax.set_title(title, fontsize=14, weight='bold', pad=20)
+        ax.axis('off')
 
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(self.output_dir / save_path, dpi=300, bbox_inches='tight')
+        # Save figure
+        full_path = self.output_dir / save_path
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
 
-    def plot_sensitivity_analysis(self, sensitivity_results: Dict[str, Any],
-                                 save_path: Optional[str] = None):
+        logger.info(f"Agent network plot saved to {full_path}")
+        return str(full_path)
+
+    def generate_all_plots(
+        self,
+        results: Dict[str, Any],
+        output_subdir: Optional[str] = None
+    ) -> Dict[str, str]:
         """
-        Plot sensitivity analysis results.
+        Generate all visualization plots from results dictionary.
+
+        Convenience method to create all standard plots at once.
 
         Args:
-            sensitivity_results: Results from sensitivity analysis
-            save_path: Optional path to save the plot
+            results: Dictionary containing all result data with keys:
+                - agent_assessments: For belief distributions
+                - consensus_history: For consensus evolution
+                - criteria_weights: For criteria importance
+                - metrics: For decision comparison
+                - agent_profiles: For agent network
+                - trust_matrix: Optional, for agent network
+            output_subdir: Optional subdirectory within output_dir
+
+        Returns:
+            Dictionary mapping plot type to saved file path
+
+        Example:
+            >>> results = {
+            ...     'agent_assessments': {...},
+            ...     'consensus_history': [...],
+            ...     'criteria_weights': {...},
+            ...     'metrics': {...}
+            ... }
+            >>> paths = viz.generate_all_plots(results, "scenario_1")
+            >>> print(paths['beliefs'])
         """
-        if not sensitivity_results or 'results_by_weight' not in sensitivity_results:
-            print("No sensitivity results to plot")
-            return
+        logger.info("Generating all visualization plots")
 
-        results = sensitivity_results['results_by_weight']
-        weights = [r['weight'] for r in results]
-        top_actions = [r['top_alternative'] for r in results]
-        scores = [r['top_score'] for r in results]
+        # Set up output directory
+        if output_subdir:
+            original_dir = self.output_dir
+            self.output_dir = self.output_dir / output_subdir
+            self.output_dir.mkdir(exist_ok=True, parents=True)
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
+        saved_paths = {}
 
-        # Score evolution
-        ax1.plot(weights, scores, marker='o', linewidth=2, markersize=6)
-        ax1.set_xlabel(f'{sensitivity_results.get("criterion", "Criterion")} Weight', fontsize=12)
-        ax1.set_ylabel('Top Alternative Score', fontsize=12)
-        ax1.set_title('Score Sensitivity to Weight Changes', fontsize=14, fontweight='bold')
-        ax1.grid(True, alpha=0.3)
+        # 1. Belief Distributions
+        if 'agent_assessments' in results:
+            try:
+                path = self.plot_belief_distributions(
+                    results['agent_assessments'],
+                    "belief_distributions.png"
+                )
+                saved_paths['beliefs'] = path
+            except Exception as e:
+                logger.error(f"Failed to plot belief distributions: {e}")
 
-        # Threshold changes
-        unique_actions = sorted(set(top_actions))
-        action_to_num = {action: i for i, action in enumerate(unique_actions)}
-        numeric_actions = [action_to_num[action] for action in top_actions]
+        # 2. Consensus Evolution
+        if 'consensus_history' in results:
+            try:
+                path = self.plot_consensus_evolution(
+                    results['consensus_history'],
+                    "consensus_evolution.png"
+                )
+                saved_paths['consensus'] = path
+            except Exception as e:
+                logger.error(f"Failed to plot consensus evolution: {e}")
 
-        ax2.plot(weights, numeric_actions, marker='s', linewidth=2, markersize=6)
-        ax2.set_xlabel(f'{sensitivity_results.get("criterion", "Criterion")} Weight', fontsize=12)
-        ax2.set_ylabel('Top Alternative', fontsize=12)
-        ax2.set_yticks(range(len(unique_actions)))
-        ax2.set_yticklabels(unique_actions)
-        ax2.set_title('Ranking Changes with Weight Variation', fontsize=14, fontweight='bold')
-        ax2.grid(True, alpha=0.3)
+        # 3. Criteria Importance
+        if 'criteria_weights' in results:
+            try:
+                path = self.plot_criteria_importance(
+                    results['criteria_weights'],
+                    "criteria_importance.png"
+                )
+                saved_paths['criteria'] = path
+            except Exception as e:
+                logger.error(f"Failed to plot criteria importance: {e}")
 
-        plt.tight_layout()
+        # 4. Decision Comparison
+        if 'metrics' in results:
+            try:
+                path = self.plot_decision_comparison(
+                    results['metrics'],
+                    "decision_comparison.png"
+                )
+                saved_paths['comparison'] = path
+            except Exception as e:
+                logger.error(f"Failed to plot decision comparison: {e}")
 
-        if save_path:
-            plt.savefig(self.output_dir / save_path, dpi=300, bbox_inches='tight')
-        plt.close()
+        # 5. Agent Network
+        if 'agent_profiles' in results:
+            try:
+                trust_matrix = results.get('trust_matrix', None)
+                path = self.plot_agent_network(
+                    results['agent_profiles'],
+                    trust_matrix,
+                    "agent_network.png"
+                )
+                saved_paths['network'] = path
+            except Exception as e:
+                logger.error(f"Failed to plot agent network: {e}")
 
-    def plot_metrics_comparison(self, comparison_data: Dict[str, Any],
-                               save_path: Optional[str] = None):
-        """
-        Plot comparison of metrics across configurations.
+        # Restore original directory if changed
+        if output_subdir:
+            self.output_dir = original_dir
 
-        Args:
-            comparison_data: Comparison data from metrics
-            save_path: Optional path to save the plot
-        """
-        if not comparison_data or 'metrics_comparison' not in comparison_data:
-            print("No comparison data to plot")
-            return
+        logger.info(f"Generated {len(saved_paths)} plots: {list(saved_paths.keys())}")
+        return saved_paths
 
-        # Convert to DataFrame for easier plotting
-        data = []
-        for metric_name, config_values in comparison_data['metrics_comparison'].items():
-            for config, value in config_values.items():
-                data.append({
-                    'Metric': metric_name,
-                    'Configuration': config,
-                    'Value': value
-                })
-
-        df = pd.DataFrame(data)
-
-        # Plot grouped bar chart
-        metrics = df['Metric'].unique()[:10]  # Limit to 10 metrics
-        df_subset = df[df['Metric'].isin(metrics)]
-
-        fig, ax = plt.subplots(figsize=(14, 8))
-
-        # Create grouped bar chart
-        x = np.arange(len(metrics))
-        configurations = df_subset['Configuration'].unique()
-        width = 0.8 / len(configurations)
-
-        for i, config in enumerate(configurations):
-            config_data = df_subset[df_subset['Configuration'] == config]
-            values = [config_data[config_data['Metric'] == m]['Value'].values[0]
-                     if len(config_data[config_data['Metric'] == m]) > 0 else 0
-                     for m in metrics]
-            ax.bar(x + i * width, values, width, label=config)
-
-        ax.set_xlabel('Metric', fontsize=12)
-        ax.set_ylabel('Value', fontsize=12)
-        ax.set_title('Configuration Comparison', fontsize=14, fontweight='bold')
-        ax.set_xticks(x + width * (len(configurations) - 1) / 2)
-        ax.set_xticklabels(metrics, rotation=45, ha='right')
-        ax.legend()
-        ax.grid(True, alpha=0.3, axis='y')
-
-        plt.tight_layout()
-
-        if save_path:
-            plt.savefig(self.output_dir / save_path, dpi=300, bbox_inches='tight')
-        plt.close()
-
-    def create_summary_dashboard(self, metrics_report: Dict[str, Any],
-                                save_path: str = "summary_dashboard.png"):
-        """
-        Create a comprehensive dashboard with multiple metrics.
-
-        Args:
-            metrics_report: Comprehensive metrics report
-            save_path: Path to save the dashboard
-        """
-        fig = plt.figure(figsize=(16, 12))
-        gs = fig.add_gridspec(3, 3, hspace=0.3, wspace=0.3)
-
-        # Overall performance score
-        ax1 = fig.add_subplot(gs[0, :])
-        score = metrics_report.get('overall_performance_score', 0)
-        ax1.barh(['Overall Performance'], [score], color='green' if score >= 0.7 else 'orange')
-        ax1.set_xlim(0, 1.0)
-        ax1.set_title('Overall Performance Score', fontsize=14, fontweight='bold')
-        ax1.text(score/2, 0, f'{score:.2f}', ha='center', va='center',
-                fontsize=16, fontweight='bold', color='white')
-
-        # Consensus metrics
-        if 'consensus' in metrics_report.get('metrics', {}):
-            ax2 = fig.add_subplot(gs[1, 0])
-            consensus = metrics_report['metrics']['consensus']
-            metrics_to_plot = ['consensus_rate', 'average_agreement_level', 'convergence_rate']
-            values = [consensus.get(m, 0) for m in metrics_to_plot]
-            ax2.bar(range(len(metrics_to_plot)), values, color=sns.color_palette("husl", 3))
-            ax2.set_xticks(range(len(metrics_to_plot)))
-            ax2.set_xticklabels(['Consensus\nRate', 'Avg\nAgreement', 'Convergence\nRate'])
-            ax2.set_ylim(0, 1.0)
-            ax2.set_title('Consensus Metrics', fontsize=12, fontweight='bold')
-
-        # Decision quality
-        if 'decision_quality' in metrics_report.get('metrics', {}):
-            ax3 = fig.add_subplot(gs[1, 1])
-            quality = metrics_report['metrics']['decision_quality']
-            avg_conf = quality.get('average_confidence', 0)
-            std_conf = quality.get('std_confidence', 0)
-            ax3.bar(['Confidence'], [avg_conf], yerr=[std_conf], capsize=10, color='blue')
-            ax3.set_ylim(0, 1.0)
-            ax3.set_title('Decision Quality', fontsize=12, fontweight='bold')
-
-        # Diversity
-        if 'diversity' in metrics_report.get('metrics', {}):
-            ax4 = fig.add_subplot(gs[1, 2])
-            diversity = metrics_report['metrics']['diversity']
-            div_score = diversity.get('diversity_score', 0)
-            ax4.pie([div_score, 1-div_score], labels=['Diverse', 'Consensus'],
-                   autopct='%1.1f%%', startangle=90, colors=['lightblue', 'lightgray'])
-            ax4.set_title('Opinion Diversity', fontsize=12, fontweight='bold')
-
-        # Summary text
-        ax5 = fig.add_subplot(gs[2, :])
-        ax5.axis('off')
-        summary_text = f"""
-        Experiment Summary
-        {'=' * 50}
-        Timestamp: {metrics_report.get('timestamp', 'N/A')}
-        Scenarios Evaluated: {metrics_report.get('num_scenarios', 0)}
-        Overall Performance: {score:.2%}
-
-        Key Findings:
-        - Consensus achieved at {consensus.get('consensus_rate', 0):.1%} rate
-        - Average agreement level: {consensus.get('average_agreement_level', 0):.2f}
-        - Decision confidence: {quality.get('average_confidence', 0):.2f} ± {quality.get('std_confidence', 0):.2f}
-        """
-        ax5.text(0.1, 0.5, summary_text, fontsize=10, fontfamily='monospace',
-                verticalalignment='center')
-
-        plt.suptitle('Multi-Agent System Performance Dashboard',
-                    fontsize=16, fontweight='bold', y=0.98)
-
-        plt.savefig(self.output_dir / save_path, dpi=300, bbox_inches='tight')
-        plt.close()
-
-        print(f"Dashboard saved to: {self.output_dir / save_path}")
+    def __repr__(self) -> str:
+        """String representation."""
+        return f"SystemVisualizer(output_dir='{self.output_dir}', dpi={self.dpi})"

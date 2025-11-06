@@ -4,6 +4,6 @@ Performance metrics and result visualization for the MAS
 """
 
 from .metrics import MetricsEvaluator
-from .visualizations import ResultVisualizer
+from .visualizations import SystemVisualizer
 
-__all__ = ['MetricsEvaluator', 'ResultVisualizer']
+__all__ = ['MetricsEvaluator', 'SystemVisualizer']
