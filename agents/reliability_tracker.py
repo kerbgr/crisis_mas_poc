@@ -1,13 +1,9 @@
 """
 Historical Reliability Tracker for Crisis Management Agents
-Tracks agent performance over time to support dynamic weighting models
 
-This module addresses the revised abstract requirement:
-"Τα μοντέλα αυτά θα μπορούσαν να λαμβάνουν υπόψη παράγοντες όπως...
-η αξιοπιστία και συνέπεια των προηγούμενων αξιολογήσεών του"
-
-"These models could take into account factors such as...
-the reliability and consistency of their previous assessments"
+Tracks agent performance over time to support dynamic weighting in
+multi-agent decision-making systems. Monitors reliability and consistency
+of agent assessments across different crisis scenarios.
 """
 
 import numpy as np

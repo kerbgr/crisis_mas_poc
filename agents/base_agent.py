@@ -241,10 +241,6 @@ class BaseAgent(ABC):
         """
         Get agent's reliability score based on historical performance.
 
-        This supports the revised abstract requirement:
-        "η αξιοπιστία και συνέπεια των προηγούμενων αξιολογήσεών του"
-        "the reliability and consistency of their previous assessments"
-
         Args:
             scenario_type: Optional crisis type for domain-specific reliability
             mode: 'overall', 'recent', or 'consistent'

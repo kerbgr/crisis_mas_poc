@@ -87,7 +87,7 @@ class GraphAttentionLayer:
         6. Top choice strength
         7. Thoroughness (number of concerns)
         8. Reasoning quality
-        9. Historical reliability (addresses revised abstract requirement)
+        9. Historical reliability
 
         Args:
             agent_id: Agent identifier
@@ -155,9 +155,6 @@ class GraphAttentionLayer:
         features.append(reasoning_quality)
 
         # Feature 9: Historical reliability score
-        # This addresses the revised abstract requirement:
-        # "η αξιοπιστία και συνέπεια των προηγούμενων αξιολογήσεών του"
-        # "the reliability and consistency of their previous assessments"
         reliability_score = assessment.get('reliability_score', 0.8)  # Default 0.8
         features.append(reliability_score)
 
