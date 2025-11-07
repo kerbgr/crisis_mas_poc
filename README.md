@@ -327,11 +327,11 @@ The system supports three LLM providers, each with different trade-offs:
 | **Best For** | Production, complex reasoning | Production, established workflows | Development, privacy-sensitive, offline |
 
 **Recommendations:**
-- **Production/Critical Decisions**: Claude or OpenAI GPT-4 (best accuracy)
+- **Production/Critical Decisions**: Claude or OpenAI GPT-4 (best accuracy) or a Private Infrastructure.
 - **Development/Testing**: LM Studio (no costs, fast iteration)
-- **Privacy/HIPAA Compliance**: LM Studio (data never leaves your machine)
+- **Privacy GDPR/HIPAA Compliance**: LM Studio or Private Infrastructure (data never leaves your machine)
 - **High Volume**: LM Studio or OpenAI GPT-3.5 (lower cost per call)
-- **Offline/Air-Gapped**: LM Studio only (no internet connection needed)
+- **Offline/Air-Gapped**: LM Studio - Private Infrastructure only for Sensitive Information Handling (like EUCI, no internet connection needed)
 
 ### Programmatic Usage
 
