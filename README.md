@@ -74,9 +74,10 @@ This PoC investigates the following research questions:
 ### Key Contributions
 
 1. **Hybrid Aggregation Framework**: Novel comparison of classical ER vs. neural GAT for belief aggregation
-2. **LLM-Enhanced Agents**: Integration of Claude for advanced reasoning and natural language processing
-3. **Comprehensive Evaluation**: Multi-dimensional metrics framework for MAS performance
-4. **Open Research Platform**: Extensible codebase for further crisis management research
+2. **LLM-Enhanced Agents**: Integration of multiple LLM providers (Claude, OpenAI, LM Studio) for advanced reasoning
+3. **Historical Reliability Tracking**: Dynamic agent weighting based on proven past performance and consistency
+4. **Comprehensive Evaluation**: Multi-dimensional metrics framework for MAS performance
+5. **Open Research Platform**: Extensible codebase for further crisis management research
 
 ---
 
@@ -573,6 +574,22 @@ The Crisis MAS consists of five core layers:
 - Abstract base class defining agent interface
 - Core methods: `evaluate_scenario()`, `propose_action()`, `justify_decision()`
 - Manages agent state, confidence, and belief updating
+- **Historical Reliability Tracking**: Integrated `ReliabilityTracker` for performance monitoring
+  - `get_reliability_score()`: Overall, recent, or domain-specific reliability
+  - `record_assessment()`: Track predictions for future evaluation
+  - `update_assessment_outcome()`: Update with actual outcomes for learning
+  - `get_performance_summary()`: Comprehensive performance statistics
+
+**ReliabilityTracker** (`agents/reliability_tracker.py`)
+- Tracks agent assessment accuracy over time
+- Four reliability metrics:
+  - **Overall Reliability**: Lifetime performance with temporal decay
+  - **Recent Reliability**: Sliding window of last 10 assessments
+  - **Consistency Score**: Inverse of performance variance
+  - **Domain-Specific Reliability**: Accuracy per crisis type (flood, fire, etc.)
+- Three-component accuracy calculation (probability, rank, margin)
+- Confidence-weighted performance tracking
+- Enables data-driven dynamic weighting in GAT
 
 **ExpertAgent** (`agents/expert_agent.py`)
 - Domain-specific expert (medical, logistics, safety, environmental)
@@ -596,7 +613,7 @@ The Crisis MAS consists of five core layers:
 
 **GATAggregator** (`decision_framework/gat_aggregator.py`)
 - Graph Attention Network for dynamic expert weighting
-- 8-dimensional feature extraction per agent:
+- **9-dimensional feature extraction** per agent:
   1. Confidence score
   2. Belief certainty (inverse entropy)
   3. Expertise relevance to scenario
@@ -605,8 +622,10 @@ The Crisis MAS consists of five core layers:
   6. Top choice strength
   7. Number of concerns
   8. Reasoning quality
+  9. **Historical reliability** (from ReliabilityTracker) ⭐
 - Multi-head attention (4 heads) for robustness
 - Attention mechanism: $\alpha_{ij} = \text{softmax}_j(0.4 \cdot f_i^{(1)} + 0.3 \cdot f_i^{(3)} + 0.3 \cdot f_i^{(2)} + 0.2 \cdot \cos(\mathbf{f}_i, \mathbf{f}_j))$
+- **Data-driven weighting**: Agents with proven track records receive higher attention
 
 **MCDAEngine** (`decision_framework/mcda_engine.py`)
 - Multiple MCDA methods:
@@ -764,10 +783,10 @@ The system supports multiple LLM providers through a unified interface:
 
 **Algorithm:**
 
-**1. Feature Extraction:** For each agent $i$, construct 8-dimensional feature vector:
+**1. Feature Extraction:** For each agent $i$, construct **9-dimensional feature vector**:
 
 $$\mathbf{f}_i = \begin{bmatrix}
-f_i^{(1)} \\ f_i^{(2)} \\ f_i^{(3)} \\ f_i^{(4)} \\ f_i^{(5)} \\ f_i^{(6)} \\ f_i^{(7)} \\ f_i^{(8)}
+f_i^{(1)} \\ f_i^{(2)} \\ f_i^{(3)} \\ f_i^{(4)} \\ f_i^{(5)} \\ f_i^{(6)} \\ f_i^{(7)} \\ f_i^{(8)} \\ f_i^{(9)}
 \end{bmatrix} = \begin{bmatrix}
 \text{confidence} \\
 \text{certainty (inverse entropy)} \\
@@ -776,12 +795,19 @@ f_i^{(1)} \\ f_i^{(2)} \\ f_i^{(3)} \\ f_i^{(4)} \\ f_i^{(5)} \\ f_i^{(6)} \\ f_
 \text{severity awareness} \\
 \text{top choice strength} \\
 \text{number of concerns} \\
-\text{reasoning quality}
+\text{reasoning quality} \\
+\text{historical reliability}
 \end{bmatrix}$$
 
 where belief certainty is computed as:
 
 $$f_i^{(2)} = 1 - \frac{H(m_i)}{H_{\max}} = 1 - \frac{-\sum_a m_i(a) \log m_i(a)}{\log |\mathcal{A}|}$$
+
+and historical reliability (9th feature) is computed from past performance:
+
+$$f_i^{(9)} = \text{ReliabilityScore}(i) = \frac{\sum_{t} w_t \cdot \text{Accuracy}_t}{\sum_{t} w_t}$$
+
+where $w_t = \gamma^{(T-t)}$ is temporal decay weight ($\gamma = 0.95$), $T$ is current time, and accuracy combines probability, rank, and confidence appropriateness scores from historical assessments.
 
 **2. Attention Score Computation:** For each agent pair $(i,j)$, compute attention logit:
 
