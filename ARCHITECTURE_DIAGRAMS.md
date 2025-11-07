@@ -461,10 +461,10 @@ flowchart TB
 
     subgraph "Similarity Calculation"
         PAIRWISE --> DOT[Dot Product: A·B]
-        PAIRWISE --> NORM_A[Magnitude: |A|]
-        PAIRWISE --> NORM_B[Magnitude: |B|]
+        PAIRWISE --> NORM_A[Magnitude: norm A]
+        PAIRWISE --> NORM_B[Magnitude: norm B]
 
-        DOT --> COSINE_CALC[cos θ = A·B / |A|×|B|]
+        DOT --> COSINE_CALC[cos θ = A·B / norm A × norm B]
         NORM_A --> COSINE_CALC
         NORM_B --> COSINE_CALC
     end
