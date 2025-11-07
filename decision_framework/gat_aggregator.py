@@ -45,7 +45,7 @@ class GraphAttentionLayer:
 
     def __init__(
         self,
-        feature_dim: int = 8,
+        feature_dim: int = 9,
         attention_heads: int = 4,
         leaky_relu_slope: float = 0.2,
         dropout: float = 0.1
@@ -80,11 +80,14 @@ class GraphAttentionLayer:
 
         Features include:
         1. Confidence score
-        2. Expertise relevance (how well expertise matches scenario)
-        3. Certainty (entropy of belief distribution)
+        2. Belief certainty (inverse entropy)
+        3. Expertise relevance (how well expertise matches scenario)
         4. Risk tolerance
-        5. Experience (years)
-        6. Assessment quality indicators
+        5. Severity awareness
+        6. Top choice strength
+        7. Thoroughness (number of concerns)
+        8. Reasoning quality
+        9. Historical reliability (addresses revised abstract requirement)
 
         Args:
             agent_id: Agent identifier
@@ -92,7 +95,7 @@ class GraphAttentionLayer:
             scenario: Current scenario
 
         Returns:
-            Feature vector (numpy array)
+            Feature vector (numpy array of size feature_dim)
         """
         features = []
 
@@ -150,6 +153,13 @@ class GraphAttentionLayer:
         reasoning = assessment.get('reasoning', '')
         reasoning_quality = min(len(reasoning) / 500.0, 1.0)  # Normalize
         features.append(reasoning_quality)
+
+        # Feature 9: Historical reliability score
+        # This addresses the revised abstract requirement:
+        # "η αξιοπιστία και συνέπεια των προηγούμενων αξιολογήσεών του"
+        # "the reliability and consistency of their previous assessments"
+        reliability_score = assessment.get('reliability_score', 0.8)  # Default 0.8
+        features.append(reliability_score)
 
         # Ensure we have exactly feature_dim features
         features = features[:self.feature_dim]
@@ -276,7 +286,7 @@ class GATAggregator:
         # Create attention layers
         self.attention_layers = [
             GraphAttentionLayer(
-                feature_dim=8,
+                feature_dim=9,  # Updated to include historical reliability
                 attention_heads=num_attention_heads
             )
             for _ in range(num_attention_heads if use_multi_head else 1)

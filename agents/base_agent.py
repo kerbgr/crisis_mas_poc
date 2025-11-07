@@ -10,6 +10,12 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 from pathlib import Path
 
+# Import reliability tracker (avoid circular import by using try/except)
+try:
+    from agents.reliability_tracker import ReliabilityTracker
+except ImportError:
+    from reliability_tracker import ReliabilityTracker
+
 
 class BaseAgent(ABC):
     """
@@ -55,6 +61,13 @@ class BaseAgent(ABC):
         # Runtime properties
         self.decision_history: List[Dict[str, Any]] = []
         self.created_at: datetime = datetime.now()
+
+        # Historical reliability tracking
+        self.reliability_tracker = ReliabilityTracker(
+            agent_id=agent_id,
+            window_size=10,
+            decay_factor=0.95
+        )
 
         # Validate weight preferences
         self._validate_weight_preferences()
@@ -124,6 +137,7 @@ class BaseAgent(ABC):
                 - weight_preferences: Decision criteria weights
                 - description: Agent description
                 - confidence_level: Confidence level (0-1)
+                - reliability_score: Historical reliability (0-1)
                 - created_at: Timestamp when agent was created
                 - decisions_made: Number of decisions in history
         """
@@ -137,6 +151,7 @@ class BaseAgent(ABC):
             'weight_preferences': self.weight_preferences,
             'description': self.description,
             'confidence_level': self.confidence_level,
+            'reliability_score': self.get_reliability_score(),
             'expertise_tags': self.expertise_tags,
             'created_at': self.created_at.isoformat(),
             'decisions_made': len(self.decision_history)
@@ -217,6 +232,93 @@ class BaseAgent(ABC):
             self.confidence_level = 0.7 * self.confidence_level + 0.3 * accuracy
             # Ensure confidence stays within bounds
             self.confidence_level = max(0.1, min(1.0, self.confidence_level))
+
+    def get_reliability_score(
+        self,
+        scenario_type: Optional[str] = None,
+        mode: str = 'overall'
+    ) -> float:
+        """
+        Get agent's reliability score based on historical performance.
+
+        This supports the revised abstract requirement:
+        "η αξιοπιστία και συνέπεια των προηγούμενων αξιολογήσεών του"
+        "the reliability and consistency of their previous assessments"
+
+        Args:
+            scenario_type: Optional crisis type for domain-specific reliability
+            mode: 'overall', 'recent', or 'consistent'
+
+        Returns:
+            Reliability score (0-1)
+
+        Example:
+            >>> agent = ExpertAgent("medical_expert_01")
+            >>> reliability = agent.get_reliability_score()
+            >>> domain_reliability = agent.get_reliability_score(scenario_type="flood")
+        """
+        return self.reliability_tracker.get_reliability_score(scenario_type, mode)
+
+    def record_assessment(
+        self,
+        assessment_id: str,
+        scenario_type: str,
+        prediction: Dict[str, Any],
+        confidence: Optional[float] = None
+    ):
+        """
+        Record an assessment for future reliability tracking.
+
+        Args:
+            assessment_id: Unique identifier for this assessment
+            scenario_type: Type of crisis scenario
+            prediction: Agent's prediction/assessment with belief_distribution
+            confidence: Agent's confidence (uses self.confidence_level if not provided)
+        """
+        if confidence is None:
+            confidence = self.confidence_level
+
+        self.reliability_tracker.record_assessment(
+            assessment_id=assessment_id,
+            scenario_type=scenario_type,
+            agent_prediction=prediction,
+            confidence=confidence
+        )
+
+    def update_assessment_outcome(
+        self,
+        assessment_id: str,
+        actual_outcome: Dict[str, Any],
+        accuracy_score: Optional[float] = None
+    ):
+        """
+        Update a previous assessment with its actual outcome.
+
+        This allows the system to track agent reliability over time.
+
+        Args:
+            assessment_id: ID of the assessment to update
+            actual_outcome: The actual outcome that occurred
+            accuracy_score: Optional pre-calculated accuracy (0-1)
+        """
+        self.reliability_tracker.update_assessment_outcome(
+            assessment_id=assessment_id,
+            actual_outcome=actual_outcome,
+            accuracy_score=accuracy_score
+        )
+
+        # Also update confidence level
+        if accuracy_score is not None:
+            self.update_confidence({'accuracy': accuracy_score})
+
+    def get_performance_summary(self) -> Dict[str, Any]:
+        """
+        Get comprehensive performance summary including reliability metrics.
+
+        Returns:
+            Dictionary with performance statistics
+        """
+        return self.reliability_tracker.get_performance_summary()
 
     @abstractmethod
     def evaluate_scenario(self, scenario: Dict[str, Any]) -> Dict[str, Any]:
