@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Main Orchestration Script for Crisis Management Multi-Agent System
-Master's Thesis PoC - Operational Research & Decision Making
 
 This script runs the complete multi-agent decision-making workflow:
 1. Load configuration and scenario

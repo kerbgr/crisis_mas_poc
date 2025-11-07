@@ -1,6 +1,5 @@
 """
 System Visualization Module
-Professional visualizations for Master's thesis on Multi-Agent Crisis Management
 
 Generates publication-quality charts showing system performance:
 1. Agent Belief Distributions (stacked bar chart)
@@ -29,7 +28,7 @@ class SystemVisualizer:
     """
     Professional visualization generator for multi-agent system results.
 
-    Creates publication-quality charts suitable for Master's thesis with:
+    Creates publication-quality charts with:
     - High resolution (300 DPI)
     - Professional styling
     - Clear legends and titles

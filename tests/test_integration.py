@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Integration Test for Crisis Management Multi-Agent System
-Master's Thesis PoC - Complete End-to-End Workflow Validation
 
 This test suite validates:
 1. Scenario and configuration loading

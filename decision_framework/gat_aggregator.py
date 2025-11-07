@@ -1,6 +1,5 @@
 """
 Graph Attention Network (GAT) Aggregator for Crisis Management MAS
-Master's Thesis - Advanced Decision Aggregation using Graph Neural Networks
 
 This module implements a Graph Attention Network to aggregate expert agent beliefs
 by modeling the multi-agent system as a graph where:

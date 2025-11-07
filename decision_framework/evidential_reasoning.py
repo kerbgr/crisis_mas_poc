@@ -4,9 +4,9 @@ For Crisis Management Multi-Agent System
 
 This module provides a lightweight ER approach using weighted averaging
 to combine belief distributions from multiple agents. Designed for clarity
-and interpretability in a Master's thesis PoC context.
+and interpretability in practical crisis decision-making contexts.
 
-NOT full Dempster-Shafer theory - simplified for practical crisis decision-making.
+NOT full Dempster-Shafer theory - simplified for practical applications.
 """
 
 import logging
