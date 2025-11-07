@@ -601,7 +601,7 @@ The Crisis MAS consists of five core layers:
   7. Number of concerns
   8. Reasoning quality
 - Multi-head attention (4 heads) for robustness
-- Attention mechanism: `α = softmax(0.4·confidence + 0.3·relevance + 0.3·certainty + 0.2·similarity)`
+- Attention mechanism: $\alpha_{ij} = \text{softmax}_j(0.4 \cdot f_i^{(1)} + 0.3 \cdot f_i^{(3)} + 0.3 \cdot f_i^{(2)} + 0.2 \cdot \cos(\mathbf{f}_i, \mathbf{f}_j))$
 
 **MCDAEngine** (`decision_framework/mcda_engine.py`)
 - Multiple MCDA methods:
@@ -710,98 +710,211 @@ The system supports multiple LLM providers through a unified interface:
 
 ### Key Algorithms
 
-#### Evidential Reasoning (Simplified)
+#### Evidential Reasoning (Simplified Dempster-Shafer Theory)
 
-```
-Input: Agent assessments {A₁, A₂, ..., Aₙ}
-       Each Aᵢ = {beliefs_i, confidence_i}
+**Input:** Agent assessments $\mathcal{A} = \{A_1, A_2, \ldots, A_n\}$ where each $A_i = \{m_i, c_i\}$ with belief mass assignment $m_i$ and confidence $c_i \in [0,1]$.
 
-For each alternative a:
-   1. Extract beliefs: m_i(a) = belief of agent i in alternative a
-   2. Weight by confidence: m'_i(a) = confidence_i · m_i(a)
-   3. Combine using Dempster's rule:
+**Algorithm:**
 
-      m₁₂(a) = Σ m₁(x) · m₂(y) / (1 - K)
-               x∩y=a
+1. **Extract Beliefs:** For each agent $i$ and alternative $a$, extract belief mass:
 
-      where K = Σ m₁(x) · m₂(y)  (conflict measure)
-                x∩y=∅
+   $$m_i(a) = \text{belief of agent } i \text{ in alternative } a$$
 
-   4. Iteratively combine all agents
-   5. Normalize to obtain final belief distribution
+2. **Confidence Weighting:** Apply confidence-based discount:
 
-Output: Combined belief distribution + uncertainty measure
-```
+   $$m'_i(a) = c_i \cdot m_i(a)$$
 
-#### Graph Attention Network
+   $$m'_i(\Theta) = 1 - c_i + c_i \cdot m_i(\Theta)$$
 
-```
-Input: Agent assessments {A₁, A₂, ..., Aₙ}, Scenario S
+   where $\Theta$ represents the frame of discernment (uncertainty).
 
-1. FEATURE EXTRACTION
-   For each agent i:
-      f_i = [confidence, certainty, relevance, risk, severity,
-             strength, concerns, quality]  # 8-dimensional
+3. **Dempster's Combination Rule:** For two agents with belief functions $m_1$ and $m_2$:
 
-2. ATTENTION COMPUTATION
-   For each agent pair (i, j):
-      # Compute attention score
-      score_ij = 0.4 · f_i[0] +           # confidence
-                 0.3 · f_i[2] +           # relevance
-                 0.3 · f_i[1] +           # certainty
-                 0.2 · cosine(f_i, f_j)   # similarity bonus
+   $$m_{12}(a) = \frac{1}{1-K} \sum_{x \cap y = a} m_1(x) \cdot m_2(y)$$
 
-      # Apply LeakyReLU activation
-      score_ij = LeakyReLU(score_ij, α=0.2)
+   where the conflict coefficient $K$ is:
 
-   # Softmax normalization (per agent)
-   α_ij = exp(score_ij) / Σⱼ exp(score_ij)
+   $$K = \sum_{x \cap y = \emptyset} m_1(x) \cdot m_2(y)$$
 
-3. MULTI-HEAD ATTENTION (4 heads)
-   For each head h:
-      Compute attention matrix α^(h)
+4. **Iterative Combination:** Combine all $n$ agents pairwise:
 
-   Average across heads:
-      α_final = (1/4) Σₕ α^(h)
+   $$m_{\text{combined}} = m_1 \oplus m_2 \oplus \cdots \oplus m_n$$
 
-4. BELIEF AGGREGATION
-   For each alternative a:
-      belief(a) = Σᵢ α_ii · beliefs_i(a)  # Self-attention weighted
+   where $\oplus$ denotes Dempster's combination operator.
 
-   Normalize beliefs to sum to 1.0
+5. **Normalization:** Ensure belief distribution sums to unity:
 
-Output: Aggregated beliefs + Attention weights + Confidence
-```
+   $$m_{\text{final}}(a) = \frac{m_{\text{combined}}(a)}{\sum_{a' \in \mathcal{A}} m_{\text{combined}}(a')}$$
 
-#### TOPSIS (MCDA)
+**Output:**
+- Combined belief distribution $m_{\text{final}}: \mathcal{A} \rightarrow [0,1]$
+- Uncertainty measure $U = m_{\text{final}}(\Theta)$
+- Conflict level $K \in [0,1)$
 
-```
-Input: Alternatives {a₁, ..., aₘ}, Criteria {c₁, ..., cₙ}, Weights {w₁, ..., wₙ}
+#### Graph Attention Network (GAT) for Multi-Agent Aggregation
 
-1. Construct decision matrix D = [x_ij]  (m × n)
-   where x_ij = score of alternative i on criterion j
+**Input:**
+- Agent assessments $\mathcal{A} = \{A_1, A_2, \ldots, A_n\}$
+- Scenario context $S$
 
-2. Normalize matrix:
-   r_ij = x_ij / √(Σᵢ x_ij²)
+**Algorithm:**
 
-3. Weight normalized matrix:
-   v_ij = w_j · r_ij
+**1. Feature Extraction:** For each agent $i$, construct 8-dimensional feature vector:
 
-4. Identify ideal solutions:
-   A⁺ = {v₁⁺, ..., vₙ⁺}  where vⱼ⁺ = max_i(v_ij)  (benefit criteria)
-   A⁻ = {v₁⁻, ..., vₙ⁻}  where vⱼ⁻ = min_i(v_ij)  (benefit criteria)
+$$\mathbf{f}_i = \begin{bmatrix}
+f_i^{(1)} \\ f_i^{(2)} \\ f_i^{(3)} \\ f_i^{(4)} \\ f_i^{(5)} \\ f_i^{(6)} \\ f_i^{(7)} \\ f_i^{(8)}
+\end{bmatrix} = \begin{bmatrix}
+\text{confidence} \\
+\text{certainty (inverse entropy)} \\
+\text{expertise relevance} \\
+\text{risk tolerance} \\
+\text{severity awareness} \\
+\text{top choice strength} \\
+\text{number of concerns} \\
+\text{reasoning quality}
+\end{bmatrix}$$
 
-5. Calculate distances:
-   S_i⁺ = √(Σⱼ (v_ij - vⱼ⁺)²)  # Distance to ideal
-   S_i⁻ = √(Σⱼ (v_ij - vⱼ⁻)²)  # Distance to anti-ideal
+where belief certainty is computed as:
 
-6. Calculate relative closeness:
-   C_i = S_i⁻ / (S_i⁺ + S_i⁻)
+$$f_i^{(2)} = 1 - \frac{H(m_i)}{H_{\max}} = 1 - \frac{-\sum_a m_i(a) \log m_i(a)}{\log |\mathcal{A}|}$$
 
-7. Rank alternatives by C_i (higher is better)
+**2. Attention Score Computation:** For each agent pair $(i,j)$, compute attention logit:
 
-Output: Ranked alternatives with scores
-```
+$$e_{ij} = 0.4 \cdot f_i^{(1)} + 0.3 \cdot f_i^{(3)} + 0.3 \cdot f_i^{(2)} + 0.2 \cdot \cos(\mathbf{f}_i, \mathbf{f}_j)$$
+
+where cosine similarity is:
+
+$$\cos(\mathbf{f}_i, \mathbf{f}_j) = \frac{\mathbf{f}_i \cdot \mathbf{f}_j}{\|\mathbf{f}_i\| \|\mathbf{f}_j\|}$$
+
+Apply LeakyReLU activation with negative slope $\alpha = 0.2$:
+
+$$e'_{ij} = \text{LeakyReLU}(e_{ij}) = \begin{cases}
+e_{ij} & \text{if } e_{ij} > 0 \\
+0.2 \cdot e_{ij} & \text{otherwise}
+\end{cases}$$
+
+**3. Softmax Normalization:** Compute attention coefficients using row-wise softmax:
+
+$$\alpha_{ij} = \text{softmax}_j(e'_{ij}) = \frac{\exp(e'_{ij})}{\sum_{k=1}^{n} \exp(e'_{ik})}$$
+
+**4. Multi-Head Attention:** With $H=4$ attention heads:
+
+$$\alpha_{ij}^{(h)} = \text{softmax}_j(e_{ij}^{(h)}), \quad h = 1, 2, 3, 4$$
+
+$$\alpha_{ij}^{\text{final}} = \frac{1}{H} \sum_{h=1}^{H} \alpha_{ij}^{(h)}$$
+
+**5. Belief Aggregation:** For each alternative $a$, aggregate beliefs using self-attention weights:
+
+$$m_{\text{GAT}}(a) = \sum_{i=1}^{n} \alpha_{ii}^{\text{final}} \cdot m_i(a)$$
+
+Normalize to ensure valid probability distribution:
+
+$$m_{\text{final}}(a) = \frac{m_{\text{GAT}}(a)}{\sum_{a' \in \mathcal{A}} m_{\text{GAT}}(a')}$$
+
+**Output:**
+- Aggregated belief distribution $m_{\text{final}}: \mathcal{A} \rightarrow [0,1]$
+- Attention weight matrix $\mathbf{A} = [\alpha_{ij}]_{n \times n}$
+- Overall confidence $c_{\text{GAT}} = \sum_{i=1}^{n} \alpha_{ii} \cdot c_i$
+- Uncertainty $U_{\text{GAT}} = -\sum_{a} m_{\text{final}}(a) \log m_{\text{final}}(a)$
+
+#### TOPSIS (Technique for Order Preference by Similarity to Ideal Solution)
+
+**Input:**
+- Set of alternatives $\mathcal{A} = \{a_1, a_2, \ldots, a_m\}$
+- Set of criteria $\mathcal{C} = \{c_1, c_2, \ldots, c_n\}$
+- Criteria weights $\mathbf{w} = (w_1, w_2, \ldots, w_n)^T$ where $\sum_{j=1}^{n} w_j = 1$
+
+**Algorithm:**
+
+**1. Construct Decision Matrix:** Build $m \times n$ matrix $\mathbf{D}$ where element $x_{ij}$ represents the score of alternative $i$ on criterion $j$:
+
+$$\mathbf{D} = \begin{bmatrix}
+x_{11} & x_{12} & \cdots & x_{1n} \\
+x_{21} & x_{22} & \cdots & x_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{m1} & x_{m2} & \cdots & x_{mn}
+\end{bmatrix}$$
+
+**2. Vector Normalization:** Compute normalized decision matrix $\mathbf{R} = [r_{ij}]$ using vector normalization:
+
+$$r_{ij} = \frac{x_{ij}}{\sqrt{\sum_{k=1}^{m} x_{kj}^2}}, \quad i = 1, \ldots, m, \; j = 1, \ldots, n$$
+
+**3. Weighted Normalized Matrix:** Apply criteria weights to obtain $\mathbf{V} = [v_{ij}]$:
+
+$$v_{ij} = w_j \cdot r_{ij}, \quad i = 1, \ldots, m, \; j = 1, \ldots, n$$
+
+**4. Ideal and Anti-Ideal Solutions:** Determine positive ideal solution $A^+$ and negative ideal solution $A^-$:
+
+For benefit criteria ($\mathcal{B}$) and cost criteria ($\mathcal{C}$):
+
+$$A^+ = \{v_1^+, v_2^+, \ldots, v_n^+\}$$
+
+$$v_j^+ = \begin{cases}
+\max_i(v_{ij}) & \text{if } j \in \mathcal{B} \\
+\min_i(v_{ij}) & \text{if } j \in \mathcal{C}
+\end{cases}$$
+
+$$A^- = \{v_1^-, v_2^-, \ldots, v_n^-\}$$
+
+$$v_j^- = \begin{cases}
+\min_i(v_{ij}) & \text{if } j \in \mathcal{B} \\
+\max_i(v_{ij}) & \text{if } j \in \mathcal{C}
+\end{cases}$$
+
+**5. Euclidean Distance Calculation:** Compute separation measures:
+
+Distance to positive ideal solution:
+
+$$S_i^+ = \sqrt{\sum_{j=1}^{n} (v_{ij} - v_j^+)^2}, \quad i = 1, \ldots, m$$
+
+Distance to negative ideal solution:
+
+$$S_i^- = \sqrt{\sum_{j=1}^{n} (v_{ij} - v_j^-)^2}, \quad i = 1, \ldots, m$$
+
+**6. Relative Closeness Coefficient:** Calculate closeness to ideal solution:
+
+$$C_i = \frac{S_i^-}{S_i^+ + S_i^-}, \quad C_i \in [0, 1]$$
+
+where $C_i = 1$ indicates alternative $i$ is identical to ideal solution, and $C_i = 0$ indicates it equals anti-ideal.
+
+**7. Ranking:** Order alternatives in descending order of $C_i$:
+
+$$\text{Rank}(a_i) = \text{position of } C_i \text{ in sorted list}$$
+
+**Output:**
+- Ranked alternatives: $a_{\pi(1)}, a_{\pi(2)}, \ldots, a_{\pi(m)}$ where $C_{\pi(1)} \geq C_{\pi(2)} \geq \cdots \geq C_{\pi(m)}$
+- Closeness coefficients: $(C_1, C_2, \ldots, C_m)$
+- Separation measures: $(S_1^+, S_1^-, S_2^+, S_2^-, \ldots, S_m^+, S_m^-)$
+
+#### Consensus and Quality Metrics
+
+**Consensus Level:** Measures agreement between agents using average pairwise cosine similarity:
+
+$$\text{Consensus} = \frac{2}{n(n-1)} \sum_{i=1}^{n-1} \sum_{j=i+1}^{n} \cos(\mathbf{m}_i, \mathbf{m}_j)$$
+
+where $\mathbf{m}_i$ is agent $i$'s belief vector and:
+
+$$\cos(\mathbf{m}_i, \mathbf{m}_j) = \frac{\sum_{a \in \mathcal{A}} m_i(a) \cdot m_j(a)}{\sqrt{\sum_{a \in \mathcal{A}} m_i(a)^2} \cdot \sqrt{\sum_{a \in \mathcal{A}} m_j(a)^2}}$$
+
+**Decision Confidence:** Weighted average of agent confidences by their influence:
+
+$$c_{\text{decision}} = \sum_{i=1}^{n} w_i \cdot c_i$$
+
+where $w_i$ is the weight of agent $i$ (uniform for ER: $w_i = 1/n$, attention-based for GAT: $w_i = \alpha_{ii}$).
+
+**Uncertainty (Entropy):** Shannon entropy of final belief distribution:
+
+$$H(m_{\text{final}}) = -\sum_{a \in \mathcal{A}} m_{\text{final}}(a) \log_2 m_{\text{final}}(a)$$
+
+Normalized uncertainty in $[0, 1]$:
+
+$$U = \frac{H(m_{\text{final}})}{\log_2 |\mathcal{A}|}$$
+
+**Gini Coefficient (Expert Contribution Balance):** Measures inequality in expert influence:
+
+$$G = \frac{\sum_{i=1}^{n} \sum_{j=1}^{n} |w_i - w_j|}{2n \sum_{i=1}^{n} w_i}$$
+
+where $G = 0$ indicates perfect equality and $G = 1$ indicates maximum inequality.
 
 ---
 
