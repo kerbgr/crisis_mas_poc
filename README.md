@@ -1,14 +1,19 @@
-# Crisis Management Multi-Agent System (MAS) - Proof of Concept
+# Development of a Collaborative Environment Multi-Agent Framework for Decision Support in Crisis Management
 
-**A Multi-Agent Decision Support System for Crisis Management**
+**Optimization through Evidential Reasoning and Large Language Models for the Preservation and Enhancement of Collective Intelligence**
 
-Master's Thesis - Operational Research & Decision Making
-School of Production Engineering and Management
-Technical University of Crete (TUC)
+Master's Thesis in Operational Research & Decision Making
+
+Military Academy (sse.gr) - Technical University of Crete (tuc.gr)
+
+![sse](https://github.com/user-attachments/assets/4a0780f0-82ff-4af9-988d-df7deea4df2f)  ![tuc](https://github.com/user-attachments/assets/b2cfea95-6d65-4092-a486-393da4cb90d7)
+
+Department of Military Sciences - School of Production Engineering and Management
+
 
 **Author:** Vasileios Kazoukas
 **Contact:** kazoukas@gmail.com, vkazoukas@tuc.gr
-**Version:** 1.0.0
+**Version:** 0.8  
 **Last Updated:** November 2025
 **Status:** Research Prototype
 
