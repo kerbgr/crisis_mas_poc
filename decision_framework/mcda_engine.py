@@ -2,8 +2,28 @@
 Multi-Criteria Decision Analysis (MCDA) Engine
 For Crisis Management Multi-Agent System
 
-Evaluates alternatives across multiple criteria (safety, cost, response_time, social_acceptance)
-Handles both benefit criteria (higher is better) and cost criteria (lower is better)
+This module implements weighted sum MCDA based on TOPSIS (Technique for Order of
+Preference by Similarity to Ideal Solution) principles. It evaluates and ranks
+alternatives across multiple criteria with configurable weights.
+
+Method Classification:
+- Approach: Weighted sum with vector normalization
+- Family: TOPSIS-inspired, similar to MAUT (Multi-Attribute Utility Theory)
+- Thesis Context: Serves as "παρόμοιες προσεγγίσεις" (similar approaches) to
+  Group UTA mentioned in abstract, providing multi-criteria group decision-making
+  through weighted aggregation of heterogeneous expert preferences.
+
+Key Features:
+- Handles both benefit criteria (higher is better) and cost criteria (lower is better)
+- Vector normalization for scale independence
+- Configurable criterion weights per expert or scenario
+- Supports group decision-making through weight aggregation
+
+Criteria evaluated:
+- safety: Safety score (benefit criterion)
+- cost: Financial cost (cost criterion)
+- response_time: Speed of response (cost criterion)
+- social_acceptance: Public acceptance (benefit criterion)
 """
 
 import json
