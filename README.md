@@ -81,7 +81,10 @@ This PoC investigates the following research questions:
 
 - **Python**: 3.9 or higher
 - **pip**: Package manager (usually included with Python)
-- **Anthropic API Key**: Required for LLM features (get from https://console.anthropic.com/)
+- **LLM Provider API Key** (choose one or more):
+  - **Claude (Anthropic)**: Recommended, get from https://console.anthropic.com/ - Default provider
+  - **OpenAI**: Alternative, get from https://platform.openai.com/api-keys
+  - **LM Studio**: Local models, no API key required - Free and privacy-focused
 - **Operating System**: Linux, macOS, or Windows
 
 ### Required Python Packages
@@ -89,7 +92,8 @@ This PoC investigates the following research questions:
 The system depends on the following packages (automatically installed via `requirements.txt`):
 
 ```
-anthropic>=0.18.0        # Claude API client
+anthropic>=0.39.0        # Claude API client (default provider)
+openai>=1.12.0           # OpenAI client (GPT-4, GPT-3.5) + LM Studio compatibility
 numpy>=1.24.0            # Numerical computations
 matplotlib>=3.7.0        # Visualizations
 python-dotenv>=1.0.0     # Environment variable management
@@ -131,8 +135,16 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```bash
-# .env
+# .env - LLM Provider API Keys (configure based on your chosen provider)
+
+# Claude (Anthropic) - Default provider, recommended for best results
 ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# OpenAI - Alternative provider (GPT-4, GPT-3.5)
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# LM Studio - No API key required, runs locally
+# Just ensure LM Studio is running at http://localhost:1234
 
 # Optional configurations
 LOG_LEVEL=INFO
@@ -140,21 +152,37 @@ OUTPUT_DIR=results
 ENABLE_VISUALIZATIONS=true
 ```
 
+**Note:** You only need to configure the API key for the provider you plan to use. For LM Studio, no API key is required.
+
 **Option B: Using shell export**
 
 **Linux/macOS:**
 ```bash
+# For Claude (default)
 export ANTHROPIC_API_KEY='sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+# For OpenAI (if using --llm-provider openai)
+export OPENAI_API_KEY='sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+# LM Studio - No export needed, just run LM Studio application
 ```
 
 **Windows (Command Prompt):**
 ```cmd
+REM For Claude
 set ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+REM For OpenAI
+set OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 **Windows (PowerShell):**
 ```powershell
+# For Claude
 $env:ANTHROPIC_API_KEY="sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# For OpenAI
+$env:OPENAI_API_KEY="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 #### 5. Verify Installation
@@ -206,6 +234,7 @@ Options:
   --criteria PATH          Criteria weights JSON (default: scenarios/criteria_weights.json)
   --output PATH            Output results file (default: results/results.json)
   --config PATH            Configuration JSON file
+  --llm-provider PROVIDER  LLM provider: claude, openai, or lmstudio (default: claude)
   --no-llm                 Disable LLM enhancement (use rule-based reasoning)
   --no-viz                 Disable visualization generation
   --aggregation METHOD     Aggregation method: ER or GAT (default: ER)
@@ -216,7 +245,30 @@ Options:
 
 ### Usage Examples
 
-#### Example 1: Run with GAT Aggregation
+#### Example 1: Run with Different LLM Providers
+
+**Using Claude (Default):**
+```bash
+python main.py
+# or explicitly:
+python main.py --llm-provider claude
+```
+
+**Using OpenAI (GPT-4):**
+```bash
+python main.py --llm-provider openai
+# Requires OPENAI_API_KEY environment variable
+```
+
+**Using LM Studio (Local Model):**
+```bash
+# First, start LM Studio and load a model (e.g., Llama 2, Mistral)
+# Then run:
+python main.py --llm-provider lmstudio
+# No API key required, runs completely offline
+```
+
+#### Example 2: Run with GAT Aggregation
 
 ```bash
 python main.py --aggregation GAT
@@ -224,7 +276,7 @@ python main.py --aggregation GAT
 
 This uses Graph Attention Network instead of Evidential Reasoning for belief aggregation.
 
-#### Example 2: Run Without LLM (Rule-Based Only)
+#### Example 3: Run Without LLM (Rule-Based Only)
 
 ```bash
 python main.py --no-llm
@@ -235,13 +287,13 @@ Useful for:
 - Baseline comparison
 - Environments without internet access
 
-#### Example 3: Custom Scenario
+#### Example 4: Custom Scenario
 
 ```bash
 python main.py --scenario scenarios/earthquake_scenario.json --output results/earthquake_results.json
 ```
 
-#### Example 4: Adjust Consensus Requirements
+#### Example 5: Adjust Consensus Requirements
 
 ```bash
 python main.py --consensus-threshold 0.8 --verbose
@@ -249,17 +301,37 @@ python main.py --consensus-threshold 0.8 --verbose
 
 Requires 80% agreement between agents (stricter consensus).
 
-#### Example 5: Complete Custom Run
+#### Example 6: Combined Options
 
 ```bash
 python main.py \
-  --scenario scenarios/custom_scenario.json \
-  --agents config/custom_agents.json \
-  --criteria config/custom_criteria.json \
+  --llm-provider openai \
   --aggregation GAT \
+  --scenario scenarios/custom_scenario.json \
   --output results/custom_output.json \
   --verbose
 ```
+
+### LLM Provider Comparison
+
+The system supports three LLM providers, each with different trade-offs:
+
+| Feature | Claude (Anthropic) | OpenAI (GPT-4) | LM Studio (Local) |
+|---------|-------------------|----------------|-------------------|
+| **Quality** | Excellent | Excellent | Good-Very Good |
+| **Cost per decision** | ~$0.015-0.020 | ~$0.020-0.060 | Free |
+| **Latency** | 2-4s per agent | 2-4s per agent | 1-5s per agent (varies by model) |
+| **Privacy** | Cloud (Anthropic) | Cloud (OpenAI) | 100% Local |
+| **Internet Required** | Yes | Yes | No |
+| **Setup Complexity** | API key only | API key only | Download model + Run LM Studio |
+| **Best For** | Production, complex reasoning | Production, established workflows | Development, privacy-sensitive, offline |
+
+**Recommendations:**
+- **Production/Critical Decisions**: Claude or OpenAI GPT-4 (best accuracy)
+- **Development/Testing**: LM Studio (no costs, fast iteration)
+- **Privacy/HIPAA Compliance**: LM Studio (data never leaves your machine)
+- **High Volume**: LM Studio or OpenAI GPT-3.5 (lower cost per call)
+- **Offline/Air-Gapped**: LM Studio only (no internet connection needed)
 
 ### Programmatic Usage
 
@@ -268,11 +340,19 @@ python main.py \
 ```python
 from agents import ExpertAgent, CoordinatorAgent
 from decision_framework import EvidentialReasoning, MCDAEngine, ConsensusModel
-from llm_integration import ClaudeClient
+from llm_integration import ClaudeClient, OpenAIClient, LMStudioClient
 from scenarios import ScenarioLoader
 
-# 1. Initialize LLM client
+# 1. Initialize LLM client (choose one)
+
+# Option A: Claude (default, recommended)
 llm_client = ClaudeClient(api_key="your-api-key")
+
+# Option B: OpenAI
+# llm_client = OpenAIClient(api_key="your-openai-key", model="gpt-4-turbo-preview")
+
+# Option C: LM Studio (local)
+# llm_client = LMStudioClient(base_url="http://localhost:1234/v1")
 
 # 2. Load scenario
 scenario = ScenarioLoader.load('scenarios/flood_scenario.json')
@@ -472,7 +552,8 @@ The Crisis MAS consists of five core layers:
                            │
          ┌─────────────────▼────────────────────────────────┐
          │           LLM INTEGRATION LAYER                  │
-         │  ClaudeClient, Prompt Templates, Response Parser │
+         │  Multi-Provider: Claude, OpenAI, LM Studio      │
+         │  Prompt Templates, Response Parser              │
          └──────────────────────────────────────────────────┘
                            │
          ┌─────────────────▼────────────────────────────────┐
@@ -538,17 +619,39 @@ The Crisis MAS consists of five core layers:
 
 #### 3. LLM Integration Layer
 
+The system supports multiple LLM providers through a unified interface:
+
 **ClaudeClient** (`llm_integration/claude_client.py`)
-- Wrapper for Anthropic's Claude API
+- Anthropic's Claude API wrapper (default provider)
+- Best for complex reasoning and production use
 - Retry logic with exponential backoff
-- Token usage tracking
-- Error handling and fallback mechanisms
+- Token usage tracking and error handling
+
+**OpenAIClient** (`llm_integration/openai_client.py`)
+- OpenAI API wrapper (GPT-4, GPT-3.5-turbo, GPT-4-turbo)
+- Alternative cloud provider with established workflows
+- JSON mode support for structured responses
+- Same interface as ClaudeClient for easy swapping
+
+**LMStudioClient** (`llm_integration/lmstudio_client.py`)
+- Local LLM support via LM Studio (OpenAI-compatible API)
+- Runs models like Llama 2, Mistral, Mixtral locally
+- No API costs, complete privacy, offline capable
+- Ideal for development, testing, and sensitive data
+
+**All clients provide:**
+- `generate_assessment()` - Structured JSON expert assessments
+- `parse_json_response()` - Multi-strategy JSON extraction
+- `validate_response()` - Response structure validation
+- `get_statistics()` - Usage metrics and success rates
+- Unified error handling and retry logic
 
 **PromptTemplates** (`llm_integration/prompt_templates.py`)
 - Domain-specific prompts for each agent type
 - Structured output formatting
 - Few-shot examples for consistency
 - Crisis-specific reasoning patterns
+- Provider-agnostic (works with all LLM clients)
 
 #### 4. Evaluation Layer
 
@@ -1311,12 +1414,19 @@ Clear clustering shows 3-agent coalition for evacuation, 1 dissenter for barrier
 ### Software & Tools
 
 18. **Anthropic API Documentation.** https://docs.anthropic.com/
-    - Claude API integration guide
+    - Claude API integration guide (default LLM provider)
 
-19. **NumPy Documentation.** https://numpy.org/doc/
+19. **OpenAI API Documentation.** https://platform.openai.com/docs/
+    - OpenAI GPT-4 and GPT-3.5 API integration guide (alternative LLM provider)
+
+20. **LM Studio.** https://lmstudio.ai/
+    - Local LLM inference platform with OpenAI-compatible API
+    - Supports Llama 2, Mistral, Mixtral, and other open-source models
+
+21. **NumPy Documentation.** https://numpy.org/doc/
     - Numerical computation library
 
-20. **Matplotlib Documentation.** https://matplotlib.org/
+22. **Matplotlib Documentation.** https://matplotlib.org/
     - Visualization library
 
 ---
@@ -1345,9 +1455,11 @@ crisis_mas_poc/
 │   ├── mcda_engine.py              # MCDA methods (TOPSIS, WSM, SAW)
 │   └── consensus_model.py          # Consensus detection & building
 │
-├── llm_integration/                 # LLM interface
+├── llm_integration/                 # LLM interface (multi-provider)
 │   ├── __init__.py
-│   ├── claude_client.py            # Anthropic API wrapper
+│   ├── claude_client.py            # Anthropic Claude API wrapper (default)
+│   ├── openai_client.py            # OpenAI GPT-4/GPT-3.5 API wrapper
+│   ├── lmstudio_client.py          # LM Studio local models wrapper
 │   └── prompt_templates.py         # Domain-specific prompts
 │
 ├── evaluation/                      # Metrics and visualization
