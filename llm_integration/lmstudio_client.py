@@ -137,12 +137,9 @@ class LMStudioClient:
                 "temperature": temperature
             }
 
-            # LM Studio may support response_format, but not all models do
-            # Try with JSON mode if available, fall back to text mode
-            try:
-                request_params["response_format"] = {"type": "json_object"}
-            except:
-                pass  # Some LM Studio versions don't support this
+            # Note: LM Studio has inconsistent support for response_format across versions
+            # We rely on the system prompt requesting JSON and robust parsing instead
+            # This ensures compatibility with all LM Studio versions
 
             # Make API call with retry logic
             response = self._api_call_with_retry(request_params)
