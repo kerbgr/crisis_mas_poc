@@ -91,7 +91,8 @@ def load_environment():
     if not api_keys['anthropic'] and not api_keys['openai']:
         logger.warning(
             "No API keys found in environment. "
-            "Set ANTHROPIC_API_KEY or OPENAI_API_KEY for LLM functionality."
+            "Will automatically fall back to LM Studio (local, no API key required). "
+            "Set ANTHROPIC_API_KEY or OPENAI_API_KEY for cloud LLM providers."
         )
 
     logger.info("Environment loaded")
@@ -170,6 +171,8 @@ def initialize_llm_client(
     """
     Initialize LLM client based on provider.
 
+    Automatically falls back to LM Studio if no API keys are available.
+
     Args:
         provider: LLM provider ('claude', 'openai', 'lmstudio')
         api_keys: Dictionary of API keys
@@ -179,24 +182,34 @@ def initialize_llm_client(
     """
     logger = logging.getLogger(__name__)
 
+    # Try requested provider first
     if provider == "claude":
         api_key = api_keys.get('anthropic') if api_keys else None
-        client = ClaudeClient(api_key=api_key)
-        logger.info("Initialized Claude client")
+        if api_key:
+            client = ClaudeClient(api_key=api_key)
+            logger.info("Initialized Claude client")
+            return client
+        else:
+            logger.warning("No ANTHROPIC_API_KEY found. Falling back to LM Studio...")
+            provider = "lmstudio"
 
     elif provider == "openai":
         api_key = api_keys.get('openai') if api_keys else None
-        client = OpenAIClient(api_key=api_key)
-        logger.info("Initialized OpenAI client")
+        if api_key:
+            client = OpenAIClient(api_key=api_key)
+            logger.info("Initialized OpenAI client")
+            return client
+        else:
+            logger.warning("No OPENAI_API_KEY found. Falling back to LM Studio...")
+            provider = "lmstudio"
 
-    elif provider == "lmstudio":
+    # LM Studio doesn't require API key
+    if provider == "lmstudio":
         client = LMStudioClient()
-        logger.info("Initialized LM Studio client (local)")
+        logger.info("Initialized LM Studio client (local, no API key required)")
+        return client
 
-    else:
-        raise ValueError(f"Unknown LLM provider: {provider}")
-
-    return client
+    raise ValueError(f"Unknown LLM provider: {provider}")
 
 
 def initialize_expert_agents(
