@@ -1,0 +1,111 @@
+{
+  "agents": [
+    {
+      "agent_id": "agent_meteorologist",
+      "name": "Dr. Sarah Chen",
+      "role": "Meteorologist",
+      "expertise": "weather_forecasting",
+      "experience_years": 15,
+      "risk_tolerance": 0.4,
+      "weight_preferences": {
+        "effectiveness": 0.30,
+        "safety": 0.25,
+        "speed": 0.25,
+        "cost": 0.10,
+        "public_acceptance": 0.10
+      },
+      "description": "Senior meteorologist specializing in severe weather prediction and climate analysis"
+    },
+    {
+      "agent_id": "medical_expert_01",
+      "name": "Dr. Marcus Williams",
+      "role": "Medical Expert",
+      "expertise": "emergency_medicine",
+      "experience_years": 20,
+      "risk_tolerance": 0.3,
+      "weight_preferences": {
+        "effectiveness": 0.35,
+        "safety": 0.30,
+        "speed": 0.20,
+        "cost": 0.10,
+        "public_acceptance": 0.05
+      },
+      "expertise_tags": ["health", "emergency_medicine", "triage", "public_health"],
+      "confidence_level": 0.85,
+      "description": "Medical expert specializing in emergency medicine and public health response"
+    },
+    {
+      "agent_id": "logistics_expert_01",
+      "name": "Jennifer Rodriguez",
+      "role": "Logistics Coordinator",
+      "expertise": "supply_chain_management",
+      "experience_years": 12,
+      "risk_tolerance": 0.5,
+      "weight_preferences": {
+        "effectiveness": 0.25,
+        "safety": 0.15,
+        "speed": 0.25,
+        "cost": 0.25,
+        "public_acceptance": 0.10
+      },
+      "expertise_tags": ["supply_chain", "resource_allocation", "transportation", "infrastructure"],
+      "confidence_level": 0.80,
+      "description": "Logistics expert focused on resource allocation and supply chain management"
+    },
+    {
+      "agent_id": "public_safety_expert_01",
+      "name": "Chief Robert Johnson",
+      "role": "Public Safety Officer",
+      "expertise": "emergency_response",
+      "experience_years": 25,
+      "risk_tolerance": 0.2,
+      "weight_preferences": {
+        "effectiveness": 0.30,
+        "safety": 0.35,
+        "speed": 0.20,
+        "cost": 0.05,
+        "public_acceptance": 0.10
+      },
+      "expertise_tags": ["evacuation", "emergency_services", "public_order", "communication"],
+      "confidence_level": 0.82,
+      "description": "Public safety expert specializing in emergency response and evacuation procedures"
+    },
+    {
+      "agent_id": "environmental_expert_01",
+      "name": "Dr. Amelia Green",
+      "role": "Environmental Scientist",
+      "expertise": "environmental_impact_assessment",
+      "experience_years": 18,
+      "risk_tolerance": 0.4,
+      "weight_preferences": {
+        "effectiveness": 0.25,
+        "safety": 0.20,
+        "speed": 0.15,
+        "cost": 0.15,
+        "public_acceptance": 0.25
+      },
+      "expertise_tags": ["environmental_impact", "sustainability", "natural_disasters", "climate"],
+      "confidence_level": 0.78,
+      "description": "Environmental expert assessing ecological impacts and sustainability concerns"
+    },
+    {
+      "agent_id": "coordinator_01",
+      "name": "System Coordinator",
+      "role": "Decision Coordinator",
+      "expertise": "decision_coordination",
+      "experience_years": 10,
+      "risk_tolerance": 0.5,
+      "weight_preferences": {
+        "effectiveness": 0.25,
+        "safety": 0.25,
+        "speed": 0.20,
+        "cost": 0.15,
+        "public_acceptance": 0.15
+      },
+      "expertise_tags": ["consensus_building", "decision_aggregation", "coordination"],
+      "confidence_level": 0.90,
+      "consensus_threshold": 0.7,
+      "description": "Coordinator agent responsible for aggregating expert opinions and building consensus"
+    }
+  ]
+}
