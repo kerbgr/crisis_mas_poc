@@ -1,6 +1,98 @@
 """
-Base Agent Class
-Defines the core structure and interface for all agents in the MAS
+Base Agent Module - Core Agent Abstraction and Profile Management
+
+OBJECTIVE:
+This module defines the abstract base class (ABC) for all agents in the crisis management
+multi-agent system. It establishes a standardized interface that all specialized agents
+(ExpertAgent, CoordinatorAgent, etc.) must implement, ensuring consistency across the
+system while allowing for specialized behavior.
+
+WHY THIS EXISTS:
+1. **Interface Standardization**: Ensures all agents provide required methods (evaluate_scenario,
+   propose_action, justify_decision) with consistent signatures
+2. **Code Reuse**: Provides common functionality (profile loading, reliability tracking,
+   decision history) that all agents need
+3. **Flexible Design**: Abstract base class pattern allows specialization while maintaining
+   a consistent API
+4. **Historical Learning**: Integrates ReliabilityTracker to enable data-driven agent weighting
+   based on past performance
+
+KEY RESPONSIBILITIES:
+- Agent profile loading and validation from JSON configuration files
+- Reliability score calculation (overall, recent, consistent, domain-specific)
+- Assessment recording and outcome tracking for continuous improvement
+- Decision history logging and analysis
+- Confidence level management and adjustment based on feedback
+- Weight preference validation for multi-criteria decision analysis (MCDA)
+
+EXPECTED INPUTS (via __init__):
+- agent_id: String identifier that must match an entry in agent_profiles.json
+  Examples: "agent_medical_01", "agent_logistics_01", "coordinator_01"
+- profile_path: Path to JSON file containing agent definitions
+  Default: "agents/agent_profiles.json"
+
+EXPECTED OUTPUTS (via methods):
+- Agent metadata: name, role, expertise, experience_years, risk_tolerance, confidence_level
+- Reliability metrics: overall reliability, recent performance, consistency scores
+- Assessment records: Historical decisions with outcomes for learning
+- Decision analysis: Performance summaries, domain-specific accuracy
+
+DESIGN PATTERNS USED:
+1. **Abstract Base Class (ABC)**: Defines required interface using @abstractmethod decorators
+2. **Template Method Pattern**: Provides common structure while allowing specialization
+3. **Strategy Pattern**: Allows different reliability calculation strategies
+4. **Factory Pattern**: Profile loading creates agent instances with validated configurations
+
+USAGE EXAMPLE:
+    # Subclass must implement abstract methods
+    class ExpertAgent(BaseAgent):
+        def evaluate_scenario(self, scenario, alternatives):
+            # Implementation here
+            pass
+
+        def propose_action(self, scenario, criteria):
+            # Implementation here
+            pass
+
+        def justify_decision(self, decision, scenario):
+            # Implementation here
+            pass
+
+    # Instantiate with profile from JSON
+    agent = ExpertAgent("agent_medical_01")
+
+    # Access profile data
+    print(agent.name)  # "Dr. Sarah Chen"
+    print(agent.expertise)  # "Emergency Medicine"
+
+    # Track performance
+    agent.record_assessment(assessment, scenario_id)
+    agent.update_assessment_outcome(assessment_id, outcome)
+    reliability = agent.get_reliability_score()  # 0.0-1.0
+
+PROFILE JSON STRUCTURE:
+    {
+        "agent_id": {
+            "name": "Agent Name",
+            "role": "Domain Expert",
+            "expertise": "domain_area",
+            "experience_years": 15,
+            "risk_tolerance": 0.5,
+            "confidence_level": 0.8,
+            "weight_preferences": {
+                "criterion_1": 0.3,
+                "criterion_2": 0.7
+            }
+        }
+    }
+
+RELATED MODULES:
+- agents/expert_agent.py: Concrete implementation for domain experts
+- agents/coordinator_agent.py: Concrete implementation for decision orchestration
+- agents/reliability_tracker.py: Performance tracking and scoring
+- agents/agent_profiles.json: Agent configuration database
+
+See also: agents/AGENT_DEVELOPMENT_GUIDE.md for creating new agent types
 """
 
 import json
