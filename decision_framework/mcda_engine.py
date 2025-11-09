@@ -214,6 +214,21 @@ class MCDAEngine:
             {'safety': 0.95, 'cost': 0.85}
         """
         scores = {}
+
+        # Check for criteria_scores first (from scenario JSON), then estimated_metrics
+        if 'criteria_scores' in alternative_data:
+            # Direct use of criteria_scores from scenario JSON
+            # These are already normalized 0-1 scores, all benefit-oriented (higher is better)
+            criteria_scores = alternative_data['criteria_scores']
+
+            # Use scores directly - scenario criteria are already properly scored
+            for criterion_name, score in criteria_scores.items():
+                scores[criterion_name] = float(score)
+
+            logger.debug(f"Using criteria_scores directly: {scores}")
+            return scores
+
+        # Fall back to estimated_metrics format (original behavior)
         metrics = alternative_data.get('estimated_metrics', {})
 
         # Map metric names to criterion IDs
@@ -283,19 +298,33 @@ class MCDAEngine:
             >>> weighted = mcda.calculate_weighted_score(scores)
             0.82
         """
-        weights = custom_weights or {
-            cid: config['weight']
-            for cid, config in self.criteria_config.items()
-        }
+        # Use custom weights if provided, otherwise use config weights
+        if custom_weights:
+            weights = custom_weights
+        else:
+            weights = {
+                cid: config['weight']
+                for cid, config in self.criteria_config.items()
+            }
 
         weighted_sum = 0.0
         total_weight = 0.0
 
+        # For criteria not in weights (e.g., from scenario criteria_scores),
+        # use equal weight
+        num_criteria = len(normalized_scores)
+        default_weight = 1.0 / num_criteria if num_criteria > 0 else 0.0
+
         for criterion_id, score in normalized_scores.items():
             if criterion_id in weights:
                 weight = weights[criterion_id]
-                weighted_sum += score * weight
-                total_weight += weight
+            else:
+                # Use default equal weight for criteria not in config
+                weight = default_weight
+                logger.debug(f"Using default weight {weight:.3f} for criterion '{criterion_id}'")
+
+            weighted_sum += score * weight
+            total_weight += weight
 
         if total_weight == 0:
             return 0.0
