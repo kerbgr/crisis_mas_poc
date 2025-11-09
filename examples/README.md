@@ -18,15 +18,78 @@ This folder contains example scripts and debugging utilities demonstrating vario
 
 The examples in this folder demonstrate:
 
-1. **LLM Integration** - How to use Claude API and multi-provider LLM clients
+1. **LLM Integration** - How to use multiple LLM providers (Claude, OpenAI, LM Studio)
 2. **Prompt Templates** - How to generate and customize prompts for agent evaluation
 3. **Debugging** - How to test and debug specific components
+4. **Local Deployment** - Running models locally with LM Studio (no API costs!)
 
 These scripts are **standalone examples** and can be run independently of the main system.
+
+### 🌟 Start Here: `example_llm_providers.py`
+
+New to LLM integration? Start with the comprehensive `example_llm_providers.py` which covers:
+- All three major provider options (Claude, OpenAI, LM Studio)
+- Setup instructions for each
+- Provider comparison and selection
+- Complete implementation examples
 
 ---
 
 ## Example Scripts
+
+### example_llm_providers.py ⭐ RECOMMENDED
+
+**Purpose:** **Comprehensive guide to using multiple LLM providers** (Claude, OpenAI, LM Studio)
+
+**What it shows:**
+- Complete setup for three different LLM providers
+- API key configuration and validation
+- Claude (Anthropic) integration
+- OpenAI (GPT-4/3.5) integration
+- LM Studio (local models) setup
+- Provider comparison and selection strategy
+- Multi-provider fallback implementation
+- Complete crisis scenario example
+- Cost vs quality trade-offs
+
+**Usage:**
+```bash
+# Works with any combination of providers
+# Set API keys for providers you want to use:
+export ANTHROPIC_API_KEY="your-claude-key"  # Optional
+export OPENAI_API_KEY="your-openai-key"     # Optional
+# LM Studio: Just run local server at http://localhost:1234
+
+python examples/example_llm_providers.py
+```
+
+**Key Features:**
+- ✅ No API keys required to run (shows setup examples)
+- ✅ Comprehensive provider comparison table
+- ✅ Real crisis scenario walkthrough
+- ✅ Fallback strategy implementation
+- ✅ Cost optimization guidance
+- ✅ Privacy considerations (local vs cloud)
+
+**Supported Providers:**
+- **Claude (Anthropic)** - Best quality, cloud-based
+- **OpenAI (GPT-4/3.5)** - Excellent quality, cloud-based
+- **LM Studio** - Good quality, runs locally (FREE, private)
+
+**LM Studio Setup:**
+1. Download from https://lmstudio.ai/
+2. Load a model (Mistral, Llama 2, Phi-2)
+3. Start local server
+4. Use OpenAI-compatible API (no API key needed!)
+
+**When to use this example:**
+- First time setting up LLM integration
+- Want to compare different providers
+- Need offline/local deployment
+- Looking to optimize costs
+- Privacy-sensitive scenarios
+
+---
 
 ### example_claude_usage.py
 
@@ -224,32 +287,50 @@ python -c "from llm_integration.claude_client import ClaudeClient; print('Import
 
 ## Example Workflow
 
-### 1. Start with Prompt Templates (No API Key Needed)
+### Recommended Learning Path:
+
+### 1. ⭐ Start with Comprehensive Provider Guide (No API Keys Required)
+
+```bash
+python examples/example_llm_providers.py
+```
+
+**Best first step!** This comprehensive example covers:
+- All three LLM providers (Claude, OpenAI, LM Studio)
+- Setup instructions for each
+- Provider comparison and selection
+- Runs without API keys (shows setup examples)
+
+### 2. Learn Prompt Generation (No API Key Needed)
 
 ```bash
 python examples/example_prompt_templates_usage.py
 ```
 
-This shows how prompts are generated without making API calls.
+Understand how prompts are structured for expert evaluation.
 
-### 2. Test Claude Integration
+### 3. Try a Specific Provider
 
+**Option A: Claude (Paid)**
 ```bash
 export ANTHROPIC_API_KEY="your-key"
 python examples/example_claude_usage.py
 ```
 
-See how Claude evaluates alternatives in a crisis scenario.
-
-### 3. Compare Multiple Providers
-
+**Option B: OpenAI (Paid)**
 ```bash
-export ANTHROPIC_API_KEY="your-claude-key"
-export OPENAI_API_KEY="your-openai-key"
+export OPENAI_API_KEY="your-key"
 python examples/example_multi_llm_providers.py
 ```
 
-Compare outputs from different LLM providers.
+**Option C: LM Studio (FREE, Local)**
+```bash
+# 1. Download LM Studio from https://lmstudio.ai/
+# 2. Load a model (e.g., Mistral-7B)
+# 3. Start local server
+# 4. Run example (uses OpenAI-compatible endpoint)
+python examples/example_llm_providers.py
+```
 
 ### 4. Debug Evaluation Metrics
 
