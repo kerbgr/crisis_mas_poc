@@ -1074,23 +1074,31 @@ The system supports multiple LLM providers through a unified interface:
 
 ### Decision-Making Flow
 
-The system follows a structured 7-step process for multi-agent decision-making:
+The system follows a structured 8-step process for multi-agent decision-making:
 
 ```mermaid
 flowchart TD
     Start([Start]) --> LoadScenario[1. Load Scenario<br/>scenarios/flood_scenario.json]
     LoadScenario --> ParseScenario[Parse JSON<br/>Extract alternatives & criteria]
 
-    ParseScenario --> AgentAssess{2. Agent Assessment<br/>For each expert}
+    ParseScenario --> SelectExperts{2. Select Experts<br/>--expert-selection mode?}
 
-    AgentAssess -->|Medical| Med[Medical Expert<br/>LLM Analysis]
-    AgentAssess -->|Logistics| Log[Logistics Expert<br/>LLM Analysis]
-    AgentAssess -->|Safety| Saf[Safety Expert<br/>LLM Analysis]
-    AgentAssess -->|Environment| Env[Environmental Expert<br/>LLM Analysis]
+    SelectExperts -->|manual| ManualExperts[Manual: Use --agents flag<br/>or default 3 core experts]
+    SelectExperts -->|auto| AutoExperts[Auto: ExpertSelector<br/>analyzes scenario metadata]
 
-    Med & Log & Saf & Env --> Collect[Collect Assessments<br/>beliefs + confidence + reasoning]
+    ManualExperts --> InitExperts[Initialize Selected<br/>Expert Agents]
+    AutoExperts --> InitExperts
 
-    Collect --> ChooseAgg{3. Choose<br/>Aggregation Method}
+    InitExperts --> AgentAssess{3. Agent Assessment<br/>For each selected expert}
+
+    AgentAssess -->|Expert 1| Exp1[Expert Agent<br/>LLM Analysis]
+    AgentAssess -->|Expert 2| Exp2[Expert Agent<br/>LLM Analysis]
+    AgentAssess -->|Expert 3| Exp3[Expert Agent<br/>LLM Analysis]
+    AgentAssess -->|Expert N| ExpN[Expert Agent<br/>LLM Analysis]
+
+    Exp1 & Exp2 & Exp3 & ExpN --> Collect[Collect Assessments<br/>beliefs + confidence + reasoning]
+
+    Collect --> ChooseAgg{4. Choose<br/>Aggregation Method}
 
     ChooseAgg -->|Classical| ER[Evidential Reasoning<br/>Dempster-Shafer Theory]
     ChooseAgg -->|Neural| GAT[Graph Attention Network<br/>9-dim features + attention]
@@ -1098,15 +1106,15 @@ flowchart TD
     ER --> Combined[Combined Belief<br/>Distribution]
     GAT --> Combined
 
-    Combined --> MCDA[4. MCDA Scoring<br/>TOPSIS/WSM]
+    Combined --> MCDA[5. MCDA Scoring<br/>TOPSIS/WSM]
     MCDA --> Ranked[Ranked Alternatives<br/>with scores]
 
-    Ranked --> Consensus{5. Check Consensus<br/>Similarity > threshold?}
+    Ranked --> Consensus{6. Check Consensus<br/>Similarity ≥ threshold?}
 
     Consensus -->|No| Iterate[Provide Feedback<br/>Request Refinement]
     Iterate --> AgentAssess
 
-    Consensus -->|Yes| Decision[6. Generate Decision<br/>Top alternative + explanation]
+    Consensus -->|Yes| Decision[7. Generate Decision<br/>Top alternative + explanation]
 
     Decision --> CalcConf[Calculate Confidence<br/>0.6×consensus + 0.4×avg_conf]
     CalcConf --> CalcQuality[Calculate Quality Score<br/>MCDA score for recommended]
@@ -1114,7 +1122,7 @@ flowchart TD
     CalcQuality --> Baseline[Run Single-Agent Baseline<br/>Select best expert]
     Baseline --> BaselineAssess[Single Expert Assessment<br/>with criteria scores]
 
-    BaselineAssess --> Compare[7. Evaluation & Comparison]
+    BaselineAssess --> Compare[8. Evaluation & Comparison]
     CalcQuality --> Compare
 
     Compare --> Metrics[Calculate Metrics<br/>DQS, CL, CS, ECB]
@@ -1127,22 +1135,25 @@ flowchart TD
     classDef processClass fill:#bbdefb,stroke:#1976d2,stroke-width:2px
     classDef decisionClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
     classDef agentClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef evalClass fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    classDef selectClass fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    classDef evalClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
 
     class LoadScenario,ParseScenario,Collect,Combined,Ranked,Decision,CalcConf,CalcQuality processClass
-    class ChooseAgg,Consensus decisionClass
-    class Med,Log,Saf,Env,Baseline,BaselineAssess agentClass
+    class SelectExperts,ChooseAgg,Consensus decisionClass
+    class Exp1,Exp2,Exp3,ExpN,Baseline,BaselineAssess agentClass
+    class ManualExperts,AutoExperts,InitExperts selectClass
     class Compare,Metrics,Visualize,SaveOutput evalClass
 ```
 
 **Process Details:**
 1. **Scenario Loading**: Parse JSON scenario with alternatives and decision criteria
-2. **Agent Assessment**: Each expert analyzes scenario via LLM, produces structured assessment
-3. **Belief Aggregation**: Combine beliefs using ER (classical) or GAT (neural attention)
-4. **MCDA Scoring**: Rank alternatives using multi-criteria decision analysis (TOPSIS)
-5. **Consensus Check**: Measure agreement; iterate if below threshold
-6. **Decision Generation**: Select top alternative, calculate confidence and quality scores separately
-7. **Evaluation**: Compare against single-agent baseline, calculate metrics, generate visualizations
+2. **Expert Selection**: Choose experts manually (--agents flag) or automatically (ExpertSelector analyzes scenario metadata)
+3. **Agent Assessment**: Each selected expert analyzes scenario via LLM, produces structured assessment
+4. **Belief Aggregation**: Combine beliefs using ER (classical) or GAT (neural attention)
+5. **MCDA Scoring**: Rank alternatives using multi-criteria decision analysis (TOPSIS)
+6. **Consensus Check**: Measure agreement; iterate if below threshold
+7. **Decision Generation**: Select top alternative, calculate confidence and quality scores separately
+8. **Evaluation**: Compare against single-agent baseline, calculate metrics, generate visualizations
 
 ### Key Algorithms
 
