@@ -1032,15 +1032,15 @@ $$\text{Rank}(a_i) = \text{position of } C_i \text{ in sorted list}$$
 **Decision Quality Score (DQS):** Measures how well the recommended alternative satisfies decision criteria:
 
 $$\text{DQS} = \begin{cases}
-\frac{1}{|C|} \sum_{c \in C} s_c(a^*) & \text{single-agent (criteria scores)} \\
-\text{MCDA}(a^*) & \text{multi-agent (MCDA score)}
+\frac{1}{|C|} \sum_{c \in C} s_c(a^{*}) & \text{single-agent (criteria scores)} \\
+\text{MCDA}(a^{*}) & \text{multi-agent (MCDA score)}
 \end{cases}$$
 
 where:
-- $a^*$ = recommended alternative
+- $a^{*}$ = recommended alternative
 - $C$ = set of decision criteria
-- $s_c(a^*)$ = score of alternative $a^*$ on criterion $c$
-- $\text{MCDA}(a^*)$ = TOPSIS score for alternative $a^*$
+- $s_c(a^{*})$ = score of alternative $a^{*}$ on criterion $c$
+- $\text{MCDA}(a^{*})$ = TOPSIS score for alternative $a^{*}$
 
 **Key:** Both single-agent and multi-agent DQS are calculated from criteria satisfaction, making them directly comparable.
 
