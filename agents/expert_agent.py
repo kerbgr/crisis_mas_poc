@@ -405,18 +405,52 @@ KEY CONCERNS
         criteria: Optional[List[str]]
     ) -> tuple[str, str]:
         """
-        Generate role-specific prompt using PromptTemplates.
+        Generate domain-specific prompts tailored to agent's expertise and role.
 
-        Args:
-            scenario: Crisis scenario
-            alternatives: Response alternatives
-            criteria: Optional custom criteria
+        OBJECTIVE:
+        Creates specialized LLM prompts that leverage agent's expertise by using
+        domain-specific language, evaluation criteria, and reasoning patterns.
+        Ensures LLM acts as the appropriate expert (medical, logistics, meteorologist, etc.).
 
-        Returns:
-            Tuple of (prompt, system_prompt)
+        WHY THIS EXISTS:
+        Generic prompts produce generic responses. By mapping agent roles to specialized
+        prompt templates, we get more nuanced, expert-level assessments that consider
+        domain-specific factors. For example:
+        - Medical expert focuses on casualties, triage, medical resources
+        - Logistics expert focuses on supply chains, transportation, resource allocation
+        - Meteorologist focuses on weather patterns, forecasting, environmental conditions
 
-        Raises:
-            ValueError: If agent role is not recognized
+        INPUTS:
+        - scenario: Crisis scenario containing type, severity, context
+        - alternatives: Response alternatives to evaluate
+        - criteria: Optional custom evaluation criteria (if None, uses role defaults)
+
+        OUTPUTS:
+        Tuple of (user_prompt, system_prompt):
+        - user_prompt: Main prompt with scenario details and alternatives
+        - system_prompt: System message defining agent role and behavior
+
+        ROLE MAPPING LOGIC:
+        Matches agent expertise/role keywords to prompt templates:
+        - "meteorolog" or "weather" → meteorologist_prompt
+        - "logistic", "operation", "supply_chain" → operations_prompt
+        - "medical" or "health" → medical_prompt
+        - Default: operations_prompt (with warning logged)
+
+        PROMPT STRUCTURE:
+        Each prompt template includes:
+        - Role definition and expertise area
+        - Scenario context and severity
+        - List of alternatives with details
+        - Evaluation criteria (domain-specific)
+        - Output format requirements (JSON structure)
+        - Examples of reasoning patterns
+
+        EXAMPLE:
+        Medical expert for earthquake scenario:
+        - system_prompt: "You are an emergency medicine specialist..."
+        - user_prompt: "Evaluate earthquake response focusing on casualties,
+                       medical resources, triage procedures..."
         """
         # Map agent expertise/role to prompt generation method
         expertise_lower = self.expertise.lower()
@@ -458,14 +492,50 @@ KEY CONCERNS
 
     def _call_llm(self, prompt: str, system_prompt: str) -> Dict[str, Any]:
         """
-        Call LLM API with retry and error handling.
+        Execute LLM API call with automatic retry logic and comprehensive error handling.
 
-        Args:
-            prompt: User prompt
-            system_prompt: System prompt
+        OBJECTIVE:
+        Provides robust interface to LLM provider (Claude, OpenAI, LM Studio) that
+        handles transient failures, rate limits, and malformed responses gracefully.
+        Ensures system continues operating even when LLM calls fail.
 
-        Returns:
-            LLM response dictionary
+        WHY THIS EXISTS:
+        LLM API calls are network operations that can fail for many reasons:
+        - Network timeouts or connection errors
+        - Rate limiting from provider
+        - Malformed JSON responses
+        - Provider outages or maintenance
+        This wrapper ensures resilience through retry logic (built into llm_client)
+        and structured error responses that don't crash the agent.
+
+        INPUTS:
+        - prompt: User message containing scenario, alternatives, and evaluation request
+        - system_prompt: System message defining agent role and behavior constraints
+
+        OUTPUTS:
+        Dictionary containing either:
+        SUCCESS CASE:
+        - alternative_rankings: {alt_id: score} dictionary
+        - reasoning: Expert's analysis and justification
+        - confidence: Self-reported confidence (0.0-1.0)
+        - key_concerns: List of critical issues identified
+        - _metadata: LLM provider metadata (tokens, model, latency)
+
+        ERROR CASE:
+        - error: True
+        - error_message: Human-readable error description
+        - error_type: Exception class name for debugging
+
+        LLM CLIENT CONFIGURATION:
+        - max_tokens: 2000 (sufficient for detailed reasoning)
+        - temperature: 0.7 (balanced creativity/consistency)
+        - Retry logic: Automatic exponential backoff (in llm_client)
+        - Timeout: Provider-specific defaults
+
+        ERROR HANDLING STRATEGY:
+        Does NOT raise exceptions - always returns dictionary
+        Upstream code checks for 'error' field to handle failures
+        Logs full exception with stack trace for debugging
         """
         try:
             response = self.llm_client.generate_assessment(
@@ -490,10 +560,40 @@ KEY CONCERNS
         alternatives: List[Dict[str, Any]]
     ):
         """
-        Validate scenario and alternatives inputs.
+        Validate that scenario and alternatives meet minimum requirements before evaluation.
 
-        Raises:
-            ValueError: If inputs are invalid
+        OBJECTIVE:
+        Performs early validation to catch malformed inputs before expensive LLM calls,
+        providing clear error messages for debugging and preventing system failures.
+
+        WHY THIS EXISTS:
+        Fail-fast principle - detect invalid inputs immediately rather than during LLM
+        processing. Saves API costs and time by rejecting bad data early. Provides
+        actionable error messages to upstream callers.
+
+        VALIDATION RULES:
+        1. Scenario must be non-empty dictionary
+           - Prevents null/None scenarios from reaching LLM
+           - Ensures minimum context available
+
+        2. Alternatives list must be non-empty
+           - At least one alternative required for evaluation
+           - Prevents meaningless assessment requests
+
+        3. Each alternative must have 'id' or 'name' field
+           - Ensures alternatives can be referenced in rankings
+           - Prevents KeyError when building belief distributions
+           - Reports specific index of invalid alternative
+
+        ERROR CASES:
+        - Empty scenario: "Scenario cannot be empty"
+        - Empty alternatives: "Alternatives list cannot be empty"
+        - Missing ID: "Alternative at index {i} must have either 'id' or 'name' field"
+
+        VALIDATION FLOW:
+        Called at start of evaluate_scenario() before prompt generation
+        Raises ValueError immediately on first validation failure
+        Does NOT return - either succeeds silently or raises exception
         """
         if not scenario:
             raise ValueError("Scenario cannot be empty")
@@ -510,10 +610,53 @@ KEY CONCERNS
 
     def _validate_llm_response(self, llm_response: Dict[str, Any]):
         """
-        Validate LLM response structure.
+        Validate LLM response structure and content to ensure processability.
 
-        Raises:
-            ValueError: If response structure is invalid
+        OBJECTIVE:
+        Verifies that LLM returned all required fields in expected formats before
+        downstream processing. Catches LLM hallucinations, format errors, and
+        incomplete responses early.
+
+        WHY THIS EXISTS:
+        LLMs are probabilistic and may:
+        - Omit required fields
+        - Return malformed JSON
+        - Provide out-of-range values (confidence > 1.0)
+        - Return wrong data types (string instead of dict)
+        This validation catches these issues before they cause crashes in belief
+        distribution generation or consensus calculation.
+
+        VALIDATION CHECKS:
+        1. Required fields present (logs warning if missing):
+           - alternative_rankings: Agent's preference scores
+           - reasoning: Justification text
+           - confidence: Self-reported certainty
+           - key_concerns: Critical issues identified
+
+        2. alternative_rankings validation:
+           - Must be non-empty dictionary
+           - Keys = alternative IDs, Values = numeric scores
+           - Raises ValueError if missing or wrong type
+
+        3. Confidence value validation:
+           - Must be numeric (int or float)
+           - Must be in range [0, 1]
+           - Logs warning if out of range (doesn't raise)
+
+        VALIDATION STRATEGY:
+        - Required fields: Log warnings but continue (degraded functionality)
+        - alternative_rankings: Raise ValueError (critical for operation)
+        - confidence: Log warning if invalid (use default 0.5)
+
+        WHY NOT RAISE ON MISSING FIELDS:
+        System should be resilient. Missing reasoning or key_concerns reduces
+        quality but doesn't prevent decision-making. Only critical structural
+        issues (no rankings) cause failures.
+
+        EXAMPLE ERROR MESSAGES:
+        - "LLM response missing field: reasoning"
+        - "alternative_rankings must be non-empty dictionary"
+        - "Confidence value 1.5 is not in valid range [0, 1]"
         """
         required_fields = ['alternative_rankings', 'reasoning', 'confidence', 'key_concerns']
 
@@ -542,16 +685,63 @@ KEY CONCERNS
         scenario: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        Build comprehensive assessment dictionary.
+        Construct complete agent assessment dictionary with all required fields.
 
-        Args:
-            belief_distribution: Normalized alternative rankings
-            criteria_scores: Per-criterion scores
-            llm_response: Original LLM response
-            scenario: Scenario data
+        OBJECTIVE:
+        Assembles final assessment output by combining processed LLM response with
+        agent metadata and scenario context. Creates standardized format expected
+        by CoordinatorAgent for belief aggregation and consensus building.
 
-        Returns:
-            Complete assessment dictionary
+        WHY THIS EXISTS:
+        Centralized construction ensures consistent assessment format across all
+        expert agents. Combines multiple data sources (agent profile, LLM output,
+        computed distributions) into single structure. Enables easy extension by
+        adding new fields in one place.
+
+        INPUTS:
+        - belief_distribution: Normalized probability distribution over alternatives
+          Format: {alt_id: probability} where sum(probabilities) ≈ 1.0
+          Created by generate_belief_distribution() from LLM rankings
+
+        - criteria_scores: Per-criterion evaluation scores
+          Format: {criterion_id: {alt_id: score}}
+          Created by get_criteria_scores() from scenario data + LLM reasoning
+
+        - llm_response: Raw LLM output containing reasoning, confidence, concerns
+          Used to extract qualitative assessment details
+
+        - scenario: Original scenario data for context and metadata
+
+        OUTPUTS:
+        Dictionary containing:
+        AGENT IDENTIFICATION:
+        - agent_id: Unique agent identifier
+        - agent_name: Human-readable name
+        - agent_role: Domain role (e.g., "Emergency Medicine Specialist")
+        - expertise: Domain expertise area
+
+        QUANTITATIVE ASSESSMENT:
+        - belief_distribution: Probability distribution over alternatives
+        - criteria_scores: Detailed scores per criterion per alternative
+
+        QUALITATIVE ASSESSMENT:
+        - reasoning: LLM's detailed analysis and justification
+        - confidence: Agent's self-reported confidence (0.0-1.0)
+        - key_concerns: List of critical issues identified
+
+        METADATA:
+        - timestamp: ISO format assessment time
+        - scenario_type: Type of crisis (flood, earthquake, etc.)
+        - llm_metadata: LLM provider stats (tokens, model, latency)
+        - assessment_number: Sequential counter for this agent
+
+        USAGE IN SYSTEM:
+        1. ExpertAgent returns this from evaluate_scenario()
+        2. CoordinatorAgent collects from all agents
+        3. ER/GAT uses belief_distribution for aggregation
+        4. MCDA uses criteria_scores for ranking
+        5. Consensus uses belief_distribution for similarity
+        6. Evaluation uses criteria_scores for quality metrics
         """
         return {
             'agent_id': self.agent_id,
