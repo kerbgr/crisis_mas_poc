@@ -21,6 +21,27 @@ This guide explains how to create custom agents for the Crisis MAS using the pro
 
 ## Quick Start
 
+### Current Expert Roles (v0.8)
+
+The Crisis MAS currently includes **11 expert roles** organized in a comprehensive emergency response command structure:
+
+**Default Core Experts (3):**
+1. **Meteorologist** (`agent_meteorologist`) - Weather/environmental specialist
+2. **Logistics Coordinator** (`logistics_expert_01`) - Supply chain management
+3. **Medical Expert** (`medical_expert_01`) - Emergency medicine
+
+**Emergency Response Command Structure (8 additional roles):**
+4. **PSAP Commander** (`psap_commander_01`) - Emergency communications authority
+5. **On-Scene Police Commander** (`police_onscene_01`) - Tactical law enforcement
+6. **Regional Police Commander** (`police_regional_01`) - Strategic police authority
+7. **On-Scene Fire Commander** (`fire_onscene_01`) - Tactical fire/rescue
+8. **Regional Fire Commander** (`fire_regional_01`) - Strategic fire/rescue
+9. **Medical Infrastructure Director** (`medical_infrastructure_01`) - Healthcare system capacity
+10. **On-Scene Coast Guard Commander** (`coastguard_onscene_01`) - Maritime tactical authority
+11. **National Coast Guard Director** (`coastguard_national_01`) - Strategic maritime authority
+
+See `agents/agent_profiles.json` for complete agent configurations.
+
 ### 1. Copy the Template
 
 ```bash
@@ -107,13 +128,15 @@ The template (`agent_template.py`) provides a complete, documented starting poin
 **Questions to answer:**
 - What domain expertise does this agent represent?
 - What unique perspective does it bring to crisis decisions?
-- How does it differ from existing agents (medical, logistics, safety, environmental)?
+- How does it differ from existing 11 agents (see Current Expert Roles above)?
+- Does it fill a gap in the current emergency response structure?
 
 **Example:**
 ```
 Agent Type: Economic/Financial Expert
 Domain: Cost-benefit analysis, budget constraints, economic impact
 Unique Value: Assesses financial feasibility and economic consequences
+Gap Filled: Currently missing economic/financial perspective in 11-agent structure
 ```
 
 ### Step 2: Configure Agent Profile
@@ -567,28 +590,47 @@ from agents.expert_agent import ExpertAgent
 from agents.coordinator_agent import CoordinatorAgent
 from decision_framework import EvidentialReasoning, MCDAEngine, ConsensusModel
 from llm_integration import ClaudeClient
+from scenarios import ScenarioLoader
 
 # Initialize agents
 llm_client = ClaudeClient()
 custom_agent = MyCustomAgent("agent_custom_001", llm_client=llm_client)
-medical_agent = ExpertAgent("agent_medical_expert", llm_client=llm_client)
+
+# Load existing expert agents (using agent_profiles.json)
+agent_profiles = ScenarioLoader.load('agents/agent_profiles.json')
+medical_agent = ExpertAgent(
+    agent_id="medical_expert_01",
+    profile=agent_profiles['agents'][2],  # Medical Expert
+    llm_client=llm_client
+)
+psap_agent = ExpertAgent(
+    agent_id="psap_commander_01",
+    profile=agent_profiles['agents'][6],  # PSAP Commander
+    llm_client=llm_client
+)
 
 # Initialize framework
 er_engine = EvidentialReasoning()
 mcda_engine = MCDAEngine(criteria_weights_path="scenarios/criteria_weights.json")
 consensus_model = ConsensusModel()
 
-# Create coordinator
+# Create coordinator with multiple experts
 coordinator = CoordinatorAgent(
-    expert_agents=[custom_agent, medical_agent],
+    expert_agents=[custom_agent, medical_agent, psap_agent],
     er_engine=er_engine,
     mcda_engine=mcda_engine,
     consensus_model=consensus_model
 )
 
+# Load scenario
+scenario = ScenarioLoader.load('scenarios/flood_scenario.json')
+alternatives = scenario['available_actions']
+
 # Test decision
 decision = coordinator.make_final_decision(scenario, alternatives)
 print(f"Decision: {decision['recommended_alternative']}")
+print(f"Confidence: {decision['confidence']:.2%}")
+print(f"Consensus: {decision['consensus_level']:.2%}")
 ```
 
 ---
