@@ -82,19 +82,78 @@ class MetricsEvaluator:
                 'error': 'Insufficient decision data'
             }
 
-        # Calculate weighted score (already in decision as confidence)
-        weighted_score = confidence
+        # Calculate weighted score based on criteria satisfaction
+        # Option 1: Use criteria_scores if available (single-agent or detailed multi-agent)
+        criteria_scores = decision.get('criteria_scores', {})
 
-        # Extract criteria satisfaction if available
+        # Option 2: Use MCDA scores (multi-agent)
+        mcda_scores = decision.get('mcda_scores', {})
+
+        # Option 3: Use final_scores for the recommended alternative
+        weighted_score = 0.0
         criteria_satisfaction = {}
 
-        # If MCDA scores are available, use them as criteria satisfaction
-        mcda_scores = decision.get('mcda_scores', {})
-        if mcda_scores and recommended in mcda_scores:
-            # MCDA scores represent criteria satisfaction for recommended alternative
+        if criteria_scores and isinstance(criteria_scores, dict) and criteria_scores:
+            # Single-agent or detailed criteria scoring
+            # criteria_scores can be in two formats:
+            # Format 1: {criterion_id: {alt_id: score}} (from expert agent)
+            # Format 2: {criterion_name: score} (flat format for one alternative)
+
+            # Check if this is nested format (Format 1)
+            first_value = next(iter(criteria_scores.values()), None)
+            if isinstance(first_value, dict):
+                # Format 1: Extract scores for the recommended alternative
+                alt_criteria_scores = {}
+                for criterion, alt_scores in criteria_scores.items():
+                    if recommended in alt_scores:
+                        alt_criteria_scores[criterion] = alt_scores[recommended]
+
+                if alt_criteria_scores:
+                    # Calculate weighted average
+                    if criteria_weights:
+                        total_weight = sum(criteria_weights.values())
+                        weighted_score = sum(
+                            alt_criteria_scores.get(criterion, 0.0) * weight
+                            for criterion, weight in criteria_weights.items()
+                        ) / total_weight if total_weight > 0 else 0.0
+                    else:
+                        # Equal weights for all criteria
+                        scores = list(alt_criteria_scores.values())
+                        weighted_score = sum(scores) / len(scores) if scores else 0.0
+
+                    criteria_satisfaction = alt_criteria_scores
+            else:
+                # Format 2: Flat format (already scores for one alternative)
+                if criteria_weights:
+                    total_weight = sum(criteria_weights.values())
+                    weighted_score = sum(
+                        criteria_scores.get(criterion, 0.0) * weight
+                        for criterion, weight in criteria_weights.items()
+                    ) / total_weight if total_weight > 0 else 0.0
+                else:
+                    # Equal weights for all criteria
+                    scores = list(criteria_scores.values())
+                    weighted_score = sum(scores) / len(scores) if scores else 0.0
+
+                criteria_satisfaction = criteria_scores.copy()
+
+        elif mcda_scores and recommended in mcda_scores:
+            # Multi-agent MCDA scoring
+            # MCDA score for the recommended alternative
+            weighted_score = mcda_scores[recommended]
             criteria_satisfaction = {
                 'overall_mcda': mcda_scores[recommended]
             }
+
+        elif final_scores and recommended in final_scores:
+            # Fallback: use the final score for the recommended alternative
+            weighted_score = final_scores[recommended]
+            criteria_satisfaction = {
+                'final_score': final_scores[recommended]
+            }
+        else:
+            logger.warning(f"No quality metrics found for {recommended}")
+            weighted_score = 0.0
 
         # Check ground truth match if available
         ground_truth_match = None
@@ -105,9 +164,9 @@ class MetricsEvaluator:
                 'correct': ground_truth['correct_alternative']
             }
 
-            # Calculate quality based on match
+            # Boost quality score if ground truth matches
             if ground_truth_match['match']:
-                weighted_score = max(weighted_score, 0.9)  # Boost if correct
+                weighted_score = max(weighted_score, 0.9)
 
             logger.info(
                 f"Ground truth comparison: {ground_truth_match['match']} "
