@@ -93,6 +93,9 @@ class MetricsEvaluator:
         weighted_score = 0.0
         criteria_satisfaction = {}
 
+        # Try to calculate quality score from available data
+        quality_calculated = False
+
         if criteria_scores and isinstance(criteria_scores, dict) and criteria_scores:
             # Single-agent or detailed criteria scoring
             # criteria_scores can be in two formats:
@@ -122,6 +125,7 @@ class MetricsEvaluator:
                         weighted_score = sum(scores) / len(scores) if scores else 0.0
 
                     criteria_satisfaction = alt_criteria_scores
+                    quality_calculated = True
             else:
                 # Format 2: Flat format (already scores for one alternative)
                 if criteria_weights:
@@ -136,22 +140,26 @@ class MetricsEvaluator:
                     weighted_score = sum(scores) / len(scores) if scores else 0.0
 
                 criteria_satisfaction = criteria_scores.copy()
+                quality_calculated = True
 
-        elif mcda_scores and recommended in mcda_scores:
+        if not quality_calculated and mcda_scores and recommended in mcda_scores:
             # Multi-agent MCDA scoring
             # MCDA score for the recommended alternative
             weighted_score = mcda_scores[recommended]
             criteria_satisfaction = {
                 'overall_mcda': mcda_scores[recommended]
             }
+            quality_calculated = True
 
-        elif final_scores and recommended in final_scores:
+        if not quality_calculated and final_scores and recommended in final_scores:
             # Fallback: use the final score for the recommended alternative
             weighted_score = final_scores[recommended]
             criteria_satisfaction = {
                 'final_score': final_scores[recommended]
             }
-        else:
+            quality_calculated = True
+
+        if not quality_calculated:
             logger.warning(f"No quality metrics found for {recommended}")
             weighted_score = 0.0
 
