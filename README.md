@@ -237,23 +237,26 @@ This will:
 python main.py [OPTIONS]
 
 Options:
-  --scenario PATH           Scenario JSON file (default: scenarios/flood_scenario.json)
-  --agents AGENT_IDS        Specific agent IDs to load (space-separated), or "all" for all 11 experts
-                            Default: agent_meteorologist logistics_expert_01 medical_expert_01
-                            Available: agent_meteorologist, medical_expert_01, logistics_expert_01,
-                                      psap_commander_01, police_onscene_01, police_regional_01,
-                                      fire_onscene_01, fire_regional_01, medical_infrastructure_01,
-                                      coastguard_onscene_01, coastguard_national_01
-  --criteria PATH          Criteria weights JSON (default: scenarios/criteria_weights.json)
-  --output PATH            Output results file (default: results/results.json)
-  --config PATH            Configuration JSON file
-  --llm-provider PROVIDER  LLM provider: claude, openai, or lmstudio (default: claude)
-  --no-llm                 Disable LLM enhancement (use rule-based reasoning)
-  --no-viz                 Disable visualization generation
-  --aggregation METHOD     Aggregation method: ER or GAT (default: ER)
-  --consensus-threshold N  Consensus threshold 0-1 (default: 0.7)
-  --verbose                Enable verbose logging
-  --help                   Show help message
+  --scenario PATH              Scenario JSON file (default: scenarios/flood_scenario.json)
+  --agents AGENT_IDS           Specific agent IDs to load (space-separated), or "all" for all 11 experts
+                               Default: agent_meteorologist logistics_expert_01 medical_expert_01
+                               Available: agent_meteorologist, medical_expert_01, logistics_expert_01,
+                                         psap_commander_01, police_onscene_01, police_regional_01,
+                                         fire_onscene_01, fire_regional_01, medical_infrastructure_01,
+                                         coastguard_onscene_01, coastguard_national_01
+  --expert-selection MODE      Expert selection mode: "manual" or "auto" (default: manual)
+                               - manual: Use --agents flag to specify experts
+                               - auto: Automatically select experts based on scenario metadata
+  --criteria PATH              Criteria weights JSON (default: scenarios/criteria_weights.json)
+  --output PATH                Output results file (default: results/results.json)
+  --config PATH                Configuration JSON file
+  --llm-provider PROVIDER      LLM provider: claude, openai, or lmstudio (default: claude)
+  --no-llm                     Disable LLM enhancement (use rule-based reasoning)
+  --no-viz                     Disable visualization generation
+  --aggregation METHOD         Aggregation method: ER or GAT (default: ER)
+  --consensus-threshold N      Consensus threshold 0-1 (default: 0.7)
+  --verbose                    Enable verbose logging
+  --help                       Show help message
 ```
 
 ### Usage Examples
@@ -335,13 +338,31 @@ python main.py --agents coastguard_onscene_01 coastguard_national_01 medical_exp
 python main.py --agents medical_expert_01 medical_infrastructure_01 logistics_expert_01
 ```
 
-#### Example 8: Combined Options
+#### Example 8: Automatic Expert Selection (NEW in v0.8!)
+
+```bash
+# Let the system automatically choose which experts to engage
+python main.py --scenario flood_scenario --expert-selection auto
+
+# With verbose mode to see selection reasoning
+python main.py --scenario flood_scenario --expert-selection auto --verbose
+```
+
+**How it works:** The system analyzes scenario metadata (crisis type, severity, affected domains, scope) and automatically selects the most relevant experts. For example, a coastal flood with high severity will auto-select: meteorologist, logistics, medical, coast guard (both levels), police (tactical + strategic), fire/rescue, PSAP commander, and medical infrastructure.
+
+**Benefits:**
+- No need to manually choose from 11 experts
+- Consistent expert team selection
+- Prevents over/under-engagement
+- Transparent reasoning (use --verbose)
+
+#### Example 9: Combined Options
 
 ```bash
 python main.py \
   --llm-provider openai \
   --aggregation GAT \
-  --agents all \
+  --expert-selection auto \
   --scenario scenarios/custom_scenario.json \
   --output results/custom_output.json \
   --verbose
@@ -460,6 +481,136 @@ The expert roles are organized in a **two-tier command hierarchy**:
   - Focus: Strategic planning, resource allocation, inter-agency coordination
 
 This hierarchy enables the system to model realistic emergency response structures where tactical commanders provide on-ground intelligence while strategic commanders coordinate broader resource deployment.
+
+#### Smart Expert Selection (Auto-Mode)
+
+**NEW in v0.8:** The system can automatically select appropriate experts based on scenario characteristics.
+
+**How to Enable:**
+```bash
+python main.py --scenario flood_scenario --expert-selection auto
+```
+
+**Expert Selection Workflow:**
+
+```mermaid
+flowchart TD
+    Start([Load Scenario]) --> CheckMode{Expert Selection<br/>Mode?}
+
+    CheckMode -->|manual| ManualPath[Use --agents flag<br/>or default 3 core experts]
+    CheckMode -->|auto| AutoPath[Extract expert_selection<br/>metadata from scenario]
+
+    ManualPath --> InitAgents[Initialize Selected Agents]
+
+    AutoPath --> HasMeta{Metadata<br/>exists?}
+    HasMeta -->|No| FallbackCore[Fallback: Use 3<br/>core experts]
+    HasMeta -->|Yes| EvalExperts[Evaluate Each Expert<br/>Against Selection Rules]
+
+    FallbackCore --> InitAgents
+
+    EvalExperts --> ExpertLoop{For Each of<br/>11 Experts}
+
+    ExpertLoop --> ScoreCriteria[Calculate Match Score<br/>Based on Criteria]
+
+    ScoreCriteria --> CriteriaChecks{Check Matching Criteria}
+
+    CriteriaChecks --> C1[Crisis Type Match: +3]
+    CriteriaChecks --> C2[Crisis Subtype Match: +2]
+    CriteriaChecks --> C3[Domain Match: +2]
+    CriteriaChecks --> C4[Severity Threshold: +1]
+    CriteriaChecks --> C5[Geographic Scope: +2]
+    CriteriaChecks --> C6[Geographic Location: +2]
+    CriteriaChecks --> C7[Command Structure: +2]
+    CriteriaChecks --> C8[Multi-jurisdictional: +1]
+    CriteriaChecks --> C9[Infrastructure Systems: +2]
+    CriteriaChecks --> C10[Population Threshold: +1]
+    CriteriaChecks --> C11[Duration Threshold: +1]
+
+    C1 & C2 & C3 & C4 & C5 & C6 & C7 & C8 & C9 & C10 & C11 --> TotalScore[Calculate Total Score]
+
+    TotalScore --> CheckScore{Score > 0<br/>OR<br/>Core Expert?}
+
+    CheckScore -->|Yes| AddToSelected[Add to Selected Set]
+    CheckScore -->|No| Skip[Skip Expert]
+
+    AddToSelected --> MoreExperts{More Experts<br/>to Evaluate?}
+    Skip --> MoreExperts
+
+    MoreExperts -->|Yes| ExpertLoop
+    MoreExperts -->|No| EnsureMin{Selected >= 3<br/>minimum?}
+
+    EnsureMin -->|No| AddCore[Add Core Experts]
+    EnsureMin -->|Yes| CheckMax{Selected <= 11<br/>maximum?}
+
+    AddCore --> CheckMax
+
+    CheckMax -->|No| KeepTop[Keep Top 11 by Score]
+    CheckMax -->|Yes| ReturnList[Return Selected Agent IDs]
+
+    KeepTop --> ReturnList
+    ReturnList --> InitAgents
+
+    InitAgents --> End([Initialize Expert Agents])
+
+    %% Styling
+    classDef processClass fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    classDef decisionClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef criteriaClass fill:#c8e6c9,stroke:#388e3c,stroke-width:1px
+    classDef coreClass fill:#ffccbc,stroke:#e64a19,stroke-width:2px
+
+    class Start,AutoPath,EvalExperts,ScoreCriteria,TotalScore,AddToSelected,ReturnList,InitAgents,End processClass
+    class CheckMode,HasMeta,ExpertLoop,CriteriaChecks,CheckScore,MoreExperts,EnsureMin,CheckMax decisionClass
+    class C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11 criteriaClass
+    class FallbackCore,ManualPath,AddCore,KeepTop coreClass
+```
+
+**Selection Criteria:**
+The ExpertSelector analyzes scenario metadata and scores each expert based on:
+- **Crisis Type Matching**: Flood → Coast Guard, Fire → Fire Commanders, etc.
+- **Severity Thresholds**: Higher severity → Strategic commanders included
+- **Geographic Scope**: Regional/National → Strategic level, Local → Tactical only
+- **Affected Domains**: Law enforcement, medical, maritime, fire/rescue, etc.
+- **Command Structure Needs**: Tactical, strategic, multi-jurisdictional
+- **Infrastructure Impact**: Hospitals → Medical Infrastructure Director
+- **Population Impact**: Large populations → Regional/national coordination
+- **Duration**: Long incidents → Strategic fire/rescue commanders
+
+**Example Auto-Selection:**
+
+*Scenario: Severe coastal flood (severity 0.8, 25k affected, regional scope)*
+
+**Auto-selected experts (11):**
+✅ Core 3 (always): Meteorologist, Logistics, Medical
+✅ PSAP Commander (multi-agency coordination)
+✅ Police On-Scene & Regional (evacuation + law enforcement)
+✅ Fire On-Scene & Regional (rescue operations)
+✅ Medical Infrastructure (hospital capacity)
+✅ Coast Guard On-Scene & National (maritime rescue)
+
+**Creating Auto-Selection Scenarios:**
+
+Add `expert_selection` metadata to your scenario JSON:
+
+```json
+{
+  "type": "flood",
+  "severity": 0.8,
+  "expert_selection": {
+    "crisis_type": "flood",
+    "crisis_subtypes": ["coastal", "evacuation"],
+    "severity": 0.8,
+    "geographic_scope": "regional",
+    "affected_domains": ["maritime_coastal", "law_enforcement", "medical_health"],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    }
+  }
+}
+```
+
+See `scenarios/scenario_template.json` for complete template with all options.
 
 ### LLM Provider Comparison
 
