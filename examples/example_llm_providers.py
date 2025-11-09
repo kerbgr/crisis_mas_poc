@@ -21,7 +21,14 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from llm_integration.claude_client import ClaudeClient
+# Try to import ClaudeClient, but don't fail if dependencies missing
+try:
+    from llm_integration.claude_client import ClaudeClient
+    CLAUDE_AVAILABLE = True
+except ImportError as e:
+    CLAUDE_AVAILABLE = False
+    print(f"Note: Claude client not available ({e})")
+    print("This is OK - example will show setup instructions\n")
 
 
 def check_api_keys():
