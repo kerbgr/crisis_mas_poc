@@ -221,20 +221,45 @@ def initialize_expert_agents(
 
     Args:
         llm_client: LLM client to use for all agents
-        agent_ids: Optional list of specific agent IDs to load
+        agent_ids: Optional list of specific agent IDs to load.
+                   Supported agent IDs include:
+                   - Original 3: agent_meteorologist, logistics_expert_01, medical_expert_01
+                   - Emergency Response: psap_commander_01
+                   - Police: police_onscene_01, police_regional_01
+                   - Fire: fire_onscene_01, fire_regional_01
+                   - Medical: medical_infrastructure_01
+                   - Coast Guard: coastguard_onscene_01, coastguard_national_01
 
     Returns:
         List of ExpertAgent instances
     """
     logger = logging.getLogger(__name__)
 
-    # Default agents if not specified
+    # Default agents if not specified - use original 3 for backward compatibility
+    # Users can specify --agents flag to load specific agents or use ALL_AGENTS constant
     if agent_ids is None:
         agent_ids = [
             "agent_meteorologist",
             "logistics_expert_01",
             "medical_expert_01"
         ]
+
+    # If user passes 'all', load all 11 expert agents
+    if agent_ids == ['all']:
+        agent_ids = [
+            "agent_meteorologist",
+            "logistics_expert_01",
+            "medical_expert_01",
+            "psap_commander_01",
+            "police_onscene_01",
+            "police_regional_01",
+            "fire_onscene_01",
+            "fire_regional_01",
+            "medical_infrastructure_01",
+            "coastguard_onscene_01",
+            "coastguard_national_01"
+        ]
+        logger.info("Loading all 11 expert agents...")
 
     agents = []
     for agent_id in agent_ids:
@@ -850,8 +875,14 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Run with default settings (includes baseline comparison)
+  # Run with default settings (3 agents: meteorologist, logistics, medical)
   python main.py --scenario flood_scenario
+
+  # Run with all 11 expert agents for comprehensive multi-perspective analysis
+  python main.py --scenario flood_scenario --agents all
+
+  # Run with specific expert agents
+  python main.py --scenario flood_scenario --agents psap_commander_01 police_onscene_01 fire_onscene_01
 
   # Run with specific baseline agent type
   python main.py --scenario flood_scenario --baseline-agent meteorologist
@@ -902,7 +933,11 @@ For more information, see README.md
         '--agents',
         nargs='+',
         default=None,
-        help='Specific agent IDs to use (default: all available)'
+        help='Specific agent IDs to use (default: meteorologist, logistics, medical). '
+             'Use "all" to load all 11 expert agents, or specify agent IDs: '
+             'agent_meteorologist, medical_expert_01, logistics_expert_01, psap_commander_01, '
+             'police_onscene_01, police_regional_01, fire_onscene_01, fire_regional_01, '
+             'medical_infrastructure_01, coastguard_onscene_01, coastguard_national_01'
     )
 
     parser.add_argument(

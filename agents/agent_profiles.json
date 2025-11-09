@@ -106,6 +106,150 @@
       "confidence_level": 0.90,
       "consensus_threshold": 0.7,
       "description": "Coordinator agent responsible for aggregating expert opinions and building consensus"
+    },
+    {
+      "agent_id": "psap_commander_01",
+      "name": "Commander Lisa Martinez",
+      "role": "PSAP Commander-Supervisor",
+      "expertise": "emergency_communications",
+      "experience_years": 16,
+      "risk_tolerance": 0.35,
+      "weight_preferences": {
+        "effectiveness": 0.30,
+        "safety": 0.25,
+        "speed": 0.25,
+        "cost": 0.10,
+        "public_acceptance": 0.10
+      },
+      "expertise_tags": ["dispatch", "112_operations", "CAD_systems", "multi_agency_coordination"],
+      "confidence_level": 0.85,
+      "description": "PSAP Commander specializing in emergency dispatch coordination and communication systems"
+    },
+    {
+      "agent_id": "police_onscene_01",
+      "name": "Captain James Mitchell",
+      "role": "On-Scene Police Commander",
+      "expertise": "tactical_law_enforcement",
+      "experience_years": 22,
+      "risk_tolerance": 0.3,
+      "weight_preferences": {
+        "effectiveness": 0.30,
+        "safety": 0.35,
+        "speed": 0.20,
+        "cost": 0.05,
+        "public_acceptance": 0.10
+      },
+      "expertise_tags": ["tactical_operations", "scene_security", "crowd_control", "threat_assessment"],
+      "confidence_level": 0.88,
+      "description": "On-scene police commander specializing in tactical field operations and scene control"
+    },
+    {
+      "agent_id": "police_regional_01",
+      "name": "Commissioner David Thompson",
+      "role": "Regional Police Commander",
+      "expertise": "strategic_law_enforcement",
+      "experience_years": 28,
+      "risk_tolerance": 0.4,
+      "weight_preferences": {
+        "effectiveness": 0.25,
+        "safety": 0.25,
+        "speed": 0.15,
+        "cost": 0.20,
+        "public_acceptance": 0.15
+      },
+      "expertise_tags": ["regional_strategy", "mutual_aid", "multi_jurisdictional", "resource_allocation"],
+      "confidence_level": 0.90,
+      "description": "Regional police commander responsible for strategic deployment and inter-jurisdictional coordination"
+    },
+    {
+      "agent_id": "fire_onscene_01",
+      "name": "Battalion Chief Maria Santos",
+      "role": "On-Scene Fire-Brigade Commander",
+      "expertise": "tactical_firefighting",
+      "experience_years": 19,
+      "risk_tolerance": 0.35,
+      "weight_preferences": {
+        "effectiveness": 0.30,
+        "safety": 0.35,
+        "speed": 0.20,
+        "cost": 0.05,
+        "public_acceptance": 0.10
+      },
+      "expertise_tags": ["fire_suppression", "rescue_operations", "hazmat_response", "structural_assessment"],
+      "confidence_level": 0.86,
+      "description": "On-scene fire commander specializing in tactical firefighting and technical rescue operations"
+    },
+    {
+      "agent_id": "fire_regional_01",
+      "name": "Fire Chief Thomas Anderson",
+      "role": "Regional Fire-Brigade Commander",
+      "expertise": "strategic_fire_service",
+      "experience_years": 26,
+      "risk_tolerance": 0.4,
+      "weight_preferences": {
+        "effectiveness": 0.25,
+        "safety": 0.25,
+        "speed": 0.15,
+        "cost": 0.20,
+        "public_acceptance": 0.15
+      },
+      "expertise_tags": ["regional_fire_operations", "mutual_aid", "long_duration_incidents", "personnel_management"],
+      "confidence_level": 0.88,
+      "description": "Regional fire commander responsible for strategic fire service deployment and mutual aid coordination"
+    },
+    {
+      "agent_id": "medical_infrastructure_01",
+      "name": "Dr. Patricia Lee",
+      "role": "Medical Infrastructure Director",
+      "expertise": "healthcare_system_capacity",
+      "experience_years": 24,
+      "risk_tolerance": 0.3,
+      "weight_preferences": {
+        "effectiveness": 0.30,
+        "safety": 0.30,
+        "speed": 0.20,
+        "cost": 0.15,
+        "public_acceptance": 0.05
+      },
+      "expertise_tags": ["hospital_capacity", "surge_operations", "patient_distribution", "medical_supply_chain"],
+      "confidence_level": 0.87,
+      "description": "Medical infrastructure director specializing in hospital system capacity and surge operations"
+    },
+    {
+      "agent_id": "coastguard_onscene_01",
+      "name": "Commander Steven Blake",
+      "role": "On-Scene Coast Guard Commander",
+      "expertise": "maritime_rescue",
+      "experience_years": 18,
+      "risk_tolerance": 0.35,
+      "weight_preferences": {
+        "effectiveness": 0.30,
+        "safety": 0.35,
+        "speed": 0.20,
+        "cost": 0.05,
+        "public_acceptance": 0.10
+      },
+      "expertise_tags": ["maritime_rescue", "coastal_evacuation", "sea_state_assessment", "SAR_operations"],
+      "confidence_level": 0.84,
+      "description": "On-scene Coast Guard commander specializing in maritime rescue and coastal operations"
+    },
+    {
+      "agent_id": "coastguard_national_01",
+      "name": "Admiral Rebecca Foster",
+      "role": "National Coast Guard Director",
+      "expertise": "national_maritime_strategy",
+      "experience_years": 30,
+      "risk_tolerance": 0.4,
+      "weight_preferences": {
+        "effectiveness": 0.25,
+        "safety": 0.25,
+        "speed": 0.15,
+        "cost": 0.20,
+        "public_acceptance": 0.15
+      },
+      "expertise_tags": ["national_maritime_policy", "inter_regional_coordination", "port_security", "strategic_assets"],
+      "confidence_level": 0.92,
+      "description": "National Coast Guard director responsible for strategic maritime policy and inter-regional coordination"
     }
   ]
 }
