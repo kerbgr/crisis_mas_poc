@@ -1,9 +1,176 @@
 """
-Consensus Model
-Implements consensus detection and conflict resolution for multi-agent decision-making
+Consensus Model - Agreement Detection and Conflict Resolution for Multi-Agent Systems
 
-Specifically designed for crisis management systems where 2+ expert agents
-must reach agreement on action selection.
+OBJECTIVE:
+This module provides mechanisms for detecting consensus, identifying conflicts, and
+suggesting resolutions when multiple expert agents must reach agreement on crisis
+response actions. It quantifies the level of agreement between agents and provides
+actionable guidance when disagreements occur.
+
+WHY THIS EXISTS:
+In crisis management, multiple experts often have divergent opinions due to different:
+- **Domain expertise** (medical vs. logistics vs. environmental)
+- **Risk tolerance** (conservative vs. aggressive approaches)
+- **Priority weighting** (lives vs. cost vs. speed)
+- **Information access** (different data sources or interpretations)
+
+This module ensures that:
+1. Consensus is objectively measured (not just "everyone agrees")
+2. Significant conflicts are identified before they become problematic
+3. Resolution strategies are suggested based on conflict severity
+4. Compromise alternatives are identified when direct agreement fails
+5. Decision-making process remains transparent and auditable
+
+KEY RESPONSIBILITIES:
+1. **Consensus Detection**: Measure agreement level using cosine similarity
+2. **Conflict Identification**: Detect agents with fundamentally different preferences
+3. **Severity Classification**: Categorize conflicts as low/moderate/high severity
+4. **Resolution Suggestions**: Generate actionable strategies for conflict resolution
+5. **Compromise Finding**: Identify alternatives acceptable to all parties
+6. **History Tracking**: Maintain consensus statistics over time
+
+MATHEMATICAL FOUNDATION:
+Uses **cosine similarity** to measure agreement between belief distributions:
+
+    similarity = (A · B) / (||A|| × ||B||)
+
+Where:
+- A, B are belief vectors from two agents
+- A · B is the dot product (sum of element-wise products)
+- ||A||, ||B|| are L2 norms (Euclidean magnitudes)
+
+Interpretation:
+- 1.0 = Perfect agreement (identical beliefs)
+- 0.8-0.9 = High agreement (similar priorities)
+- 0.5-0.7 = Moderate agreement (some differences)
+- 0.0-0.4 = Low agreement (significant disagreement)
+
+CONSENSUS THRESHOLD:
+Default: 0.75 (75% similarity required for consensus)
+- Configurable based on crisis type and time constraints
+- Higher threshold → more stringent consensus requirement
+- Lower threshold → faster decision-making, lower agreement
+
+CONFLICT DETECTION LOGIC:
+A conflict is flagged when:
+1. Two agents have different top-choice alternatives, AND
+2. The belief difference exceeds conflict_threshold (default: 0.3)
+3. Disagreement magnitude is significant (both agents strongly prefer different options)
+
+RESOLUTION STRATEGIES:
+Based on conflict severity:
+- **High Severity** (score > 0.6): Escalate to human decision-maker
+- **Moderate Severity** (0.3-0.6): Explore compromise alternatives, facilitate discussion
+- **Low Severity** (< 0.3): Weighted voting or minor adjustments sufficient
+
+COMPROMISE ALTERNATIVES:
+Found using weighted combination score:
+    compromise_score = 0.6 × avg_belief + 0.4 × min_belief
+
+This balances:
+- Average belief: Both agents should find it moderately acceptable
+- Minimum belief: Neither agent should strongly reject it
+
+INPUTS (Primary Method: analyze_consensus):
+- agent_beliefs: Dict[agent_id, Dict[alternative_id, float]]
+  * Each agent provides belief distribution over alternatives
+  * Beliefs represent probability/preference (0-1)
+  * Must sum to ~1.0 for each agent
+- alternatives_data: Optional[Dict[alternative_id, Dict[str, Any]]]
+  * Full alternative details for enriched explanations
+  * Includes names, descriptions, resource requirements
+
+OUTPUTS (analyze_consensus returns):
+- consensus_level: float (0-1) - Average pairwise cosine similarity
+- consensus_reached: bool - Whether threshold is met
+- conflicts: List[Dict] - Detected conflicts with details
+- num_conflicts: int - Number of conflicts found
+- resolution_needed: bool - Whether intervention required
+- resolution_suggestions: str - Human-readable resolution strategies
+- timestamp: str - ISO format timestamp
+- threshold_used: float - Threshold that was applied
+- agents_analyzed: List[str] - Agent IDs included
+
+EXAMPLE USAGE:
+```python
+# Initialize with custom threshold
+model = ConsensusModel(consensus_threshold=0.75)
+
+# Agent beliefs
+agent_beliefs = {
+    "medical_expert": {"A1": 0.8, "A2": 0.1, "A3": 0.1},
+    "logistics_expert": {"A1": 0.6, "A2": 0.3, "A3": 0.1},
+    "safety_expert": {"A1": 0.7, "A2": 0.2, "A3": 0.1}
+}
+
+# Analyze consensus
+result = model.analyze_consensus(agent_beliefs)
+
+print(f"Consensus Level: {result['consensus_level']:.2f}")
+print(f"Consensus Reached: {result['consensus_reached']}")
+print(f"Conflicts Detected: {result['num_conflicts']}")
+
+if result['resolution_needed']:
+    print(result['resolution_suggestions'])
+```
+
+REAL-WORLD SCENARIO:
+In a flood evacuation decision:
+- **Medical Expert**: Prefers immediate evacuation (A1) - safety priority
+- **Logistics Expert**: Prefers staged evacuation (A2) - resource constraints
+- **Safety Expert**: Prefers hybrid approach (A3) - balances concerns
+
+If consensus_level < 0.75:
+→ Conflict detected
+→ Compromise alternative identified (e.g., prioritized evacuation of vulnerable)
+→ Resolution strategy suggested (e.g., "Start with vulnerable populations, expand based on resource availability")
+
+DESIGN PATTERNS:
+1. **Strategy Pattern**: Different resolution strategies for different severity levels
+2. **Observer Pattern**: Consensus history tracks all analyses
+3. **Template Method**: analyze_consensus provides standard workflow
+4. **Factory Method**: Conflict dictionaries constructed with consistent structure
+
+ERROR HANDLING:
+- ValueError: If < 2 agents (consensus requires at least 2 parties)
+- ValueError: If agent IDs mismatch between beliefs and weights
+- ValueError: If belief distributions are empty or invalid
+- Graceful degradation: Returns empty conflict list if insufficient data
+
+PERFORMANCE CHARACTERISTICS:
+- Consensus calculation: O(N² × M) where N=agents, M=alternatives
+  * Pairwise comparisons: N(N-1)/2 pairs
+  * Vector operations: O(M) per pair
+- Conflict detection: O(N² × M)
+- Compromise finding: O(M) per conflict
+- Total: O(N² × M) - Acceptable for typical N ≤ 10, M ≤ 20
+
+LIMITATIONS:
+1. Assumes belief distributions are well-formed (sum to ~1.0)
+2. Cosine similarity doesn't account for magnitude differences
+3. Pairwise comparison doesn't capture group dynamics (3+ agent coalitions)
+4. Compromise finding is heuristic, not optimization-based
+5. No temporal dynamics (beliefs are static snapshots)
+
+INTEGRATION POINTS:
+- Used by: CoordinatorAgent after belief aggregation
+- Inputs from: Expert agents' belief distributions
+- Outputs to: Decision explanation and escalation logic
+- Related to: Evidential Reasoning (provides the beliefs to analyze)
+
+VALIDATION:
+Unit tests verify:
+- Identical beliefs → consensus_level = 1.0
+- Opposite beliefs → consensus_level ≈ 0.0
+- Threshold boundary conditions
+- Conflict detection accuracy
+- Compromise finding correctness
+
+RELATED RESEARCH:
+- Cosine similarity for text/vector comparison
+- Dempster-Shafer theory for uncertainty reasoning
+- Multi-agent coordination in crisis response
+- Group decision-making under uncertainty
 """
 
 import math
