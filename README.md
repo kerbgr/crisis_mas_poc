@@ -533,40 +533,115 @@ Visualizations saved to: results/visualizations/
 
 ### System Components
 
-The Crisis MAS consists of five core layers:
+The Crisis MAS consists of five core layers with integrated evaluation framework:
 
+```mermaid
+graph TB
+    subgraph UI["🖥️ USER INTERFACE LAYER"]
+        Main[main.py<br/>CLI & Orchestration]
+        Input[JSON I/O<br/>Scenarios & Config]
+        Output[Visualization<br/>Generation]
+    end
+
+    subgraph Coord["🎯 COORDINATION LAYER"]
+        CA[CoordinatorAgent<br/>Orchestration & Consensus]
+        CS[Consensus<br/>Builder]
+        CR[Conflict<br/>Resolution]
+    end
+
+    subgraph Agents["👥 AGENT LAYER"]
+        direction LR
+        EA1[Medical<br/>Expert]
+        EA2[Logistics<br/>Expert]
+        EA3[Safety<br/>Expert]
+        EA4[Environmental<br/>Expert]
+        BA[BaseAgent<br/>Interface]
+        RT[ReliabilityTracker<br/>Performance History]
+    end
+
+    subgraph DF["🧠 DECISION FRAMEWORK LAYER"]
+        direction TB
+        ER[EvidentialReasoning<br/>Dempster-Shafer]
+        GAT[GATAggregator<br/>Neural Attention]
+        MCDA[MCDAEngine<br/>TOPSIS]
+        CM[ConflictModel<br/>Resolution]
+    end
+
+    subgraph LLM["🤖 LLM INTEGRATION LAYER"]
+        direction LR
+        Claude[Claude API<br/>Anthropic]
+        OpenAI[OpenAI API<br/>GPT-4]
+        LMStudio[LM Studio<br/>Local Models]
+        Prompt[Prompt<br/>Templates]
+        Parser[Response<br/>Parser]
+    end
+
+    subgraph Eval["📊 EVALUATION & UTILITIES LAYER"]
+        direction TB
+        ME[MetricsEvaluator<br/>DQS, CL, CS, ECB]
+        Viz[SystemVisualizer<br/>Charts & Graphs]
+        Val[Validator<br/>Schema Check]
+        Cfg[ConfigManager<br/>Settings]
+        BL[Baseline<br/>Single-Agent]
+    end
+
+    %% Main flow
+    Main -->|Load Scenario| Input
+    Input -->|Initialize| CA
+
+    CA -->|Collect Assessments| EA1 & EA2 & EA3 & EA4
+    EA1 & EA2 & EA3 & EA4 -.->|Inherit from| BA
+    EA1 & EA2 & EA3 & EA4 -->|Track Performance| RT
+
+    EA1 & EA2 & EA3 & EA4 -->|LLM Reasoning| Prompt
+    Prompt -->|Route to| Claude & OpenAI & LMStudio
+    Claude & OpenAI & LMStudio -->|Parse| Parser
+    Parser -->|Structured Response| EA1 & EA2 & EA3 & EA4
+
+    CA -->|Aggregate Beliefs| ER & GAT
+    ER & GAT -.->|Use Reliability| RT
+    CA -->|Rank Alternatives| MCDA
+    CA -->|Build Consensus| CS
+    CS -->|Detect Issues| CR
+
+    ER & GAT & MCDA -->|Combined Decision| CA
+    CA -->|Final Decision| ME
+
+    %% Evaluation flow
+    Main -->|Run Baseline| BL
+    BL -->|Single-Agent| EA1
+    BL & CA -->|Compare| ME
+
+    ME -->|Calculate Metrics| ME
+    ME -->|Generate Viz| Viz
+    Viz -->|Save Results| Output
+
+    Val -.->|Validate| Input
+    Cfg -.->|Configure| Main & CA & LLM
+
+    %% Styling
+    classDef layerUI fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef layerCoord fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef layerAgent fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef layerDF fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef layerLLM fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef layerEval fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+
+    class Main,Input,Output layerUI
+    class CA,CS,CR layerCoord
+    class EA1,EA2,EA3,EA4,BA,RT layerAgent
+    class ER,GAT,MCDA,CM layerDF
+    class Claude,OpenAI,LMStudio,Prompt,Parser layerLLM
+    class ME,Viz,Val,Cfg,BL layerEval
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     USER INTERFACE LAYER                     │
-│  main.py, CLI, JSON I/O, Visualization Generation           │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-┌──────────────────────▼──────────────────────────────────────┐
-│                   COORDINATION LAYER                         │
-│  CoordinatorAgent: Orchestration, Consensus Building        │
-└───────┬──────────────────────────────────────────┬──────────┘
-        │                                          │
-┌───────▼─────────────┐                 ┌──────────▼──────────┐
-│   AGENT LAYER       │                 │  DECISION FRAMEWORK │
-│  - ExpertAgent (×4) │                 │  - EvidentialReason │
-│  - BaseAgent        │                 │  - GATAggregator    │
-│  - Agent Profiles   │                 │  - MCDAEngine       │
-│                     │                 │  - ConsensusModel   │
-└─────────┬───────────┘                 └──────────┬──────────┘
-          │                                        │
-          └────────────────┬───────────────────────┘
-                           │
-         ┌─────────────────▼────────────────────────────────┐
-         │           LLM INTEGRATION LAYER                  │
-         │  Multi-Provider: Claude, OpenAI, LM Studio      │
-         │  Prompt Templates, Response Parser              │
-         └──────────────────────────────────────────────────┘
-                           │
-         ┌─────────────────▼────────────────────────────────┐
-         │         EVALUATION & UTILITIES LAYER             │
-         │  Metrics, Visualizations, Validation, Config     │
-         └──────────────────────────────────────────────────┘
-```
+
+**Architecture Overview:**
+- **🖥️ User Interface Layer**: Entry point, I/O handling, visualization generation
+- **🎯 Coordination Layer**: Orchestrates multi-agent decision-making, builds consensus
+- **👥 Agent Layer**: Domain experts with LLM-enhanced reasoning and performance tracking
+- **🧠 Decision Framework Layer**: Belief aggregation (ER/GAT), multi-criteria analysis (MCDA)
+- **🤖 LLM Integration Layer**: Multi-provider support (Claude, OpenAI, LM Studio)
+- **📊 Evaluation Layer**: Metrics calculation, baseline comparison, visualization (v2.0.1)
 
 #### 1. Agent Layer
 
@@ -693,44 +768,77 @@ The system supports multiple LLM providers through a unified interface:
 - Confidence distribution histograms
 - Decision tree visualizations
 
-### Data Flow
+### Decision-Making Flow
 
+The system follows a structured 7-step process for multi-agent decision-making:
+
+```mermaid
+flowchart TD
+    Start([Start]) --> LoadScenario[1. Load Scenario<br/>scenarios/flood_scenario.json]
+    LoadScenario --> ParseScenario[Parse JSON<br/>Extract alternatives & criteria]
+
+    ParseScenario --> AgentAssess{2. Agent Assessment<br/>For each expert}
+
+    AgentAssess -->|Medical| Med[Medical Expert<br/>LLM Analysis]
+    AgentAssess -->|Logistics| Log[Logistics Expert<br/>LLM Analysis]
+    AgentAssess -->|Safety| Saf[Safety Expert<br/>LLM Analysis]
+    AgentAssess -->|Environment| Env[Environmental Expert<br/>LLM Analysis]
+
+    Med & Log & Saf & Env --> Collect[Collect Assessments<br/>beliefs + confidence + reasoning]
+
+    Collect --> ChooseAgg{3. Choose<br/>Aggregation Method}
+
+    ChooseAgg -->|Classical| ER[Evidential Reasoning<br/>Dempster-Shafer Theory]
+    ChooseAgg -->|Neural| GAT[Graph Attention Network<br/>9-dim features + attention]
+
+    ER --> Combined[Combined Belief<br/>Distribution]
+    GAT --> Combined
+
+    Combined --> MCDA[4. MCDA Scoring<br/>TOPSIS/WSM]
+    MCDA --> Ranked[Ranked Alternatives<br/>with scores]
+
+    Ranked --> Consensus{5. Check Consensus<br/>Similarity > threshold?}
+
+    Consensus -->|No| Iterate[Provide Feedback<br/>Request Refinement]
+    Iterate --> AgentAssess
+
+    Consensus -->|Yes| Decision[6. Generate Decision<br/>Top alternative + explanation]
+
+    Decision --> CalcConf[Calculate Confidence<br/>0.6×consensus + 0.4×avg_conf]
+    CalcConf --> CalcQuality[Calculate Quality Score<br/>MCDA score for recommended]
+
+    CalcQuality --> Baseline[Run Single-Agent Baseline<br/>Select best expert]
+    Baseline --> BaselineAssess[Single Expert Assessment<br/>with criteria scores]
+
+    BaselineAssess --> Compare[7. Evaluation & Comparison]
+    CalcQuality --> Compare
+
+    Compare --> Metrics[Calculate Metrics<br/>DQS, CL, CS, ECB]
+    Metrics --> Visualize[Generate Visualizations<br/>Charts & graphs]
+    Visualize --> SaveOutput[Save Results<br/>JSON + PNG]
+
+    SaveOutput --> End([End])
+
+    %% Styling
+    classDef processClass fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    classDef decisionClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef agentClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef evalClass fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+
+    class LoadScenario,ParseScenario,Collect,Combined,Ranked,Decision,CalcConf,CalcQuality processClass
+    class ChooseAgg,Consensus decisionClass
+    class Med,Log,Saf,Env,Baseline,BaselineAssess agentClass
+    class Compare,Metrics,Visualize,SaveOutput evalClass
 ```
-1. SCENARIO LOADING
-   scenarios/flood_scenario.json
-          ↓
-   ScenarioLoader.load()
-          ↓
-   Scenario object + Alternatives
 
-2. AGENT ASSESSMENT
-   For each ExpertAgent:
-      Scenario → LLM (Claude) → Structured Assessment
-      {beliefs, confidence, reasoning, concerns}
-
-3. BELIEF AGGREGATION
-   All Assessments → [ER or GAT] → Combined Beliefs
-
-   ER Path:
-      Dempster-Shafer combination → Aggregated distribution
-
-   GAT Path:
-      Feature extraction → Attention weights → Weighted aggregation
-
-4. MCDA SCORING
-   Combined Beliefs + Criteria Weights → TOPSIS/WSM → Ranked Alternatives
-
-5. CONSENSUS CHECKING
-   Agent Assessments → Cosine Similarity → Consensus Level
-   If < threshold → Iterate with feedback
-   If >= threshold → Proceed to decision
-
-6. DECISION GENERATION
-   Top Alternative + Confidence + Explanation → Final Decision
-
-7. EVALUATION
-   Decision + Metrics → Visualizations + JSON Output
-```
+**Process Details:**
+1. **Scenario Loading**: Parse JSON scenario with alternatives and decision criteria
+2. **Agent Assessment**: Each expert analyzes scenario via LLM, produces structured assessment
+3. **Belief Aggregation**: Combine beliefs using ER (classical) or GAT (neural attention)
+4. **MCDA Scoring**: Rank alternatives using multi-criteria decision analysis (TOPSIS)
+5. **Consensus Check**: Measure agreement; iterate if below threshold
+6. **Decision Generation**: Select top alternative, calculate confidence and quality scores separately
+7. **Evaluation**: Compare against single-agent baseline, calculate metrics, generate visualizations
 
 ### Key Algorithms
 
