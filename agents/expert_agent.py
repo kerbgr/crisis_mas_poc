@@ -429,7 +429,9 @@ KEY CONCERNS
             )
             system_prompt = self.prompt_templates.get_system_prompt("meteorologist")
 
-        elif 'operation' in role_lower or 'logistic' in expertise_lower or 'operation' in expertise_lower:
+        elif ('operation' in role_lower or 'logistic' in role_lower or
+              'logistic' in expertise_lower or 'supply_chain' in expertise_lower or
+              'operation' in expertise_lower):
             prompt = self.prompt_templates.generate_operations_prompt(
                 scenario, alternatives, criteria
             )
