@@ -919,6 +919,23 @@ $$\text{Rank}(a_i) = \text{position of } C_i \text{ in sorted list}$$
 
 #### Consensus and Quality Metrics
 
+> **📘 Complete Evaluation Methodology:** See [`evaluation/EVALUATION_METHODOLOGY.md`](evaluation/EVALUATION_METHODOLOGY.md) for comprehensive documentation of all metrics, formulas, and validation procedures.
+
+**Decision Quality Score (DQS):** Measures how well the recommended alternative satisfies decision criteria:
+
+$$\text{DQS} = \begin{cases}
+\frac{1}{|C|} \sum_{c \in C} s_c(a^*) & \text{single-agent (criteria scores)} \\
+\text{MCDA}(a^*) & \text{multi-agent (MCDA score)}
+\end{cases}$$
+
+where:
+- $a^*$ = recommended alternative
+- $C$ = set of decision criteria
+- $s_c(a^*)$ = score of alternative $a^*$ on criterion $c$
+- $\text{MCDA}(a^*)$ = TOPSIS score for alternative $a^*$
+
+**Key:** Both single-agent and multi-agent DQS are calculated from criteria satisfaction, making them directly comparable.
+
 **Consensus Level:** Measures agreement between agents using average pairwise cosine similarity:
 
 $$\text{Consensus} = \frac{2}{n(n-1)} \sum_{i=1}^{n-1} \sum_{j=i+1}^{n} \cos(\mathbf{m}_i, \mathbf{m}_j)$$
@@ -927,11 +944,15 @@ where $\mathbf{m}_i$ is agent $i$'s belief vector and:
 
 $$\cos(\mathbf{m}_i, \mathbf{m}_j) = \frac{\sum_{a \in \mathcal{A}} m_i(a) \cdot m_j(a)}{\sqrt{\sum_{a \in \mathcal{A}} m_i(a)^2} \cdot \sqrt{\sum_{a \in \mathcal{A}} m_j(a)^2}}$$
 
-**Decision Confidence:** Weighted average of agent confidences by their influence:
+**Decision Confidence:** Measures certainty in the decision (separate from quality):
 
-$$c_{\text{decision}} = \sum_{i=1}^{n} w_i \cdot c_i$$
+For multi-agent:
+$$c_{\text{decision}} = 0.6 \times \text{Consensus} + 0.4 \times \bar{c}_{\text{agents}}$$
 
-where $w_i$ is the weight of agent $i$ (uniform for ER: $w_i = 1/n$, attention-based for GAT: $w_i = \alpha_{ii}$).
+For single-agent:
+$$c_{\text{decision}} = c_{\text{LLM}}$$
+
+where $\bar{c}_{\text{agents}}$ is the average agent confidence and $c_{\text{LLM}}$ is the LLM's self-reported confidence.
 
 **Uncertainty (Entropy):** Shannon entropy of final belief distribution:
 
@@ -1008,11 +1029,14 @@ where $G = 0$ indicates perfect equality and $G = 1$ indicates maximum inequalit
 
 ### Performance Metrics
 
+> **⚠️ Important Note:** As of commit `09bec4c` (2025-01-09), the evaluation methodology has been fixed to properly calculate Decision Quality Score from criteria satisfaction. Previous versions incorrectly used confidence values, making single vs. multi-agent comparisons invalid. See [`evaluation/EVALUATION_METHODOLOGY.md`](evaluation/EVALUATION_METHODOLOGY.md) for details.
+
 #### Decision Quality Metrics
 
 ```json
 {
   "weighted_score": 0.847,
+  "confidence": 0.823,
   "criteria_satisfaction": {
     "effectiveness": 0.90,
     "safety": 0.95,
@@ -1027,7 +1051,10 @@ where $G = 0$ indicates perfect equality and $G = 1$ indicates maximum inequalit
 }
 ```
 
-**Interpretation:** Multi-agent decision shows 17% improvement over best single-agent decision, primarily through balanced consideration of speed vs. cost trade-offs.
+**Interpretation:**
+- **Quality (0.847):** Calculated from criteria scores - shows strong satisfaction of safety (0.95) and effectiveness (0.90), with trade-off on cost (0.45)
+- **Confidence (0.823):** Separate metric indicating high certainty in the decision based on agent consensus
+- **Improvement (17%):** Valid comparison showing multi-agent outperforms single-agent by considering diverse expert perspectives
 
 #### Consensus Metrics
 
