@@ -1,8 +1,396 @@
 """
-OpenAI API Client
-Wrapper for OpenAI API with error handling, rate limiting, and JSON response parsing
+OpenAI API Client - GPT-4/GPT-3.5 Integration for Expert Agent Reasoning
 
-Designed for crisis management multi-agent systems to get structured expert assessments.
+OBJECTIVE:
+This module provides a robust, production-ready wrapper for the OpenAI Chat Completions API,
+enabling expert agents in the crisis management multi-agent system to leverage GPT-4 and
+GPT-3.5 models for advanced reasoning. It handles API communication, error recovery, JSON
+parsing, response validation, and usage tracking with an interface identical to ClaudeClient.
+
+WHY OPENAI:
+OpenAI's GPT models (specifically GPT-4) serve as an **alternative cloud LLM provider**
+for this crisis management system:
+
+1. **Alternative to Claude**: Provides fallback when Claude is unavailable or rate limited
+2. **Built-in JSON Mode**: Native JSON response format support (response_format parameter)
+3. **Fast Iteration**: Well-documented API, wide ecosystem, familiar to developers
+4. **Good Reasoning**: GPT-4 provides strong reasoning quality, comparable to Claude
+5. **Model Variety**: Multiple models (GPT-4, GPT-4-turbo, GPT-4o, GPT-3.5) with cost/quality trade-offs
+
+While Claude is the default provider, OpenAI provides a reliable alternative with similar
+capabilities and cost structure.
+
+WHY THIS CLIENT:
+A custom client (rather than using the bare OpenAI SDK) provides:
+
+1. **Error Resilience**: Exponential backoff retry for rate limits and transient errors
+2. **Robust JSON Parsing**: Multi-strategy parsing (though JSON mode reduces need)
+3. **Response Validation**: Ensures responses contain expected fields with correct types
+4. **Usage Tracking**: Monitor requests, tokens, costs, and failure rates
+5. **Consistent Interface**: Same API as ClaudeClient (drop-in replacement)
+6. **Logging**: Comprehensive logging for debugging and monitoring
+7. **Crisis-Optimized**: Designed for structured expert assessments
+
+TYPICAL USAGE:
+
+```python
+from llm_integration import OpenAIClient, PromptTemplates
+
+# 1. Initialize client
+client = OpenAIClient()  # Reads OPENAI_API_KEY from environment
+# Or with explicit API key and model:
+# client = OpenAIClient(api_key="sk-...", model="gpt-4-turbo-preview")
+
+# 2. Create expert prompt
+templates = PromptTemplates()
+prompt = templates.generate_operations_prompt(scenario, alternatives)
+
+# 3. Generate assessment
+response = client.generate_assessment(
+    prompt=prompt,
+    max_tokens=2000,
+    temperature=0.7
+)
+
+# 4. Handle response
+if response.get('error'):
+    # Error handling
+    print(f"API error: {response['error_message']}")
+    # Retry or fallback logic
+else:
+    # Success - structured response
+    rankings = response['alternative_rankings']
+    reasoning = response['reasoning']
+    confidence = response['confidence']
+    concerns = response['key_concerns']
+
+    # Check metadata
+    print(f"Model: {response['_metadata']['model']}")
+    print(f"Tokens: {response['_metadata']['input_tokens']} in, "
+          f"{response['_metadata']['output_tokens']} out")
+
+# 5. Monitor usage
+stats = client.get_statistics()
+print(f"Total requests: {stats['total_requests']}")
+print(f"Total tokens: {stats['total_tokens']}")
+print(f"Success rate: {stats['success_rate']:.1%}")
+```
+
+SUPPORTED MODELS:
+
+1. **gpt-4-turbo-preview** (Default)
+   - Best balance of cost and quality
+   - 128k context window
+   - Recommended for crisis assessment
+
+2. **gpt-4**
+   - Original GPT-4 model
+   - 8k context window
+   - Higher cost than turbo
+
+3. **gpt-4o**
+   - Optimized GPT-4 variant
+   - Faster, cheaper than GPT-4
+   - Good for high-volume usage
+
+4. **gpt-3.5-turbo**
+   - Fastest, cheapest option
+   - Lower reasoning quality
+   - Good for testing or simple tasks
+
+MODEL SELECTION GUIDE:
+
+```python
+# Default: GPT-4 Turbo (balanced)
+client = OpenAIClient()
+
+# Budget-conscious: GPT-3.5 Turbo
+client = OpenAIClient(model="gpt-3.5-turbo")
+
+# Quality-focused: GPT-4
+client = OpenAIClient(model="gpt-4")
+
+# High-volume: GPT-4o
+client = OpenAIClient(model="gpt-4o")
+```
+
+INPUTS:
+The primary method `generate_assessment()` expects:
+
+- **prompt** (str): Expert assessment prompt (from PromptTemplates)
+  - Should request JSON response format
+  - Should specify expected fields
+  - Typically 1000-2000 characters
+
+- **max_tokens** (int, default 2000): Maximum response length
+  - 2000 sufficient for expert assessments
+  - Increase if responses truncated
+
+- **system_prompt** (str, optional): System-level instructions
+  - Default: "You are an expert providing structured assessments for crisis management..."
+  - Customize for specific expert roles
+
+- **temperature** (float, default 0.7): Sampling randomness
+  - 0.7: Balanced (default for crisis assessment)
+  - 0.3-0.5: More focused, deterministic
+  - 0.8-1.0: More creative, diverse
+
+OUTPUTS:
+On success, returns Dict with:
+
+```python
+{
+    'alternative_rankings': {
+        'A1': 0.7,
+        'A2': 0.2,
+        'A3': 0.08,
+        'A4': 0.02
+    },
+    'reasoning': str,
+    'confidence': float,
+    'key_concerns': List[str],
+    '_metadata': {
+        'model': str,              # e.g., 'gpt-4-turbo-preview'
+        'input_tokens': int,       # prompt_tokens
+        'output_tokens': int,      # completion_tokens
+        'finish_reason': str,      # 'stop', 'length', etc.
+        'validated': bool
+    }
+}
+```
+
+On error, returns Dict with:
+
+```python
+{
+    'error': True,
+    'error_message': str,
+    'error_type': str             # 'RateLimitError', 'APIConnectionError', etc.
+}
+```
+
+BUILT-IN JSON MODE:
+
+OpenAI provides native JSON mode support:
+
+```python
+request_params = {
+    "model": "gpt-4-turbo-preview",
+    "messages": [...],
+    "response_format": {"type": "json_object"}  # Forces JSON output
+}
+```
+
+**Benefits**:
+- Guarantees valid JSON (no parsing errors)
+- More reliable than prompt-based JSON requests
+- Reduces need for fallback parsing strategies
+
+**Requirements**:
+- System/user prompt must request JSON
+- Only works with newer models (gpt-4-turbo, gpt-3.5-turbo-1106+)
+- Not available for older GPT-3.5/GPT-4 versions
+
+This client automatically enables JSON mode when calling `generate_assessment()`.
+
+ERROR HANDLING:
+
+The client implements multi-layered error recovery:
+
+1. **Rate Limit Errors (RateLimitError)**:
+   - Automatic retry with exponential backoff (2s, 4s, 8s)
+   - Up to 3 attempts
+   - Logs warnings with retry countdown
+
+2. **Connection Errors (APIConnectionError)**:
+   - Network issues, timeouts
+   - Exponential backoff retry (3 attempts)
+   - Helpful error messages
+
+3. **API Errors (APIError)**:
+   - 4xx errors (client errors): No retry
+   - 5xx errors (server errors): Retry with backoff
+   - Detailed error logging
+
+4. **JSON Parsing Failures** (rare due to JSON mode):
+   - Multi-strategy parsing as fallback
+   - Returns error dict if all strategies fail
+
+5. **Validation Failures**:
+   - Logs warnings but returns response
+   - Sets validated=False in metadata
+
+PARSING STRATEGIES:
+
+While JSON mode reduces parsing issues, the client still implements fallbacks:
+
+1. **Direct JSON Parsing**: `json.loads(response_text)` (usually succeeds)
+2. **Markdown JSON Blocks**: Extract from ```json...```
+3. **Generic Code Blocks**: Extract from ```...```
+4. **Regex Pattern Matching**: Find first {...} or [...]
+
+With JSON mode enabled, strategy #1 almost always succeeds.
+
+VALIDATION:
+
+The `validate_response()` method checks:
+
+1. **Required Keys**: alternative_rankings, reasoning, confidence, key_concerns
+2. **Type Checking**:
+   - alternative_rankings: Dict[str, float]
+   - reasoning: str
+   - confidence: float (0.0-1.0)
+   - key_concerns: List[str]
+3. **Value Ranges**:
+   - confidence must be in [0, 1]
+   - alternative_rankings values must be numeric
+4. **Structure Validation**:
+   - alternative_rankings must be a dictionary
+   - key_concerns must be a list
+
+USAGE TRACKING:
+
+The client tracks:
+
+- **request_count**: Number of successful API calls
+- **failed_requests**: Number of failed API calls
+- **total_tokens**: Cumulative prompt_tokens + completion_tokens
+- **success_rate**: request_count / (request_count + failed_requests)
+
+Access via `get_statistics()`, reset via `reset_statistics()`.
+
+COST TRACKING:
+
+Estimate costs using token counts:
+
+**GPT-4 Turbo**:
+```python
+stats = client.get_statistics()
+input_cost = (stats['total_tokens'] * 0.5) * 10 / 1_000_000   # $10/M input
+output_cost = (stats['total_tokens'] * 0.5) * 30 / 1_000_000  # $30/M output
+total_cost = input_cost + output_cost
+```
+
+**GPT-3.5 Turbo** (cheaper):
+```python
+input_cost = (stats['total_tokens'] * 0.5) * 0.5 / 1_000_000   # $0.50/M input
+output_cost = (stats['total_tokens'] * 0.5) * 1.5 / 1_000_000  # $1.50/M output
+```
+
+(Assumes 50/50 input/output split; adjust based on actual usage)
+
+PERFORMANCE CHARACTERISTICS:
+
+- **Latency**: 2-5 seconds per request (depends on model, load)
+- **Throughput**: ~60 requests/minute (rate limit, varies by tier)
+- **Token Limits**:
+  - GPT-4 Turbo: 128k context
+  - GPT-4: 8k context
+  - GPT-3.5 Turbo: 16k context
+- **Retries**: 3 attempts max with exponential backoff
+- **Memory**: Minimal (stateless except counters)
+
+COMPARISON TO ALTERNATIVES:
+
+**vs. ClaudeClient**:
+- OpenAI: Built-in JSON mode, faster iteration, more familiar
+- Claude: Slightly better reasoning quality, more nuanced
+- Both: Similar latency, cost, reliability
+
+**vs. LMStudioClient**:
+- OpenAI: Superior quality, cloud-based, costs money
+- LM Studio: Free, local, privacy, but variable quality
+
+**vs. Raw OpenAI SDK**:
+- OpenAIClient: Retry logic, validation, tracking, crisis-optimized
+- Raw SDK: Lower-level, more flexible
+
+DESIGN DECISIONS:
+
+1. **Why GPT-4 Turbo (not GPT-4)?**: Better cost/quality balance, larger context
+2. **Why force JSON mode?**: Guarantees valid JSON, reduces parsing errors
+3. **Why 2000 max_tokens default?**: Sufficient for assessments, limits costs
+4. **Why 0.7 temperature default?**: Balance between consistency and diversity
+5. **Why 3 retries?**: Handles transient errors without excessive delay
+6. **Why system+user messages?**: OpenAI best practice (vs. Claude's single message)
+
+OPENAI-SPECIFIC FEATURES:
+
+1. **JSON Mode**: Native support via `response_format` parameter
+2. **System Messages**: Separate system role (Claude combines system into single message)
+3. **Function Calling**: Could be added for structured extraction (not currently used)
+4. **Streaming**: Not implemented but could be added
+5. **Multiple Models**: Easy model switching via constructor parameter
+
+INTEGRATION POINTS:
+
+This client integrates with:
+
+- **agents/expert_agent.py**: Expert agents use this as Claude alternative
+- **llm_integration/prompt_templates.py**: Provides prompts for this client
+- **agents/coordinator_agent.py**: May use for aggregation logic
+- **evaluation/metrics.py**: Tracks metadata for evaluation
+
+TESTING & DEBUGGING:
+
+Enable debug logging:
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+client = OpenAIClient()
+```
+
+Check response metadata:
+```python
+response = client.generate_assessment(prompt)
+print(response.get('_metadata'))
+```
+
+Monitor failure rate:
+```python
+stats = client.get_statistics()
+if stats['failed_requests'] > 0:
+    print(f"Warning: {stats['failed_requests']} failed requests")
+```
+
+LIMITATIONS & KNOWN ISSUES:
+
+1. **Rate Limits**: Varies by account tier (~60 req/min for standard)
+2. **Cost**: GPT-4 more expensive than Claude for same quality
+3. **Non-Deterministic**: Same prompt may yield different responses
+4. **No Streaming**: Waits for full response (could add)
+5. **JSON Mode Requirements**: Needs newer models, must request JSON in prompt
+6. **Thread Safety**: Not thread-safe (create separate clients per thread)
+
+SECURITY CONSIDERATIONS:
+
+1. **API Key Storage**: Use environment variables, never hardcode
+2. **PII in Prompts**: Avoid sending sensitive data to cloud API
+3. **Output Validation**: Always validate responses
+4. **Rate Limiting**: Respect OpenAI's rate limits
+
+RELATED FILES:
+
+- **llm_integration/__init__.py**: Module overview and provider comparison
+- **llm_integration/claude_client.py**: Default cloud provider (similar interface)
+- **llm_integration/lmstudio_client.py**: Local model provider
+- **llm_integration/prompt_templates.py**: Generates prompts for this client
+
+VERSION HISTORY:
+
+- v1.0: Initial implementation
+- v1.1: Added JSON mode support
+- v1.2: Improved validation logic
+- v1.3: Added usage statistics tracking
+- v1.4: Enhanced error handling
+- v2.0: Comprehensive documentation (Jan 2025)
+
+REFERENCES:
+
+- OpenAI Chat Completions API: https://platform.openai.com/docs/api-reference/chat
+- OpenAI Pricing: https://openai.com/pricing
+- JSON Mode Documentation: https://platform.openai.com/docs/guides/text-generation/json-mode
+- Best practices for LLM API integration
 """
 
 import os

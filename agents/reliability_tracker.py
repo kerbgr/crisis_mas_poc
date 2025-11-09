@@ -224,19 +224,91 @@ class ReliabilityTracker:
         actual: Dict[str, Any]
     ) -> float:
         """
-        Calculate accuracy score by comparing prediction with actual outcome.
+        Calculate multi-faceted accuracy score by comparing prediction with actual outcome.
 
-        For belief distributions, uses:
-        - Probability score (predicted belief for actual outcome)
-        - Rank accuracy (was top choice correct?)
-        - Distribution similarity (KL divergence)
+        OBJECTIVE:
+        Computes comprehensive accuracy that rewards agents for:
+        1. Assigning high probability to the correct outcome
+        2. Ranking the correct alternative as top choice
+        3. Being appropriately confident (confident when right, uncertain when wrong)
 
-        Args:
-            prediction: Agent's prediction (with belief_distribution)
-            actual: Actual outcome (with selected_alternative)
+        WHY THIS EXISTS:
+        Simple binary accuracy (right/wrong) ignores valuable information in belief
+        distributions. An agent that assigns 0.45 probability to the correct answer
+        deserves more credit than one assigning 0.05, even if both picked the wrong
+        top choice. This multi-component scoring captures nuanced performance.
 
-        Returns:
-            Accuracy score (0-1)
+        INPUTS:
+        - prediction: Agent's assessment containing:
+          * belief_distribution: {alt_id: probability} distribution over alternatives
+          * confidence: Agent's self-reported confidence (0.0-1.0)
+        - actual: Ground truth containing:
+          * selected_alternative: The alternative that was actually selected/occurred
+
+        OUTPUTS:
+        - Accuracy score (0.0-1.0) where:
+          * 1.0 = Perfect prediction (high belief in correct answer, confident)
+          * 0.5 = Neutral/uninformative prediction
+          * 0.0 = Worst prediction (confident in wrong answer)
+
+        THREE-COMPONENT FORMULA:
+        accuracy = 0.4 × probability_score + 0.3 × rank_accuracy + 0.3 × margin_score
+
+        COMPONENT 1: Probability Score (40% weight)
+        - Value assigned to actual outcome in belief distribution
+        - Range: [0, 1]
+        - Example: If agent assigned 0.7 to correct answer → probability_score = 0.7
+        - Rationale: Rewards proportional belief in correct outcome
+
+        COMPONENT 2: Rank Accuracy (30% weight)
+        - Binary: Was top choice correct?
+        - Value: 1.0 if top choice matches actual, 0.0 otherwise
+        - Example: Agent's top choice = A1, actual = A1 → rank_accuracy = 1.0
+        - Rationale: Top choice matters most in decision-making
+
+        COMPONENT 3: Margin Score (30% weight)
+        - Incorporates confidence calibration
+        - Formula:
+          * If prediction correct: margin_score = 0.5 + 0.5 × confidence
+            (Rewards confident correct predictions)
+          * If prediction wrong: margin_score = 0.5 - 0.5 × confidence
+            (Penalizes confident incorrect predictions)
+        - Range: [0, 1]
+        - Examples:
+          * Correct + high confidence (0.9): margin = 0.5 + 0.5×0.9 = 0.95
+          * Correct + low confidence (0.3): margin = 0.5 + 0.5×0.3 = 0.65
+          * Wrong + high confidence (0.9): margin = 0.5 - 0.5×0.9 = 0.05
+          * Wrong + low confidence (0.3): margin = 0.5 - 0.5×0.3 = 0.35
+        - Rationale: Confidence should match correctness
+
+        EDGE CASES:
+        - Missing belief_distribution → return 0.5 (neutral)
+        - Missing selected_alternative → return 0.5 (neutral)
+        - Empty belief_distribution → return 0.5 (neutral)
+
+        EXAMPLE CALCULATIONS:
+        Case 1: Perfect prediction
+        - belief_dist = {A1: 0.8, A2: 0.2}, actual = A1, confidence = 0.9
+        - probability_score = 0.8
+        - rank_accuracy = 1.0 (A1 is top)
+        - margin_score = 0.5 + 0.5×0.9 = 0.95
+        - accuracy = 0.4×0.8 + 0.3×1.0 + 0.3×0.95 = 0.905
+
+        Case 2: Wrong but reasonable
+        - belief_dist = {A1: 0.6, A2: 0.4}, actual = A2, confidence = 0.6
+        - probability_score = 0.4
+        - rank_accuracy = 0.0 (A1 is top, not A2)
+        - margin_score = 0.5 - 0.5×0.6 = 0.2
+        - accuracy = 0.4×0.4 + 0.3×0.0 + 0.3×0.2 = 0.22
+
+        Case 3: Uncertain but correct
+        - belief_dist = {A1: 0.4, A2: 0.6}, actual = A1, confidence = 0.3
+        - probability_score = 0.4
+        - rank_accuracy = 0.0 (A2 is top)
+        - margin_score = 0.5 + 0.5×0.3 = 0.65 (correct despite being top)
+        - accuracy = 0.4×0.4 + 0.3×0.0 + 0.3×0.65 = 0.355
+
+        NOTE: Final score is clipped to [0.0, 1.0] to handle edge cases.
         """
         # Extract belief distribution
         predicted_beliefs = prediction.get('belief_distribution', {})
