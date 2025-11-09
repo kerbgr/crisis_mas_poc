@@ -288,9 +288,14 @@ class ExpertAgent(BaseAgent):
                 # Try to find metric matching criterion name
                 score = None
 
-                # Check for direct metric (e.g., "safety" -> "safety_score")
-                metric_key = f"{criterion_name}_score"
-                if metric_key in alt:
+                # PRIORITY 1: Check for criteria_scores object (from scenario JSON)
+                if 'criteria_scores' in alt and criterion_name in alt['criteria_scores']:
+                    score = alt['criteria_scores'][criterion_name]
+                    logger.debug(f"Found score for {alt_id} on {criterion_name}: {score}")
+
+                # PRIORITY 2: Check for direct metric (e.g., "safety" -> "safety_score")
+                elif f"{criterion_name}_score" in alt:
+                    metric_key = f"{criterion_name}_score"
                     score = alt[metric_key]
 
                 # Check for cost (inverted - lower is better)
