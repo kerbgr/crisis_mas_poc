@@ -657,22 +657,32 @@ class CoordinatorAgent:
 
         # Extract agent opinions
         agent_opinions = {}
+        agent_confidences = []
         for agent_id, assessment in agent_assessments.items():
             belief_dist = assessment.get('belief_distribution', {})
             if belief_dist:
                 top_choice = max(belief_dist.items(), key=lambda x: x[1])
+                agent_conf = assessment.get('confidence', 0.0)
+                agent_confidences.append(agent_conf)
                 agent_opinions[agent_id] = {
                     'agent_name': assessment.get('agent_name', agent_id),
                     'preference': top_choice[0],
-                    'confidence': assessment.get('confidence', 0.0),
+                    'confidence': agent_conf,
                     'belief_score': top_choice[1],
                     'reasoning': assessment.get('reasoning', '')[:200] + '...'  # Truncate
                 }
 
+        # Calculate overall confidence based on consensus and agent confidences
+        # Confidence = combination of consensus level and average agent confidence
+        avg_agent_confidence = sum(agent_confidences) / len(agent_confidences) if agent_confidences else 0.0
+        # Weight: 60% consensus level, 40% average agent confidence
+        overall_confidence = 0.6 * consensus_info['consensus_level'] + 0.4 * avg_agent_confidence
+
         # Build final decision
         decision = {
             'recommended_alternative': recommended_alt,
-            'confidence': recommended_score,
+            'confidence': overall_confidence,  # Overall confidence in the decision
+            'decision_quality_score': recommended_score,  # Quality score based on ER+MCDA
             'consensus_level': consensus_info['consensus_level'],
             'final_scores': combined_scores,
             'er_scores': er_beliefs,
@@ -701,8 +711,8 @@ class CoordinatorAgent:
         })
 
         logger.info(
-            f"Final decision: {recommended_alt} (confidence: {recommended_score:.2f}, "
-            f"consensus: {consensus_info['consensus_level']:.2f})"
+            f"Final decision: {recommended_alt} (quality_score: {recommended_score:.2f}, "
+            f"confidence: {overall_confidence:.2f}, consensus: {consensus_info['consensus_level']:.2f})"
         )
 
         return decision
