@@ -1,0 +1,94 @@
+graph TB
+    subgraph UI["🖥️ USER INTERFACE LAYER"]
+        Main[main.py<br/>CLI & Orchestration]
+        Input[JSON I/O<br/>Scenarios & Config]
+        Output[Visualization<br/>Generation]
+    end
+
+    subgraph Coord["🎯 COORDINATION LAYER"]
+        CA[CoordinatorAgent<br/>Orchestration & Consensus]
+        CS[Consensus<br/>Builder]
+        CR[Conflict<br/>Resolution]
+    end
+
+    subgraph Agents["👥 AGENT LAYER"]
+        direction LR
+        EA1[Medical<br/>Expert]
+        EA2[Logistics<br/>Expert]
+        EA3[Safety<br/>Expert]
+        EA4[Environmental<br/>Expert]
+        BA[BaseAgent<br/>Interface]
+        RT[ReliabilityTracker<br/>Performance History]
+    end
+
+    subgraph DF["🧠 DECISION FRAMEWORK LAYER"]
+        direction TB
+        ER[EvidentialReasoning<br/>Dempster-Shafer]
+        GAT[GATAggregator<br/>Neural Attention]
+        MCDA[MCDAEngine<br/>TOPSIS]
+        CM[ConflictModel<br/>Resolution]
+    end
+
+    subgraph LLM["🤖 LLM INTEGRATION LAYER"]
+        direction LR
+        Claude[Claude API<br/>Anthropic]
+        OpenAI[OpenAI API<br/>GPT-4]
+        LMStudio[LM Studio<br/>Local Models]
+        Prompt[Prompt<br/>Templates]
+        Parser[Response<br/>Parser]
+    end
+
+    subgraph Eval["📊 EVALUATION & UTILITIES LAYER"]
+        direction TB
+        ME[MetricsEvaluator<br/>DQS, CL, CS, ECB]
+        Viz[SystemVisualizer<br/>Charts & Graphs]
+        Val[Validator<br/>Schema Check]
+        Cfg[ConfigManager<br/>Settings]
+        BL[Baseline<br/>Single-Agent]
+    end
+
+    Main -->|Load Scenario| Input
+    Input -->|Initialize| CA
+
+    CA -->|Collect Assessments| EA1 & EA2 & EA3 & EA4
+    EA1 & EA2 & EA3 & EA4 -.->|Inherit from| BA
+    EA1 & EA2 & EA3 & EA4 -->|Track Performance| RT
+
+    EA1 & EA2 & EA3 & EA4 -->|LLM Reasoning| Prompt
+    Prompt -->|Route to| Claude & OpenAI & LMStudio
+    Claude & OpenAI & LMStudio -->|Parse| Parser
+    Parser -->|Structured Response| EA1 & EA2 & EA3 & EA4
+
+    CA -->|Aggregate Beliefs| ER & GAT
+    ER & GAT -.->|Use Reliability| RT
+    CA -->|Rank Alternatives| MCDA
+    CA -->|Build Consensus| CS
+    CS -->|Detect Issues| CR
+
+    ER & GAT & MCDA -->|Combined Decision| CA
+    CA -->|Final Decision| ME
+
+    Main -->|Run Baseline| BL
+    BL -->|Single-Agent| EA1
+    BL & CA -->|Compare| ME
+
+    ME -->|Calculate Metrics| ME
+    ME -->|Generate Viz| Viz
+    Viz -->|Save Results| Output
+
+    Val -.->|Validate| Input
+    Cfg -.->|Configure| Main & CA & LLM
+
+    classDef layerUI fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef layerCoord fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef layerAgent fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef layerDF fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef layerLLM fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef layerEval fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+
+    class Main,Input,Output layerUI
+    class CA,CS,CR layerCoord
+    class EA1,EA2,EA3,EA4,BA,RT layerAgent
+    class ER,GAT,MCDA,CM layerDF
+    class Claude,OpenAI,LMStudio,Prompt,Parser layerLLM
+    class ME,Viz,Val,Cfg,BL layerEval
