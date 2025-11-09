@@ -826,6 +826,12 @@ Visualizations saved to: results/visualizations/
 
 ## Architecture
 
+> **📊 Viewing Diagrams:** This documentation contains Mermaid diagrams that render automatically on GitHub. If you're viewing in a text editor or IDE without Mermaid support, you can:
+> - Open `docs/architecture_viewer.html` in a web browser for rendered diagrams
+> - View the README on GitHub where diagrams render automatically
+> - Use https://mermaid.live to render diagram code
+> - See `ARCHITECTURE_DIAGRAMS.md` for all system diagrams
+
 ### System Components
 
 The Crisis MAS consists of five core layers with integrated evaluation framework:
