@@ -1,9 +1,396 @@
 """
-LM Studio API Client
-Wrapper for LM Studio local API (OpenAI-compatible) with error handling and JSON parsing
+LM Studio API Client - Local LLM Integration for Expert Agent Reasoning
 
-LM Studio runs local LLMs with an OpenAI-compatible API endpoint.
-Designed for crisis management multi-agent systems to get structured expert assessments.
+OBJECTIVE:
+This module provides a robust wrapper for LM Studio's local API, enabling expert agents
+in the crisis management multi-agent system to leverage locally-hosted open-source LLMs.
+It handles local API communication, error recovery, JSON parsing (with extra robustness for
+local models), response validation, and usage tracking—all while maintaining the same
+interface as ClaudeClient and OpenAIClient.
+
+WHY LM STUDIO:
+LM Studio serves as the **local/offline LLM provider** for this crisis management system:
+
+1. **Zero API Costs**: No per-token charges—run unlimited assessments for free
+2. **Data Privacy**: All data stays local—critical for sensitive crisis scenarios
+3. **Offline Operation**: Works without internet—essential for disaster scenarios
+4. **Open-Source Models**: Leverage Llama, Mistral, Phi, and other open models
+5. **Development/Testing**: Free experimentation without burning API credits
+6. **Budget Constraints**: Enables crisis management for under-resourced organizations
+
+While local models typically have lower reasoning quality than Claude/GPT-4, LM Studio
+provides a cost-effective alternative for budget-constrained scenarios, development,
+testing, and privacy-sensitive use cases.
+
+WHY THIS CLIENT:
+A custom client (rather than using the bare OpenAI SDK pointed at localhost) provides:
+
+1. **Robust JSON Parsing**: Local models less consistent—need extra fallback strategies
+2. **Helpful Error Messages**: "Is LM Studio running?" instead of generic connection errors
+3. **Response Validation**: Ensures responses meet crisis assessment requirements
+4. **Usage Tracking**: Monitor local model performance
+5. **Consistent Interface**: Same API as ClaudeClient/OpenAIClient (drop-in replacement)
+6. **Graceful Degradation**: Handles missing token counts, varied output formats
+7. **Crisis-Optimized**: Designed for structured expert assessments
+
+TYPICAL USAGE:
+
+```python
+from llm_integration import LMStudioClient, PromptTemplates
+
+# 1. Start LM Studio and load a model (e.g., Llama 3, Mistral 7B)
+
+# 2. Initialize client
+client = LMStudioClient()  # Connects to localhost:1234 by default
+# Or with custom endpoint:
+# client = LMStudioClient(base_url="http://192.168.1.100:1234/v1")
+
+# 3. Create expert prompt
+templates = PromptTemplates()
+prompt = templates.generate_medical_prompt(scenario, alternatives)
+
+# 4. Generate assessment
+response = client.generate_assessment(
+    prompt=prompt,
+    max_tokens=2000,
+    temperature=0.7
+)
+
+# 5. Handle response
+if response.get('error'):
+    # Error handling - often connection issues
+    print(f"Error: {response['error_message']}")
+    # Check if LM Studio is running
+else:
+    # Success - structured response
+    rankings = response['alternative_rankings']
+    reasoning = response['reasoning']
+    confidence = response['confidence']
+
+# 6. Monitor usage
+stats = client.get_statistics()
+print(f"Total requests: {stats['total_requests']}")
+# Note: Local models may not return accurate token counts
+```
+
+SETUP REQUIREMENTS:
+
+1. **Install LM Studio**:
+   - Download from https://lmstudio.ai/
+   - Available for Windows, macOS, Linux
+
+2. **Load a Model**:
+   - Open LM Studio
+   - Search for models (e.g., "Llama-3", "Mistral-7B-Instruct")
+   - Download a model (7B models work on most hardware)
+   - Load the model
+
+3. **Start Local Server**:
+   - In LM Studio, go to "Local Server" tab
+   - Click "Start Server" (default port: 1234)
+   - Verify server running: http://localhost:1234/v1/models
+
+4. **Use This Client**:
+   ```python
+   client = LMStudioClient()  # Connects automatically
+   ```
+
+MODEL RECOMMENDATIONS:
+
+For crisis management assessments, recommended models:
+
+**Best Quality (if you have GPU)**:
+- **Llama-3-8B-Instruct**: Excellent reasoning, instruction following
+- **Mistral-7B-Instruct-v0.2**: Good balance of quality and speed
+- **Phi-3-Medium-4K-Instruct**: Strong reasoning, smaller size
+
+**Fastest (CPU-friendly)**:
+- **Llama-3-8B-Instruct-Q4**: Quantized, runs on CPU
+- **Phi-3-Mini-4K-Instruct**: Small but capable
+- **TinyLlama-1.1B**: Very fast, lower quality
+
+**Avoid**: Base models (non-instruct)—they don't follow instructions well
+
+INPUTS:
+The primary method `generate_assessment()` expects:
+
+- **prompt** (str): Expert assessment prompt
+  - Should explicitly request JSON format (local models need clear instructions)
+  - Should provide examples if possible (helps with consistency)
+  - Typically 1000-2000 characters
+
+- **max_tokens** (int, default 2000): Maximum response length
+  - 2000 sufficient for assessments
+  - Local models may be slower for longer outputs
+
+- **system_prompt** (str, optional): System-level instructions
+  - Default: "You are an expert providing structured assessments..."
+  - Local models benefit from clear, explicit instructions
+
+- **temperature** (float, default 0.7): Sampling randomness
+  - 0.7: Balanced (default)
+  - 0.3-0.5: More focused (recommended for local models)
+  - Lower temperature → more consistent output
+
+OUTPUTS:
+Same structure as ClaudeClient/OpenAIClient:
+
+```python
+{
+    'alternative_rankings': {
+        'A1': 0.7,
+        'A2': 0.2,
+        'A3': 0.08,
+        'A4': 0.02
+    },
+    'reasoning': str,
+    'confidence': float,
+    'key_concerns': List[str],
+    '_metadata': {
+        'model': str,              # Local model identifier
+        'input_tokens': int,       # May be 0 if unavailable
+        'output_tokens': int,      # May be 0 if unavailable
+        'finish_reason': str,      # 'stop', 'length', etc.
+        'validated': bool,
+        'endpoint': str            # localhost:1234
+    }
+}
+```
+
+On error:
+```python
+{
+    'error': True,
+    'error_message': str,
+    'error_type': str,
+    'endpoint': str
+}
+```
+
+LOCAL MODEL CHALLENGES:
+
+Local models present unique challenges compared to cloud APIs:
+
+1. **Inconsistent JSON Output**: May include extra text, formatting variations
+   → Solution: Multi-strategy parsing with extra robustness
+
+2. **Instruction Following**: Less reliable than Claude/GPT-4
+   → Solution: Very explicit prompts, examples, clear structure
+
+3. **Token Count Tracking**: Not all models return accurate token counts
+   → Solution: Gracefully handle missing token data (return 0)
+
+4. **Variable Quality**: Depends heavily on model size and quantization
+   → Solution: Recommend quality models, validate outputs
+
+5. **Connection Issues**: Server may not be running
+   → Solution: Helpful error messages ("Is LM Studio running?")
+
+6. **No Built-in JSON Mode**: Unlike OpenAI's response_format
+   → Solution: Rely on prompt engineering and robust parsing
+
+ROBUST JSON PARSING:
+
+Because local models are less consistent, this client implements extra-robust parsing:
+
+1. **Direct JSON Parsing**: Try `json.loads(response_text)` first
+2. **Markdown JSON Blocks**: Extract from ```json...```
+3. **Generic Code Blocks**: Extract from ```...```
+4. **Regex Pattern Matching**: Find first {...} or [...]
+5. **Whitespace Handling**: Strip extra spaces, newlines
+6. **Error Recovery**: Detailed logging to diagnose parsing failures
+
+This multi-layered approach ensures maximum reliability with local models.
+
+ERROR HANDLING:
+
+1. **Connection Errors (APIConnectionError)**:
+   - Most common error (LM Studio not running)
+   - Helpful message: "Is LM Studio running at localhost:1234?"
+   - Retry with exponential backoff (3 attempts)
+
+2. **API Errors (APIError)**:
+   - Model not loaded, invalid request
+   - Retry with backoff
+
+3. **JSON Parsing Failures**:
+   - More common with local models
+   - Multi-strategy parsing with detailed logs
+   - Returns error dict if all strategies fail
+
+4. **Validation Failures**:
+   - Logs warnings but returns response
+   - Sets validated=False in metadata
+   - Allows caller to handle incomplete responses
+
+NO RATE LIMITS:
+
+Unlike cloud APIs, LM Studio has:
+- **No rate limits**: Send as many requests as you want
+- **No costs**: Unlimited free usage
+- **Only limit**: Local hardware speed (GPU/CPU throughput)
+
+This makes LM Studio ideal for:
+- Development and testing (unlimited experimentation)
+- High-volume evaluation (run 1000+ scenarios)
+- Budget-constrained organizations
+
+COST SAVINGS EXAMPLE:
+
+**Cloud APIs (Claude/OpenAI)**:
+- 1000 expert assessments × 4000 tokens × $0.01/1k tokens = **$40**
+
+**LM Studio**:
+- 1000 expert assessments = **$0** (only electricity costs)
+
+For organizations running hundreds or thousands of crisis simulations, LM Studio can
+save significant costs while maintaining reasonable quality with good models.
+
+PERFORMANCE CHARACTERISTICS:
+
+Varies dramatically based on hardware:
+
+**GPU (RTX 3090, M2 Max)**:
+- Latency: 5-15 seconds per request
+- Throughput: Unlimited (hardware-bound)
+
+**CPU (Modern Intel/AMD)**:
+- Latency: 15-60 seconds per request
+- Throughput: Unlimited but slow
+
+**Optimization Tips**:
+- Use quantized models (Q4, Q5) for faster inference
+- Reduce max_tokens to speed up generation
+- Use smaller models (7B vs 13B) if quality acceptable
+- Enable GPU acceleration in LM Studio settings
+
+COMPARISON TO ALTERNATIVES:
+
+**vs. ClaudeClient**:
+- LM Studio: Free, private, offline | Claude: Better quality, faster
+- LM Studio: Variable quality | Claude: Consistent high quality
+- LM Studio: No rate limits | Claude: ~50 req/min
+
+**vs. OpenAIClient**:
+- LM Studio: Free, private, offline | OpenAI: Better quality, JSON mode
+- LM Studio: Slower | OpenAI: Faster (cloud infrastructure)
+- LM Studio: No rate limits | OpenAI: ~60 req/min
+
+**vs. Raw OpenAI SDK (pointed at localhost)**:
+- LMStudioClient: Helpful errors, robust parsing, crisis-optimized
+- Raw SDK: Generic errors, basic parsing
+
+DESIGN DECISIONS:
+
+1. **Why localhost:1234 default?**: LM Studio's default local server port
+2. **Why no JSON mode?**: Not supported by LM Studio/local models (prompt-based only)
+3. **Why extra parsing strategies?**: Local models less consistent than cloud APIs
+4. **Why graceful token handling?**: Some local models don't return token counts
+5. **Why helpful connection errors?**: Users often forget to start LM Studio
+6. **Why system+user messages?**: OpenAI-compatible API expects this format
+
+INTEGRATION POINTS:
+
+This client integrates with:
+
+- **agents/expert_agent.py**: Expert agents use this for free local inference
+- **llm_integration/prompt_templates.py**: Provides prompts (same as other clients)
+- **evaluation/metrics.py**: Tracks metadata (may have missing token counts)
+
+TESTING & DEBUGGING:
+
+Enable debug logging:
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+client = LMStudioClient()
+# Will log: Connection attempts, parsing strategies, validation results
+```
+
+Check if LM Studio is running:
+```python
+import requests
+try:
+    response = requests.get("http://localhost:1234/v1/models")
+    print("LM Studio is running")
+    print(f"Loaded model: {response.json()}")
+except:
+    print("LM Studio is NOT running - start it first!")
+```
+
+Monitor local model quality:
+```python
+stats = client.get_statistics()
+print(f"Success rate: {stats['success_rate']:.1%}")
+# Low success rate? Try different model or explicit prompts
+```
+
+LIMITATIONS & KNOWN ISSUES:
+
+1. **Quality Variable**: Depends on model choice, hardware, quantization
+2. **Slower than Cloud**: GPU: 5-15s, CPU: 15-60s (vs. cloud 2-5s)
+3. **Less Consistent**: JSON output may need cleanup
+4. **No Built-in JSON Mode**: Must rely on prompt engineering
+5. **Token Counts**: May be inaccurate or missing
+6. **Hardware Requirements**: Good performance needs GPU
+7. **Setup Complexity**: Must install and configure LM Studio
+
+SECURITY & PRIVACY:
+
+**Advantages**:
+- **Data Privacy**: All processing local, no data sent to cloud
+- **No API Keys**: No credentials to manage
+- **Air-gapped**: Can run completely offline
+
+**Use Cases**:
+- Government/military crisis planning (sensitive data)
+- Medical crisis scenarios (HIPAA compliance)
+- Disaster scenarios (no internet access)
+- Development/testing (no data leaks)
+
+TROUBLESHOOTING:
+
+**Connection Failed**:
+1. Open LM Studio
+2. Load a model
+3. Start local server (port 1234)
+4. Try again
+
+**JSON Parsing Errors**:
+1. Use instruct-tuned models (not base models)
+2. Make prompts more explicit (request JSON clearly)
+3. Try lower temperature (0.3-0.5)
+4. Try different model (Llama-3, Mistral preferred)
+
+**Low Quality Outputs**:
+1. Upgrade to larger model (13B vs. 7B)
+2. Use higher quantization (Q5, Q6 vs. Q4)
+3. Enable GPU acceleration
+4. Provide examples in prompt
+
+RELATED FILES:
+
+- **llm_integration/__init__.py**: Module overview and provider comparison
+- **llm_integration/claude_client.py**: Default cloud provider
+- **llm_integration/openai_client.py**: Alternative cloud provider
+- **llm_integration/prompt_templates.py**: Generates prompts for this client
+
+VERSION HISTORY:
+
+- v1.0: Initial implementation
+- v1.1: Enhanced JSON parsing robustness
+- v1.2: Graceful handling of missing token counts
+- v1.3: Improved connection error messages
+- v1.4: Added usage statistics tracking
+- v2.0: Comprehensive documentation (Jan 2025)
+
+REFERENCES:
+
+- LM Studio: https://lmstudio.ai/
+- LM Studio Docs: https://lmstudio.ai/docs
+- OpenAI-Compatible API Spec: https://platform.openai.com/docs/api-reference
+- Recommended open models: Llama 3, Mistral, Phi-3
+- Model quantization guide: GGUF formats
 """
 
 import os

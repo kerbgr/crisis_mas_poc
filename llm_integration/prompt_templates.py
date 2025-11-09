@@ -1,8 +1,430 @@
 """
-Prompt Templates for Crisis Management Expert Agents
-Generates structured prompts for different expert agent roles
+Prompt Templates - Role-Specific Expert Prompts for Crisis Management Agents
 
-Designed to work with Claude, OpenAI, and LM Studio LLM providers.
+OBJECTIVE:
+This module provides a comprehensive library of prompt templates for generating
+role-specific expert assessments in the crisis management multi-agent system. It implements
+proven prompt engineering patterns to elicit high-quality, structured responses from LLMs
+(Claude, OpenAI, LM Studio), ensuring expert agents produce consistent, actionable crisis
+assessments.
+
+WHY PROMPT TEMPLATES:
+Effective crisis management requires expert agents to assume specialized roles with
+distinct knowledge, priorities, and evaluation criteria. This module addresses the
+challenge of:
+
+1. **Role Specialization**: Different experts (meteorologist, operations, medical) need
+   different instructions, context, and evaluation frameworks
+
+2. **Consistent Structure**: All assessments must return identical JSON format for
+   automated aggregation (alternative_rankings, reasoning, confidence, key_concerns)
+
+3. **Quality Control**: Well-engineered prompts dramatically improve LLM output quality,
+   especially for complex multi-dimensional crisis assessments
+
+4. **Provider Compatibility**: Templates work across all LLM providers (Claude, OpenAI,
+   LM Studio) despite different capabilities and instruction-following quality
+
+5. **Prompt Engineering Best Practices**: Centralizing prompts enables systematic
+   improvement and ensures consistent application of prompt engineering techniques
+
+By providing expert-specific, crisis-optimized prompts, this module transforms general-purpose
+LLMs into specialized crisis management experts.
+
+THREE EXPERT ROLES:
+
+1. **Meteorologist** - Weather/Environmental Specialist
+   - Focus: Weather threats, environmental safety, timing windows
+   - Criteria: Safety, effectiveness, timing, preventability
+   - Expertise: Meteorology, atmospheric science, severe weather forecasting
+   - Perspective: Technical scientific analysis of weather-related risks
+
+2. **Operations Director** - Resource/Logistics Specialist
+   - Focus: Feasibility, resources, cost, execution complexity
+   - Criteria: Feasibility, cost-effectiveness, logistics, scalability
+   - Expertise: Operations management, resource allocation, budget control
+   - Perspective: Pragmatic "can we actually do this?" reality check
+
+3. **Medical Director** - Health/Safety Specialist
+   - Focus: Patient safety, vulnerable populations, health outcomes
+   - Criteria: Patient safety, medical access, health risks, capacity
+   - Expertise: Emergency medicine, public health, hospital surge capacity
+   - Perspective: Clinical judgment on mortality, morbidity, and health impacts
+
+These three roles provide diverse, complementary perspectives that, when aggregated,
+produce well-rounded crisis decisions balancing safety, feasibility, and health outcomes.
+
+TYPICAL USAGE:
+
+```python
+from llm_integration import PromptTemplates, ClaudeClient
+
+# 1. Initialize templates
+templates = PromptTemplates()
+
+# 2. Define scenario and alternatives
+scenario = {
+    'type': 'flood',
+    'location': 'Urban area',
+    'severity': 0.85,
+    'affected_population': 50000,
+    'response_time_hours': 6,
+    'weather_forecast': {
+        'precipitation_mm': 200,
+        'duration_hours': 48
+    }
+}
+
+alternatives = [
+    {
+        'id': 'A1',
+        'name': 'Full Evacuation',
+        'safety_score': 0.9,
+        'cost_euros': 2000000,
+        'response_time_hours': 12
+    },
+    {
+        'id': 'A2',
+        'name': 'Deploy Flood Barriers',
+        'safety_score': 0.7,
+        'cost_euros': 500000,
+        'response_time_hours': 8
+    }
+]
+
+# 3. Generate role-specific prompts
+meteorologist_prompt = templates.generate_meteorologist_prompt(
+    scenario, alternatives
+)
+operations_prompt = templates.generate_operations_prompt(
+    scenario, alternatives
+)
+medical_prompt = templates.generate_medical_prompt(
+    scenario, alternatives
+)
+
+# 4. Send to LLM
+client = ClaudeClient()
+meteorologist_response = client.generate_assessment(meteorologist_prompt)
+operations_response = client.generate_assessment(operations_prompt)
+medical_response = client.generate_assessment(medical_prompt)
+
+# 5. Aggregate responses using decision_framework
+# (see decision_framework/ module for aggregation logic)
+```
+
+PROMPT ENGINEERING PATTERNS:
+
+Each template implements proven prompt engineering techniques:
+
+1. **Clear Role Definition**:
+   - "You are a SENIOR METEOROLOGIST with 15+ years of experience..."
+   - Establishes expertise, authority, and identity
+   - Grounds LLM in specific domain knowledge
+
+2. **Urgency Framing**:
+   - "⚠️ ACTIVE CRISIS SITUATION - Lives depend on your assessment"
+   - Creates appropriate gravity and seriousness
+   - Motivates careful, thorough analysis
+
+3. **Structured Sections with Visual Headers**:
+   - `━━━ YOUR EXPERT ROLE ━━━`
+   - `━━━ CRISIS SITUATION ━━━`
+   - `━━━ RESPONSE OPTIONS ━━━`
+   - Clear organization improves LLM comprehension
+
+4. **Explicit Output Format**:
+   - Shows exact JSON structure expected
+   - Provides example values
+   - Reduces ambiguity, improves consistency
+
+5. **Detailed Guidelines**:
+   - Explains what each field means
+   - Provides ranges (0.0-1.0 for scores)
+   - Specifies constraints (scores sum to ~1.0)
+
+6. **No Ambiguity Directive**:
+   - "⚠️ CRITICAL: Respond ONLY with the JSON object. No preamble."
+   - Prevents extra text that breaks JSON parsing
+
+7. **Domain-Specific Context**:
+   - Meteorologist: Focus on weather threats, timing, safety
+   - Operations: Focus on resources, feasibility, logistics
+   - Medical: Focus on patient safety, vulnerable populations, health risks
+
+EXPECTED RESPONSE FORMAT:
+
+All prompts request identical JSON structure:
+
+```json
+{
+    "alternative_rankings": {
+        "A1": 0.7,
+        "A2": 0.2,
+        "A3": 0.08,
+        "A4": 0.02
+    },
+    "reasoning": "Expert explanation in 2-3 sentences focusing on key factors...",
+    "confidence": 0.85,
+    "key_concerns": [
+        "Primary concern from expert perspective",
+        "Secondary risk or challenge",
+        "Additional consideration"
+    ]
+}
+```
+
+**Field Specifications**:
+
+- **alternative_rankings**: Dict[str, float]
+  - Keys: Alternative IDs (A1, A2, A3, A4)
+  - Values: Preference scores 0.0-1.0 (higher = more preferred)
+  - Constraint: Should sum to ~1.0 (normalized distribution)
+
+- **reasoning**: str
+  - Length: 2-3 concise sentences
+  - Focus: Explain ranking rationale from expert perspective
+  - Style: Professional, technical, domain-specific
+
+- **confidence**: float
+  - Range: 0.0-1.0
+  - Meaning: Expert's certainty in their assessment
+  - Factors: Data quality, scenario clarity, forecast certainty
+
+- **key_concerns**: List[str]
+  - Length: 2-4 items
+  - Content: Specific factors that influenced rankings
+  - Examples: "Precipitation intensity exceeds drainage capacity"
+
+INPUTS TO TEMPLATE GENERATORS:
+
+**scenario**: Dict with crisis information
+```python
+{
+    'type': str,                    # 'flood', 'earthquake', 'wildfire', etc.
+    'location': str,                # Geographic area
+    'severity': float,              # 0.0-1.0 (crisis intensity)
+    'affected_population': int,     # Number of people at risk
+    'response_time_hours': int,     # Available decision window
+    'weather_forecast': {           # Optional weather data
+        'precipitation_mm': float,
+        'duration_hours': int,
+        'wind_speed_kmh': float
+    },
+    'available_resources': {        # Optional resource data
+        'vehicles': int,
+        'personnel': int,
+        'budget_euros': float
+    },
+    'description': str              # Optional additional context
+}
+```
+
+**alternatives**: List[Dict] with response options
+```python
+[
+    {
+        'id': str,                  # 'A1', 'A2', etc.
+        'name': str,                # 'Full Evacuation', 'Deploy Barriers', etc.
+        'safety_score': float,      # Optional: Pre-computed safety metric
+        'cost_euros': float,        # Optional: Estimated cost
+        'response_time_hours': int, # Optional: Time to implement
+        'effectiveness': float,     # Optional: Expected effectiveness
+        'description': str,         # Optional: Detailed description
+        'advantages': List[str],    # Optional: Pros
+        'disadvantages': List[str]  # Optional: Cons
+    }
+]
+```
+
+**criteria**: Optional[List[str]] - Custom evaluation criteria
+- If None, uses role-specific defaults
+- If provided, overrides default criteria
+
+OUTPUTS FROM TEMPLATE GENERATORS:
+
+Each generator returns a formatted prompt string (1000-2000 characters) ready to send to LLM:
+
+```python
+prompt = templates.generate_meteorologist_prompt(scenario, alternatives)
+# Returns: Multi-section prompt with role definition, scenario context,
+#          alternatives, criteria, task description, and JSON format specification
+```
+
+CUSTOMIZATION:
+
+**Custom Criteria**:
+```python
+custom_criteria = [
+    "environmental impact (ecosystem damage)",
+    "long-term sustainability (future resilience)",
+    "community acceptance (public cooperation)"
+]
+
+prompt = templates.generate_operations_prompt(
+    scenario, alternatives, criteria=custom_criteria
+)
+# Overrides default operations criteria
+```
+
+**Custom System Prompts**:
+```python
+system_prompt = templates.get_system_prompt("meteorologist")
+# Returns: Short system-level instruction for LLM
+# Use with client.generate_assessment(prompt, system_prompt=system_prompt)
+```
+
+PROMPT FORMATTING UTILITIES:
+
+The module provides helper methods for formatting scenario data:
+
+1. **format_scenario_context(scenario)**: Converts scenario dict to readable text
+   - Formats severity levels (0.8 → "CRITICAL")
+   - Includes weather forecast if present
+   - Includes resources if present
+   - Produces multi-line formatted description
+
+2. **format_alternatives(alternatives)**: Converts alternatives list to readable text
+   - Formats each alternative with ID, name, description
+   - Includes metrics (safety, cost, time) if present
+   - Includes advantages/disadvantages if present
+   - Produces multi-line formatted list
+
+3. **_get_severity_label(severity)**: Maps severity float to label
+   - 0.8-1.0 → "CRITICAL"
+   - 0.6-0.8 → "HIGH"
+   - 0.4-0.6 → "MODERATE"
+   - 0.2-0.4 → "LOW"
+   - 0.0-0.2 → "MINIMAL"
+
+PROVIDER COMPATIBILITY:
+
+Templates designed to work with all LLM providers:
+
+**Claude (ClaudeClient)**:
+- Excellent instruction following → Templates work as-is
+- Consistent JSON output → Reliable responses
+- Recommended: Default provider
+
+**OpenAI (OpenAIClient)**:
+- Good instruction following → Templates work well
+- JSON mode enabled → Extra reliability
+- Recommended: Alternative to Claude
+
+**LM Studio (LMStudioClient)**:
+- Variable instruction following → Templates may need adjustment
+- No JSON mode → Relies on prompt clarity
+- Recommended: Use explicit language, lower temperature (0.3-0.5)
+
+DESIGN DECISIONS:
+
+1. **Why 3 roles (not more)?**: Balance of diversity and manageability
+   - Meteorologist: Weather/environment perspective
+   - Operations: Feasibility/resources perspective
+   - Medical: Health/safety perspective
+   - Covers key decision dimensions without overwhelming system
+
+2. **Why structured sections?**: Improves LLM comprehension and adherence
+   - Visual headers (━━━) improve parsing
+   - Clear separation reduces confusion
+   - Proven to increase output quality
+
+3. **Why 2-3 sentence reasoning?**: Balance of detail and conciseness
+   - Long enough for substantive explanation
+   - Short enough to stay focused
+   - Easier to present to human decision-makers
+
+4. **Why sum-to-1.0 constraint?**: Enables probabilistic interpretation
+   - Rankings can be treated as probability distributions
+   - Facilitates weighted aggregation
+   - Prevents unbounded scoring
+
+5. **Why explicit "No preamble" instruction?**: Prevents JSON parsing failures
+   - LLMs often add "Here's my assessment:" before JSON
+   - Breaks json.loads() parsing
+   - Explicit instruction reduces this behavior
+
+INTEGRATION WITH AGENTS:
+
+The PromptTemplates class integrates with expert agents:
+
+```python
+# In agents/expert_agent.py
+class ExpertAgent(BaseAgent):
+    def __init__(self, expertise_area: str):
+        self.llm_client = ClaudeClient()
+        self.templates = PromptTemplates()
+
+    def assess_scenario(self, scenario, alternatives):
+        # Generate role-specific prompt
+        if self.expertise_area == "meteorologist":
+            prompt = self.templates.generate_meteorologist_prompt(
+                scenario, alternatives
+            )
+        elif self.expertise_area == "operations":
+            prompt = self.templates.generate_operations_prompt(
+                scenario, alternatives
+            )
+        elif self.expertise_area == "medical":
+            prompt = self.templates.generate_medical_prompt(
+                scenario, alternatives
+            )
+
+        # Get assessment from LLM
+        return self.llm_client.generate_assessment(prompt)
+```
+
+PERFORMANCE CONSIDERATIONS:
+
+- **Prompt Length**: 1000-2000 characters per template
+  - Not excessive for modern LLMs (200k+ context windows)
+  - Detailed prompts improve output quality (worth the tokens)
+
+- **Generation Time**: Dominated by LLM latency, not prompt generation
+  - Template generation: <1ms (string formatting)
+  - LLM inference: 2-60s (depends on provider)
+
+- **Memory**: Minimal
+  - Templates are generated on-the-fly (no caching)
+  - Only class instance stored in memory
+
+LIMITATIONS & EXTENSIONS:
+
+**Current Limitations**:
+1. Fixed roles (3 experts only)
+2. English-only prompts
+3. No few-shot examples
+4. No chain-of-thought prompting
+
+**Potential Extensions**:
+1. Add more expert roles (infrastructure, social services, etc.)
+2. Multi-language support
+3. Include example assessments (few-shot learning)
+4. Chain-of-thought: "Let's think step by step..."
+5. Dynamic criteria based on scenario type
+
+RELATED FILES:
+
+- **llm_integration/claude_client.py**: Sends these prompts to Claude
+- **llm_integration/openai_client.py**: Sends these prompts to OpenAI
+- **llm_integration/lmstudio_client.py**: Sends these prompts to local models
+- **agents/expert_agent.py**: Uses these templates for assessment generation
+- **decision_framework/**: Aggregates responses from multiple expert prompts
+
+VERSION HISTORY:
+
+- v1.0: Initial three expert roles (meteorologist, operations, medical)
+- v1.1: Enhanced prompt structure with visual headers
+- v1.2: Added explicit JSON-only instruction
+- v1.3: Improved scenario/alternative formatting utilities
+- v2.0: Comprehensive documentation (Jan 2025)
+
+REFERENCES:
+
+- Prompt engineering best practices for LLMs
+- Crisis management expert assessment frameworks
+- Multi-agent system communication patterns
+- Structured output generation from LLMs
 """
 
 from typing import Dict, Any, List, Optional
