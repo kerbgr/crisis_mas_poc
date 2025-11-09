@@ -122,8 +122,8 @@ def load_scenario(scenario_path: str) -> Dict[str, Any]:
     with open(path, 'r') as f:
         scenario = json.load(f)
 
-    logger.info(f"Loaded scenario: {scenario.get('scenario_id', 'unknown')}")
-    logger.info(f"  Type: {scenario.get('crisis_type', 'unknown')}")
+    logger.info(f"Loaded scenario: {scenario.get('id', scenario.get('scenario_id', 'unknown'))}")
+    logger.info(f"  Type: {scenario.get('type', scenario.get('crisis_type', 'unknown'))}")
     logger.info(f"  Location: {scenario.get('location', 'unknown')}")
     logger.info(f"  Severity: {scenario.get('severity', 0):.2f}")
 
