@@ -1,29 +1,273 @@
 """
-Multi-Criteria Decision Analysis (MCDA) Engine
-For Crisis Management Multi-Agent System
+Multi-Criteria Decision Analysis (MCDA) Engine - Alternative Ranking and Evaluation
 
-This module implements weighted sum MCDA based on TOPSIS (Technique for Order of
-Preference by Similarity to Ideal Solution) principles. It evaluates and ranks
-alternatives across multiple criteria with configurable weights.
+OBJECTIVE:
+This module implements a Multi-Criteria Decision Analysis engine for evaluating and
+ranking crisis response alternatives across multiple competing criteria. It provides
+a systematic, transparent method for comparing complex alternatives when no single
+criterion dominates (e.g., safety vs. cost vs. speed trade-offs).
 
-Method Classification:
-- Approach: Weighted sum with vector normalization
-- Family: TOPSIS-inspired, similar to MAUT (Multi-Attribute Utility Theory)
-- Thesis Context: Serves as "παρόμοιες προσεγγίσεις" (similar approaches) to
-  Group UTA mentioned in abstract, providing multi-criteria group decision-making
-  through weighted aggregation of heterogeneous expert preferences.
+WHY THIS EXISTS:
+Crisis management decisions involve inherent trade-offs:
+- **Safety vs. Cost**: Safest option may be prohibitively expensive
+- **Speed vs. Quality**: Fastest response may compromise effectiveness
+- **Short-term vs. Long-term**: Immediate relief vs. sustainable solutions
+- **Lives vs. Livelihoods**: Public health vs. economic impact
 
-Key Features:
-- Handles both benefit criteria (higher is better) and cost criteria (lower is better)
-- Vector normalization for scale independence
-- Configurable criterion weights per expert or scenario
-- Supports group decision-making through weight aggregation
+Decision-makers need a structured way to:
+1. Compare alternatives across multiple dimensions simultaneously
+2. Apply consistent evaluation criteria across different scenarios
+3. Weight criteria according to context (e.g., safety weighted higher in severe crises)
+4. Explain and justify decisions to stakeholders
+5. Perform sensitivity analysis (how rankings change if weights change)
 
-Criteria evaluated:
-- safety: Safety score (benefit criterion)
-- cost: Financial cost (cost criterion)
-- response_time: Speed of response (cost criterion)
-- social_acceptance: Public acceptance (benefit criterion)
+This module provides that structured, auditable decision framework.
+
+METHODOLOGICAL CLASSIFICATION:
+- **Approach**: Weighted sum with vector normalization
+- **Family**: TOPSIS-inspired (Technique for Order of Preference by Similarity to Ideal Solution)
+- **Related Methods**: MAUT (Multi-Attribute Utility Theory), SAW (Simple Additive Weighting)
+- **Research Context**: Serves as "παρόμοιες προσεγγίσεις" (similar approaches) to
+  Group UTA mentioned in thesis abstract, providing multi-criteria group decision-making
+  through weighted aggregation of heterogeneous expert preferences
+
+MATHEMATICAL FOUNDATION:
+Weighted Sum with Normalization:
+
+For each alternative A:
+    score(A) = Σ [w_i × normalized(v_i)]
+
+Where:
+- w_i = weight for criterion i (from criteria_weights.json)
+- v_i = raw value for criterion i
+- normalized(v_i) = (v_i - min) / (max - min) for benefit criteria
+- normalized(v_i) = (max - v_i) / (max - min) for cost criteria
+
+Normalization ensures:
+1. All criteria on same scale (0-1)
+2. Scale independence (euros vs. hours vs. lives)
+3. Benefit criteria: higher is better → higher normalized score
+4. Cost criteria: lower is better → higher normalized score
+
+CRITERION TYPES:
+1. **Benefit Criteria** (maximize):
+   - Safety score: Higher = better
+   - Effectiveness: Higher = better
+   - Social acceptance: Higher = better
+   - Public confidence: Higher = better
+
+2. **Cost Criteria** (minimize):
+   - Financial cost: Lower = better
+   - Response time: Lower = better
+   - Resource consumption: Lower = better
+   - Environmental impact: Lower = better
+
+INPUTS (rank_alternatives method):
+- alternatives: List[Dict[str, Any]]
+  * Each alternative contains:
+    - id: str (unique identifier, e.g., "A1", "action_evacuation")
+    - name: str (human-readable name)
+    - criteria_scores: Dict[criterion_id, float] (0-1 scores, pre-normalized)
+      OR
+    - estimated_metrics: Dict[metric_name, value] (raw values to be normalized)
+
+- custom_weights: Optional[Dict[criterion_id, float]]
+  * Override default weights from criteria_weights.json
+  * Useful for sensitivity analysis or expert-specific weighting
+
+Example Alternative:
+```json
+{
+  "id": "A1",
+  "name": "Immediate Evacuation",
+  "criteria_scores": {
+    "effectiveness": 0.85,
+    "safety": 0.90,
+    "speed": 0.75,
+    "cost": 0.40,
+    "public_acceptance": 0.70
+  }
+}
+```
+
+OUTPUTS (rank_alternatives returns):
+List[Tuple[alt_id, weighted_score, normalized_scores]]
+- Sorted by weighted_score (descending, best first)
+- alt_id: Alternative identifier
+- weighted_score: Overall score (0-1)
+- normalized_scores: Dict[criterion_id, float] - individual criterion scores
+
+Example Output:
+```python
+[
+  ("A1", 0.782, {"safety": 0.90, "cost": 0.40, ...}),  # Rank 1
+  ("A3", 0.645, {"safety": 0.85, "cost": 0.45, ...}),  # Rank 2
+  ("A2", 0.523, {"safety": 0.70, "cost": 0.70, ...})   # Rank 3
+]
+```
+
+KEY FEATURES:
+1. **Dual Input Support**:
+   - Direct criteria_scores (pre-normalized, from scenarios)
+   - Raw estimated_metrics (auto-normalized across alternatives)
+
+2. **Automatic Normalization**:
+   - Handles different scales (euros, hours, percentages)
+   - Respects criterion type (benefit vs. cost)
+
+3. **Sensitivity Analysis**:
+   - Test how rankings change with different weights
+   - Identify "robust" winners (stable across weight profiles)
+   - Find weight thresholds where winners change
+
+4. **Weight Profile Comparison**:
+   - Compare rankings under different stakeholder perspectives
+   - Medical-focused vs. cost-focused vs. speed-focused
+
+5. **Explanation Generation**:
+   - Human-readable ranking explanations
+   - Visual bars showing criterion contributions
+   - Comparison tables across alternatives
+
+TYPICAL WORKFLOW:
+```python
+# 1. Initialize with criteria configuration
+mcda = MCDAEngine("scenarios/criteria_weights.json")
+
+# 2. Get alternatives from scenario
+alternatives = scenario['available_actions']
+
+# 3. Rank alternatives
+ranked = mcda.rank_alternatives(alternatives)
+
+# 4. Get top recommendation
+winner = ranked[0]
+print(f"Winner: {winner[0]} with score {winner[1]:.3f}")
+
+# 5. Generate explanation
+explanation = mcda.explain_ranking(ranked, alternatives_data)
+print(explanation)
+
+# 6. Sensitivity analysis (optional)
+sensitivity = mcda.sensitivity_analysis(
+    alternatives,
+    criterion_to_vary='safety',
+    weight_range=(0.1, 0.6)
+)
+```
+
+CRITERIA CONFIGURATION (criteria_weights.json):
+```json
+{
+  "decision_criteria": {
+    "effectiveness": {
+      "name": "Effectiveness",
+      "weight": 0.30,
+      "type": "benefit",
+      "description": "How well the action addresses the crisis"
+    },
+    "safety": {
+      "name": "Safety",
+      "weight": 0.25,
+      "type": "benefit",
+      "description": "Safety for responders and affected population"
+    },
+    "speed": {
+      "name": "Response Speed",
+      "weight": 0.20,
+      "type": "benefit",
+      "description": "How quickly the action can be executed"
+    },
+    "cost": {
+      "name": "Cost",
+      "weight": 0.15,
+      "type": "cost",
+      "description": "Financial and resource cost"
+    },
+    "public_acceptance": {
+      "name": "Public Acceptance",
+      "weight": 0.10,
+      "type": "benefit",
+      "description": "Level of public support"
+    }
+  }
+}
+```
+
+DESIGN DECISIONS:
+1. **Weighted Sum vs. Full TOPSIS**:
+   - Chose weighted sum for simplicity and interpretability
+   - Full TOPSIS adds ideal/anti-ideal distance calculations (more complex)
+   - Weighted sum sufficient for crisis decision-making
+
+2. **Vector Normalization**:
+   - Ensures scale independence
+   - Alternative: Z-score normalization (less interpretable)
+
+3. **Equal Weights Fallback**:
+   - If criterion not in config → use 1/N equal weight
+   - Handles scenario-specific criteria gracefully
+
+4. **History Tracking**:
+   - Maintains analysis_history for auditing
+   - Useful for learning and improvement
+
+ERROR HANDLING:
+- FileNotFoundError: Criteria weights file missing
+- json.JSONDecodeError: Malformed criteria configuration
+- ValueError: Missing required fields (name, weight, type)
+- ValueError: Invalid criterion type (must be 'benefit' or 'cost')
+- Graceful defaults: Missing metrics → 0.5 (neutral)
+
+PERFORMANCE:
+- Time Complexity: O(A × C)
+  * A = number of alternatives (typically 3-10)
+  * C = number of criteria (typically 5-8)
+- Space Complexity: O(A × C)
+- Typical Runtime: < 1ms for A=5, C=7
+- Bottleneck: Sensitivity analysis (O(A × C × S) where S=steps)
+
+INTEGRATION POINTS:
+- Called by: CoordinatorAgent after belief aggregation
+- Inputs from: Scenario JSON (criteria_scores) or agent assessments (estimated_metrics)
+- Outputs to: Decision quality calculation in evaluation/metrics.py
+- Related: Evidential Reasoning produces the "recommended" alternative to score
+
+SENSITIVITY ANALYSIS USE CASES:
+1. **Robustness Testing**: Does winner change if safety weight varies ±10%?
+2. **Stakeholder Alignment**: Do all stakeholder weight profiles agree on winner?
+3. **Critical Weight Identification**: At what weight threshold does ranking flip?
+4. **Consensus Building**: Find weights where all stakeholders accept result
+
+LIMITATIONS:
+1. Assumes criteria independence (no interaction effects)
+2. Linear aggregation (doesn't capture threshold effects)
+3. Static weights (no dynamic adaptation to scenario)
+4. No uncertainty propagation (scores treated as certain)
+5. Ordinal rankings only (score differences may not be meaningful)
+
+VALIDATION:
+Unit tests verify:
+- Benefit criterion normalization (higher raw → higher score)
+- Cost criterion normalization (lower raw → higher score)
+- Weight application correctness
+- Ranking stability
+- Sensitivity analysis accuracy
+
+RELATED RESEARCH:
+- TOPSIS: Hwang & Yoon (1981)
+- MAUT: Keeney & Raiffa (1976)
+- SAW: MacCrimon (1968)
+- Multi-criteria decision analysis in emergency management
+
+COMPARISON WITH OTHER MCDA METHODS:
+| Method | Complexity | Interpretability | Best For |
+|--------|-----------|------------------|----------|
+| Weighted Sum (This) | Low | High | Crisis decisions, transparent process |
+| Full TOPSIS | Medium | Medium | Engineering design, optimization |
+| AHP | High | Medium | Hierarchical criteria, pairwise comparisons |
+| ELECTRE | High | Low | Outranking problems, incomparability |
+| PROMETHEE | Medium | Medium | Preference modeling, partial rankings |
 """
 
 import json
