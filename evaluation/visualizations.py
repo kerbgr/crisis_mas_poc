@@ -254,16 +254,16 @@ ACCESSIBILITY CONSIDERATIONS:
 LATEX INTEGRATION:
 For use in LaTeX documents:
 ```latex
-\usepackage{graphicx}
+\\usepackage{graphicx}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/belief_distributions.png}
-    \caption{Agent belief distributions for flood evacuation scenario.
+\\begin{figure}[h]
+    \\centering
+    \\includegraphics[width=0.8\\textwidth]{figures/belief_distributions.png}
+    \\caption{Agent belief distributions for flood evacuation scenario.
              Colors indicate alternatives: green (immediate evacuation),
              blue (staged evacuation), orange (shelter in place).}
-    \label{fig:beliefs}
-\end{figure}
+    \\label{fig:beliefs}
+\\end{figure}
 ```
 
 LIMITATIONS:
