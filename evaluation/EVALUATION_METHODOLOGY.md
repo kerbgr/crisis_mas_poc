@@ -543,6 +543,19 @@ Expected output:
 
 ## Changelog
 
+### v2.0.1 (2025-01-09) - Fixed DQS Fallback Logic
+
+**Bug Fixes:**
+- Fixed Bug #4: DQS fallback didn't work when criteria_scores present but recommended alternative not found
+  - Symptom: Single-agent DQS returned 0.0 when alternative IDs didn't match
+  - Cause: Fallback logic used elif/else instead of proper fallthrough
+  - Fix: Added `quality_calculated` flag to enable proper cascade through fallback options
+  - Impact: Single-agent evaluations now properly fall back to final_scores
+
+**Testing:**
+- Added `debug_single_agent_dqs.py` test suite
+- All fallback scenarios now verified
+
 ### v2.0.0 (2025-01-09) - Fixed Evaluation Methodology
 
 **Breaking Changes:**
