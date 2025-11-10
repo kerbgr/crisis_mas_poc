@@ -398,7 +398,10 @@ import time
 import json
 import logging
 import re
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union
+from pydantic import ValidationError
+
+from models.data_models import LLMResponse
 try:
     from openai import OpenAI, APIError, APIConnectionError
 except ImportError:
@@ -601,69 +604,95 @@ class LMStudioClient:
             logger.error(f"Unexpected error: {error_response}")
             return error_response
 
-    def parse_json_response(self, response_text: str) -> Dict[str, Any]:
+    def parse_json_response(self, response_text: str) -> Union[LLMResponse, Dict[str, Any]]:
         """
-        Parse JSON from LM Studio's response text.
+        Parse and validate JSON from LM Studio's response text.
 
         Local models may produce less consistent formatting than cloud APIs,
-        so we use multiple parsing strategies.
+        so we use multiple parsing strategies, then validate with Pydantic.
 
         Args:
             response_text: Raw response text from LM Studio
 
         Returns:
-            Parsed JSON as dictionary
+            LLMResponse: Validated Pydantic model (preferred)
+            Dict[str, Any]: Fallback to dict if validation fails (backward compatibility)
 
         Raises:
             json.JSONDecodeError: If JSON cannot be parsed
 
         Example:
             >>> client = LMStudioClient()
-            >>> text = '{"alternative_rankings": {"A1": 0.7}}'
+            >>> text = '{"alternative_rankings": {"A1": 0.7}, "reasoning": "...", "confidence": 0.85}'
             >>> result = client.parse_json_response(text)
-            >>> print(result)
-            {'alternative_rankings': {'A1': 0.7}}
+            >>> print(type(result))
+            <class 'models.data_models.LLMResponse'>
         """
+        # First, parse the JSON using multiple strategies
+        parsed_data = None
+
         # Strategy 1: Try direct parsing
         try:
-            return json.loads(response_text)
+            parsed_data = json.loads(response_text)
         except json.JSONDecodeError:
             pass
 
         # Strategy 2: Extract from ```json...``` blocks
-        json_block_pattern = r'```json\s*\n(.*?)\n```'
-        match = re.search(json_block_pattern, response_text, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(1))
-            except json.JSONDecodeError:
-                pass
+        if parsed_data is None:
+            json_block_pattern = r'```json\s*\n(.*?)\n```'
+            match = re.search(json_block_pattern, response_text, re.DOTALL)
+            if match:
+                try:
+                    parsed_data = json.loads(match.group(1))
+                except json.JSONDecodeError:
+                    pass
 
         # Strategy 3: Extract from generic ```...``` blocks
-        code_block_pattern = r'```\s*\n(.*?)\n```'
-        match = re.search(code_block_pattern, response_text, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(1))
-            except json.JSONDecodeError:
-                pass
+        if parsed_data is None:
+            code_block_pattern = r'```\s*\n(.*?)\n```'
+            match = re.search(code_block_pattern, response_text, re.DOTALL)
+            if match:
+                try:
+                    parsed_data = json.loads(match.group(1))
+                except json.JSONDecodeError:
+                    pass
 
         # Strategy 4: Find first {...} or [...] pattern
-        json_pattern = r'(\{.*\}|\[.*\])'
-        match = re.search(json_pattern, response_text, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(1))
-            except json.JSONDecodeError:
-                pass
+        if parsed_data is None:
+            json_pattern = r'(\{.*\}|\[.*\])'
+            match = re.search(json_pattern, response_text, re.DOTALL)
+            if match:
+                try:
+                    parsed_data = json.loads(match.group(1))
+                except json.JSONDecodeError:
+                    pass
 
         # If all strategies fail, raise error
-        logger.error(f"Failed to parse JSON from response: {response_text[:200]}...")
-        raise json.JSONDecodeError(
-            f"Could not extract valid JSON from response",
-            response_text,
-            0
-        )
+        if parsed_data is None:
+            logger.error(f"Failed to parse JSON from response: {response_text[:200]}...")
+            raise json.JSONDecodeError(
+                f"Could not extract valid JSON from response",
+                response_text,
+                0
+            )
+
+        # Now validate with Pydantic model
+        try:
+            # Add raw_response for debugging
+            if isinstance(parsed_data, dict):
+                parsed_data['raw_response'] = response_text[:500]  # Store first 500 chars
+
+            llm_response = LLMResponse(**parsed_data)
+            logger.debug(f"Successfully validated LLM response with Pydantic")
+            return llm_response
+
+        except ValidationError as e:
+            logger.warning(
+                f"LLM response failed Pydantic validation: {e}\n"
+                f"Falling back to dict for backward compatibility"
+            )
+            # Fallback to plain dict for backward compatibility
+            return parsed_data
 
     def validate_response(self, response: Dict[str, Any], expected_keys: List[str]) -> bool:
         """
