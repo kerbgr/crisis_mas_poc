@@ -588,7 +588,21 @@ class CoordinatorAgent:
         agent_beliefs = {}
         for agent_id, assessment in agent_assessments.items():
             if 'belief_distribution' in assessment:
-                agent_beliefs[agent_id] = assessment['belief_distribution']
+                belief_dist = assessment['belief_distribution']
+                # Validate that belief_distribution is a dict, not a string or other type
+                if isinstance(belief_dist, dict):
+                    agent_beliefs[agent_id] = belief_dist
+                else:
+                    logger.warning(f"Agent {agent_id} has invalid belief_distribution type: {type(belief_dist)}, skipping")
+
+        if not agent_beliefs:
+            logger.warning("No valid belief distributions found for conflict resolution")
+            return {
+                'resolution_strategy': 'no_beliefs_available',
+                'suggested_actions': ['No valid belief distributions to analyze'],
+                'compromise_alternatives': [],
+                'rationale': 'Cannot resolve conflicts without valid belief distributions'
+            }
 
         try:
             # Get resolution suggestions from consensus model (returns formatted string)
@@ -622,7 +636,11 @@ class CoordinatorAgent:
             }
 
         except Exception as e:
+            import traceback
             logger.error(f"Error resolving conflicts: {e}")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(f"Agent beliefs keys: {list(agent_beliefs.keys())}")
+            logger.debug(f"Conflicts: {conflicts[:2] if len(conflicts) > 2 else conflicts}")  # Log first 2 conflicts
             return {
                 'resolution_strategy': 'weighted_aggregation',
                 'suggested_actions': [
