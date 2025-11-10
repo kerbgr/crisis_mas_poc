@@ -77,6 +77,14 @@ class BeliefDistribution(BaseModel):
         """Allow dictionary-style access."""
         return self.beliefs[key]
 
+    def __setitem__(self, key: str, value: float) -> None:
+        """Allow dictionary-style assignment."""
+        self.beliefs[key] = value
+
+    def __contains__(self, key: str) -> bool:
+        """Check if key exists."""
+        return key in self.beliefs
+
     def get(self, key: str, default: float = 0.0) -> float:
         """Allow dict.get() style access."""
         return self.beliefs.get(key, default)
@@ -185,6 +193,52 @@ class AgentAssessment(BaseModel):
         if not v or not v.strip():
             raise ValueError("Field cannot be empty")
         return v.strip()
+
+    def get(self, key: str, default: Any = None) -> Any:
+        """
+        Get attribute value with default (dict-like interface).
+
+        Provides backward compatibility with code expecting dict.get().
+        """
+        try:
+            return getattr(self, key, default)
+        except AttributeError:
+            return default
+
+    def __getitem__(self, key: str) -> Any:
+        """
+        Get attribute value (dict-like interface).
+
+        Provides backward compatibility with code expecting dict[key].
+        """
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            raise KeyError(f"'{key}' not found in AgentAssessment")
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        """
+        Set attribute value (dict-like interface).
+
+        Provides backward compatibility with code expecting dict[key] = value.
+        """
+        setattr(self, key, value)
+
+    def keys(self):
+        """Return keys (dict-like interface)."""
+        return self.model_dump().keys()
+
+    def values(self):
+        """Return values (dict-like interface)."""
+        return self.model_dump().values()
+
+    def items(self):
+        """Return items (dict-like interface)."""
+        return self.model_dump().items()
+
+    def __contains__(self, key: str) -> bool:
+        """Check if key exists (dict-like interface)."""
+        return hasattr(self, key)
 
     def to_dict(self) -> Dict[str, Any]:
         """
