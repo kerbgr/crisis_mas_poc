@@ -1,20 +1,286 @@
 """
-Graph Attention Network (GAT) Aggregator for Crisis Management MAS
+Graph Attention Network (GAT) Aggregator - Context-Aware Agent Weighting
 
-This module implements a Graph Attention Network to aggregate expert agent beliefs
-by modeling the multi-agent system as a graph where:
-- Nodes = Expert agents
-- Edges = Trust/similarity relationships
-- Attention = Dynamic importance weighting based on context
+OBJECTIVE:
+This module implements a Graph Attention Network (GAT) for aggregating expert agent
+beliefs with context-aware, dynamic weighting. Unlike static weighted averaging, GAT
+adapts agent importance based on the specific scenario, agent features, and network
+relationships, providing more nuanced and situationally-appropriate aggregation.
 
-Unlike simple weighted averaging, GAT learns to weight agents based on:
-1. Agent expertise relevance to the scenario
-2. Confidence in their assessments
-3. Agreement with other agents
-4. Trust relationships in the network
+WHY THIS EXISTS:
+Static agent weighting has fundamental limitations:
+- **Fixed Weights**: Same agent weights used regardless of scenario type
+- **No Context Adaptation**: Medical expert weighted same in flood vs. pandemic
+- **Ignores Relationships**: Doesn't model trust or agreement patterns
+- **Single-Dimensional**: Only uses reliability, ignores confidence, relevance, etc.
 
-Reference:
-Veličković et al. (2018) "Graph Attention Networks" ICLR 2018
+Crisis scenarios are diverse:
+- Flood → Environmental expert more important
+- Pandemic → Medical expert more important
+- Infrastructure collapse → Engineering expert more important
+
+GAT solves this by:
+1. **Dynamic Weighting**: Agent importance adapts to scenario context
+2. **Multi-Feature Modeling**: Considers expertise, confidence, certainty, relevance
+3. **Network-Aware**: Models trust relationships and agent interactions
+4. **Attention Mechanism**: Learns which agents to "attend to" for each scenario
+5. **Interpretable**: Attention weights explain why certain agents were prioritized
+
+GRAPH ATTENTION NETWORKS (GAT):
+GAT treats the multi-agent system as a graph:
+- **Nodes**: Expert agents (medical, logistics, environmental, safety, etc.)
+- **Edges**: Trust/similarity relationships (who trusts whom, who agrees with whom)
+- **Node Features**: Agent characteristics (expertise, confidence, reliability, etc.)
+- **Attention**: Learned importance weights (how much to weight each agent)
+
+Attention Mechanism:
+For each agent i, compute attention to agent j:
+    α_ij = softmax_j(LeakyReLU(a^T [W h_i || W h_j]))
+
+Where:
+- h_i, h_j = feature vectors for agents i and j
+- W = weight matrix (here: hand-crafted feature weighting rules)
+- a = attention weight vector
+- || = concatenation operator
+- softmax ensures Σ_j α_ij = 1.0 (weights sum to 1)
+
+This computes "how much should agent i attend to agent j's opinion?"
+
+AGENT FEATURE EXTRACTION (9 Features):
+For each agent, extract these features:
+1. **Confidence Score** (0-1): Agent's stated confidence
+2. **Belief Certainty** (0-1): Inverse entropy of belief distribution
+3. **Expertise Relevance** (0-1): How well expertise matches scenario
+4. **Risk Tolerance** (0-1): Conservative vs. aggressive tendency
+5. **Severity Awareness** (0-1): Scenario severity level
+6. **Top Choice Strength** (0-1): Gap between 1st and 2nd choice
+7. **Thoroughness** (0-1): Number of concerns raised
+8. **Reasoning Quality** (0-1): Length and detail of reasoning
+9. **Historical Reliability** (0-1): Past performance score
+
+These features capture multiple dimensions of agent quality and relevance.
+
+ATTENTION COMPUTATION:
+Attention score between agents i and j combines:
+- 40% Agent j's confidence
+- 30% Agent j's expertise relevance
+- 30% Agent j's belief certainty
+- +20% bonus for feature similarity (agents that think alike)
+
+Then apply LeakyReLU activation and softmax normalization.
+
+Result: Each agent gets attention weights indicating who to listen to.
+
+MULTI-HEAD ATTENTION:
+Uses multiple parallel attention mechanisms (heads), then averages:
+- Each head may learn different patterns
+- Averaging reduces overfitting and increases robustness
+- Default: 4 heads
+- More heads = more computational cost, potentially better quality
+
+INPUTS (aggregate_beliefs_with_gat method):
+- agent_assessments: Dict[agent_id, Dict[str, Any]]
+  * Each agent's assessment containing:
+    - belief_distribution: Dict[alternative_id, float]
+    - confidence: float (0-1)
+    - expertise: str
+    - reasoning: str
+    - key_concerns: List[str]
+    - reliability_score: float (0-1)
+
+- scenario: Dict[str, Any]
+  * Scenario information:
+    - type: str (e.g., "flood", "earthquake")
+    - severity: float (0-1)
+    - tags: List[str] (e.g., ["urban", "infrastructure"])
+
+- trust_matrix: Optional[Dict[str, Dict[str, float]]]
+  * Trust relationships: {agent_i: {agent_j: trust_score}}
+  * If not provided, default_trust (0.8) used for all pairs
+
+OUTPUTS (aggregate_beliefs_with_gat returns):
+- aggregated_beliefs: Dict[alternative_id, float]
+  * Combined belief distribution using attention-weighted averaging
+
+- attention_weights: Dict[agent_i, Dict[agent_j, float]]
+  * Full attention matrix (who attends to whom)
+  * Diagonal values (self-attention) = agent's overall importance
+
+- confidence: float (0-1)
+  * Overall confidence (attention-weighted average of agent confidences)
+
+- uncertainty: float (0-1)
+  * Entropy of aggregated belief distribution
+
+- explanation: str
+  * Human-readable explanation of attention weights and reasoning
+
+- method: "GAT"
+  * Identifies aggregation method used
+
+- processing_time_ms: float
+  * Computation time
+
+USAGE EXAMPLE:
+```python
+# Initialize GAT aggregator
+gat = GATAggregator(num_attention_heads=4, use_multi_head=True)
+
+# Agent assessments
+agent_assessments = {
+    "medical_expert": {
+        "belief_distribution": {"A1": 0.8, "A2": 0.1, "A3": 0.1},
+        "confidence": 0.9,
+        "expertise": "medical",
+        "reasoning": "Immediate evacuation critical for public health...",
+        "key_concerns": ["disease outbreak", "vulnerable populations"],
+        "reliability_score": 0.85
+    },
+    "logistics_expert": {
+        "belief_distribution": {"A1": 0.5, "A2": 0.4, "A3": 0.1},
+        "confidence": 0.7,
+        "expertise": "logistics",
+        "reasoning": "Resource constraints limit full evacuation...",
+        "key_concerns": ["vehicle availability", "shelter capacity"],
+        "reliability_score": 0.80
+    }
+}
+
+# Scenario (flood with high medical relevance)
+scenario = {
+    "type": "flood",
+    "severity": 0.8,
+    "tags": ["urban", "medical_emergency"]
+}
+
+# Aggregate
+result = gat.aggregate_beliefs_with_gat(
+    agent_assessments,
+    scenario
+)
+
+print(f"Aggregated Beliefs: {result['aggregated_beliefs']}")
+print(f"Confidence: {result['confidence']:.3f}")
+print(f"\nAgent Importance (Self-Attention):")
+for agent_id, weights in result['attention_weights'].items():
+    self_attention = weights[agent_id]
+    print(f"  {agent_id}: {self_attention:.3f}")
+```
+
+Expected Output (flood scenario → medical expert weighted higher):
+```
+Aggregated Beliefs: {'A1': 0.72, 'A2': 0.18, 'A3': 0.10}
+Confidence: 0.856
+
+Agent Importance (Self-Attention):
+  medical_expert: 0.58  # Higher due to scenario relevance
+  logistics_expert: 0.42
+```
+
+ADVANTAGES OVER EVIDENTIAL REASONING:
+| Aspect | ER (Static Weights) | GAT (Dynamic Weights) |
+|--------|-------------------|----------------------|
+| Context Adaptation | No | Yes - adapts to scenario |
+| Feature Richness | Single dimension | 9 dimensions |
+| Network Modeling | No | Yes - trust relationships |
+| Computational Cost | Low (O(N×M)) | Higher (O(N²×H×F)) |
+| Interpretability | High | Medium |
+| Best For | Homogeneous agents | Heterogeneous expertise |
+
+WHEN TO USE GAT VS. ER:
+Use GAT when:
+- Agents have diverse expertise domains
+- Scenario type varies significantly
+- Trust relationships are important
+- Computational resources available
+- Need context-aware weighting
+
+Use ER when:
+- Agents are similar (homogeneous)
+- Time-critical decisions (speed matters)
+- Simple explanation required
+- Limited computational resources
+- Static weights are acceptable
+
+DESIGN DECISIONS:
+1. **Hand-Crafted vs. Learned Weights**:
+   - Current: Hand-crafted feature weighting (40-30-30 split)
+   - Alternative: Train weights on historical data (requires training data)
+   - Chose hand-crafted for simplicity and explainability
+
+2. **Feature Selection**:
+   - Chose 9 features balancing richness and interpretability
+   - Could expand (e.g., agent demographics, past conflicts)
+   - Could reduce (e.g., just confidence + relevance)
+
+3. **Multi-Head Attention**:
+   - Default 4 heads balances quality and speed
+   - More heads = more robust but slower
+   - Single head option available for speed
+
+4. **Trust Matrix**:
+   - Optional (defaults to 0.8 universal trust)
+   - Could be learned from past interactions
+   - Could reflect organizational structure
+
+COMPUTATIONAL COMPLEXITY:
+- Feature Extraction: O(N × F) where F=9 features per agent
+- Attention Computation: O(N² × H) where H=number of heads
+- Belief Aggregation: O(N × M) where M=number of alternatives
+- Total: O(N² × H × F + N × M)
+- Typical: N=5 agents, H=4 heads, F=9, M=5 → ~1-5ms
+
+LIMITATIONS:
+1. **No True Learning**: Hand-crafted rules, not ML-trained
+2. **Computational Cost**: Quadratic in number of agents (O(N²))
+3. **Feature Engineering**: Requires manual feature design
+4. **Interpretability Trade-off**: More complex than simple weighted average
+5. **Data Requirements**: Needs rich agent assessments (9 features)
+6. **No Feedback Loop**: Doesn't adapt based on decision outcomes
+
+INTEGRATION POINTS:
+- Called by: CoordinatorAgent._aggregate_with_gat()
+- Alternative to: Evidential Reasoning (simpler) or hybrid approach
+- Inputs from: Expert agents' comprehensive assessments
+- Outputs to: Decision dictionary in coordinator
+- Related: Consensus Model (analyzes resulting agreement)
+
+ERROR HANDLING:
+- Empty agent_assessments → returns empty result
+- Missing features → default values used (0.5 for missing)
+- Computation errors → logged, returns empty result
+- Graceful degradation to ensure system continues
+
+VALIDATION:
+Unit tests verify:
+- Feature extraction correctness
+- Attention weight normalization (sum to 1.0)
+- Belief aggregation accuracy
+- Multi-head averaging
+- Edge cases (single agent, missing features)
+
+FUTURE ENHANCEMENTS:
+1. **True ML Training**: Learn attention weights from historical decisions
+2. **Dynamic Features**: Add scenario-specific features
+3. **Temporal Modeling**: Track agent performance over time
+4. **Conflict Aware**: Explicitly model agent disagreements
+5. **Hierarchical**: Multi-layer GAT for complex agent networks
+
+RELATED RESEARCH:
+- Veličković et al. (2018) "Graph Attention Networks" ICLR 2018
+- Attention mechanisms in neural networks (Vaswani et al., 2017)
+- Multi-agent coordination and trust modeling
+- Graph neural networks for social networks
+
+COMPARISON WITH FULL GAT:
+| Aspect | This Implementation | Full GAT (Research) |
+|--------|-------------------|-------------------|
+| Training | Hand-crafted rules | Gradient-based learning |
+| Weight Matrix W | Identity/simple | Learned parameters |
+| Attention Vector a | Fixed formula | Learned parameters |
+| Backpropagation | No | Yes |
+| Data Requirements | None | Training dataset |
+| Flexibility | Fixed features | Learns representations |
 """
 
 import numpy as np

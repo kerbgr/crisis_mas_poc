@@ -112,8 +112,38 @@
   "metadata": {
     "created_date": "2025-01-15",
     "author": "Crisis MAS Research Team",
-    "version": "1.0",
+    "version": "2.0",
     "scenario_complexity": "high",
     "recommended_expert_domains": ["medical", "logistics", "public_safety", "environmental"]
+  },
+
+  "expert_selection": {
+    "crisis_type": "flood",
+    "crisis_subtypes": ["urban", "evacuation", "infrastructure_damage", "rescue"],
+    "severity": 0.8,
+    "geographic_scope": "regional",
+    "geographic_location": "urban",
+    "affected_populations": 25000,
+    "duration_estimated_hours": 12,
+    "affected_domains": [
+      "weather_environment",
+      "medical_health",
+      "law_enforcement",
+      "fire_rescue",
+      "search_rescue",
+      "emergency_communications"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    },
+    "infrastructure_systems": [
+      "hospitals",
+      "transportation",
+      "communications",
+      "power",
+      "water"
+    ]
   }
 }

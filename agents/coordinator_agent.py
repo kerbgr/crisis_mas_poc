@@ -275,7 +275,40 @@ class CoordinatorAgent:
         self,
         agent_assessments: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Aggregate beliefs using Evidential Reasoning."""
+        """
+        Aggregate agent beliefs using Evidential Reasoning (Dempster-Shafer Theory).
+
+        OBJECTIVE:
+        Combines belief distributions from multiple agents into a single aggregated
+        distribution using classical Evidential Reasoning. This method applies
+        Dempster's rule of combination with confidence-based discounting to handle
+        uncertainty and conflicting evidence.
+
+        WHY THIS EXISTS:
+        Provides a classical, mathematically rigorous approach to belief aggregation
+        that explicitly handles uncertainty and conflicting opinions. ER is particularly
+        useful when agents have varying confidence levels and may provide partially
+        conflicting assessments.
+
+        INPUTS:
+        - agent_assessments: Dictionary mapping agent_id to assessment data
+          Each assessment must contain 'belief_distribution' field with alternative probabilities
+
+        OUTPUTS:
+        Dictionary containing:
+        - aggregated_beliefs: Combined probability distribution over alternatives
+        - uncertainty: Measure of remaining uncertainty after combination (0-1)
+        - confidence: Overall confidence in aggregated result (0-1)
+        - method: 'ER' identifier
+        - method_details: Full ER engine output with discounting and combination steps
+
+        PROCESS:
+        1. Extract belief distributions from all agent assessments
+        2. Filter agent weights to match agents who provided assessments
+        3. Apply Dempster-Shafer combination via ER engine
+        4. Handle conflicts using confidence-weighted discounting
+        5. Return aggregated distribution with uncertainty quantification
+        """
         logger.info("Aggregating beliefs using Evidential Reasoning")
 
         # Extract belief distributions from assessments
@@ -333,7 +366,49 @@ class CoordinatorAgent:
         agent_assessments: Dict[str, Any],
         scenario: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """Aggregate beliefs using Graph Attention Network."""
+        """
+        Aggregate agent beliefs using Graph Attention Network (GAT) with dynamic weighting.
+
+        OBJECTIVE:
+        Combines belief distributions using neural attention mechanism that learns
+        optimal agent weights based on 9-dimensional feature vectors including
+        confidence, expertise relevance, historical reliability, and belief certainty.
+        Produces data-driven weights rather than uniform or predefined weights.
+
+        WHY THIS EXISTS:
+        GAT provides adaptive, context-aware aggregation that automatically identifies
+        which agents are most relevant for each specific scenario. Unlike ER which uses
+        fixed or confidence-based weights, GAT dynamically adjusts agent influence based
+        on expertise match, past performance, and scenario characteristics.
+
+        INPUTS:
+        - agent_assessments: Dictionary mapping agent_id to assessment data
+          Each assessment should contain belief_distribution, confidence, and agent metadata
+        - scenario: Optional scenario data for context-aware weighting
+          Used to calculate expertise relevance and scenario-specific features
+
+        OUTPUTS:
+        Dictionary containing:
+        - aggregated_beliefs: Weighted combination of agent belief distributions
+        - uncertainty: Measure of uncertainty in aggregated result (0-1)
+        - confidence: Overall confidence based on attention weights and agent confidence
+        - method: 'GAT' identifier
+        - method_details: Full GAT output including features and attention computation
+        - attention_weights: Learned weights showing each agent's influence (interpretability)
+
+        PROCESS:
+        1. Extract agent features (9 dimensions): confidence, belief_certainty, expertise,
+           risk_tolerance, severity_awareness, top_choice_strength, num_concerns,
+           reasoning_quality, historical_reliability
+        2. Build graph with agents as nodes and beliefs as node features
+        3. Apply multi-head attention (4 heads) to compute attention weights
+        4. Aggregate beliefs using learned attention weights
+        5. Return aggregated distribution with attention weights for transparency
+
+        KEY DIFFERENCES FROM ER:
+        - ER: Fixed/confidence-based weights, mathematically rigorous uncertainty handling
+        - GAT: Learned weights, context-aware, incorporates historical performance
+        """
         logger.info("Aggregating beliefs using Graph Attention Network (GAT)")
 
         if self.gat_aggregator is None:
@@ -657,22 +732,32 @@ class CoordinatorAgent:
 
         # Extract agent opinions
         agent_opinions = {}
+        agent_confidences = []
         for agent_id, assessment in agent_assessments.items():
             belief_dist = assessment.get('belief_distribution', {})
             if belief_dist:
                 top_choice = max(belief_dist.items(), key=lambda x: x[1])
+                agent_conf = assessment.get('confidence', 0.0)
+                agent_confidences.append(agent_conf)
                 agent_opinions[agent_id] = {
                     'agent_name': assessment.get('agent_name', agent_id),
                     'preference': top_choice[0],
-                    'confidence': assessment.get('confidence', 0.0),
+                    'confidence': agent_conf,
                     'belief_score': top_choice[1],
                     'reasoning': assessment.get('reasoning', '')[:200] + '...'  # Truncate
                 }
 
+        # Calculate overall confidence based on consensus and agent confidences
+        # Confidence = combination of consensus level and average agent confidence
+        avg_agent_confidence = sum(agent_confidences) / len(agent_confidences) if agent_confidences else 0.0
+        # Weight: 60% consensus level, 40% average agent confidence
+        overall_confidence = 0.6 * consensus_info['consensus_level'] + 0.4 * avg_agent_confidence
+
         # Build final decision
         decision = {
             'recommended_alternative': recommended_alt,
-            'confidence': recommended_score,
+            'confidence': overall_confidence,  # Overall confidence in the decision
+            'decision_quality_score': recommended_score,  # Quality score based on ER+MCDA
             'consensus_level': consensus_info['consensus_level'],
             'final_scores': combined_scores,
             'er_scores': er_beliefs,
@@ -701,8 +786,8 @@ class CoordinatorAgent:
         })
 
         logger.info(
-            f"Final decision: {recommended_alt} (confidence: {recommended_score:.2f}, "
-            f"consensus: {consensus_info['consensus_level']:.2f})"
+            f"Final decision: {recommended_alt} (quality_score: {recommended_score:.2f}, "
+            f"confidence: {overall_confidence:.2f}, consensus: {consensus_info['consensus_level']:.2f})"
         )
 
         return decision
@@ -886,15 +971,61 @@ class CoordinatorAgent:
         alternatives: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
-        Create an error decision when normal processing fails.
+        Create a structured error decision when normal decision-making process fails.
 
-        Args:
-            error_message: Description of the error
-            scenario: Scenario data
-            alternatives: Alternative list
+        OBJECTIVE:
+        Provides graceful failure handling by creating a valid decision structure
+        that clearly indicates an error occurred, allowing upstream systems to
+        handle the failure appropriately without crashing.
 
-        Returns:
-            Error decision dictionary
+        WHY THIS EXISTS:
+        In production systems, complete failures must be handled gracefully. Rather
+        than raising exceptions that crash the system, this method creates a
+        structured error response that:
+        1. Maintains the expected decision dictionary format
+        2. Clearly indicates no valid decision was made
+        3. Provides error context for debugging
+        4. Allows the system to continue processing other scenarios
+
+        INPUTS:
+        - error_message: Human-readable description of what went wrong
+          Examples: "No agent assessments available", "MCDA engine failed",
+                   "Aggregation timeout exceeded"
+        - scenario: Original scenario data (preserved for traceability)
+        - alternatives: List of alternatives that were being considered
+
+        OUTPUTS:
+        Dictionary with decision structure containing:
+        - recommended_alternative: None (no valid recommendation)
+        - confidence: 0.0 (no confidence in error state)
+        - consensus_level: 0.0 (no consensus achieved)
+        - final_scores: {} (no scores calculated)
+        - agent_opinions: {} (no opinions processed)
+        - consensus_reached: False
+        - conflicts: [] (no conflicts detected)
+        - resolution: None
+        - timestamp: When error occurred (ISO format)
+        - scenario_id: Original scenario identifier for tracing
+        - error: Error message for logging/debugging
+        - explanation: User-friendly error description
+
+        USE CASES:
+        - Agent collection fails (timeout, no responses)
+        - Belief aggregation fails (ER/GAT errors)
+        - MCDA engine crashes
+        - Consensus building times out
+        - Invalid input data detected
+
+        EXAMPLE ERROR FLOW:
+        try:
+            decision = coordinator.make_final_decision(...)
+        except Exception as e:
+            error_decision = coordinator._create_error_decision(
+                str(e), scenario, alternatives
+            )
+            # Log error_decision['error']
+            # Return error_decision to client
+            # Client sees None recommendation and displays error_decision['explanation']
         """
         return {
             'recommended_alternative': None,

@@ -1,0 +1,138 @@
+{
+  "_comment": "Enhanced Crisis Scenario Template with Auto-Selection Metadata",
+  "_version": "2.0",
+  "_last_updated": "2025-11-09",
+
+  "scenario_id": "template_scenario_001",
+  "title": "Crisis Scenario Title",
+  "description": "Detailed description of the crisis situation, including what happened, current status, and immediate concerns.",
+
+  "type": "flood",
+  "severity": 0.75,
+  "location": "Geographic location description",
+  "affected_population": 5000,
+  "response_time_hours": 24,
+
+  "expert_selection": {
+    "_comment": "This section enables automatic expert agent selection",
+
+    "crisis_type": "flood",
+    "_crisis_type_options": [
+      "flood", "hurricane", "storm", "wildfire", "tornado", "earthquake",
+      "tsunami", "fire", "explosion", "hazmat", "pandemic", "civil_unrest",
+      "terrorist", "maritime", "oil_spill", "building_collapse", "mass_casualty"
+    ],
+
+    "crisis_subtypes": ["coastal", "evacuation", "infrastructure_damage"],
+    "_crisis_subtypes_examples": [
+      "coastal", "maritime", "offshore", "evacuation", "crowd_control",
+      "public_order", "structural_damage", "rescue", "hazmat", "search_rescue"
+    ],
+
+    "severity": 0.75,
+    "_severity_description": "0.0-0.3: Minor, 0.3-0.6: Moderate, 0.6-0.8: Severe, 0.8-1.0: Catastrophic",
+
+    "geographic_scope": "regional",
+    "_geographic_scope_options": ["local", "regional", "national"],
+
+    "geographic_location": "coastal",
+    "_geographic_location_options": ["coastal", "maritime", "inland", "urban", "rural", "wilderness"],
+
+    "affected_populations": 5000,
+    "duration_estimated_hours": 48,
+
+    "affected_domains": [
+      "weather_environment",
+      "medical_health",
+      "maritime_coastal",
+      "law_enforcement"
+    ],
+    "_affected_domains_options": [
+      "weather_environment",
+      "medical_health",
+      "law_enforcement",
+      "fire_rescue",
+      "maritime_coastal",
+      "emergency_communications",
+      "public_order",
+      "security",
+      "hazmat",
+      "search_rescue",
+      "healthcare"
+    ],
+
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": false,
+      "multi_jurisdictional": true
+    },
+    "_command_structure_description": {
+      "tactical": "On-scene commanders for immediate operations",
+      "strategic": "Regional/national commanders for resource allocation",
+      "multi_jurisdictional": "Coordination across multiple agencies/regions"
+    },
+
+    "infrastructure_systems": ["hospitals", "transportation", "communications"],
+    "_infrastructure_systems_options": [
+      "hospitals", "healthcare", "transportation", "communications",
+      "power", "water", "ports", "emergency_services"
+    ]
+  },
+
+  "available_actions": [
+    {
+      "id": "action_1",
+      "name": "Action Option 1",
+      "description": "Detailed description of this response action",
+      "estimated_cost": 500000,
+      "implementation_time_hours": 6,
+      "required_resources": ["resource1", "resource2"],
+      "risk_level": 0.4
+    },
+    {
+      "id": "action_2",
+      "name": "Action Option 2",
+      "description": "Detailed description of alternative action",
+      "estimated_cost": 200000,
+      "implementation_time_hours": 12,
+      "required_resources": ["resource3"],
+      "risk_level": 0.6
+    }
+  ],
+
+  "context": {
+    "time_of_day": "Morning",
+    "weather_conditions": "Deteriorating",
+    "population_density": "High",
+    "infrastructure_status": "Partially compromised",
+    "emergency_services_availability": "Stretched but operational"
+  },
+
+  "constraints": {
+    "budget_available": 1000000,
+    "time_critical": true,
+    "political_sensitivity": "Moderate",
+    "media_attention": "High"
+  },
+
+  "_usage_instructions": {
+    "1": "Copy this template to create new scenarios",
+    "2": "Fill in all required fields (remove _ prefixed comment fields)",
+    "3": "Customize expert_selection metadata to match your crisis",
+    "4": "The ExpertSelector will automatically choose appropriate experts",
+    "5": "You can override automatic selection with --agents flag if needed"
+  },
+
+  "_example_auto_selection": {
+    "description": "With the above metadata, this scenario would auto-select:",
+    "selected_experts": [
+      "agent_meteorologist (always included)",
+      "logistics_expert_01 (always included)",
+      "medical_expert_01 (always included + health domain)",
+      "coastguard_onscene_01 (coastal crisis type + maritime domain)",
+      "police_onscene_01 (evacuation subtype + law enforcement domain)",
+      "psap_commander_01 (multi-jurisdictional + emergency communications)"
+    ],
+    "total_experts": "6 out of 11 available experts"
+  }
+}

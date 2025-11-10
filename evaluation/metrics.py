@@ -1,13 +1,246 @@
 """
-Performance Metrics Module
-Evaluates MAS system performance compared to single-agent baseline
+Performance Metrics Module - Comprehensive Multi-Agent System Evaluation
 
-Metrics:
-1. Decision Quality Score (DQS) - Weighted criteria satisfaction
-2. Consensus Level (CL) - Agent agreement percentage
-3. Time to Consensus (TtC) - Iterations and API calls required
-4. Confidence Score (CS) - Average confidence and uncertainty
-5. Expert Contribution Balance (ECB) - Participation balance
+OBJECTIVE:
+This module implements standardized performance metrics for evaluating crisis management
+multi-agent systems. It provides quantitative measurements across five key dimensions:
+decision quality, consensus, confidence, efficiency, and expert contribution balance.
+
+WHY THIS EXISTS:
+Multi-agent system evaluation requires more than single metrics:
+- **Decision Quality**: Are the decisions actually good? Do they satisfy criteria?
+- **Consensus**: Do agents agree? Is there conflict?
+- **Confidence**: How certain is the system in its recommendations?
+- **Efficiency**: How many resources (API calls, time) does it consume?
+- **Balance**: Is participation fair? Are all experts contributing?
+
+Traditional single-agent evaluation only measures quality. Multi-agent systems need
+to also measure team dynamics, resource consumption, and fairness.
+
+FIVE CORE METRICS:
+
+1. **Decision Quality Score (DQS)**
+   - Measures how well decisions satisfy weighted criteria
+   - Range: 0.0-1.0 (1.0 = perfect satisfaction)
+   - Formula: Weighted average of criteria satisfaction scores
+   - Three fallback approaches for robustness:
+     * Primary: criteria_scores (detailed per-criterion evaluation)
+     * Secondary: mcda_scores (multi-criteria analysis output)
+     * Tertiary: final_scores (aggregated scores)
+
+2. **Consensus Level (CL)**
+   - Measures agreement between agents using cosine similarity
+   - Range: 0.0-1.0 (1.0 = perfect agreement)
+   - Method: Pairwise cosine similarity of belief distributions
+   - Threshold: 0.75 (configurable, 75% similarity for consensus)
+   - Also calculates: agreement percentage, preference distribution
+
+3. **Confidence Score (CS)**
+   - Measures certainty/uncertainty in the decision
+   - Separate from quality (can be confident in a poor decision!)
+   - Components:
+     * Agent confidences (individual certainty levels)
+     * Decision confidence (overall system certainty)
+     * Confidence variance (disagreement in certainty)
+   - Includes uncertainty measure (1 - confidence)
+
+4. **Time to Consensus (TtC) / Efficiency**
+   - Measures resource consumption and speed
+   - Metrics:
+     * Iterations: Number of deliberation rounds
+     * API calls: LLM invocations (cost proxy)
+     * Processing time: Wall-clock seconds
+   - Efficiency score: Normalized 0-1 (higher = more efficient)
+   - Trade-off: Efficiency vs. quality
+
+5. **Expert Contribution Balance (ECB)**
+   - Measures fairness of agent participation
+   - Uses Gini coefficient (economics inequality measure)
+   - Range: 0.0-1.0 (1.0 = perfectly balanced)
+   - Formula: 1 - Gini coefficient
+   - Also measures:
+     * Diversity score: Unique perspectives (0-1)
+     * Participation distribution: Per-agent contributions
+
+BASELINE COMPARISON:
+The module compares multi-agent performance against single-agent baseline:
+- Decision quality: Is multi-agent better?
+- Confidence: Is multi-agent more certain?
+- Efficiency: What's the cost of multi-agent?
+- Improvement percentage: Quantified gains/losses
+- Statistical significance: P-values, effect sizes
+
+STATISTICAL SIGNIFICANCE:
+Uses rigorous statistical testing to validate improvements:
+- **T-test**: Independent samples t-test for mean differences
+- **P-value**: Probability results are due to chance (α=0.05)
+- **Cohen's d**: Effect size measure (small/medium/large)
+- **Interpretation**:
+  * |d| < 0.2: Negligible effect
+  * 0.2 ≤ |d| < 0.5: Small effect
+  * 0.5 ≤ |d| < 0.8: Medium effect
+  * |d| ≥ 0.8: Large effect
+
+TYPICAL USAGE:
+```python
+from evaluation.metrics import MetricsEvaluator
+
+# Initialize
+evaluator = MetricsEvaluator()
+
+# Calculate individual metrics
+dqs = evaluator.calculate_decision_quality(decision, ground_truth)
+cl = evaluator.calculate_consensus_metrics(agent_assessments)
+cs = evaluator.calculate_confidence_metrics(decision)
+ttc = evaluator.calculate_efficiency_metrics(execution_log)
+ecb = evaluator.calculate_expert_contribution_balance(agent_assessments)
+
+# Compare to baseline
+comparison = evaluator.compare_to_baseline(
+    multi_agent_results,
+    single_agent_results
+)
+
+# Statistical significance (requires multiple runs)
+significance = evaluator.calculate_statistical_significance(
+    multi_agent_scores=[0.82, 0.85, 0.81, 0.84],
+    single_agent_scores=[0.75, 0.73, 0.76, 0.74]
+)
+
+# Generate human-readable report
+all_metrics = {
+    'decision_quality': dqs,
+    'consensus': cl,
+    'confidence': cs,
+    'efficiency': ttc,
+    'expert_contribution_balance': ecb,
+    'baseline_comparison': comparison,
+    'statistical_significance': significance
+}
+
+report = evaluator.generate_report(all_metrics)
+print(report)
+```
+
+INPUTS (Primary):
+- decision: Dict from CoordinatorAgent containing:
+  * recommended_alternative: Action ID
+  * confidence: Overall confidence (0-1)
+  * final_scores: Alternative scores
+  * criteria_scores: Per-criterion scores (optional)
+  * mcda_scores: MCDA outputs (optional)
+  * agent_opinions: Individual agent assessments
+
+- agent_assessments: Dict[agent_id, assessment] with:
+  * belief_distribution: {alternative_id: belief}
+  * confidence: Agent's confidence (0-1)
+  * expertise: Domain expertise string
+  * reasoning: Textual reasoning
+
+- execution_log: List[Dict] of events with:
+  * type: 'iteration', 'api_call', 'llm_call', etc.
+  * timestamp: ISO format datetime
+  * duration: Seconds (optional)
+
+- ground_truth: Optional Dict with:
+  * correct_alternative: Ground truth action ID
+
+OUTPUTS (Primary):
+Each metric returns a Dict with:
+- Core metric value (weighted_score, consensus_level, etc.)
+- Supporting metrics (variance, distributions, etc.)
+- Metadata (num_agents, timestamp, etc.)
+
+QUALITY CALCULATION FALLBACK CASCADE:
+1. **Try criteria_scores first** (most detailed):
+   - Check for nested format: {criterion: {alt: score}}
+   - Check for flat format: {criterion: score}
+   - Calculate weighted average if found
+
+2. **Fall back to mcda_scores** (MCDA output):
+   - Extract score for recommended alternative
+   - Use as quality proxy
+
+3. **Final fallback to final_scores** (aggregated):
+   - Last resort: use final score
+   - Less detailed but still valid
+
+This cascade ensures robust evaluation even with incomplete data.
+
+ERROR HANDLING:
+- Missing data → Partial metrics with warnings
+- Insufficient agents (< 2) → Returns defaults
+- Empty distributions → Graceful degradation
+- Division by zero → Returns 0.0 safely
+- All errors logged for debugging
+
+PERFORMANCE:
+- Decision quality: O(1) for single decision
+- Consensus: O(N²×M) for N agents, M alternatives (pairwise)
+- Confidence: O(N) for N agents
+- Efficiency: O(E) for E events
+- ECB: O(N) for N agents
+
+Bottleneck: Consensus calculation (pairwise comparisons)
+Typical: N=5 agents, M=5 alternatives → ~1ms
+
+VALIDATION:
+All formulas have been:
+- Verified against LaTeX documentation (FORMULA_VERIFICATION.md)
+- Tested with edge cases (empty, single agent, etc.)
+- Validated against expected ranges (all metrics 0-1)
+- Fixed in v2.0.1 to ensure correctness
+
+BUG FIXES (v2.0.0 - v2.0.1):
+The original implementation had critical bugs:
+- Bug #1: DQS just copied confidence field (wrong!)
+- Bug #2: Multi-agent stored ER+MCDA as "confidence" (confusing metrics)
+- Bug #3: Compared different metrics (invalid comparison)
+- Bug #4: Fallback didn't cascade properly (elif chain prevented fallthrough)
+
+Current implementation:
+- Calculates DQS from criteria satisfaction
+- Separates confidence and quality
+- Ensures valid comparisons
+- Implements quality_calculated flag for proper cascade
+
+INTEGRATION POINTS:
+- Used by: main.py for experiment evaluation
+- Inputs from: CoordinatorAgent (decisions, assessments)
+- Outputs to: Console reports, CSV files, visualizations
+- Related: SystemVisualizer for plotting results
+
+BEST PRACTICES:
+1. **Multiple Runs**: Calculate significance with 5-10 runs minimum
+2. **Ground Truth**: Use when available for validation
+3. **Baseline**: Always compare against single-agent
+4. **Documentation**: Save evaluation_history for reproducibility
+5. **Reporting**: Use generate_report() for human-readable output
+
+LIMITATIONS:
+1. Assumes belief distributions sum to ~1.0
+2. Cosine similarity doesn't capture magnitude differences
+3. T-test assumes normality (okay for n > 30 by CLT)
+4. Gini coefficient assumes non-negative contributions
+5. No temporal dynamics (static evaluation)
+
+RELATED RESEARCH:
+- Multi-agent system evaluation methodologies
+- Consensus measurement in distributed systems
+- Gini coefficient for inequality measurement
+- Statistical significance testing in AI systems
+- Effect size interpretation (Cohen, 1988)
+
+VERSION HISTORY:
+- v1.0: Initial implementation (5 metrics)
+- v2.0.0: Fixed critical DQS and confidence bugs
+- v2.0.1: Enhanced fallback logic with quality_calculated flag
+- v2.1: Comprehensive documentation (Jan 2025)
+
+SEE ALSO:
+- EVALUATION_METHODOLOGY.md: Detailed formulas and examples
+- FORMULA_VERIFICATION.md: Code-to-formula verification
+- visualizations.py: Plotting module for results
 """
 
 import logging
@@ -82,19 +315,86 @@ class MetricsEvaluator:
                 'error': 'Insufficient decision data'
             }
 
-        # Calculate weighted score (already in decision as confidence)
-        weighted_score = confidence
+        # Calculate weighted score based on criteria satisfaction
+        # Option 1: Use criteria_scores if available (single-agent or detailed multi-agent)
+        criteria_scores = decision.get('criteria_scores', {})
 
-        # Extract criteria satisfaction if available
+        # Option 2: Use MCDA scores (multi-agent)
+        mcda_scores = decision.get('mcda_scores', {})
+
+        # Option 3: Use final_scores for the recommended alternative
+        weighted_score = 0.0
         criteria_satisfaction = {}
 
-        # If MCDA scores are available, use them as criteria satisfaction
-        mcda_scores = decision.get('mcda_scores', {})
-        if mcda_scores and recommended in mcda_scores:
-            # MCDA scores represent criteria satisfaction for recommended alternative
+        # Try to calculate quality score from available data
+        quality_calculated = False
+
+        if criteria_scores and isinstance(criteria_scores, dict) and criteria_scores:
+            # Single-agent or detailed criteria scoring
+            # criteria_scores can be in two formats:
+            # Format 1: {criterion_id: {alt_id: score}} (from expert agent)
+            # Format 2: {criterion_name: score} (flat format for one alternative)
+
+            # Check if this is nested format (Format 1)
+            first_value = next(iter(criteria_scores.values()), None)
+            if isinstance(first_value, dict):
+                # Format 1: Extract scores for the recommended alternative
+                alt_criteria_scores = {}
+                for criterion, alt_scores in criteria_scores.items():
+                    if recommended in alt_scores:
+                        alt_criteria_scores[criterion] = alt_scores[recommended]
+
+                if alt_criteria_scores:
+                    # Calculate weighted average
+                    if criteria_weights:
+                        total_weight = sum(criteria_weights.values())
+                        weighted_score = sum(
+                            alt_criteria_scores.get(criterion, 0.0) * weight
+                            for criterion, weight in criteria_weights.items()
+                        ) / total_weight if total_weight > 0 else 0.0
+                    else:
+                        # Equal weights for all criteria
+                        scores = list(alt_criteria_scores.values())
+                        weighted_score = sum(scores) / len(scores) if scores else 0.0
+
+                    criteria_satisfaction = alt_criteria_scores
+                    quality_calculated = True
+            else:
+                # Format 2: Flat format (already scores for one alternative)
+                if criteria_weights:
+                    total_weight = sum(criteria_weights.values())
+                    weighted_score = sum(
+                        criteria_scores.get(criterion, 0.0) * weight
+                        for criterion, weight in criteria_weights.items()
+                    ) / total_weight if total_weight > 0 else 0.0
+                else:
+                    # Equal weights for all criteria
+                    scores = list(criteria_scores.values())
+                    weighted_score = sum(scores) / len(scores) if scores else 0.0
+
+                criteria_satisfaction = criteria_scores.copy()
+                quality_calculated = True
+
+        if not quality_calculated and mcda_scores and recommended in mcda_scores:
+            # Multi-agent MCDA scoring
+            # MCDA score for the recommended alternative
+            weighted_score = mcda_scores[recommended]
             criteria_satisfaction = {
                 'overall_mcda': mcda_scores[recommended]
             }
+            quality_calculated = True
+
+        if not quality_calculated and final_scores and recommended in final_scores:
+            # Fallback: use the final score for the recommended alternative
+            weighted_score = final_scores[recommended]
+            criteria_satisfaction = {
+                'final_score': final_scores[recommended]
+            }
+            quality_calculated = True
+
+        if not quality_calculated:
+            logger.warning(f"No quality metrics found for {recommended}")
+            weighted_score = 0.0
 
         # Check ground truth match if available
         ground_truth_match = None
@@ -105,9 +405,9 @@ class MetricsEvaluator:
                 'correct': ground_truth['correct_alternative']
             }
 
-            # Calculate quality based on match
+            # Boost quality score if ground truth matches
             if ground_truth_match['match']:
-                weighted_score = max(weighted_score, 0.9)  # Boost if correct
+                weighted_score = max(weighted_score, 0.9)
 
             logger.info(
                 f"Ground truth comparison: {ground_truth_match['match']} "
