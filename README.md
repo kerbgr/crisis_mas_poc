@@ -1,6 +1,6 @@
-# Development of a Collaborative Environment Multi-Agent Framework for Decision Support in Crisis Management
+# A Multi-Agent System (MAS) for crisis management and decision-making
 
-**Optimization through Evidential Reasoning and Large Language Models for the Preservation and Enhancement of Collective Intelligence**
+**A Proof-of-concept system demonstrates the application of **Multi-Agent Systems (MAS)** to crisis management decision-making, developed as part of a Master's thesis in Operational Research & Decision Making**
 
 Master's Thesis in Operational Research & Decision Making
 
