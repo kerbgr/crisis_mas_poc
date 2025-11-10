@@ -456,13 +456,88 @@ KEY CONCERNS
         expertise_lower = self.expertise.lower()
         role_lower = self.role.lower()
 
-        # Determine which template to use
+        # Determine which template to use based on role/expertise keywords
+        # Check for specific role types (most specific first)
+
+        # 1. Meteorologist
         if 'meteorolog' in expertise_lower or 'meteorolog' in role_lower or 'weather' in expertise_lower:
             prompt = self.prompt_templates.generate_meteorologist_prompt(
                 scenario, alternatives, criteria
             )
             system_prompt = self.prompt_templates.get_system_prompt("meteorologist")
 
+        # 2. PSAP Commander
+        elif ('psap' in role_lower or 'emergency_communications' in expertise_lower or
+              'dispatch' in expertise_lower or 'dispatch' in role_lower):
+            prompt = self.prompt_templates.generate_psap_commander_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("psap_commander")
+
+        # 3. On-Scene Police Commander
+        elif ('police' in role_lower and ('on-scene' in role_lower or 'onscene' in role_lower or
+              'tactical_law' in expertise_lower)):
+            prompt = self.prompt_templates.generate_police_onscene_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("police_onscene")
+
+        # 4. Regional Police Commander
+        elif ('police' in role_lower and ('regional' in role_lower or
+              'strategic_law' in expertise_lower)):
+            prompt = self.prompt_templates.generate_police_regional_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("police_regional")
+
+        # 5. On-Scene Fire Commander
+        elif ('fire' in role_lower and ('on-scene' in role_lower or 'onscene' in role_lower or
+              'battalion' in role_lower or 'tactical_fire' in expertise_lower)):
+            prompt = self.prompt_templates.generate_fire_onscene_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("fire_onscene")
+
+        # 6. Regional Fire Commander
+        elif ('fire' in role_lower and ('regional' in role_lower or 'chief' in role_lower or
+              'strategic_fire' in expertise_lower)):
+            prompt = self.prompt_templates.generate_fire_regional_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("fire_regional")
+
+        # 7. Medical Infrastructure Director
+        elif ('infrastructure' in role_lower or 'healthcare_system' in expertise_lower or
+              'hospital_capacity' in expertise_lower):
+            prompt = self.prompt_templates.generate_medical_infrastructure_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("medical_infrastructure")
+
+        # 8. Medical Director (original medical expert)
+        elif 'medical' in expertise_lower or 'health' in expertise_lower or 'medical' in role_lower:
+            prompt = self.prompt_templates.generate_medical_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("medical")
+
+        # 9. On-Scene Coast Guard Commander
+        elif ('coast' in role_lower and ('on-scene' in role_lower or 'onscene' in role_lower or
+              'commander' in role_lower or 'maritime_rescue' in expertise_lower)):
+            prompt = self.prompt_templates.generate_coastguard_onscene_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("coastguard_onscene")
+
+        # 10. National Coast Guard Director
+        elif ('coast' in role_lower and ('national' in role_lower or 'director' in role_lower or
+              'admiral' in role_lower or 'national_maritime' in expertise_lower)):
+            prompt = self.prompt_templates.generate_coastguard_national_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("coastguard_national")
+
+        # 11. Operations Director (original operations/logistics)
         elif ('operation' in role_lower or 'logistic' in role_lower or
               'logistic' in expertise_lower or 'supply_chain' in expertise_lower or
               'operation' in expertise_lower):
@@ -470,12 +545,6 @@ KEY CONCERNS
                 scenario, alternatives, criteria
             )
             system_prompt = self.prompt_templates.get_system_prompt("operations")
-
-        elif 'medical' in expertise_lower or 'health' in expertise_lower or 'medical' in role_lower:
-            prompt = self.prompt_templates.generate_medical_prompt(
-                scenario, alternatives, criteria
-            )
-            system_prompt = self.prompt_templates.get_system_prompt("medical")
 
         else:
             # Default to operations if role unclear

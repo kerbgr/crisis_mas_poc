@@ -712,6 +712,126 @@ classDiagram
 
 ---
 
+## 11. Expert Selection System (NEW in v0.8)
+
+```mermaid
+flowchart TB
+    START([User: Load Scenario]) --> CLI_PARSE[Parse CLI Arguments]
+
+    CLI_PARSE --> MODE_CHECK{--expert-selection<br/>argument?}
+
+    MODE_CHECK -->|Not specified<br/>default: manual| MANUAL[Manual Mode]
+    MODE_CHECK -->|auto| AUTO[Auto-Selection Mode]
+
+    MANUAL --> AGENT_ARG{--agents<br/>specified?}
+
+    AGENT_ARG -->|No| DEFAULT_3[Use Default 3 Core Experts:<br/>- Meteorologist<br/>- Logistics<br/>- Medical]
+    AGENT_ARG -->|Yes: 'all'| ALL_11[Select All 11 Experts]
+    AGENT_ARG -->|Yes: specific IDs| CUSTOM[Use Specified Agent IDs]
+
+    AUTO --> LOAD_SCENARIO[Load Scenario JSON]
+    LOAD_SCENARIO --> CHECK_META{expert_selection<br/>metadata exists?}
+
+    CHECK_META -->|No| FALLBACK[Fallback to 3 Core Experts<br/>+ Warning Log]
+    CHECK_META -->|Yes| EXTRACT_META[Extract Metadata:<br/>- crisis_type<br/>- crisis_subtypes<br/>- severity<br/>- domains<br/>- scope<br/>- command_structure<br/>- infrastructure<br/>- populations<br/>- duration]
+
+    FALLBACK --> INIT_AGENTS[Initialize Expert Agents]
+
+    EXTRACT_META --> CREATE_SELECTOR[Create ExpertSelector Instance]
+
+    CREATE_SELECTOR --> EVAL_LOOP[Iterate Through 11 Expert Rules]
+
+    subgraph "Expert Evaluation Loop"
+        EVAL_LOOP --> EVAL_EXPERT[Evaluate Expert Against Rules]
+
+        EVAL_EXPERT --> SCORE_CALC[Calculate Match Score]
+
+        subgraph "Scoring Criteria (Points)"
+            SCORE_CALC --> SC1[Crisis Type Match: +3]
+            SCORE_CALC --> SC2[Crisis Subtype Match: +2]
+            SCORE_CALC --> SC3[Domain Match: +2]
+            SCORE_CALC --> SC4[Severity Threshold: +1]
+            SCORE_CALC --> SC5[Geographic Scope: +2]
+            SCORE_CALC --> SC6[Geographic Location: +2]
+            SCORE_CALC --> SC7[Command Structure: +2]
+            SCORE_CALC --> SC8[Multi-jurisdictional: +1]
+            SCORE_CALC --> SC9[Infrastructure Systems: +2]
+            SCORE_CALC --> SC10[Population Threshold: +1]
+            SCORE_CALC --> SC11[Duration Threshold: +1]
+        end
+
+        SC1 & SC2 & SC3 & SC4 & SC5 & SC6 & SC7 & SC8 & SC9 & SC10 & SC11 --> TOTAL_SCORE[Sum Total Score]
+
+        TOTAL_SCORE --> CHECK_INCLUDE{Score > 0<br/>OR<br/>Core Expert?}
+
+        CHECK_INCLUDE -->|Yes| ADD_SELECTED[Add to Selected Set]
+        CHECK_INCLUDE -->|No| SKIP[Skip Expert]
+
+        ADD_SELECTED --> NEXT_EXPERT{More Experts?}
+        SKIP --> NEXT_EXPERT
+
+        NEXT_EXPERT -->|Yes| EVAL_EXPERT
+        NEXT_EXPERT -->|No| VALIDATE_COUNT
+    end
+
+    VALIDATE_COUNT[Validate Selected Count]
+    VALIDATE_COUNT --> MIN_CHECK{Selected >= 3?}
+
+    MIN_CHECK -->|No| ADD_CORE[Add Core Experts to Reach Minimum]
+    MIN_CHECK -->|Yes| MAX_CHECK{Selected <= 11?}
+
+    ADD_CORE --> MAX_CHECK
+
+    MAX_CHECK -->|No| TRIM_TOP[Keep Top 11 by Score]
+    MAX_CHECK -->|Yes| FINAL_LIST[Final Agent ID List]
+
+    TRIM_TOP --> FINAL_LIST
+
+    DEFAULT_3 --> INIT_AGENTS
+    ALL_11 --> INIT_AGENTS
+    CUSTOM --> INIT_AGENTS
+    FINAL_LIST --> LOG_SELECTION{Verbose Mode?}
+
+    LOG_SELECTION -->|Yes| DETAILED_LOG[Log Selection Details:<br/>- Agent IDs<br/>- Scores<br/>- Reasons<br/>- Descriptions]
+    LOG_SELECTION -->|No| BASIC_LOG[Log: Selected N experts]
+
+    DETAILED_LOG --> INIT_AGENTS
+    BASIC_LOG --> INIT_AGENTS
+
+    INIT_AGENTS --> LOAD_PROFILES[Load Agent Profiles from<br/>agents/agent_profiles.json]
+
+    LOAD_PROFILES --> CREATE_AGENTS[Create ExpertAgent Instances<br/>with LLM Clients]
+
+    CREATE_AGENTS --> READY([Experts Ready for<br/>Crisis Assessment])
+
+    %% Styling
+    classDef inputClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef processClass fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    classDef decisionClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef autoClass fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    classDef manualClass fill:#ffccbc,stroke:#e64a19,stroke-width:2px
+    classDef criteriaClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px
+    classDef outputClass fill:#99ff99,stroke:#1b5e20,stroke-width:2px
+
+    class START,CLI_PARSE inputClass
+    class LOAD_SCENARIO,EXTRACT_META,CREATE_SELECTOR,EVAL_EXPERT,SCORE_CALC,TOTAL_SCORE,VALIDATE_COUNT,FINAL_LIST,LOG_SELECTION,LOAD_PROFILES,CREATE_AGENTS processClass
+    class MODE_CHECK,CHECK_META,AGENT_ARG,CHECK_INCLUDE,NEXT_EXPERT,MIN_CHECK,MAX_CHECK decisionClass
+    class AUTO,EVAL_LOOP,ADD_SELECTED,ADD_CORE,TRIM_TOP,DETAILED_LOG,BASIC_LOG autoClass
+    class MANUAL,DEFAULT_3,ALL_11,CUSTOM,FALLBACK manualClass
+    class SC1,SC2,SC3,SC4,SC5,SC6,SC7,SC8,SC9,SC10,SC11 criteriaClass
+    class INIT_AGENTS,READY outputClass
+```
+
+**Key Features:**
+- **Backward Compatible:** Manual mode with 3 core experts remains default
+- **Automatic Selection:** Rule-based scoring system evaluates 11 experts against scenario metadata
+- **Intelligent Scoring:** 11 different criteria with weighted point values
+- **Fallback Protection:** Missing metadata falls back to core 3 experts
+- **Validation:** Ensures minimum 3, maximum 11 experts selected
+- **Transparency:** Verbose mode shows scoring rationale
+
+---
+
 ## Diagram Legend
 
 | Symbol | Meaning |
