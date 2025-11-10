@@ -588,24 +588,59 @@ class CoordinatorAgent:
         agent_beliefs = {}
         for agent_id, assessment in agent_assessments.items():
             if 'belief_distribution' in assessment:
-                agent_beliefs[agent_id] = assessment['belief_distribution']
+                belief_dist = assessment['belief_distribution']
+                # Validate that belief_distribution is a dict, not a string or other type
+                if isinstance(belief_dist, dict):
+                    agent_beliefs[agent_id] = belief_dist
+                else:
+                    logger.warning(f"Agent {agent_id} has invalid belief_distribution type: {type(belief_dist)}, skipping")
+
+        if not agent_beliefs:
+            logger.warning("No valid belief distributions found for conflict resolution")
+            return {
+                'resolution_strategy': 'no_beliefs_available',
+                'suggested_actions': ['No valid belief distributions to analyze'],
+                'compromise_alternatives': [],
+                'rationale': 'Cannot resolve conflicts without valid belief distributions'
+            }
 
         try:
-            # Get resolution suggestions from consensus model
-            resolution = self.consensus_model.suggest_resolution(conflicts, agent_beliefs)
+            # Get resolution suggestions from consensus model (returns formatted string)
+            resolution_text = self.consensus_model.suggest_resolution(conflicts, agent_beliefs)
 
-            logger.info(f"Resolution strategy: {resolution.get('strategy', 'unknown')}")
+            logger.info(f"Resolution suggestions generated ({len(resolution_text)} chars)")
+
+            # Parse the resolution text to extract compromise alternatives
+            compromise_alts = []
+            for line in resolution_text.split('\n'):
+                if 'Combined score=' in line:
+                    # Extract alternative ID from lines like "  1. alt_evacuate: Combined score=..."
+                    parts = line.strip().split(':')[0].split('.')
+                    if len(parts) >= 2:
+                        alt_id = parts[1].strip()
+                        compromise_alts.append(alt_id)
+
+            # Determine strategy based on severity
+            strategy = 'weighted_aggregation'
+            if 'ESCALATE' in resolution_text:
+                strategy = 'escalation_required'
+            elif compromise_alts:
+                strategy = 'compromise'
 
             return {
-                'resolution_strategy': resolution.get('strategy', 'weighted_aggregation'),
-                'suggested_actions': resolution.get('suggestions', []),
-                'compromise_alternatives': resolution.get('compromise_alternatives', []),
-                'rationale': resolution.get('rationale', ''),
-                'full_resolution': resolution
+                'resolution_strategy': strategy,
+                'suggested_actions': resolution_text.split('\n'),
+                'compromise_alternatives': compromise_alts,
+                'rationale': resolution_text,
+                'full_resolution': resolution_text
             }
 
         except Exception as e:
+            import traceback
             logger.error(f"Error resolving conflicts: {e}")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(f"Agent beliefs keys: {list(agent_beliefs.keys())}")
+            logger.debug(f"Conflicts: {conflicts[:2] if len(conflicts) > 2 else conflicts}")  # Log first 2 conflicts
             return {
                 'resolution_strategy': 'weighted_aggregation',
                 'suggested_actions': [

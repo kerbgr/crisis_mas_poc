@@ -356,7 +356,7 @@ class SystemVisualizer:
 
         # Use a professional color palette
         self.colors = sns.color_palette("Set2", 10)
-        self.agent_colors = sns.color_palette("husl", 8)
+        self.agent_colors = sns.color_palette("husl", 12)  # Extended to 12 for up to 12 agents
 
         # Configure matplotlib for better fonts
         plt.rcParams['font.family'] = 'sans-serif'
@@ -395,7 +395,7 @@ class SystemVisualizer:
 
         # Extract belief distributions
         agents = []
-        belief_data = {}
+        agent_beliefs = {}  # Store complete belief dists per agent
 
         for agent_id, assessment in agent_assessments.items():
             if 'belief_distribution' not in assessment:
@@ -403,27 +403,36 @@ class SystemVisualizer:
 
             agent_name = assessment.get('agent_name', agent_id)
             agents.append(agent_name)
+            agent_beliefs[agent_name] = assessment['belief_distribution']
 
-            beliefs = assessment['belief_distribution']
-            for alt_id, belief in beliefs.items():
-                if alt_id not in belief_data:
-                    belief_data[alt_id] = []
-                belief_data[alt_id].append(belief)
-
-        if not agents or not belief_data:
+        if not agents or not agent_beliefs:
             logger.warning("No belief distribution data to plot")
             return ""
+
+        # Get all alternatives across all agents
+        all_alternatives = set()
+        for beliefs in agent_beliefs.values():
+            all_alternatives.update(beliefs.keys())
+        alternatives = sorted(all_alternatives)
+
+        # Build belief_data with consistent dimensions (all agents × all alternatives)
+        belief_data = {}
+        for alt_id in alternatives:
+            belief_data[alt_id] = []
+            for agent_name in agents:
+                # Get belief for this alternative, default to 0.0 if missing
+                belief = agent_beliefs[agent_name].get(alt_id, 0.0)
+                belief_data[alt_id].append(belief)
 
         # Create figure
         fig, ax = plt.subplots(figsize=(10, 6))
 
         # Plot stacked bars
-        alternatives = sorted(belief_data.keys())
         x_pos = np.arange(len(agents))
         bottom = np.zeros(len(agents))
 
         for i, alt_id in enumerate(alternatives):
-            values = belief_data[alt_id]
+            values = np.array(belief_data[alt_id])  # Ensure numpy array
             bars = ax.bar(
                 x_pos,
                 values,
@@ -433,7 +442,7 @@ class SystemVisualizer:
                 edgecolor='white',
                 linewidth=0.5
             )
-            bottom += values
+            bottom = bottom + values  # Element-wise addition
 
             # Add value labels on bars if space allows
             for j, (bar, val) in enumerate(zip(bars, values)):
@@ -926,7 +935,7 @@ class SystemVisualizer:
 
         # Add legend
         legend_elements = [
-            mpatches.Patch(color=self.agent_colors[i], label=labels[node])
+            mpatches.Patch(color=self.agent_colors[i % len(self.agent_colors)], label=labels[node])
             for i, node in enumerate(G.nodes())
         ]
         ax.legend(
