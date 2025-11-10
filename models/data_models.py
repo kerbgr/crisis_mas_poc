@@ -288,6 +288,38 @@ class LLMResponse(BaseModel):
         except AttributeError:
             raise KeyError(f"'{key}' not found in LLMResponse")
 
+    def keys(self):
+        """
+        Return keys (dict-like interface).
+
+        Provides backward compatibility with code expecting dict.keys().
+        """
+        return self.model_dump().keys()
+
+    def values(self):
+        """
+        Return values (dict-like interface).
+
+        Provides backward compatibility with code expecting dict.values().
+        """
+        return self.model_dump().values()
+
+    def items(self):
+        """
+        Return items (dict-like interface).
+
+        Provides backward compatibility with code expecting dict.items().
+        """
+        return self.model_dump().items()
+
+    def __contains__(self, key: str) -> bool:
+        """
+        Check if key exists (dict-like interface).
+
+        Provides backward compatibility with 'key in response' checks.
+        """
+        return hasattr(self, key)
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to plain dictionary."""
         return self.model_dump()
