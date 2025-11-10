@@ -288,6 +288,15 @@ class LLMResponse(BaseModel):
         except AttributeError:
             raise KeyError(f"'{key}' not found in LLMResponse")
 
+    def __setitem__(self, key: str, value: Any) -> None:
+        """
+        Set attribute value (dict-like interface).
+
+        Provides backward compatibility with code expecting dict[key] = value.
+        Uses setattr to allow setting extra fields dynamically.
+        """
+        setattr(self, key, value)
+
     def keys(self):
         """
         Return keys (dict-like interface).
