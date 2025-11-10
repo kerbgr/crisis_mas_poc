@@ -16,6 +16,7 @@ from decision_framework.evidential_reasoning import EvidentialReasoning
 from decision_framework.mcda_engine import MCDAEngine
 from decision_framework.consensus_model import ConsensusModel
 from decision_framework.gat_aggregator import GATAggregator
+from models.data_models import BeliefDistribution, AgentAssessment
 
 
 # Configure logging
@@ -311,11 +312,22 @@ class CoordinatorAgent:
         """
         logger.info("Aggregating beliefs using Evidential Reasoning")
 
-        # Extract belief distributions from assessments
+        # Extract belief distributions from assessments (handles Pydantic models and dicts)
         agent_beliefs = {}
         for agent_id, assessment in agent_assessments.items():
-            if 'belief_distribution' in assessment:
-                agent_beliefs[agent_id] = assessment['belief_distribution']
+            # Handle both AgentAssessment (Pydantic) and plain dict
+            if isinstance(assessment, AgentAssessment):
+                belief_dist = assessment.belief_distribution
+            elif isinstance(assessment, dict) and 'belief_distribution' in assessment:
+                belief_dist = assessment['belief_distribution']
+            else:
+                continue
+
+            # Convert BeliefDistribution model to dict if needed
+            if isinstance(belief_dist, BeliefDistribution):
+                agent_beliefs[agent_id] = belief_dist.to_dict()
+            elif isinstance(belief_dist, dict):
+                agent_beliefs[agent_id] = belief_dist
 
         if not agent_beliefs:
             logger.warning("No belief distributions found in assessments")
@@ -486,11 +498,22 @@ class CoordinatorAgent:
         """
         logger.info("Checking consensus level")
 
-        # Extract belief distributions
+        # Extract belief distributions (handles Pydantic models and dicts)
         agent_beliefs = {}
         for agent_id, assessment in agent_assessments.items():
-            if 'belief_distribution' in assessment:
-                agent_beliefs[agent_id] = assessment['belief_distribution']
+            # Handle both AgentAssessment (Pydantic) and plain dict
+            if isinstance(assessment, AgentAssessment):
+                belief_dist = assessment.belief_distribution
+            elif isinstance(assessment, dict) and 'belief_distribution' in assessment:
+                belief_dist = assessment['belief_distribution']
+            else:
+                continue
+
+            # Convert BeliefDistribution model to dict if needed
+            if isinstance(belief_dist, BeliefDistribution):
+                agent_beliefs[agent_id] = belief_dist.to_dict()
+            elif isinstance(belief_dist, dict):
+                agent_beliefs[agent_id] = belief_dist
 
         if len(agent_beliefs) < 2:
             logger.warning("Need at least 2 agents for consensus check")
@@ -584,16 +607,29 @@ class CoordinatorAgent:
                 'rationale': 'No conflicts detected - consensus reached'
             }
 
-        # Extract belief distributions
+        # Extract belief distributions (handles both Pydantic models and plain dicts)
         agent_beliefs = {}
         for agent_id, assessment in agent_assessments.items():
-            if 'belief_distribution' in assessment:
+            # Handle both AgentAssessment (Pydantic) and plain dict
+            if isinstance(assessment, AgentAssessment):
+                # Pydantic model - access via attribute
+                belief_dist = assessment.belief_distribution
+            elif isinstance(assessment, dict) and 'belief_distribution' in assessment:
+                # Plain dict - access via key
                 belief_dist = assessment['belief_distribution']
-                # Validate that belief_distribution is a dict, not a string or other type
-                if isinstance(belief_dist, dict):
-                    agent_beliefs[agent_id] = belief_dist
-                else:
-                    logger.warning(f"Agent {agent_id} has invalid belief_distribution type: {type(belief_dist)}, skipping")
+            else:
+                logger.warning(f"Agent {agent_id} assessment has no belief_distribution, skipping")
+                continue
+
+            # Convert BeliefDistribution model to dict if needed
+            if isinstance(belief_dist, BeliefDistribution):
+                agent_beliefs[agent_id] = belief_dist.to_dict()
+            elif isinstance(belief_dist, dict):
+                agent_beliefs[agent_id] = belief_dist
+            else:
+                logger.warning(
+                    f"Agent {agent_id} has invalid belief_distribution type: {type(belief_dist).__name__}, skipping"
+                )
 
         if not agent_beliefs:
             logger.warning("No valid belief distributions found for conflict resolution")
