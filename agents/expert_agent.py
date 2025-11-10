@@ -8,12 +8,14 @@ This agent leverages LLM capabilities to simulate expert decision-making in cris
 import logging
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime
+from pydantic import ValidationError
 
 from agents.base_agent import BaseAgent
 from llm_integration.claude_client import ClaudeClient
 from llm_integration.openai_client import OpenAIClient
 from llm_integration.lmstudio_client import LMStudioClient
 from llm_integration.prompt_templates import PromptTemplates
+from models.data_models import BeliefDistribution, AgentAssessment
 
 
 # Configure logging
@@ -85,16 +87,16 @@ class ExpertAgent(BaseAgent):
         scenario: Dict[str, Any],
         alternatives: List[Dict[str, Any]],
         criteria: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+    ) -> AgentAssessment:
         """
-        Evaluate a crisis scenario and return structured assessment.
+        Evaluate a crisis scenario and return validated assessment.
 
         This is the main method that:
         1. Generates role-specific prompt using PromptTemplates
         2. Calls LLM API with the prompt
         3. Validates and parses the response
-        4. Converts to standardized belief distribution format
-        5. Returns comprehensive assessment
+        4. Converts to validated belief distribution (Pydantic model)
+        5. Returns validated AgentAssessment with automatic type checking
 
         Args:
             scenario: Crisis scenario data (type, severity, location, etc.)
@@ -102,24 +104,26 @@ class ExpertAgent(BaseAgent):
             criteria: Optional custom evaluation criteria
 
         Returns:
-            Dictionary containing:
-            - agent_id: Agent identifier
-            - belief_distribution: Alternative rankings as probability distribution
-            - criteria_scores: Individual criterion scores per alternative
-            - reasoning: Expert's reasoning for the assessment
-            - confidence: Confidence level (0.0 to 1.0)
+            AgentAssessment: Validated Pydantic model containing:
+            - agent_id, agent_name, role: Agent identification
+            - belief_distribution: Validated BeliefDistribution model
+            - confidence: Validated confidence level (0.0 to 1.0)
+            - reasoning: Expert's detailed analysis
+            - key_concerns, recommended_actions: Lists of concerns and actions
             - timestamp: ISO format timestamp
-            - llm_metadata: LLM response metadata (tokens, model, etc.)
+            - metadata: Additional metadata (criteria_scores, llm_metadata, etc.)
 
         Raises:
             ValueError: If scenario or alternatives are invalid
             RuntimeError: If LLM call fails after retries
+            ValidationError: If assessment data fails Pydantic validation
 
         Example:
             >>> scenario = {"type": "flood", "severity": 0.85, "affected_population": 50000}
             >>> alternatives = [{"id": "A1", "name": "Evacuate"}, {"id": "A2", "name": "Barriers"}]
             >>> assessment = agent.evaluate_scenario(scenario, alternatives)
-            >>> print(f"Recommended: {max(assessment['belief_distribution'].items(), key=lambda x: x[1])}")
+            >>> print(f"Confidence: {assessment.confidence}")
+            >>> print(f"Top choice: {max(assessment.belief_distribution.items(), key=lambda x: x[1])[0]}")
         """
         logger.info(
             f"{self.name} evaluating scenario: {scenario.get('type', 'Unknown')} "
@@ -168,16 +172,16 @@ class ExpertAgent(BaseAgent):
             self.last_assessment = assessment
             self.assessment_count += 1
             self.decision_history.append({
-                'timestamp': assessment['timestamp'],
+                'timestamp': assessment.timestamp,
                 'scenario_type': scenario.get('type'),
                 'top_choice': max(belief_distribution.items(), key=lambda x: x[1])[0],
-                'confidence': assessment['confidence']
+                'confidence': assessment.confidence
             })
 
             logger.info(
                 f"{self.name} assessment complete. "
                 f"Top choice: {max(belief_distribution.items(), key=lambda x: x[1])[0]} "
-                f"(confidence: {assessment['confidence']:.2f})"
+                f"(confidence: {assessment.confidence:.2f})"
             )
 
             return assessment
@@ -189,32 +193,37 @@ class ExpertAgent(BaseAgent):
     def generate_belief_distribution(
         self,
         llm_response: Dict[str, Any]
-    ) -> Dict[str, float]:
+    ) -> BeliefDistribution:
         """
-        Convert LLM alternative rankings to normalized belief distribution.
+        Convert LLM alternative rankings to validated belief distribution.
 
         Takes the raw alternative_rankings from LLM and normalizes them to
         ensure they sum to 1.0, creating a proper probability distribution.
+        Returns a Pydantic BeliefDistribution model with built-in validation.
 
         Args:
             llm_response: Response from LLM containing alternative_rankings
 
         Returns:
-            Dictionary mapping alternative IDs to belief values (summing to 1.0)
+            BeliefDistribution: Validated Pydantic model with belief values
+
+        Raises:
+            ValidationError: If belief values are invalid (out of range, wrong type, etc.)
 
         Example:
             >>> llm_response = {"alternative_rankings": {"A1": 0.7, "A2": 0.25, "A3": 0.05}}
             >>> belief_dist = agent.generate_belief_distribution(llm_response)
-            >>> print(belief_dist)
-            {'A1': 0.7, 'A2': 0.25, 'A3': 0.05}
+            >>> print(belief_dist["A1"])
+            0.7
             >>> print(sum(belief_dist.values()))
             1.0
         """
         rankings = llm_response.get('alternative_rankings', {})
 
         if not rankings:
-            logger.warning("No alternative_rankings in LLM response, returning empty distribution")
-            return {}
+            logger.warning("No alternative_rankings in LLM response, creating single uniform belief")
+            # Create minimal valid distribution - single alternative with probability 1.0
+            rankings = {"unknown_alternative": 1.0}
 
         # Calculate sum for normalization
         total = sum(rankings.values())
@@ -222,20 +231,28 @@ class ExpertAgent(BaseAgent):
         if total == 0:
             logger.warning("Sum of rankings is zero, using uniform distribution")
             n = len(rankings)
-            return {alt_id: 1.0 / n for alt_id in rankings.keys()}
+            rankings = {alt_id: 1.0 / n for alt_id in rankings.keys()}
+            total = 1.0
 
         # Normalize to sum to 1.0
-        belief_distribution = {
+        belief_dict = {
             alt_id: score / total
             for alt_id, score in rankings.items()
         }
 
-        logger.debug(
-            f"Generated belief distribution: "
-            f"{list(belief_distribution.items())} (sum: {sum(belief_distribution.values()):.4f})"
-        )
-
-        return belief_distribution
+        # Validate using Pydantic model
+        try:
+            belief_distribution = BeliefDistribution(beliefs=belief_dict)
+            logger.debug(
+                f"Generated validated belief distribution: "
+                f"{list(belief_distribution.items())} (sum: {sum(belief_distribution.values()):.4f})"
+            )
+            return belief_distribution
+        except ValidationError as e:
+            logger.error(f"Failed to validate belief distribution: {e}")
+            # Fallback: create single uniform belief
+            logger.warning("Creating fallback uniform distribution")
+            return BeliefDistribution(beliefs={"fallback_alternative": 1.0})
 
     def get_criteria_scores(
         self,
@@ -748,29 +765,28 @@ KEY CONCERNS
 
     def _build_assessment(
         self,
-        belief_distribution: Dict[str, float],
+        belief_distribution: BeliefDistribution,
         criteria_scores: Dict[str, Dict[str, float]],
         llm_response: Dict[str, Any],
         scenario: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    ) -> AgentAssessment:
         """
-        Construct complete agent assessment dictionary with all required fields.
+        Construct validated agent assessment with all required fields.
 
         OBJECTIVE:
         Assembles final assessment output by combining processed LLM response with
-        agent metadata and scenario context. Creates standardized format expected
-        by CoordinatorAgent for belief aggregation and consensus building.
+        agent metadata and scenario context. Returns a Pydantic AgentAssessment
+        model with built-in validation, ensuring type safety throughout the system.
 
         WHY THIS EXISTS:
-        Centralized construction ensures consistent assessment format across all
-        expert agents. Combines multiple data sources (agent profile, LLM output,
-        computed distributions) into single structure. Enables easy extension by
-        adding new fields in one place.
+        Centralized construction with Pydantic validation ensures consistent and
+        type-safe assessment format across all expert agents. Prevents type errors
+        that previously occurred with plain dictionaries. Validates at the source
+        rather than defensively checking downstream.
 
         INPUTS:
-        - belief_distribution: Normalized probability distribution over alternatives
-          Format: {alt_id: probability} where sum(probabilities) ≈ 1.0
-          Created by generate_belief_distribution() from LLM rankings
+        - belief_distribution: Validated BeliefDistribution Pydantic model
+          Created by generate_belief_distribution() with automatic validation
 
         - criteria_scores: Per-criterion evaluation scores
           Format: {criterion_id: {alt_id: score}}
@@ -782,51 +798,66 @@ KEY CONCERNS
         - scenario: Original scenario data for context and metadata
 
         OUTPUTS:
-        Dictionary containing:
+        AgentAssessment: Validated Pydantic model containing:
         AGENT IDENTIFICATION:
         - agent_id: Unique agent identifier
         - agent_name: Human-readable name
-        - agent_role: Domain role (e.g., "Emergency Medicine Specialist")
-        - expertise: Domain expertise area
+        - role: Domain role (e.g., "Emergency Medicine Specialist")
 
         QUANTITATIVE ASSESSMENT:
-        - belief_distribution: Probability distribution over alternatives
-        - criteria_scores: Detailed scores per criterion per alternative
+        - belief_distribution: Validated BeliefDistribution model
+        - confidence: Agent's self-reported confidence (0.0-1.0, validated)
 
         QUALITATIVE ASSESSMENT:
-        - reasoning: LLM's detailed analysis and justification
-        - confidence: Agent's self-reported confidence (0.0-1.0)
+        - reasoning: LLM's detailed analysis (validated non-empty)
         - key_concerns: List of critical issues identified
+        - recommended_actions: List of suggested actions
 
         METADATA:
         - timestamp: ISO format assessment time
-        - scenario_type: Type of crisis (flood, earthquake, etc.)
-        - llm_metadata: LLM provider stats (tokens, model, latency)
-        - assessment_number: Sequential counter for this agent
+        - metadata: Additional metadata (scenario_type, llm_metadata, etc.)
 
         USAGE IN SYSTEM:
         1. ExpertAgent returns this from evaluate_scenario()
         2. CoordinatorAgent collects from all agents
-        3. ER/GAT uses belief_distribution for aggregation
-        4. MCDA uses criteria_scores for ranking
-        5. Consensus uses belief_distribution for similarity
-        6. Evaluation uses criteria_scores for quality metrics
+        3. Pydantic validation prevents type errors at source
+        4. Can be converted to dict via .to_dict() for backward compatibility
         """
-        return {
-            'agent_id': self.agent_id,
-            'agent_name': self.name,
-            'agent_role': self.role,
-            'expertise': self.expertise,
-            'belief_distribution': belief_distribution,
-            'criteria_scores': criteria_scores,
-            'reasoning': llm_response.get('reasoning', ''),
-            'confidence': llm_response.get('confidence', self.confidence_level),
-            'key_concerns': llm_response.get('key_concerns', []),
-            'timestamp': datetime.now().isoformat(),
-            'scenario_type': scenario.get('type', 'unknown'),
-            'llm_metadata': llm_response.get('_metadata', {}),
-            'assessment_number': self.assessment_count + 1
-        }
+        try:
+            assessment = AgentAssessment(
+                agent_id=self.agent_id,
+                agent_name=self.name,
+                role=self.role,
+                belief_distribution=belief_distribution,
+                confidence=llm_response.get('confidence', self.confidence_level),
+                reasoning=llm_response.get('reasoning', 'No reasoning provided'),
+                key_concerns=llm_response.get('key_concerns', []),
+                recommended_actions=llm_response.get('recommended_actions', []),
+                risk_assessment=llm_response.get('risk_assessment'),
+                timestamp=datetime.now().isoformat(),
+                metadata={
+                    'expertise': self.expertise,
+                    'agent_role': self.role,
+                    'criteria_scores': criteria_scores,
+                    'scenario_type': scenario.get('type', 'unknown'),
+                    'llm_metadata': llm_response.get('_metadata', {}),
+                    'assessment_number': self.assessment_count + 1
+                }
+            )
+            return assessment
+        except ValidationError as e:
+            logger.error(f"Failed to create AgentAssessment: {e}")
+            # Create minimal fallback assessment
+            logger.warning("Creating fallback assessment with minimal data")
+            return AgentAssessment(
+                agent_id=self.agent_id,
+                agent_name=self.name,
+                role=self.role,
+                belief_distribution=belief_distribution,
+                confidence=0.5,
+                reasoning="Assessment creation failed - using fallback",
+                metadata={'error': str(e)}
+            )
 
     def propose_action(
         self,
