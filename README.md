@@ -1,18 +1,20 @@
 # A Multi-Agent System (MAS) for crisis management and decision-making
 
-**A Proof-of-concept system demonstrates the application of **Multi-Agent Systems (MAS)** to crisis management decision-making, developed as part of a Master's thesis in Operational Research & Decision Making**
+A Proof-of-concept system demonstrating the application of **Multi-Agent Systems (MAS)** to crisis management decision-making, developed as part of a Master's thesis in Operational Research & Decision Making with the title:
 
-Master's Thesis in Operational Research & Decision Making
+***Development of a Collaborative Multi-Agent Framework for Decision Support in Crisis Management*** \
+*Optimisation through Evidential Reasoning and Large Language Models for the Preservation and Enhancement of Collective Intelligence*
+
 
 Military Academy (sse.gr) - Technical University of Crete (tuc.gr)
 
-![sse](https://github.com/user-attachments/assets/4a0780f0-82ff-4af9-988d-df7deea4df2f)  ![tuc](https://github.com/user-attachments/assets/b2cfea95-6d65-4092-a486-393da4cb90d7)
+  ![sse2](https://github.com/user-attachments/assets/efbffb32-2926-4803-af6e-dbc92237c776)  <img width="166" height="166" alt="tuc2" src="https://github.com/user-attachments/assets/babf4568-4a60-4412-a7bf-4ca322f78197" />
 
 Department of Military Sciences - School of Production Engineering and Management
 
 
-**Author:** Vasileios Kazoukas
-**Contact:** kazoukas@gmail.com, vkazoukas@tuc.gr
+**Author:** ***Vasileios Kazoukas***
+**Contact:** kazoukas@gmail.com, vkazoukas@tuc.gr\
 **Version:** 0.8  
 **Last Updated:** November 2025
 **Status:** Research Prototype
