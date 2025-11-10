@@ -309,6 +309,8 @@ from typing import Dict, Any, List, Optional, Tuple
 from pathlib import Path
 import logging
 
+from models.data_models import BeliefDistribution, AgentAssessment
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -393,17 +395,30 @@ class SystemVisualizer:
         """
         logger.info(f"Plotting belief distributions to {save_path}")
 
-        # Extract belief distributions
+        # Extract belief distributions (handles Pydantic models and dicts)
         agents = []
         agent_beliefs = {}  # Store complete belief dists per agent
 
         for agent_id, assessment in agent_assessments.items():
-            if 'belief_distribution' not in assessment:
+            # Handle both AgentAssessment (Pydantic) and plain dict
+            if isinstance(assessment, AgentAssessment):
+                agent_name = assessment.agent_name
+                belief_dist = assessment.belief_distribution
+            elif isinstance(assessment, dict):
+                if 'belief_distribution' not in assessment:
+                    continue
+                agent_name = assessment.get('agent_name', agent_id)
+                belief_dist = assessment['belief_distribution']
+            else:
                 continue
 
-            agent_name = assessment.get('agent_name', agent_id)
             agents.append(agent_name)
-            agent_beliefs[agent_name] = assessment['belief_distribution']
+
+            # Convert BeliefDistribution model to dict if needed
+            if isinstance(belief_dist, BeliefDistribution):
+                agent_beliefs[agent_name] = belief_dist.to_dict()
+            elif isinstance(belief_dist, dict):
+                agent_beliefs[agent_name] = belief_dist
 
         if not agents or not agent_beliefs:
             logger.warning("No belief distribution data to plot")
