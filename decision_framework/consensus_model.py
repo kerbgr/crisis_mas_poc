@@ -507,16 +507,24 @@ class ConsensusModel:
             )
 
             # Find compromise alternatives
-            compromises = self._find_compromise_alternatives(
-                agent_beliefs[agent_1],
-                agent_beliefs[agent_2]
-            )
+            # Defensive check: ensure beliefs are dicts
+            beliefs_1 = agent_beliefs.get(agent_1, {})
+            beliefs_2 = agent_beliefs.get(agent_2, {})
+
+            if not isinstance(beliefs_1, dict):
+                logger.warning(f"Agent {agent_1} beliefs are not a dict: {type(beliefs_1)}")
+                beliefs_1 = {}
+            if not isinstance(beliefs_2, dict):
+                logger.warning(f"Agent {agent_2} beliefs are not a dict: {type(beliefs_2)}")
+                beliefs_2 = {}
+
+            compromises = self._find_compromise_alternatives(beliefs_1, beliefs_2)
 
             if compromises:
                 suggestions.append(f"\nPotential Compromise Alternatives:")
                 for rank, (alt_id, combined_score) in enumerate(compromises[:3], 1):
-                    agent_1_belief = agent_beliefs[agent_1].get(alt_id, 0.0)
-                    agent_2_belief = agent_beliefs[agent_2].get(alt_id, 0.0)
+                    agent_1_belief = beliefs_1.get(alt_id, 0.0)
+                    agent_2_belief = beliefs_2.get(alt_id, 0.0)
 
                     suggestions.append(
                         f"  {rank}. {alt_id}: Combined score={combined_score:.3f} "
