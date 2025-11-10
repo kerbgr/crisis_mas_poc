@@ -356,7 +356,7 @@ class SystemVisualizer:
 
         # Use a professional color palette
         self.colors = sns.color_palette("Set2", 10)
-        self.agent_colors = sns.color_palette("husl", 8)
+        self.agent_colors = sns.color_palette("husl", 12)  # Extended to 12 for up to 12 agents
 
         # Configure matplotlib for better fonts
         plt.rcParams['font.family'] = 'sans-serif'
@@ -926,7 +926,7 @@ class SystemVisualizer:
 
         # Add legend
         legend_elements = [
-            mpatches.Patch(color=self.agent_colors[i], label=labels[node])
+            mpatches.Patch(color=self.agent_colors[i % len(self.agent_colors)], label=labels[node])
             for i, node in enumerate(G.nodes())
         ]
         ax.legend(
