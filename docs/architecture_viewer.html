@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crisis MAS - Architecture Diagrams</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose'
+        });
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007acc;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 40px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
+        .diagram-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .mermaid {
+            text-align: center;
+        }
+        .description {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Crisis Management MAS - Architecture Diagrams</h1>
+    <p><strong>System Version:</strong> 0.8 | <strong>Last Updated:</strong> November 2025</p>
+
+    <h2>1. Main System Architecture</h2>
+    <div class="diagram-container">
+        <p class="description">Five-layer architecture showing the complete Crisis MAS system with LLM integration, decision framework, and evaluation components.</p>
+        <div class="mermaid">
+graph TB
+    subgraph UI["🖥️ USER INTERFACE LAYER"]
+        Main[main.py<br/>CLI & Orchestration]
+        Input[JSON I/O<br/>Scenarios & Config]
+        Output[Visualization<br/>Generation]
+    end
+
+    subgraph Coord["🎯 COORDINATION LAYER"]
+        CA[CoordinatorAgent<br/>Orchestration & Consensus]
+        CS[Consensus<br/>Builder]
+        CR[Conflict<br/>Resolution]
+    end
+
+    subgraph Agents["👥 AGENT LAYER"]
+        direction LR
+        EA1[Medical<br/>Expert]
+        EA2[Logistics<br/>Expert]
+        EA3[Safety<br/>Expert]
+        EA4[Environmental<br/>Expert]
+        BA[BaseAgent<br/>Interface]
+        RT[ReliabilityTracker<br/>Performance History]
+    end
+
+    subgraph DF["🧠 DECISION FRAMEWORK LAYER"]
+        direction TB
+        ER[EvidentialReasoning<br/>Dempster-Shafer]
+        GAT[GATAggregator<br/>Neural Attention]
+        MCDA[MCDAEngine<br/>TOPSIS]
+        CM[ConflictModel<br/>Resolution]
+    end
+
+    subgraph LLM["🤖 LLM INTEGRATION LAYER"]
+        direction LR
+        Claude[Claude API<br/>Anthropic]
+        OpenAI[OpenAI API<br/>GPT-4]
+        LMStudio[LM Studio<br/>Local Models]
+        Prompt[Prompt<br/>Templates]
+        Parser[Response<br/>Parser]
+    end
+
+    subgraph Eval["📊 EVALUATION & UTILITIES LAYER"]
+        direction TB
+        ME[MetricsEvaluator<br/>DQS, CL, CS, ECB]
+        Viz[SystemVisualizer<br/>Charts & Graphs]
+        Val[Validator<br/>Schema Check]
+        Cfg[ConfigManager<br/>Settings]
+        BL[Baseline<br/>Single-Agent]
+    end
+
+    Main -->|Load Scenario| Input
+    Input -->|Initialize| CA
+
+    CA -->|Collect Assessments| EA1 & EA2 & EA3 & EA4
+    EA1 & EA2 & EA3 & EA4 -.->|Inherit from| BA
+    EA1 & EA2 & EA3 & EA4 -->|Track Performance| RT
+
+    EA1 & EA2 & EA3 & EA4 -->|LLM Reasoning| Prompt
+    Prompt -->|Route to| Claude & OpenAI & LMStudio
+    Claude & OpenAI & LMStudio -->|Parse| Parser
+    Parser -->|Structured Response| EA1 & EA2 & EA3 & EA4
+
+    CA -->|Aggregate Beliefs| ER & GAT
+    ER & GAT -.->|Use Reliability| RT
+    CA -->|Rank Alternatives| MCDA
+    CA -->|Build Consensus| CS
+    CS -->|Detect Issues| CR
+
+    ER & GAT & MCDA -->|Combined Decision| CA
+    CA -->|Final Decision| ME
+
+    Main -->|Run Baseline| BL
+    BL -->|Single-Agent| EA1
+    BL & CA -->|Compare| ME
+
+    ME -->|Calculate Metrics| ME
+    ME -->|Generate Viz| Viz
+    Viz -->|Save Results| Output
+
+    Val -.->|Validate| Input
+    Cfg -.->|Configure| Main & CA & LLM
+
+    classDef layerUI fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef layerCoord fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef layerAgent fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef layerDF fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef layerLLM fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef layerEval fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+
+    class Main,Input,Output layerUI
+    class CA,CS,CR layerCoord
+    class EA1,EA2,EA3,EA4,BA,RT layerAgent
+    class ER,GAT,MCDA,CM layerDF
+    class Claude,OpenAI,LMStudio,Prompt,Parser layerLLM
+    class ME,Viz,Val,Cfg,BL layerEval
+        </div>
+    </div>
+
+    <h2>2. Expert Selection Workflow (NEW in v0.8)</h2>
+    <div class="diagram-container">
+        <p class="description">Smart expert selection system showing manual vs automatic modes, rule-based scoring, and intelligent agent selection based on scenario characteristics.</p>
+        <div class="mermaid">
+flowchart TD
+    Start([Load Scenario]) --> CheckMode{Expert Selection<br/>Mode?}
+
+    CheckMode -->|manual| ManualPath[Use --agents flag<br/>or default 3 core experts]
+    CheckMode -->|auto| AutoPath[Extract expert_selection<br/>metadata from scenario]
+
+    ManualPath --> InitAgents[Initialize Selected Agents]
+
+    AutoPath --> HasMeta{Metadata<br/>exists?}
+    HasMeta -->|No| FallbackCore[Fallback: Use 3<br/>core experts]
+    HasMeta -->|Yes| EvalExperts[Evaluate Each Expert<br/>Against Selection Rules]
+
+    FallbackCore --> InitAgents
+
+    EvalExperts --> ExpertLoop{For Each of<br/>11 Experts}
+
+    ExpertLoop --> ScoreCriteria[Calculate Match Score<br/>Based on Criteria]
+
+    ScoreCriteria --> CriteriaChecks{Check Matching Criteria}
+
+    CriteriaChecks --> C1[Crisis Type Match: +3]
+    CriteriaChecks --> C2[Crisis Subtype Match: +2]
+    CriteriaChecks --> C3[Domain Match: +2]
+    CriteriaChecks --> C4[Severity Threshold: +1]
+    CriteriaChecks --> C5[Geographic Scope: +2]
+    CriteriaChecks --> C6[Geographic Location: +2]
+    CriteriaChecks --> C7[Command Structure: +2]
+    CriteriaChecks --> C8[Multi-jurisdictional: +1]
+    CriteriaChecks --> C9[Infrastructure Systems: +2]
+    CriteriaChecks --> C10[Population Threshold: +1]
+    CriteriaChecks --> C11[Duration Threshold: +1]
+
+    C1 & C2 & C3 & C4 & C5 & C6 & C7 & C8 & C9 & C10 & C11 --> TotalScore[Calculate Total Score]
+
+    TotalScore --> CheckScore{Score > 0<br/>OR<br/>Core Expert?}
+
+    CheckScore -->|Yes| AddToSelected[Add to Selected Set]
+    CheckScore -->|No| Skip[Skip Expert]
+
+    AddToSelected --> MoreExperts{More Experts<br/>to Evaluate?}
+    Skip --> MoreExperts
+
+    MoreExperts -->|Yes| ExpertLoop
+    MoreExperts -->|No| EnsureMin{Selected >= 3<br/>minimum?}
+
+    EnsureMin -->|No| AddCore[Add Core Experts]
+    EnsureMin -->|Yes| CheckMax{Selected <= 11<br/>maximum?}
+
+    AddCore --> CheckMax
+
+    CheckMax -->|No| KeepTop[Keep Top 11 by Score]
+    CheckMax -->|Yes| ReturnList[Return Selected Agent IDs]
+
+    KeepTop --> ReturnList
+    ReturnList --> InitAgents
+
+    InitAgents --> End([Initialize Expert Agents])
+
+    classDef processClass fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    classDef decisionClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef criteriaClass fill:#c8e6c9,stroke:#388e3c,stroke-width:1px
+    classDef coreClass fill:#ffccbc,stroke:#e64a19,stroke-width:2px
+
+    class Start,AutoPath,EvalExperts,ScoreCriteria,TotalScore,AddToSelected,ReturnList,InitAgents,End processClass
+    class CheckMode,HasMeta,ExpertLoop,CriteriaChecks,CheckScore,MoreExperts,EnsureMin,CheckMax decisionClass
+    class C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11 criteriaClass
+    class FallbackCore,ManualPath,AddCore,KeepTop coreClass
+        </div>
+    </div>
+
+    <h2>3. Decision-Making Flow (Updated - 8 Steps)</h2>
+    <div class="diagram-container">
+        <p class="description">Eight-step process for multi-agent crisis decision-making including expert selection, scenario analysis, belief aggregation, and evaluation.</p>
+        <div class="mermaid">
+flowchart TD
+    Start([Start]) --> LoadScenario[1. Load Scenario<br/>scenarios/flood_scenario.json]
+    LoadScenario --> ParseScenario[Parse JSON<br/>Extract alternatives & criteria]
+
+    ParseScenario --> SelectExperts{2. Select Experts<br/>--expert-selection mode?}
+
+    SelectExperts -->|manual| ManualExperts[Manual: Use --agents flag<br/>or default 3 core experts]
+    SelectExperts -->|auto| AutoExperts[Auto: ExpertSelector<br/>analyzes scenario metadata]
+
+    ManualExperts --> InitExperts[Initialize Selected<br/>Expert Agents]
+    AutoExperts --> InitExperts
+
+    InitExperts --> AgentAssess{3. Agent Assessment<br/>For each selected expert}
+
+    AgentAssess -->|Expert 1| Exp1[Expert Agent<br/>LLM Analysis]
+    AgentAssess -->|Expert 2| Exp2[Expert Agent<br/>LLM Analysis]
+    AgentAssess -->|Expert 3| Exp3[Expert Agent<br/>LLM Analysis]
+    AgentAssess -->|Expert N| ExpN[Expert Agent<br/>LLM Analysis]
+
+    Exp1 & Exp2 & Exp3 & ExpN --> Collect[Collect Assessments<br/>beliefs + confidence + reasoning]
+
+    Collect --> ChooseAgg{4. Choose<br/>Aggregation Method}
+
+    ChooseAgg -->|Classical| ER[Evidential Reasoning<br/>Dempster-Shafer Theory]
+    ChooseAgg -->|Neural| GAT[Graph Attention Network<br/>9-dim features + attention]
+
+    ER --> Combined[Combined Belief<br/>Distribution]
+    GAT --> Combined
+
+    Combined --> MCDA[5. MCDA Scoring<br/>TOPSIS/WSM]
+    MCDA --> Ranked[Ranked Alternatives<br/>with scores]
+
+    Ranked --> Consensus{6. Check Consensus<br/>Similarity ≥ threshold?}
+
+    Consensus -->|No| Iterate[Provide Feedback<br/>Request Refinement]
+    Iterate --> AgentAssess
+
+    Consensus -->|Yes| Decision[7. Generate Decision<br/>Top alternative + explanation]
+
+    Decision --> CalcConf[Calculate Confidence<br/>0.6×consensus + 0.4×avg_conf]
+    CalcConf --> CalcQuality[Calculate Quality Score<br/>MCDA score for recommended]
+
+    CalcQuality --> Baseline[Run Single-Agent Baseline<br/>Select best expert]
+    Baseline --> BaselineAssess[Single Expert Assessment<br/>with criteria scores]
+
+    BaselineAssess --> Compare[8. Evaluation & Comparison]
+    CalcQuality --> Compare
+
+    Compare --> Metrics[Calculate Metrics<br/>DQS, CL, CS, ECB]
+    Metrics --> Visualize[Generate Visualizations<br/>Charts & graphs]
+    Visualize --> SaveOutput[Save Results<br/>JSON + PNG]
+
+    SaveOutput --> End([End])
+
+    classDef processClass fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    classDef decisionClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef agentClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef selectClass fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    classDef evalClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+
+    class LoadScenario,ParseScenario,Collect,Combined,Ranked,Decision,CalcConf,CalcQuality processClass
+    class SelectExperts,ChooseAgg,Consensus decisionClass
+    class Exp1,Exp2,Exp3,ExpN,Baseline,BaselineAssess agentClass
+    class ManualExperts,AutoExperts,InitExperts selectClass
+    class Compare,Metrics,Visualize,SaveOutput evalClass
+        </div>
+    </div>
+
+    <footer style="margin-top: 60px; padding-top: 20px; border-top: 2px solid #ccc; color: #666; text-align: center;">
+        <p><strong>Crisis Management Multi-Agent System</strong></p>
+        <p>Master's Thesis - Technical University of Crete | Version 0.8</p>
+        <p>For complete documentation, see README.md and ARCHITECTURE_DIAGRAMS.md</p>
+    </footer>
+</body>
+</html>

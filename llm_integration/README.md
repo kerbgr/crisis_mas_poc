@@ -33,7 +33,7 @@ This module provides a unified, multi-provider interface for integrating Large L
 - ✅ **JSON Parsing**: Multi-strategy parsing handles varied output formats
 - ✅ **Response Validation**: Ensures outputs meet crisis assessment requirements
 - ✅ **Usage Tracking**: Monitor requests, tokens, costs, success rates
-- ✅ **Expert Prompts**: Role-specific templates (meteorologist, operations, medical)
+- ✅ **Expert Prompts**: 11 role-specific templates for comprehensive emergency response
 
 **Why This Matters**:
 Crisis management requires combining diverse expert perspectives into coherent decisions. This module enables agents to:
@@ -323,19 +323,25 @@ from llm_integration import ClaudeClient, PromptTemplates
 client = ClaudeClient()
 templates = PromptTemplates()
 
-# Collect assessments from all three experts
-experts = ['meteorologist', 'operations', 'medical']
+# Collect assessments from all 11 experts (or a subset)
+prompt_generators = {
+    'meteorologist': templates.generate_meteorologist_prompt,
+    'operations': templates.generate_operations_prompt,
+    'medical': templates.generate_medical_prompt,
+    'psap_commander': templates.generate_psap_commander_prompt,
+    'police_onscene': templates.generate_police_onscene_prompt,
+    'police_regional': templates.generate_police_regional_prompt,
+    'fire_onscene': templates.generate_fire_onscene_prompt,
+    'fire_regional': templates.generate_fire_regional_prompt,
+    'medical_infrastructure': templates.generate_medical_infrastructure_prompt,
+    'coastguard_onscene': templates.generate_coastguard_onscene_prompt,
+    'coastguard_national': templates.generate_coastguard_national_prompt,
+}
+
 assessments = {}
-
-for expert in experts:
-    if expert == 'meteorologist':
-        prompt = templates.generate_meteorologist_prompt(scenario, alternatives)
-    elif expert == 'operations':
-        prompt = templates.generate_operations_prompt(scenario, alternatives)
-    elif expert == 'medical':
-        prompt = templates.generate_medical_prompt(scenario, alternatives)
-
-    assessments[expert] = client.generate_assessment(prompt)
+for expert_role, generate_prompt in prompt_generators.items():
+    prompt = generate_prompt(scenario, alternatives)
+    assessments[expert_role] = client.generate_assessment(prompt)
 
 # Aggregate using decision_framework
 from decision_framework import EvidentialReasoning
@@ -396,37 +402,96 @@ response = client.generate_assessment(prompt)
 
 ## Prompt Templates
 
-The `PromptTemplates` class generates role-specific expert prompts.
+The `PromptTemplates` class generates role-specific expert prompts for all 11 expert roles.
 
-### Three Expert Roles
+### Eleven Expert Roles (v0.8)
 
-**1. Meteorologist** - Weather/Environmental Specialist
+The system now supports **11 expert roles** organized in a comprehensive emergency response command structure:
+
+**Core Experts (3):**
+
+**1. Meteorologist** (`generate_meteorologist_prompt`) - Weather/Environmental Specialist
 - Focus: Weather threats, safety, environmental factors, prevention
 - Criteria: Safety, effectiveness, timing, preventability
 - Use for: Weather-related crises (floods, storms, wildfires)
 
-**2. Operations Director** - Resource/Logistics Specialist
+**2. Operations Director / Logistics Coordinator** (`generate_operations_prompt`) - Resource/Logistics Specialist
 - Focus: Resources, logistics, cost-effectiveness, feasibility
 - Criteria: Feasibility, cost-effectiveness, logistics, scalability
 - Use for: Resource allocation, operational planning
 
-**3. Medical Director** - Health/Safety Specialist
+**3. Medical Director** (`generate_medical_prompt`) - Health/Safety Specialist
 - Focus: Public health, patient safety, medical infrastructure
 - Criteria: Patient safety, medical access, health risks, capacity
 - Use for: Health impact assessment, vulnerable populations
+
+**Emergency Response Command Structure (8):**
+
+**4. PSAP Commander-Supervisor** (`generate_psap_commander_prompt`)
+- Focus: Emergency communications, dispatch coordination, call intake
+- Criteria: Response time, dispatch accuracy, caller safety, system capacity
+- Use for: Multi-agency coordination, first-in decision authority
+
+**5. On-Scene Police Commander** (`generate_police_onscene_prompt`)
+- Focus: Tactical law enforcement, scene security, crowd control
+- Criteria: Scene safety, tactical effectiveness, public order, force appropriateness
+- Use for: Field-level tactical police operations
+
+**6. Regional Police Commander** (`generate_police_regional_prompt`)
+- Focus: Strategic police deployment, inter-jurisdictional coordination
+- Criteria: Resource allocation, mutual aid, strategic positioning
+- Use for: Regional law enforcement strategy
+
+**7. On-Scene Fire-Brigade Commander** (`generate_fire_onscene_prompt`)
+- Focus: Fire suppression, rescue operations, hazmat response
+- Criteria: Firefighter safety, rescue effectiveness, fire control, hazard mitigation
+- Use for: Tactical fire/rescue operations
+
+**8. Regional Fire-Brigade Commander** (`generate_fire_regional_prompt`)
+- Focus: Strategic fire service deployment, mutual aid, long-duration incidents
+- Criteria: Personnel management, resource sustainability, regional coverage
+- Use for: Strategic fire service coordination
+
+**9. Medical Infrastructure Director** (`generate_medical_infrastructure_prompt`)
+- Focus: Hospital capacity, surge operations, patient distribution
+- Criteria: Hospital capacity, medical supply chain, patient flow, system resilience
+- Use for: Healthcare system coordination
+
+**10. On-Scene Coast Guard Commander** (`generate_coastguard_onscene_prompt`)
+- Focus: Maritime rescue, coastal evacuation, SAR operations
+- Criteria: Maritime safety, rescue speed, sea state assessment, resource effectiveness
+- Use for: Tactical maritime/coastal operations
+
+**11. National Coast Guard Director** (`generate_coastguard_national_prompt`)
+- Focus: Strategic maritime policy, inter-regional coordination, port security
+- Criteria: Strategic asset deployment, national maritime security, inter-regional coordination
+- Use for: National-level maritime strategy
 
 ### Template Generation
 
 ```python
 templates = PromptTemplates()
 
-# Generate role-specific prompts
+# Generate role-specific prompts (3 core examples)
 met_prompt = templates.generate_meteorologist_prompt(scenario, alternatives)
 ops_prompt = templates.generate_operations_prompt(scenario, alternatives)
 med_prompt = templates.generate_medical_prompt(scenario, alternatives)
 
+# Generate emergency response command prompts (8 additional roles)
+psap_prompt = templates.generate_psap_commander_prompt(scenario, alternatives)
+police_onscene_prompt = templates.generate_police_onscene_prompt(scenario, alternatives)
+police_regional_prompt = templates.generate_police_regional_prompt(scenario, alternatives)
+fire_onscene_prompt = templates.generate_fire_onscene_prompt(scenario, alternatives)
+fire_regional_prompt = templates.generate_fire_regional_prompt(scenario, alternatives)
+medical_infra_prompt = templates.generate_medical_infrastructure_prompt(scenario, alternatives)
+coastguard_onscene_prompt = templates.generate_coastguard_onscene_prompt(scenario, alternatives)
+coastguard_national_prompt = templates.generate_coastguard_national_prompt(scenario, alternatives)
+
 # Get system prompt for specific role
 system_prompt = templates.get_system_prompt("meteorologist")
+system_prompt = templates.get_system_prompt("psap_commander")
+system_prompt = templates.get_system_prompt("police_onscene")
+# ... and so on for all 11 roles
 ```
 
 ### Expected Response Format
@@ -646,25 +711,42 @@ The llm_integration module integrates with the agents module:
 from llm_integration import ClaudeClient, PromptTemplates
 
 class ExpertAgent(BaseAgent):
-    def __init__(self, expertise_area: str):
-        self.expertise_area = expertise_area
-        self.llm_client = ClaudeClient()
+    def __init__(self, agent_id: str, profile: Dict, llm_client=None):
+        self.agent_id = agent_id
+        self.role = profile['role']
+        self.expertise = profile['expertise']
+        self.llm_client = llm_client or ClaudeClient()
         self.prompt_templates = PromptTemplates()
 
-    def assess_scenario(self, scenario, alternatives):
-        # Generate role-specific prompt
-        if self.expertise_area == "meteorologist":
+    def _generate_prompt(self, scenario, alternatives, criteria=None):
+        """Generate role-specific prompt using hierarchical role detection."""
+        expertise_lower = self.expertise.lower()
+        role_lower = self.role.lower()
+
+        # Hierarchical role detection (11 roles supported)
+        if 'meteorolog' in expertise_lower or 'meteorolog' in role_lower:
             prompt = self.prompt_templates.generate_meteorologist_prompt(
-                scenario, alternatives
+                scenario, alternatives, criteria
             )
-        elif self.expertise_area == "operations":
-            prompt = self.prompt_templates.generate_operations_prompt(
-                scenario, alternatives
+        elif 'psap' in role_lower or 'emergency_communications' in expertise_lower:
+            prompt = self.prompt_templates.generate_psap_commander_prompt(
+                scenario, alternatives, criteria
             )
-        elif self.expertise_area == "medical":
-            prompt = self.prompt_templates.generate_medical_prompt(
-                scenario, alternatives
+        elif 'police' in role_lower and 'on-scene' in role_lower:
+            prompt = self.prompt_templates.generate_police_onscene_prompt(
+                scenario, alternatives, criteria
             )
+        elif 'police' in role_lower and 'regional' in role_lower:
+            prompt = self.prompt_templates.generate_police_regional_prompt(
+                scenario, alternatives, criteria
+            )
+        # ... and so on for all 11 roles (see agents/expert_agent.py)
+
+        return prompt
+
+    def assess_scenario(self, scenario, alternatives):
+        # Generate role-specific prompt using role detection
+        prompt = self._generate_prompt(scenario, alternatives)
 
         # Get LLM assessment
         response = self.llm_client.generate_assessment(prompt)
@@ -697,24 +779,37 @@ else:
 ### Throughput Optimization
 
 ```python
-# Parallel requests (if using multiple clients)
+# Parallel requests for all 11 expert agents
 from concurrent.futures import ThreadPoolExecutor
 
 def get_assessment(expert_type):
     client = ClaudeClient()
     templates = PromptTemplates()
-    if expert_type == "meteorologist":
-        prompt = templates.generate_meteorologist_prompt(scenario, alternatives)
-    # ... other experts
-    return client.generate_assessment(prompt)
 
-with ThreadPoolExecutor(max_workers=3) as executor:
-    futures = [
-        executor.submit(get_assessment, "meteorologist"),
-        executor.submit(get_assessment, "operations"),
-        executor.submit(get_assessment, "medical")
-    ]
+    prompt_generators = {
+        "meteorologist": templates.generate_meteorologist_prompt,
+        "operations": templates.generate_operations_prompt,
+        "medical": templates.generate_medical_prompt,
+        "psap_commander": templates.generate_psap_commander_prompt,
+        "police_onscene": templates.generate_police_onscene_prompt,
+        # ... all 11 roles
+    }
+
+    generator = prompt_generators.get(expert_type)
+    if generator:
+        prompt = generator(scenario, alternatives)
+        return client.generate_assessment(prompt)
+
+# Run all 11 experts in parallel
+expert_types = ['meteorologist', 'operations', 'medical', 'psap_commander',
+                'police_onscene', 'police_regional', 'fire_onscene', 'fire_regional',
+                'medical_infrastructure', 'coastguard_onscene', 'coastguard_national']
+
+with ThreadPoolExecutor(max_workers=11) as executor:
+    futures = [executor.submit(get_assessment, exp_type) for exp_type in expert_types]
     results = [f.result() for f in futures]
+
+# Processing time: ~35-45s for all 11 experts (vs. ~120s sequential)
 ```
 
 ## Cost Management
