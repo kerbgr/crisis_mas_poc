@@ -208,11 +208,12 @@ class LLMResponse(BaseModel):
     Validated response from an LLM client.
 
     This structure is returned by parse_json_response() in LLM clients.
+    Matches the actual format used by Claude, OpenAI, and LM Studio clients.
     """
 
-    alternative_rankings: List[AlternativeRanking] = Field(
-        default_factory=list,
-        description="Ranked list of alternatives"
+    alternative_rankings: Dict[str, float] = Field(
+        default_factory=dict,
+        description="Alternative IDs mapped to scores (0.0-1.0)"
     )
 
     reasoning: str = Field(description="Reasoning for the rankings")
@@ -252,22 +253,40 @@ class LLMResponse(BaseModel):
 
     @field_validator('alternative_rankings')
     @classmethod
-    def validate_rankings(cls, v: List[AlternativeRanking]) -> List[AlternativeRanking]:
-        """Validate rankings are properly ordered."""
+    def validate_rankings(cls, v: Dict[str, float]) -> Dict[str, float]:
+        """Validate ranking scores are in valid range."""
         if not v:
             return v
 
-        # Check for duplicate ranks
-        ranks = [r.rank for r in v]
-        if len(ranks) != len(set(ranks)):
-            logger.warning("Duplicate ranks found in alternative rankings")
-
-        # Check for duplicate alternative IDs
-        alt_ids = [r.alternative_id for r in v]
-        if len(alt_ids) != len(set(alt_ids)):
-            raise ValueError("Duplicate alternative_id found in rankings")
+        for alt_id, score in v.items():
+            if not isinstance(score, (int, float)):
+                raise ValueError(f"Score for {alt_id} must be numeric, got {type(score).__name__}")
+            if not (0.0 <= score <= 1.0):
+                logger.warning(f"Score {score} for {alt_id} outside [0.0, 1.0] range")
 
         return v
+
+    def get(self, key: str, default: Any = None) -> Any:
+        """
+        Get attribute value with default (dict-like interface).
+
+        Provides backward compatibility with code expecting dict.get().
+        """
+        try:
+            return getattr(self, key, default)
+        except AttributeError:
+            return default
+
+    def __getitem__(self, key: str) -> Any:
+        """
+        Get attribute value (dict-like interface).
+
+        Provides backward compatibility with code expecting dict[key].
+        """
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            raise KeyError(f"'{key}' not found in LLMResponse")
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to plain dictionary."""
