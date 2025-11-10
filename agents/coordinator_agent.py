@@ -591,17 +591,34 @@ class CoordinatorAgent:
                 agent_beliefs[agent_id] = assessment['belief_distribution']
 
         try:
-            # Get resolution suggestions from consensus model
-            resolution = self.consensus_model.suggest_resolution(conflicts, agent_beliefs)
+            # Get resolution suggestions from consensus model (returns formatted string)
+            resolution_text = self.consensus_model.suggest_resolution(conflicts, agent_beliefs)
 
-            logger.info(f"Resolution strategy: {resolution.get('strategy', 'unknown')}")
+            logger.info(f"Resolution suggestions generated ({len(resolution_text)} chars)")
+
+            # Parse the resolution text to extract compromise alternatives
+            compromise_alts = []
+            for line in resolution_text.split('\n'):
+                if 'Combined score=' in line:
+                    # Extract alternative ID from lines like "  1. alt_evacuate: Combined score=..."
+                    parts = line.strip().split(':')[0].split('.')
+                    if len(parts) >= 2:
+                        alt_id = parts[1].strip()
+                        compromise_alts.append(alt_id)
+
+            # Determine strategy based on severity
+            strategy = 'weighted_aggregation'
+            if 'ESCALATE' in resolution_text:
+                strategy = 'escalation_required'
+            elif compromise_alts:
+                strategy = 'compromise'
 
             return {
-                'resolution_strategy': resolution.get('strategy', 'weighted_aggregation'),
-                'suggested_actions': resolution.get('suggestions', []),
-                'compromise_alternatives': resolution.get('compromise_alternatives', []),
-                'rationale': resolution.get('rationale', ''),
-                'full_resolution': resolution
+                'resolution_strategy': strategy,
+                'suggested_actions': resolution_text.split('\n'),
+                'compromise_alternatives': compromise_alts,
+                'rationale': resolution_text,
+                'full_resolution': resolution_text
             }
 
         except Exception as e:
