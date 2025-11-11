@@ -547,7 +547,7 @@ class CoordinatorAgent:
             )
 
             if conflicts:
-                logger.warning(f"Detected {len(conflicts)} conflicts")
+                logger.info(f"Detected {len(conflicts)} conflicts between agents")
 
             return {
                 'consensus_level': consensus_level,
