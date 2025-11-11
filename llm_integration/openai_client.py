@@ -684,12 +684,12 @@ class OpenAIClient:
             # Fallback to plain dict for backward compatibility
             return parsed_data
 
-    def validate_response(self, response: Dict[str, Any], expected_keys: List[str]) -> bool:
+    def validate_response(self, response: Union[Dict[str, Any], LLMResponse], expected_keys: List[str]) -> bool:
         """
         Validate that response contains all expected keys.
 
         Args:
-            response: Parsed response dictionary
+            response: Parsed response (dict or LLMResponse Pydantic model)
             expected_keys: List of required keys
 
         Returns:
@@ -702,8 +702,9 @@ class OpenAIClient:
             >>> client.validate_response(response, expected)
             False  # Missing 'key_concerns'
         """
-        if not isinstance(response, dict):
-            logger.warning(f"Response is not a dictionary: {type(response)}")
+        # Accept both dict and Pydantic models (which provide dict-like interface)
+        if not isinstance(response, (dict, LLMResponse)):
+            logger.warning(f"Response has unexpected type: {type(response)}")
             return False
 
         missing_keys = [key for key in expected_keys if key not in response]
