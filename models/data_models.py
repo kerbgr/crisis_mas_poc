@@ -101,6 +101,10 @@ class BeliefDistribution(BaseModel):
         """Allow dict.items() style access."""
         return self.beliefs.items()
 
+    def __len__(self) -> int:
+        """Return the number of alternatives in the distribution."""
+        return len(self.beliefs)
+
 
 class Alternative(BaseModel):
     """
