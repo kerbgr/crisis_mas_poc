@@ -105,6 +105,10 @@ class BeliefDistribution(BaseModel):
         """Return the number of alternatives in the distribution."""
         return len(self.beliefs)
 
+    def __bool__(self) -> bool:
+        """Return False if beliefs dictionary is empty, True otherwise."""
+        return bool(self.beliefs)
+
 
 class Alternative(BaseModel):
     """

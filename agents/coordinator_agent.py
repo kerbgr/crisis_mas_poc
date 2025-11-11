@@ -806,7 +806,8 @@ class CoordinatorAgent:
         agent_confidences = []
         for agent_id, assessment in agent_assessments.items():
             belief_dist = assessment.get('belief_distribution', {})
-            if belief_dist:
+            # Check for non-empty belief distribution (handles both dict and BeliefDistribution)
+            if belief_dist and len(belief_dist) > 0:
                 top_choice = max(belief_dist.items(), key=lambda x: x[1])
                 agent_conf = assessment.get('confidence', 0.0)
                 agent_confidences.append(agent_conf)
@@ -817,6 +818,11 @@ class CoordinatorAgent:
                     'belief_score': top_choice[1],
                     'reasoning': assessment.get('reasoning', '')[:200] + '...'  # Truncate
                 }
+            else:
+                logger.warning(
+                    f"Agent {agent_id} has empty or missing belief_distribution, "
+                    f"skipping from agent_opinions"
+                )
 
         # Calculate overall confidence based on consensus and agent confidences
         # Confidence = combination of consensus level and average agent confidence
