@@ -628,6 +628,13 @@ class LMStudioClient:
             >>> print(type(result))
             <class 'models.data_models.LLMResponse'>
         """
+        # Helper function to clean JSON (remove trailing commas)
+        def clean_json(json_str: str) -> str:
+            """Remove trailing commas before closing brackets/braces."""
+            # Remove trailing commas before } or ]
+            json_str = re.sub(r',\s*(\}|\])', r'\1', json_str)
+            return json_str
+
         # First, parse the JSON using multiple strategies
         parsed_data = None
 
@@ -637,13 +644,22 @@ class LMStudioClient:
         except json.JSONDecodeError:
             pass
 
+        # Strategy 1b: Try direct parsing after cleaning
+        if parsed_data is None:
+            try:
+                cleaned = clean_json(response_text)
+                parsed_data = json.loads(cleaned)
+            except json.JSONDecodeError:
+                pass
+
         # Strategy 2: Extract from ```json...``` blocks
         if parsed_data is None:
             json_block_pattern = r'```json\s*\n(.*?)\n```'
             match = re.search(json_block_pattern, response_text, re.DOTALL)
             if match:
                 try:
-                    parsed_data = json.loads(match.group(1))
+                    cleaned = clean_json(match.group(1))
+                    parsed_data = json.loads(cleaned)
                 except json.JSONDecodeError:
                     pass
 
@@ -653,7 +669,8 @@ class LMStudioClient:
             match = re.search(code_block_pattern, response_text, re.DOTALL)
             if match:
                 try:
-                    parsed_data = json.loads(match.group(1))
+                    cleaned = clean_json(match.group(1))
+                    parsed_data = json.loads(cleaned)
                 except json.JSONDecodeError:
                     pass
 
@@ -663,7 +680,8 @@ class LMStudioClient:
             match = re.search(json_pattern, response_text, re.DOTALL)
             if match:
                 try:
-                    parsed_data = json.loads(match.group(1))
+                    cleaned = clean_json(match.group(1))
+                    parsed_data = json.loads(cleaned)
                 except json.JSONDecodeError:
                     pass
 
