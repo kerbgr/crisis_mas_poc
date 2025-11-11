@@ -399,10 +399,154 @@ except ValueError as e:
 
 ### Current Scenarios in Repository
 
-| Filename | Crisis Type | Severity | Description |
-|----------|-------------|----------|-------------|
-| `flood_scenario.json` | flood | 0.7-0.8 | Urban flash flooding scenario |
-| (Add others as created) | | | |
+| Filename | Crisis Type | Severity | Location | Affected Population | Description |
+|----------|-------------|----------|----------|---------------------|-------------|
+| `flood_scenario.json` | flood | 0.8 | Karditsa, Thessaly, Greece | 15,000 | Pamisos River overflow causing residential and agricultural flooding |
+| `forest_fire_evia.json` | wildfire | 0.9 | North Evia island, Greece | 8,000 | Major forest fire with multiple fronts, village evacuations, aerial firefighting |
+| `ammonia_leak_elefsina.json` | hazmat | 0.85 | Elefsina, Attica, Greece | 12,000 | 50-ton anhydrous ammonia tank rupture, toxic cloud, HAZMAT Level A response |
+
+### Greek Crisis Scenarios - Detailed Overview
+
+#### 1. Karditsa Flood Emergency (`flood_scenario.json`)
+
+**Scenario Context:**
+- **Location:** Karditsa city, Thessaly region, Central Greece
+- **Coordinates:** 39.3644°N, 21.9211°E
+- **Trigger:** Heavy rainfall and Pamisos River overflow
+- **Severity:** 0.8 (High)
+- **Affected Population:** 15,000 residents
+- **Casualties:** 5 reported
+- **Infrastructure Impact:** Residential areas, agricultural lands, power/water systems threatened
+
+**Available Response Actions:**
+1. **Immediate Mass Evacuation** - Large-scale resident evacuation to emergency shelters
+2. **Deploy Flood Barriers** - Sandbag deployment and temporary barrier installation
+3. **Prioritized Rescue Operations** - Focus on trapped individuals and medical emergencies
+4. **Shelter-in-Place with Supply Distribution** - Instruct upper-floor sheltering with monitoring
+5. **Hybrid Approach** - Combined rescue, selective evacuation, and barrier deployment
+
+**Usage:**
+```bash
+python main.py --scenario scenarios/flood_scenario.json --expert-selection auto
+```
+
+**Relevant Greek Experts:**
+- Πολιτική Προστασία (Civil Protection)
+- ΕΚΑΒ (Emergency Medical Service)
+- ΕΛΑΣ (Hellenic Police)
+- Πυροσβεστική (Fire Service)
+- Λιμενικό Σώμα (Coast Guard - for water rescue)
+
+---
+
+#### 2. Evia Forest Fire Emergency (`forest_fire_evia.json`)
+
+**Scenario Context:**
+- **Location:** North Evia (Euboia) island, Central Greece
+- **Coordinates:** 38.9231°N, 23.6578°E
+- **Trigger:** Forest fire with strong winds (40 km/h) and low humidity (35%)
+- **Severity:** 0.9 (Very High)
+- **Affected Population:** 8,000 residents across multiple villages
+- **Casualties:** 2 deaths, 5 missing
+- **Burned Area:** 12,000 hectares
+- **Active Fire Fronts:** 4 simultaneous fronts
+- **Fire Spread Rate:** 3-5 km/h towards inhabited areas
+
+**Available Response Actions:**
+1. **Immediate Village Evacuation** - Urgent bus/boat evacuation of threatened villages
+2. **Aerial Firefighting Campaign** - Canadair CL-415 and Chinook helicopter water drops
+3. **Ground Firefighting with Firebreaks** - Direct combat with fire trucks and bulldozers
+4. **Controlled Backburning Operations** - Strategic fuel removal through controlled burns
+5. **Combined Air-Ground Assault with Evacuation** - Simultaneous aerial/ground operations
+
+**Usage:**
+```bash
+python main.py --scenario scenarios/forest_fire_evia.json --expert-selection auto
+```
+
+**Relevant Greek Experts:**
+- Πυροσβεστική (Hellenic Fire Service) - Tactical and Regional commanders
+- Λιμενικό Σώμα (Coast Guard) - Coastal evacuation support
+- Μετεωρολόγος (Meteorologist) - Wind/weather forecasting
+- ΕΛΑΣ (Police) - Evacuation coordination, road closures
+- ΕΚΑΒ (Emergency Medical) - Burn victims, smoke inhalation treatment
+
+**Special Resources:**
+- **Canadair CL-415** water bombers (Greek Air Force)
+- **Chinook CH-47** helicopters with Bambi buckets
+- Ground fire crews and bulldozers
+- Coastal evacuation boats
+
+---
+
+#### 3. Elefsina Ammonia Leak Emergency (`ammonia_leak_elefsina.json`)
+
+**Scenario Context:**
+- **Location:** Elefsina (Eleusis) industrial zone, Attica, near Athens
+- **Coordinates:** 38.0411°N, 23.5461°E
+- **Trigger:** 50-ton anhydrous ammonia (NH3) storage tank rupture at industrial facility
+- **Severity:** 0.85 (Very High)
+- **Affected Population:** 12,000 (industrial workers + residential areas)
+- **Casualties:** 8 deaths, 45 injured with chemical exposure
+- **Chemical:** Anhydrous Ammonia (NH3) - UN1005, Class 2.3 Toxic Gas + Class 8 Corrosive
+- **IDLH Level:** 300 ppm (Immediately Dangerous to Life or Health)
+- **Current Air Quality:**
+  - 500m downwind: 250 ppm (dangerous)
+  - 1km downwind: 120 ppm (evacuation level)
+  - 2km downwind: 45 ppm (irritation level)
+- **Leak Rate:** ~500 kg/hour from ruptured tank valve
+- **Wind Direction:** Southeast towards residential areas (expected to shift northeast in 4 hours)
+
+**Available Response Actions:**
+1. **Immediate Downwind Evacuation** - Urgent evacuation within 2km radius, priority: schools/hospitals
+2. **HAZMAT Team Source Containment** - Level A suit teams isolate and seal leak source
+3. **Water Curtain Vapor Suppression** - Fire trucks create water curtains to absorb NH3 vapors
+4. **Shelter-in-Place with Sealing** - Residents seal indoors, turn off ventilation, await instructions
+5. **Integrated Response** - Simultaneous containment + water curtain + selective evacuation
+
+**Usage:**
+```bash
+python main.py --scenario scenarios/ammonia_leak_elefsina.json --expert-selection auto
+```
+
+**Relevant Greek Experts:**
+- Πυροσβεστική HAZMAT Teams (Fire Service specialized units) - Level A containment
+- ΕΚΑΒ (Emergency Medical) - Chemical exposure treatment, decontamination
+- ΕΛΑΣ (Police) - Evacuation coordination, perimeter security
+- Μετεωρολόγος (Meteorologist) - Wind direction forecasting, plume modeling
+- Περιβαλλοντολόγος (Environmental Scientist) - Environmental impact assessment
+
+**Special Requirements:**
+- **Level A HAZMAT suits** (fully encapsulated, SCBA)
+- **Decontamination units** for exposed personnel
+- **Water supply** for continuous water curtain operations
+- **Air quality monitoring** equipment
+- **Specialized ammonia detection** instruments
+
+**Health Effects of Ammonia Exposure:**
+- **25-50 ppm:** Irritation of eyes, nose, throat
+- **100 ppm:** Severe irritation, should not be tolerated
+- **300 ppm:** IDLH - immediate danger to life
+- **500 ppm:** Rapidly fatal without treatment
+
+---
+
+### Using Greek Scenarios
+
+All three scenarios feature:
+- **Authentic Greek locations** with real coordinates
+- **Greek emergency response structure** (ΕΛΑΣ, Πυροσβεστική, ΕΚΑΒ, Λιμενικό, Πολιτική Προστασία)
+- **Greek expert names and ranks** (e.g., Ταξίαρχος, Πυραγός, Πλωτάρχης)
+- **Realistic resource constraints** based on Greek emergency response capabilities
+- **Local geography and infrastructure** considerations
+
+**Automatic Expert Selection:**
+The system can automatically select appropriate Greek experts based on scenario metadata:
+```bash
+python main.py --scenario scenarios/forest_fire_evia.json --expert-selection auto
+```
+
+This will intelligently choose relevant experts like Fire Service commanders, Coast Guard for coastal evacuation, Meteorologist for wind analysis, etc.
 
 ---
 
