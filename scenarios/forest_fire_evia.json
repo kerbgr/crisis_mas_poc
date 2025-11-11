@@ -1,0 +1,152 @@
+{
+  "id": "fire_001",
+  "type": "wildfire",
+  "name": "Evia Forest Fire Emergency",
+  "description": "A severe forest fire in North Evia (Euboia), Greece, spreading rapidly due to strong winds and dry vegetation. Multiple villages are threatened, with flames approaching residential areas. The fire has already consumed thousands of hectares of forest. Immediate evacuation and firefighting operations are critical to save lives and properties.",
+  "severity": 0.9,
+  "affected_population": 8000,
+  "location": {
+    "region": "North Evia, Central Greece",
+    "coordinates": {"lat": 38.9231, "lon": 23.6578}
+  },
+  "tags": ["wildfire", "natural_disaster", "forest", "evacuation", "emergency"],
+  "casualties": 2,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_immediate_evacuation",
+      "name": "Immediate Village Evacuation",
+      "description": "Conduct urgent evacuation of all threatened villages using available buses, private vehicles, and boats for coastal areas",
+      "required_resources": ["evacuation_buses", "police_escorts", "coastal_boats", "evacuation_centers"],
+      "estimated_duration": "3-5 hours",
+      "risk_level": 0.35,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.95,
+        "speed": 0.75,
+        "cost": 0.45,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_aerial_firefighting",
+      "name": "Aerial Firefighting Campaign",
+      "description": "Deploy Canadair CL-415 and Chinook helicopters for intensive water drops on fire fronts and create firebreaks",
+      "required_resources": ["canadair_aircraft", "chinook_helicopters", "fire_retardant", "aerial_coordination"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.5,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.70,
+        "speed": 0.85,
+        "cost": 0.30,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_ground_firefighting",
+      "name": "Ground Firefighting with Firebreaks",
+      "description": "Deploy ground fire crews to create firebreaks and directly combat flames using fire trucks and hand tools",
+      "required_resources": ["fire_crews", "fire_trucks", "bulldozers", "water_tankers"],
+      "estimated_duration": "12-24 hours",
+      "risk_level": 0.7,
+      "criteria_scores": {
+        "effectiveness": 0.60,
+        "safety": 0.55,
+        "speed": 0.50,
+        "cost": 0.60,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_controlled_backburn",
+      "name": "Controlled Backburning Operations",
+      "description": "Create controlled burns ahead of the main fire front to remove fuel and slow fire spread",
+      "required_resources": ["experienced_fire_crews", "meteorological_support", "safety_equipment"],
+      "estimated_duration": "8-16 hours",
+      "risk_level": 0.65,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.60,
+        "speed": 0.65,
+        "cost": 0.55,
+        "public_acceptance": 0.50
+      }
+    },
+    {
+      "id": "action_combined_assault",
+      "name": "Combined Air-Ground Assault with Evacuation",
+      "description": "Simultaneous aerial and ground firefighting operations while evacuating threatened populations and protecting critical infrastructure",
+      "required_resources": ["all_available_firefighting_resources", "evacuation_support", "coordination_center"],
+      "estimated_duration": "12-24 hours",
+      "risk_level": 0.4,
+      "criteria_scores": {
+        "effectiveness": 0.88,
+        "safety": 0.80,
+        "speed": 0.70,
+        "cost": 0.25,
+        "public_acceptance": 0.85
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["limited_aircraft_availability", "limited_ground_crews", "difficult_terrain_access"],
+    "weather_conditions": "strong_winds_40kmh_low_humidity_35_percent",
+    "accessibility": "limited_mountain_roads",
+    "additional_concerns": [
+      "Fire spreading at 3-5 km/h towards villages",
+      "Multiple active fire fronts",
+      "Elderly population refusing evacuation",
+      "Limited water sources in mountainous areas",
+      "Power lines down creating additional hazards"
+    ]
+  },
+  "real_time_factors": {
+    "fire_spreading": true,
+    "rate_of_spread": "3-5 km/h towards inhabited areas",
+    "wind_forecast": "Strong northerly winds expected to continue for 12+ hours",
+    "current_evacuations": "Partial - 2 villages evacuated, 4 more threatened",
+    "casualties_reported": 2,
+    "missing_persons": 5,
+    "burned_area_hectares": 12000,
+    "active_fire_fronts": 4
+  },
+  "metadata": {
+    "created_date": "2025-01-15",
+    "author": "Crisis MAS Greece Scenarios",
+    "version": "1.0",
+    "scenario_complexity": "very_high",
+    "recommended_expert_domains": ["fire_rescue", "environmental", "logistics", "public_safety", "meteorology"]
+  },
+
+  "expert_selection": {
+    "crisis_type": "wildfire",
+    "crisis_subtypes": ["forest_fire", "evacuation", "air_operations", "multi_village"],
+    "severity": 0.9,
+    "geographic_scope": "regional",
+    "geographic_location": "mountainous_coastal",
+    "affected_populations": 8000,
+    "duration_estimated_hours": 24,
+    "affected_domains": [
+      "fire_rescue",
+      "weather_environment",
+      "law_enforcement",
+      "coastguard",
+      "emergency_communications",
+      "medical_health"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true,
+      "aerial_coordination": true
+    },
+    "infrastructure_systems": [
+      "power",
+      "communications",
+      "roads",
+      "water_supply"
+    ]
+  }
+}

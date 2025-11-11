@@ -1,13 +1,13 @@
 {
   "id": "flood_001",
   "type": "flood",
-  "name": "Urban Flood Emergency",
-  "description": "A severe flooding event in a metropolitan area following heavy rainfall. Multiple neighborhoods are affected, with rising water levels threatening residential areas and critical infrastructure. Emergency services are overwhelmed, and immediate action is required to minimize casualties and property damage.",
+  "name": "Karditsa Flood Emergency",
+  "description": "A severe flooding event in Karditsa, Greece following heavy rainfall and overflow of the Pamisos River. Multiple neighborhoods are affected, with rising water levels threatening residential areas, agricultural lands, and critical infrastructure. Emergency services are overwhelmed, and immediate action is required to minimize casualties and property damage.",
   "severity": 0.8,
-  "affected_population": 25000,
+  "affected_population": 15000,
   "location": {
-    "region": "Metropolitan District",
-    "coordinates": {"lat": 40.7128, "lon": -74.0060}
+    "region": "Karditsa, Thessaly, Greece",
+    "coordinates": {"lat": 39.3644, "lon": 21.9211}
   },
   "tags": ["flood", "natural_disaster", "urban", "emergency", "infrastructure"],
   "casualties": 5,

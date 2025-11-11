@@ -2,8 +2,8 @@
   "agents": [
     {
       "agent_id": "agent_meteorologist",
-      "name": "Dr. Sarah Chen",
-      "role": "Meteorologist",
+      "name": "Δρ. Ελένη Παπαδοπούλου (Dr. Eleni Papadopoulou)",
+      "role": "Μετεωρολόγος (Meteorologist)",
       "expertise": "weather_forecasting",
       "experience_years": 15,
       "risk_tolerance": 0.4,
@@ -14,12 +14,12 @@
         "cost": 0.10,
         "public_acceptance": 0.10
       },
-      "description": "Senior meteorologist specializing in severe weather prediction and climate analysis"
+      "description": "Senior meteorologist specializing in severe weather prediction and climate analysis for Greece and Eastern Mediterranean"
     },
     {
       "agent_id": "medical_expert_01",
-      "name": "Dr. Marcus Williams",
-      "role": "Medical Expert",
+      "name": "Δρ. Δημήτρης Νικολάου (Dr. Dimitris Nikolaou)",
+      "role": "Ιατρός ΕΚΑΒ (EKAB Emergency Physician)",
       "expertise": "emergency_medicine",
       "experience_years": 20,
       "risk_tolerance": 0.3,
@@ -32,12 +32,12 @@
       },
       "expertise_tags": ["health", "emergency_medicine", "triage", "public_health"],
       "confidence_level": 0.85,
-      "description": "Medical expert specializing in emergency medicine and public health response"
+      "description": "EKAB emergency physician specializing in pre-hospital emergency medicine and mass casualty response"
     },
     {
       "agent_id": "logistics_expert_01",
-      "name": "Jennifer Rodriguez",
-      "role": "Logistics Coordinator",
+      "name": "Κατερίνα Γεωργίου (Katerina Georgiou)",
+      "role": "Συντονίστρια Επιχειρήσεων Πολιτικής Προστασίας (Civil Protection Operations Coordinator)",
       "expertise": "supply_chain_management",
       "experience_years": 12,
       "risk_tolerance": 0.5,
@@ -50,12 +50,12 @@
       },
       "expertise_tags": ["supply_chain", "resource_allocation", "transportation", "infrastructure"],
       "confidence_level": 0.80,
-      "description": "Logistics expert focused on resource allocation and supply chain management"
+      "description": "Civil Protection logistics coordinator focused on resource allocation and emergency supply chain management"
     },
     {
       "agent_id": "public_safety_expert_01",
-      "name": "Chief Robert Johnson",
-      "role": "Public Safety Officer",
+      "name": "Υποστράτηγος Γιώργος Αντωνίου (Major General Giorgos Antoniou)",
+      "role": "Γενικός Γραμματέας Πολιτικής Προστασίας (General Secretary of Civil Protection)",
       "expertise": "emergency_response",
       "experience_years": 25,
       "risk_tolerance": 0.2,
@@ -68,12 +68,12 @@
       },
       "expertise_tags": ["evacuation", "emergency_services", "public_order", "communication"],
       "confidence_level": 0.82,
-      "description": "Public safety expert specializing in emergency response and evacuation procedures"
+      "description": "Senior Civil Protection official specializing in national emergency response coordination and evacuation procedures"
     },
     {
       "agent_id": "environmental_expert_01",
-      "name": "Dr. Amelia Green",
-      "role": "Environmental Scientist",
+      "name": "Δρ. Σοφία Καραγιάννη (Dr. Sofia Karagianni)",
+      "role": "Περιβαλλοντολόγος (Environmental Scientist)",
       "expertise": "environmental_impact_assessment",
       "experience_years": 18,
       "risk_tolerance": 0.4,
@@ -86,7 +86,7 @@
       },
       "expertise_tags": ["environmental_impact", "sustainability", "natural_disasters", "climate"],
       "confidence_level": 0.78,
-      "description": "Environmental expert assessing ecological impacts and sustainability concerns"
+      "description": "Environmental scientist specializing in ecological impact assessment and natural disaster effects in Mediterranean ecosystems"
     },
     {
       "agent_id": "coordinator_01",
@@ -109,8 +109,8 @@
     },
     {
       "agent_id": "psap_commander_01",
-      "name": "Commander Lisa Martinez",
-      "role": "PSAP Commander-Supervisor",
+      "name": "Διοικητής Μαρία Παπαδημητρίου (Commander Maria Papadimitriou)",
+      "role": "Διοικητής ΕΚΑΒ (EKAB Director)",
       "expertise": "emergency_communications",
       "experience_years": 16,
       "risk_tolerance": 0.35,
@@ -123,12 +123,12 @@
       },
       "expertise_tags": ["dispatch", "112_operations", "CAD_systems", "multi_agency_coordination"],
       "confidence_level": 0.85,
-      "description": "PSAP Commander specializing in emergency dispatch coordination and communication systems"
+      "description": "EKAB Director specializing in emergency dispatch coordination and 112 emergency communication systems"
     },
     {
       "agent_id": "police_onscene_01",
-      "name": "Captain James Mitchell",
-      "role": "On-Scene Police Commander",
+      "name": "Ταξίαρχος Νίκος Κωνσταντίνου (Brigadier Nikos Konstantinou)",
+      "role": "Επικεφαλής Επιχειρησιακού Κέντρου ΕΛΑΣ (Hellenic Police Operations Commander)",
       "expertise": "tactical_law_enforcement",
       "experience_years": 22,
       "risk_tolerance": 0.3,
@@ -141,12 +141,12 @@
       },
       "expertise_tags": ["tactical_operations", "scene_security", "crowd_control", "threat_assessment"],
       "confidence_level": 0.88,
-      "description": "On-scene police commander specializing in tactical field operations and scene control"
+      "description": "On-scene Hellenic Police commander specializing in tactical field operations and incident scene control"
     },
     {
       "agent_id": "police_regional_01",
-      "name": "Commissioner David Thompson",
-      "role": "Regional Police Commander",
+      "name": "Υποστράτηγος Ανδρέας Θεοδώρου (Major General Andreas Theodorou)",
+      "role": "Περιφερειακός Διευθυντής ΕΛΑΣ (ELAS Regional Director)",
       "expertise": "strategic_law_enforcement",
       "experience_years": 28,
       "risk_tolerance": 0.4,
@@ -159,12 +159,12 @@
       },
       "expertise_tags": ["regional_strategy", "mutual_aid", "multi_jurisdictional", "resource_allocation"],
       "confidence_level": 0.90,
-      "description": "Regional police commander responsible for strategic deployment and inter-jurisdictional coordination"
+      "description": "Regional Hellenic Police director responsible for strategic deployment and inter-prefectural coordination"
     },
     {
       "agent_id": "fire_onscene_01",
-      "name": "Battalion Chief Maria Santos",
-      "role": "On-Scene Fire-Brigade Commander",
+      "name": "Πυραγός Ιωάννα Μιχαηλίδου (Fire Captain Ioanna Michaelidou)",
+      "role": "Διοικητής Επιχείρησης Πυροσβεστικής (Fire Operations Commander)",
       "expertise": "tactical_firefighting",
       "experience_years": 19,
       "risk_tolerance": 0.35,
@@ -177,12 +177,12 @@
       },
       "expertise_tags": ["fire_suppression", "rescue_operations", "hazmat_response", "structural_assessment"],
       "confidence_level": 0.86,
-      "description": "On-scene fire commander specializing in tactical firefighting and technical rescue operations"
+      "description": "On-scene Hellenic Fire Service commander specializing in tactical firefighting and technical rescue operations"
     },
     {
       "agent_id": "fire_regional_01",
-      "name": "Fire Chief Thomas Anderson",
-      "role": "Regional Fire-Brigade Commander",
+      "name": "Ταξίαρχος Βασίλης Σταυρόπουλος (Brigadier Vasilis Stavropoulos)",
+      "role": "Περιφερειακός Διοικητής Πυροσβεστικής (Regional Fire Service Commander)",
       "expertise": "strategic_fire_service",
       "experience_years": 26,
       "risk_tolerance": 0.4,
@@ -195,12 +195,12 @@
       },
       "expertise_tags": ["regional_fire_operations", "mutual_aid", "long_duration_incidents", "personnel_management"],
       "confidence_level": 0.88,
-      "description": "Regional fire commander responsible for strategic fire service deployment and mutual aid coordination"
+      "description": "Regional Hellenic Fire Service commander responsible for strategic deployment and inter-regional fire coordination"
     },
     {
       "agent_id": "medical_infrastructure_01",
-      "name": "Dr. Patricia Lee",
-      "role": "Medical Infrastructure Director",
+      "name": "Δρ. Αννα Μητροπούλου (Dr. Anna Mitropoulou)",
+      "role": "Διευθύντρια Υπηρεσίας Υγείας (Health Services Director)",
       "expertise": "healthcare_system_capacity",
       "experience_years": 24,
       "risk_tolerance": 0.3,
@@ -213,12 +213,12 @@
       },
       "expertise_tags": ["hospital_capacity", "surge_operations", "patient_distribution", "medical_supply_chain"],
       "confidence_level": 0.87,
-      "description": "Medical infrastructure director specializing in hospital system capacity and surge operations"
+      "description": "Health services director specializing in hospital system capacity planning and emergency medical surge operations"
     },
     {
       "agent_id": "coastguard_onscene_01",
-      "name": "Commander Steven Blake",
-      "role": "On-Scene Coast Guard Commander",
+      "name": "Πλωτάρχης Χρήστος Λαμπρόπουλος (Commander Christos Lambropoulos)",
+      "role": "Διοικητής Επιχειρησιακού Τμήματος Λιμενικού (Coast Guard Operations Commander)",
       "expertise": "maritime_rescue",
       "experience_years": 18,
       "risk_tolerance": 0.35,
@@ -231,12 +231,12 @@
       },
       "expertise_tags": ["maritime_rescue", "coastal_evacuation", "sea_state_assessment", "SAR_operations"],
       "confidence_level": 0.84,
-      "description": "On-scene Coast Guard commander specializing in maritime rescue and coastal operations"
+      "description": "Hellenic Coast Guard operations commander specializing in maritime search and rescue and coastal emergency operations"
     },
     {
       "agent_id": "coastguard_national_01",
-      "name": "Admiral Rebecca Foster",
-      "role": "National Coast Guard Director",
+      "name": "Αντιναύαρχος Δήμητρα Βλαχάκη (Rear Admiral Dimitra Vlachaki)",
+      "role": "Αρχηγός Λιμενικού Σώματος (Chief of Hellenic Coast Guard)",
       "expertise": "national_maritime_strategy",
       "experience_years": 30,
       "risk_tolerance": 0.4,
@@ -249,7 +249,7 @@
       },
       "expertise_tags": ["national_maritime_policy", "inter_regional_coordination", "port_security", "strategic_assets"],
       "confidence_level": 0.92,
-      "description": "National Coast Guard director responsible for strategic maritime policy and inter-regional coordination"
+      "description": "Chief of Hellenic Coast Guard responsible for national maritime security policy and inter-regional SAR coordination"
     }
   ]
 }

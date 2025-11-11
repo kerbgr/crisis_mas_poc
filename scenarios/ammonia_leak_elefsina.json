@@ -1,0 +1,164 @@
+{
+  "id": "hazmat_001",
+  "type": "hazmat",
+  "name": "Ammonia Leak Emergency - Elefsina",
+  "description": "A major ammonia leak at an industrial facility in Elefsina, near Athens, Greece. A storage tank containing 50 tons of anhydrous ammonia has ruptured, creating a toxic cloud affecting nearby residential areas and the industrial zone. Wind patterns are carrying the plume towards populated areas. Immediate hazmat response, evacuation, and containment are critical.",
+  "severity": 0.85,
+  "affected_population": 12000,
+  "location": {
+    "region": "Elefsina (Eleusis), Attica, Greece",
+    "coordinates": {"lat": 38.0411, "lon": 23.5461}
+  },
+  "tags": ["hazmat", "chemical_leak", "ammonia", "industrial_accident", "toxic_cloud", "evacuation"],
+  "casualties": 8,
+  "infrastructure_damage": false,
+  "available_actions": [
+    {
+      "id": "action_immediate_evacuation_downwind",
+      "name": "Immediate Downwind Evacuation",
+      "description": "Urgent evacuation of all residents and workers in downwind areas within 2km radius, prioritizing schools, hospitals, and high-occupancy buildings",
+      "required_resources": ["evacuation_buses", "police_coordination", "public_warning_systems", "evacuation_centers"],
+      "estimated_duration": "2-4 hours",
+      "risk_level": 0.3,
+      "criteria_scores": {
+        "effectiveness": 0.92,
+        "safety": 0.95,
+        "speed": 0.80,
+        "cost": 0.40,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_hazmat_containment",
+      "name": "HAZMAT Team Source Containment",
+      "description": "Deploy specialized HAZMAT teams in Level A protective suits to isolate the leak source, seal the tank, and prevent further ammonia release",
+      "required_resources": ["hazmat_teams", "level_a_suits", "containment_equipment", "decontamination_units"],
+      "estimated_duration": "3-6 hours",
+      "risk_level": 0.6,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.65,
+        "speed": 0.70,
+        "cost": 0.55,
+        "public_acceptance": 0.90
+      }
+    },
+    {
+      "id": "action_water_curtain_dispersion",
+      "name": "Water Curtain Vapor Suppression",
+      "description": "Deploy fire trucks to create water curtains that absorb and suppress ammonia vapors, reducing plume concentration and protecting downwind areas",
+      "required_resources": ["fire_trucks", "water_supply", "foam_equipment", "meteorological_support"],
+      "estimated_duration": "1-2 hours to setup, continuous operation",
+      "risk_level": 0.5,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.75,
+        "speed": 0.85,
+        "cost": 0.65,
+        "public_acceptance": 0.80
+      }
+    },
+    {
+      "id": "action_shelter_in_place",
+      "name": "Shelter-in-Place with Sealing Instructions",
+      "description": "Instruct residents to shelter indoors, seal windows/doors, turn off ventilation, and await further instructions while monitoring air quality",
+      "required_resources": ["public_warning_systems", "air_quality_monitors", "communication_infrastructure"],
+      "estimated_duration": "4-8 hours",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.65,
+        "safety": 0.70,
+        "speed": 0.95,
+        "cost": 0.85,
+        "public_acceptance": 0.60
+      }
+    },
+    {
+      "id": "action_integrated_response",
+      "name": "Integrated: Containment + Water Curtain + Selective Evacuation",
+      "description": "Simultaneous HAZMAT containment operations, water curtain deployment, and evacuation of most vulnerable populations (schools, hospitals, elderly care)",
+      "required_resources": ["full_hazmat_response", "fire_service", "police_evacuation_teams", "medical_support", "coordination_center"],
+      "estimated_duration": "4-6 hours",
+      "risk_level": 0.35,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.85,
+        "speed": 0.75,
+        "cost": 0.35,
+        "public_acceptance": 0.85
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["limited_level_a_suits", "limited_hazmat_specialists", "water_supply_constraints"],
+    "weather_conditions": "moderate_winds_15kmh_southeast_towards_residential_areas",
+    "accessibility": "industrial_zone_access_limited",
+    "additional_concerns": [
+      "Ammonia plume concentration: 150-300 ppm (IDLH: 300 ppm)",
+      "Wind carrying plume towards schools and residential areas",
+      "Risk of secondary explosions if ammonia contacts ignition sources",
+      "Nearby industrial facilities with other hazardous materials",
+      "Athens-Corinth national highway partially affected",
+      "Port of Elefsina operations suspended"
+    ]
+  },
+  "real_time_factors": {
+    "leak_ongoing": true,
+    "leak_rate": "Estimated 500 kg/hour from ruptured tank valve",
+    "plume_direction": "Southeast towards residential areas",
+    "wind_forecast": "Winds expected to shift to northeast in 4 hours (away from population centers)",
+    "current_evacuations": "School evacuation in progress, 2 buildings cleared",
+    "casualties_reported": 8,
+    "injured_with_exposure": 45,
+    "air_quality_readings": {
+      "downwind_500m": "250 ppm ammonia - dangerous",
+      "downwind_1km": "120 ppm ammonia - evacuation level",
+      "downwind_2km": "45 ppm ammonia - irritation level"
+    }
+  },
+  "metadata": {
+    "created_date": "2025-01-15",
+    "author": "Crisis MAS Greece Scenarios",
+    "version": "1.0",
+    "scenario_complexity": "very_high",
+    "recommended_expert_domains": ["hazmat", "fire_rescue", "medical", "public_safety", "environmental", "meteorology"]
+  },
+
+  "expert_selection": {
+    "crisis_type": "hazmat",
+    "crisis_subtypes": ["chemical_leak", "toxic_gas", "industrial_accident", "evacuation"],
+    "severity": 0.85,
+    "geographic_scope": "local_regional",
+    "geographic_location": "industrial_urban_interface",
+    "affected_populations": 12000,
+    "duration_estimated_hours": 8,
+    "affected_domains": [
+      "fire_rescue",
+      "medical_health",
+      "law_enforcement",
+      "weather_environment",
+      "emergency_communications"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": false,
+      "multi_jurisdictional": true,
+      "hazmat_specialist": true
+    },
+    "infrastructure_systems": [
+      "roads",
+      "communications",
+      "water_supply",
+      "industrial_facilities"
+    ],
+    "hazmat_specific": {
+      "chemical": "Anhydrous Ammonia (NH3)",
+      "un_number": "UN1005",
+      "hazard_class": "2.3 (Toxic Gas) + 8 (Corrosive)",
+      "idlh": "300 ppm",
+      "protection_required": "Level A HAZMAT suits",
+      "decontamination_needed": true
+    }
+  }
+}
