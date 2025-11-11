@@ -101,6 +101,10 @@ class BeliefDistribution(BaseModel):
         """Allow dict.items() style access."""
         return self.beliefs.items()
 
+    def __len__(self) -> int:
+        """Return number of alternatives in the distribution."""
+        return len(self.beliefs)
+
 
 class Alternative(BaseModel):
     """
@@ -239,6 +243,10 @@ class AgentAssessment(BaseModel):
     def __contains__(self, key: str) -> bool:
         """Check if key exists (dict-like interface)."""
         return hasattr(self, key)
+
+    def __len__(self) -> int:
+        """Return number of fields in the assessment."""
+        return len(self.model_dump())
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -382,6 +390,10 @@ class LLMResponse(BaseModel):
         Provides backward compatibility with 'key in response' checks.
         """
         return hasattr(self, key)
+
+    def __len__(self) -> int:
+        """Return number of fields in the response."""
+        return len(self.model_dump())
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to plain dictionary."""
