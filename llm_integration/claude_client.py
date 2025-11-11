@@ -624,12 +624,12 @@ class ClaudeClient:
             # Fallback to plain dict for backward compatibility
             return parsed_data
 
-    def validate_response(self, response: Dict[str, Any], expected_keys: List[str]) -> bool:
+    def validate_response(self, response: Union[Dict[str, Any], LLMResponse], expected_keys: List[str]) -> bool:
         """
         Validate that response contains all expected keys.
 
         Args:
-            response: Parsed response dictionary
+            response: Parsed response (dict or LLMResponse Pydantic model)
             expected_keys: List of required keys
 
         Returns:
@@ -642,9 +642,12 @@ class ClaudeClient:
             >>> client.validate_response(response, expected)
             False  # Missing 'key_concerns'
         """
-        if not isinstance(response, dict):
-            logger.warning(f"Response is not a dictionary: {type(response)}")
-            return False
+        # Accept both dict and LLMResponse (dict-like Pydantic model)
+        if not isinstance(response, (dict, LLMResponse)):
+            # Check if it has dict-like interface (supports __contains__)
+            if not hasattr(response, '__contains__'):
+                logger.warning(f"Response is not dict-like: {type(response)}")
+                return False
 
         missing_keys = [key for key in expected_keys if key not in response]
 
