@@ -370,6 +370,88 @@ python main.py \
   --verbose
 ```
 
+### Greek Crisis Scenarios
+
+The system includes three realistic Greek crisis scenarios with localized expert agents:
+
+#### Example 10: Karditsa Flood Emergency
+
+```bash
+# Run the Karditsa flood scenario with automatic expert selection
+python main.py --scenario scenarios/flood_scenario.json --expert-selection auto --output-dir results/karditsa_flood
+
+# With all experts manually specified
+python main.py \
+  --scenario scenarios/flood_scenario.json \
+  --agents all \
+  --output results/karditsa_flood_results.json \
+  --verbose
+```
+
+**Scenario Details:**
+- **Location:** Karditsa, Thessaly, Greece (Pamisos River overflow)
+- **Severity:** 0.8 (High)
+- **Affected Population:** 15,000
+- **Key Challenges:** Residential flooding, agricultural damage, infrastructure threats
+- **Greek Experts:** Πολιτική Προστασία, ΕΚΑΒ, ΕΛΑΣ, Πυροσβεστική
+
+#### Example 11: Evia Forest Fire Emergency
+
+```bash
+# Run the Evia forest fire scenario with automatic expert selection
+python main.py --scenario scenarios/forest_fire_evia.json --expert-selection auto --output-dir results/evia_fire
+
+# With specific fire response team
+python main.py \
+  --scenario scenarios/forest_fire_evia.json \
+  --agents fire_onscene_01 fire_regional_01 agent_meteorologist coastguard_onscene_01 \
+  --output results/evia_fire_results.json \
+  --verbose
+```
+
+**Scenario Details:**
+- **Location:** North Evia island, Central Greece
+- **Severity:** 0.9 (Very High)
+- **Affected Population:** 8,000
+- **Burned Area:** 12,000 hectares
+- **Key Challenges:** Multiple fire fronts, strong winds, village evacuations, aerial operations
+- **Resources:** Canadair CL-415, Chinook helicopters, ground fire crews
+- **Greek Experts:** Πυροσβεστική (Fire Service), Λιμενικό (Coast Guard), Μετεωρολόγος
+
+#### Example 12: Elefsina Ammonia Leak (HAZMAT)
+
+```bash
+# Run the Elefsina ammonia leak scenario with automatic expert selection
+python main.py --scenario scenarios/ammonia_leak_elefsina.json --expert-selection auto --output-dir results/elefsina_hazmat
+
+# With HAZMAT-focused team
+python main.py \
+  --scenario scenarios/ammonia_leak_elefsina.json \
+  --agents fire_onscene_01 medical_expert_01 police_onscene_01 agent_meteorologist \
+  --output results/elefsina_hazmat_results.json \
+  --verbose
+```
+
+**Scenario Details:**
+- **Location:** Elefsina industrial zone, near Athens, Greece
+- **Severity:** 0.85 (Very High)
+- **Affected Population:** 12,000
+- **Chemical:** 50-ton anhydrous ammonia (NH3) tank rupture - UN1005, Class 2.3 toxic gas
+- **IDLH Level:** 300 ppm (current readings: 150-300 ppm downwind)
+- **Key Challenges:** Toxic cloud dispersion, Level A HAZMAT operations, water curtain suppression, evacuation
+- **Greek Experts:** Πυροσβεστική HAZMAT teams, ΕΚΑΒ emergency medicine, ΕΛΑΣ evacuation coordination
+
+#### Example 13: Compare All Three Greek Scenarios
+
+```bash
+# Run all three scenarios and compare results
+python main.py --scenario scenarios/flood_scenario.json --expert-selection auto --output results/karditsa_results.json
+python main.py --scenario scenarios/forest_fire_evia.json --expert-selection auto --output results/evia_results.json
+python main.py --scenario scenarios/ammonia_leak_elefsina.json --expert-selection auto --output results/elefsina_results.json
+
+# Results will be saved in separate files for comparison
+```
+
 ### Expert Roles
 
 The Crisis MAS system includes **11 expert roles** organized in a comprehensive emergency response command structure. The system is designed with backward compatibility - by default it uses 3 core experts, but can scale to the full 11-agent team.
