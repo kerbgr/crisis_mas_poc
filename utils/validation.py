@@ -544,8 +544,9 @@ Future Enhancements:
 
 import json
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, Union
 from pathlib import Path
+from models.data_models import LLMResponse
 
 logger = logging.getLogger(__name__)
 
@@ -846,25 +847,28 @@ class DataValidator:
 
     @staticmethod
     def validate_llm_response(
-        response: Dict[str, Any],
+        response: Union[Dict[str, Any], LLMResponse],
         expected_keys: Optional[List[str]] = None
     ) -> Tuple[bool, Optional[str]]:
         """
         Validate LLM response structure.
 
         Args:
-            response: LLM response dictionary
+            response: LLM response (dict or LLMResponse Pydantic model)
             expected_keys: Optional list of required keys
 
         Returns:
             Tuple of (is_valid, error_message)
         """
         try:
-            if not isinstance(response, dict):
-                return False, f"Response must be a dictionary, got {type(response).__name__}"
+            # Accept both dict and LLMResponse (dict-like Pydantic model)
+            if not isinstance(response, (dict, LLMResponse)):
+                # Check if it has dict-like interface (supports __contains__)
+                if not hasattr(response, '__contains__'):
+                    return False, f"Response must be dict-like, got {type(response).__name__}"
 
             # Check for error in response
-            if 'error' in response and response['error']:
+            if 'error' in response and response.get('error'):
                 error_msg = response.get('error_message', 'Unknown error')
                 return False, f"LLM response contains error: {error_msg}"
 
