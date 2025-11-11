@@ -1,4 +1,4 @@
-# A Multi-Agent System (MAS) for crisis management and decision-making
+# A Multi-Agent System (MAS) for Crisis Management and Decision-Making
 
 A Proof-of-concept system demonstrating the application of **Multi-Agent Systems (MAS)** to crisis management decision-making, developed as part of a Master's thesis in Operational Research & Decision Making with the title:
 
