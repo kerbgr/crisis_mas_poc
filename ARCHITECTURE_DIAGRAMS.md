@@ -23,12 +23,15 @@ graph TB
 
     subgraph "Agent Layer"
         BA[BaseAgent]
-        EA1[Medical Expert]
-        EA2[Logistics Expert]
-        EA3[Safety Expert]
-        EA4[Environmental Expert]
+        EA1[Dr. Dimitris Nikolaou<br/>Medical Expert EKAB]
+        EA2[Katerina Georgiou<br/>Logistics - Civil Protection]
+        EA3[Dr. Eleni Papadopoulou<br/>Meteorologist]
+        EA4[Dr. Sofia Karagianni<br/>Environmental Scientist]
+        EA5[Brigadier Nikos Konstantinou<br/>Police Tactical]
+        EA6[Pyragos Ioanna Michaelidou<br/>Fire Tactical]
+        EA7[Commander Maria Papadimitriou<br/>EKAB/PSAP Director]
         RT[ReliabilityTracker]
-        PROFILES[Agent Profiles JSON]
+        PROFILES[Agent Profiles JSON<br/>13 Greek Experts]
     end
 
     subgraph "Decision Framework Layer"
@@ -56,8 +59,8 @@ graph TB
     CLI --> COORD
     JSON_IN --> COORD
     COORD --> ORCH
-    ORCH --> EA1 & EA2 & EA3 & EA4
-    EA1 & EA2 & EA3 & EA4 -.inherits.-> BA
+    ORCH --> EA1 & EA2 & EA3 & EA4 & EA5 & EA6 & EA7
+    EA1 & EA2 & EA3 & EA4 & EA5 & EA6 & EA7 -.inherits.-> BA
     BA --> RT
     BA --> PROFILES
 
@@ -67,7 +70,7 @@ graph TB
     CONSENSUS --> CONS_BUILD
     CONS_BUILD --> MCDA
 
-    EA1 & EA2 & EA3 & EA4 --> LLM_INT
+    EA1 & EA2 & EA3 & EA4 & EA5 & EA6 & EA7 --> LLM_INT
     LLM_INT --> CLAUDE & OPENAI & LMSTUDIO
     LLM_INT --> PROMPTS
 
@@ -93,17 +96,18 @@ graph TB
 sequenceDiagram
     participant User
     participant Coordinator
-    participant Medical as Medical Expert
-    participant Logistics as Logistics Expert
-    participant Safety as Safety Expert
-    participant Environment as Environment Expert
+    participant Medical as Dr. Dimitris Nikolaou<br/>(Medical - EKAB)
+    participant Logistics as Katerina Georgiou<br/>(Logistics)
+    participant Meteo as Dr. Eleni Papadopoulou<br/>(Meteorologist)
+    participant Police as Brigadier Konstantinou<br/>(Police)
+    participant Fire as Pyragos Michaelidou<br/>(Fire)
     participant GAT as GAT Aggregator
     participant MCDA as MCDA Engine
     participant Consensus
 
-    User->>Coordinator: Submit Crisis Scenario
+    User->>Coordinator: Submit Crisis Scenario<br/>(Karditsa/Evia/Elefsina)
 
-    Note over Coordinator: Distribute to Experts
+    Note over Coordinator: Distribute to Greek Experts
 
     par Parallel Agent Evaluation
         Coordinator->>Medical: evaluate_scenario()
@@ -116,15 +120,20 @@ sequenceDiagram
         Logistics->>Logistics: Generate Belief Distribution
         Logistics-->>Coordinator: {belief, confidence, reasoning}
 
-        Coordinator->>Safety: evaluate_scenario()
-        Safety->>Safety: LLM Reasoning
-        Safety->>Safety: Generate Belief Distribution
-        Safety-->>Coordinator: {belief, confidence, reasoning}
+        Coordinator->>Meteo: evaluate_scenario()
+        Meteo->>Meteo: LLM Reasoning
+        Meteo->>Meteo: Generate Belief Distribution
+        Meteo-->>Coordinator: {belief, confidence, reasoning}
 
-        Coordinator->>Environment: evaluate_scenario()
-        Environment->>Environment: LLM Reasoning
-        Environment->>Environment: Generate Belief Distribution
-        Environment-->>Coordinator: {belief, confidence, reasoning}
+        Coordinator->>Police: evaluate_scenario()
+        Police->>Police: LLM Reasoning
+        Police->>Police: Generate Belief Distribution
+        Police-->>Coordinator: {belief, confidence, reasoning}
+
+        Coordinator->>Fire: evaluate_scenario()
+        Fire->>Fire: LLM Reasoning
+        Fire->>Fire: Generate Belief Distribution
+        Fire-->>Coordinator: {belief, confidence, reasoning}
     end
 
     Note over Coordinator: Aggregate Beliefs
@@ -150,6 +159,65 @@ sequenceDiagram
         Coordinator->>Medical: Refine Assessment
         Note over Coordinator: Repeat until consensus or max iterations
     end
+```
+
+---
+
+## 2b. Greek Crisis Scenarios - Decision Flow
+
+```mermaid
+graph TB
+    USER[User Selects Scenario]
+
+    subgraph "Greek Crisis Scenarios"
+        KARDITSA[Karditsa Flood<br/>Severity: 0.8<br/>15,000 affected]
+        EVIA[Evia Forest Fire<br/>Severity: 0.9<br/>8,000 affected<br/>12,000 ha burned]
+        ELEFSINA[Elefsina Ammonia Leak<br/>Severity: 0.85<br/>12,000 affected<br/>HAZMAT Level A]
+    end
+
+    subgraph "Auto Expert Selection"
+        SELECTOR[ExpertSelector]
+        SCORE[Score 13 Greek Experts]
+
+        subgraph "Selected Experts by Scenario"
+            FLOOD_EXPERTS[Flood: Meteo, Logistics,<br/>Medical, Police, Fire,<br/>Coast Guard, PSAP]
+            FIRE_EXPERTS[Fire: Fire Tactical/Regional,<br/>Meteo, Coast Guard,<br/>Police, Medical, PSAP]
+            HAZMAT_EXPERTS[HAZMAT: Fire HAZMAT,<br/>Medical, Police, Meteo,<br/>Environmental, PSAP]
+        end
+    end
+
+    subgraph "Response Actions"
+        FLOOD_ACTIONS[Flood: Evacuation,<br/>Barriers, Rescue,<br/>Shelter-in-Place, Hybrid]
+        FIRE_ACTIONS[Fire: Aerial Campaign,<br/>Ground Firefighting,<br/>Evacuation, Backburn,<br/>Combined Assault]
+        HAZMAT_ACTIONS[HAZMAT: Evacuation,<br/>Containment, Water Curtain,<br/>Shelter-in-Place, Integrated]
+    end
+
+    USER --> KARDITSA
+    USER --> EVIA
+    USER --> ELEFSINA
+
+    KARDITSA --> SELECTOR
+    EVIA --> SELECTOR
+    ELEFSINA --> SELECTOR
+
+    SELECTOR --> SCORE
+
+    SCORE --> FLOOD_EXPERTS
+    SCORE --> FIRE_EXPERTS
+    SCORE --> HAZMAT_EXPERTS
+
+    FLOOD_EXPERTS --> FLOOD_ACTIONS
+    FIRE_EXPERTS --> FIRE_ACTIONS
+    HAZMAT_EXPERTS --> HAZMAT_ACTIONS
+
+    FLOOD_ACTIONS --> DECISION[Multi-Agent<br/>Decision Process]
+    FIRE_ACTIONS --> DECISION
+    HAZMAT_ACTIONS --> DECISION
+
+    style KARDITSA fill:#bbdefb
+    style EVIA fill:#ffccbc
+    style ELEFSINA fill:#fff9c4
+    style DECISION fill:#99ff99
 ```
 
 ---
@@ -515,15 +583,17 @@ graph TB
     end
 
     subgraph "Phase 2: Individual Assessment"
-        AG1[Medical Expert]
-        AG2[Logistics Expert]
-        AG3[Safety Expert]
-        AG4[Environment Expert]
+        AG1[Dr. Dimitris Nikolaou<br/>Medical - EKAB]
+        AG2[Katerina Georgiou<br/>Logistics]
+        AG3[Dr. Eleni Papadopoulou<br/>Meteorologist]
+        AG4[Brigadier Nikos Konstantinou<br/>Police Tactical]
+        AG5[Pyragos Ioanna Michaelidou<br/>Fire Tactical]
+        AG6[Commander Maria Papadimitriou<br/>EKAB Director]
 
         LLM1[LLM: Claude/OpenAI/<br/>LM Studio]
 
-        AG1 & AG2 & AG3 & AG4 --> LLM1
-        LLM1 --> ASSESS[Generate Assessments:<br/>belief_distribution<br/>confidence<br/>reasoning]
+        AG1 & AG2 & AG3 & AG4 & AG5 & AG6 --> LLM1
+        LLM1 --> ASSESS[Generate Assessments:<br/>Pydantic LLMResponse<br/>belief_distribution<br/>confidence<br/>reasoning]
 
         ASSESS --> RT1[Record Assessment<br/>in ReliabilityTracker]
     end
@@ -569,7 +639,7 @@ graph TB
 
     USER --> COORD1
     COORD1 --> DIST
-    DIST --> AG1 & AG2 & AG3 & AG4
+    DIST --> AG1 & AG2 & AG3 & AG4 & AG5 & AG6
     OUTPUT --> USER
 
     style USER fill:#e1f5ff
@@ -712,7 +782,7 @@ classDiagram
 
 ---
 
-## 11. Expert Selection System (NEW in v0.8)
+## 11. Expert Selection System (v0.8) - 13 Greek Experts
 
 ```mermaid
 flowchart TB
@@ -725,8 +795,8 @@ flowchart TB
 
     MANUAL --> AGENT_ARG{--agents<br/>specified?}
 
-    AGENT_ARG -->|No| DEFAULT_3[Use Default 3 Core Experts:<br/>- Meteorologist<br/>- Logistics<br/>- Medical]
-    AGENT_ARG -->|Yes: 'all'| ALL_11[Select All 11 Experts]
+    AGENT_ARG -->|No| DEFAULT_3[Use Default 3 Core Experts:<br/>- Dr. Eleni Papadopoulou (Meteorologist)<br/>- Katerina Georgiou (Logistics)<br/>- Dr. Dimitris Nikolaou (Medical)]
+    AGENT_ARG -->|Yes: 'all'| ALL_13[Select All 13 Greek Experts]
     AGENT_ARG -->|Yes: specific IDs| CUSTOM[Use Specified Agent IDs]
 
     AUTO --> LOAD_SCENARIO[Load Scenario JSON]
@@ -739,7 +809,11 @@ flowchart TB
 
     EXTRACT_META --> CREATE_SELECTOR[Create ExpertSelector Instance]
 
-    CREATE_SELECTOR --> EVAL_LOOP[Iterate Through 11 Expert Rules]
+    CREATE_SELECTOR --> EVAL_LOOP[Iterate Through 13 Greek Expert Rules]
+
+    subgraph "13 Greek Expert Profiles"
+        EXPERT_LIST[1. Dr. Eleni Papadopoulou - Meteorologist<br/>2. Dr. Dimitris Nikolaou - Medical EKAB<br/>3. Katerina Georgiou - Logistics Civil Protection<br/>4. Maj Gen Giorgos Antoniou - Public Safety<br/>5. Dr. Sofia Karagianni - Environmental<br/>6. Commander Maria Papadimitriou - EKAB/PSAP<br/>7. Brigadier Nikos Konstantinou - Police Tactical<br/>8. Maj Gen Andreas Theodorou - Police Regional<br/>9. Pyragos Ioanna Michaelidou - Fire Tactical<br/>10. Taxiarchos Vasilis Stavropoulos - Fire Regional<br/>11. Dr. Anna Mitropoulou - Medical Infrastructure<br/>12. Plotarchos Christos Lambropoulos - Coast Guard Tactical<br/>13. Rear Admiral Dimitra Vlachaki - Coast Guard National]
+    end
 
     subgraph "Expert Evaluation Loop"
         EVAL_LOOP --> EVAL_EXPERT[Evaluate Expert Against Rules]
@@ -778,31 +852,31 @@ flowchart TB
     VALIDATE_COUNT --> MIN_CHECK{Selected >= 3?}
 
     MIN_CHECK -->|No| ADD_CORE[Add Core Experts to Reach Minimum]
-    MIN_CHECK -->|Yes| MAX_CHECK{Selected <= 11?}
+    MIN_CHECK -->|Yes| MAX_CHECK{Selected <= 13?}
 
     ADD_CORE --> MAX_CHECK
 
-    MAX_CHECK -->|No| TRIM_TOP[Keep Top 11 by Score]
+    MAX_CHECK -->|No| TRIM_TOP[Keep Top 13 by Score]
     MAX_CHECK -->|Yes| FINAL_LIST[Final Agent ID List]
 
     TRIM_TOP --> FINAL_LIST
 
     DEFAULT_3 --> INIT_AGENTS
-    ALL_11 --> INIT_AGENTS
+    ALL_13 --> INIT_AGENTS
     CUSTOM --> INIT_AGENTS
     FINAL_LIST --> LOG_SELECTION{Verbose Mode?}
 
-    LOG_SELECTION -->|Yes| DETAILED_LOG[Log Selection Details:<br/>- Agent IDs<br/>- Scores<br/>- Reasons<br/>- Descriptions]
-    LOG_SELECTION -->|No| BASIC_LOG[Log: Selected N experts]
+    LOG_SELECTION -->|Yes| DETAILED_LOG[Log Selection Details:<br/>- Greek Agent Names<br/>- Scores<br/>- Selection Reasons<br/>- Descriptions]
+    LOG_SELECTION -->|No| BASIC_LOG[Log: Selected N Greek experts]
 
     DETAILED_LOG --> INIT_AGENTS
     BASIC_LOG --> INIT_AGENTS
 
-    INIT_AGENTS --> LOAD_PROFILES[Load Agent Profiles from<br/>agents/agent_profiles.json]
+    INIT_AGENTS --> LOAD_PROFILES[Load Agent Profiles from<br/>agents/agent_profiles.json<br/>13 Greek Emergency Response Experts]
 
-    LOAD_PROFILES --> CREATE_AGENTS[Create ExpertAgent Instances<br/>with LLM Clients]
+    LOAD_PROFILES --> CREATE_AGENTS[Create ExpertAgent Instances<br/>with LLM Clients<br/>Pydantic Validation]
 
-    CREATE_AGENTS --> READY([Experts Ready for<br/>Crisis Assessment])
+    CREATE_AGENTS --> READY([Greek Experts Ready for<br/>Crisis Assessment])
 
     %% Styling
     classDef inputClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
@@ -817,18 +891,21 @@ flowchart TB
     class LOAD_SCENARIO,EXTRACT_META,CREATE_SELECTOR,EVAL_EXPERT,SCORE_CALC,TOTAL_SCORE,VALIDATE_COUNT,FINAL_LIST,LOG_SELECTION,LOAD_PROFILES,CREATE_AGENTS processClass
     class MODE_CHECK,CHECK_META,AGENT_ARG,CHECK_INCLUDE,NEXT_EXPERT,MIN_CHECK,MAX_CHECK decisionClass
     class AUTO,EVAL_LOOP,ADD_SELECTED,ADD_CORE,TRIM_TOP,DETAILED_LOG,BASIC_LOG autoClass
-    class MANUAL,DEFAULT_3,ALL_11,CUSTOM,FALLBACK manualClass
+    class MANUAL,DEFAULT_3,ALL_13,CUSTOM,FALLBACK manualClass
     class SC1,SC2,SC3,SC4,SC5,SC6,SC7,SC8,SC9,SC10,SC11 criteriaClass
     class INIT_AGENTS,READY outputClass
 ```
 
 **Key Features:**
+- **13 Greek Emergency Response Experts** with authentic names (Greeklish)
+- **Greek Crisis Scenarios:** Karditsa Flood, Evia Fire, Elefsina HAZMAT
 - **Backward Compatible:** Manual mode with 3 core experts remains default
-- **Automatic Selection:** Rule-based scoring system evaluates 11 experts against scenario metadata
+- **Automatic Selection:** Rule-based scoring system evaluates all 13 experts
+- **Pydantic Validation:** All responses validated with Pydantic models
 - **Intelligent Scoring:** 11 different criteria with weighted point values
 - **Fallback Protection:** Missing metadata falls back to core 3 experts
-- **Validation:** Ensures minimum 3, maximum 11 experts selected
-- **Transparency:** Verbose mode shows scoring rationale
+- **Validation:** Ensures minimum 3, maximum 13 experts selected
+- **Transparency:** Verbose mode shows Greek expert scoring rationale
 
 ---
 
@@ -856,6 +933,8 @@ All diagrams are in Mermaid format and will render automatically on GitHub, GitL
 
 ---
 
-**Generated:** 2025-11-07
-**System:** Crisis Management Multi-Agent System
-**Version:** 1.0
+**Generated:** 2025-11-12
+**System:** Crisis Management Multi-Agent System (Greek Emergency Response Edition)
+**Version:** 0.8
+**Greek Scenarios:** Karditsa Flood | Evia Forest Fire | Elefsina Ammonia Leak
+**Greek Experts:** 13 Emergency Response Professionals
