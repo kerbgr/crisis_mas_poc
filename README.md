@@ -2218,7 +2218,6 @@ If you use this work in your research, please cite:
 
 ## Acknowledgments
 
-- **Anthropic** for providing the Claude API and excellent documentation
 - **Thesis Advisors** at Technical University of Crete for guidance and feedback
 - **Crisis Management Experts** who provided domain knowledge for validation
 - **Open Source Community** for foundational libraries (NumPy, Matplotlib, pytest)
@@ -2245,6 +2244,6 @@ For academic use, please cite the associated Master's thesis (see Citation secti
 
 ---
 
-**README Version:** 2.0.0
-**Last Updated:** November 6, 2025
+**README Version:** 1.0.0
+**Last Updated:** November 12, 2025
 **Document Status:** Complete - Suitable for Thesis Appendix
