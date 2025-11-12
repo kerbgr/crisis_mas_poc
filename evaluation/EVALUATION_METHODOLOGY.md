@@ -2,7 +2,48 @@
 
 ## Overview
 
-This document describes the comprehensive evaluation framework for comparing multi-agent system (MAS) performance against single-agent baseline decisions. The framework addresses critical bugs fixed in commit `09bec4c` that previously made single vs. multi-agent comparisons invalid.
+This document describes the comprehensive evaluation framework for comparing multi-agent system (MAS) performance against single-agent baseline decisions. The framework evaluates the **Greek Emergency Response Multi-Agent System** featuring 13 expert agents responding to realistic Greek crisis scenarios.
+
+The framework addresses critical bugs fixed in commit `09bec4c` that previously made single vs. multi-agent comparisons invalid.
+
+### Greek Crisis Scenarios
+
+The system is evaluated on three realistic Greek crisis scenarios:
+
+1. **Karditsa Flood Emergency** (severity 0.8)
+   - Location: Karditsa, Thessaly, Greece (39.3644°N, 21.9211°E)
+   - 15,000 affected population
+   - Pamisos River overflow with infrastructure damage
+
+2. **Evia Forest Fire Emergency** (severity 0.9)
+   - Location: North Evia, Central Greece (38.9231°N, 23.6578°E)
+   - 8,000 affected population
+   - 12,000 hectares burned, 4 active fire fronts
+   - Canadair CL-415 and Chinook operations
+
+3. **Elefsina Ammonia Leak Emergency** (severity 0.85)
+   - Location: Elefsina (Eleusis), Attica, Greece (38.0411°N, 23.5461°E)
+   - 12,000 affected population
+   - UN1005 Anhydrous Ammonia leak (HAZMAT)
+   - Toxic gas evacuation and decontamination
+
+### Greek Expert Agents (13 Total)
+
+The multi-agent system includes authentic Greek emergency response experts:
+
+- **Dr. Dimitris Nikolaou** - Medical Expert (EKAB Emergency Physician)
+- **Katerina Georgiou** - Logistics Coordinator (Civil Protection)
+- **Dr. Eleni Papadopoulou** - Meteorologist
+- **Dr. Sofia Karagianni** - Environmental Scientist
+- **Taxiarchos Nikos Konstantinou** - Police Tactical Commander (ELAS)
+- **Pyragos Ioanna Michaelidou** - Fire Tactical Commander (Hellenic Fire Corps)
+- **Plotarchos Andreas Papadakis** - Coast Guard Operations (Hellenic Coast Guard)
+- **Dr. Georgios Athanasiou** - Civil Engineer (Infrastructure)
+- **Antonia Vassiliou** - Mental Health Expert (Psychologist)
+- **Commander Maria Papadimitriou** - EKAB/PSAP Director (Emergency Operations)
+- **Dr. Stavros Nikolaidis** - Public Health Officer (EODY)
+- **Theodoros Makris** - Volunteer Coordinator (Hellenic Red Cross)
+- **Konstantinos Petrou** - Disaster Recovery Specialist (Civil Protection)
 
 ---
 
@@ -154,19 +195,19 @@ $$\cos(\mathbf{m}_i, \mathbf{m}_j) = \frac{\sum_{a \in \mathcal{A}} m_i(a) \cdot
 - $\mathcal{A}$ = set of alternatives
 - $m_i(a)$ = agent $i$'s belief mass for alternative $a$
 
-**Example:**
+**Example (Karditsa Flood Scenario):**
 
 ```python
 agent_beliefs = {
-    'agent1': {'alt1': 0.6, 'alt2': 0.3, 'alt3': 0.1},
-    'agent2': {'alt1': 0.7, 'alt2': 0.2, 'alt3': 0.1},
-    'agent3': {'alt1': 0.5, 'alt2': 0.4, 'alt3': 0.1}
+    'Dr. Dimitris Nikolaou (Medical)': {'evacuate_hospital': 0.6, 'shelter_in_place': 0.3, 'partial_evac': 0.1},
+    'Katerina Georgiou (Logistics)': {'evacuate_hospital': 0.7, 'shelter_in_place': 0.2, 'partial_evac': 0.1},
+    'Pyragos Ioanna Michaelidou (Fire)': {'evacuate_hospital': 0.5, 'shelter_in_place': 0.4, 'partial_evac': 0.1}
 }
 
 # Pairwise similarities:
-# cos(m1, m2) = 0.987
-# cos(m1, m3) = 0.954
-# cos(m2, m3) = 0.921
+# cos(Dimitris, Katerina) = 0.987
+# cos(Dimitris, Ioanna) = 0.954
+# cos(Katerina, Ioanna) = 0.921
 
 # Consensus:
 CL = (0.987 + 0.954 + 0.921) / 3 = 0.954
@@ -178,12 +219,12 @@ CL = (0.987 + 0.954 + 0.921) / 3 = 0.954
 {
   "consensus_level": 0.954,
   "pairwise_similarities": {
-    "agent1_agent2": 0.987,
-    "agent1_agent3": 0.954,
-    "agent2_agent3": 0.921
+    "Dimitris_Katerina": 0.987,
+    "Dimitris_Ioanna": 0.954,
+    "Katerina_Ioanna": 0.921
   },
   "agreement_percentage": 1.0,
-  "top_preference": "alt1",
+  "top_preference": "evacuate_hospital",
   "num_agents": 3
 }
 ```
@@ -280,21 +321,23 @@ $$\text{Diversity} = \frac{|\{a^*_1, a^*_2, \ldots, a^*_n\}|}{n}$$
 
 Number of unique top preferences divided by total agents.
 
-**Output Format:**
+**Output Format (Evia Forest Fire - 6 Agents Selected):**
 
 ```json
 {
   "balance_score": 0.923,
   "participation_distribution": {
-    "agent1": 0.75,
-    "agent2": 0.68,
-    "agent3": 0.82,
-    "agent4": 0.71
+    "Dr. Dimitris Nikolaou": 0.75,
+    "Pyragos Ioanna Michaelidou": 0.82,
+    "Katerina Georgiou": 0.68,
+    "Dr. Eleni Papadopoulou": 0.78,
+    "Taxiarchos Nikos Konstantinou": 0.71,
+    "Commander Maria Papadimitriou": 0.80
   },
-  "diversity_score": 0.75,
+  "diversity_score": 0.67,
   "gini_coefficient": 0.077,
-  "unique_preferences": 3,
-  "num_agents": 4
+  "unique_preferences": 4,
+  "num_agents": 6
 }
 ```
 
@@ -474,32 +517,40 @@ Decision → calculate_decision_quality() → DQS
 Baseline → calculate_decision_quality() → DQS
 ```
 
-### Code Example
+### Code Example (Elefsina Ammonia Leak Scenario)
 
 ```python
 from evaluation.metrics import MetricsEvaluator
 
 evaluator = MetricsEvaluator()
 
-# Calculate multi-agent decision quality
+# Criteria for HAZMAT response decision
+criteria_weights = {
+    'safety': 0.5,           # Public safety priority
+    'response_speed': 0.3,   # Toxic gas requires fast action
+    'resource_efficiency': 0.2
+}
+
+# Calculate multi-agent decision quality (13 Greek experts available)
 multi_dqs = evaluator.calculate_decision_quality(
-    decision=multi_agent_decision,
-    criteria_weights={'safety': 0.4, 'cost': 0.3, 'speed': 0.3}
+    decision=multi_agent_decision,  # From 5-7 selected experts
+    criteria_weights=criteria_weights
 )
 
-# Calculate single-agent decision quality
+# Calculate single-agent baseline (Dr. Dimitris Nikolaou only)
 single_dqs = evaluator.calculate_decision_quality(
     decision=single_agent_decision,
-    criteria_weights={'safety': 0.4, 'cost': 0.3, 'speed': 0.3}
+    criteria_weights=criteria_weights
 )
 
-# Compare
+# Compare multi-agent vs single-agent performance
 comparison = evaluator.compare_to_baseline(
     {'decision_quality': multi_dqs},
     {'decision_quality': single_dqs}
 )
 
-print(f"Improvement: {comparison['decision_quality']['improvement_percentage']:.1f}%")
+print(f"MAS vs Single-Agent Improvement: {comparison['decision_quality']['improvement_percentage']:.1f}%")
+print(f"Consensus Level: {multi_agent_decision.get('consensus_level', 'N/A')}")
 ```
 
 ---
@@ -537,11 +588,54 @@ Expected output:
 - `evaluation/metrics.py` - Implementation
 - `agents/coordinator_agent.py` - Multi-agent decision generation
 - `agents/expert_agent.py` - Single-agent assessment
+- `agents/agent_profiles.json` - 13 Greek expert profiles
+- `models/data_models.py` - Pydantic models (LLMResponse, BeliefDistribution, AgentAssessment)
+- `llm_integration/lmstudio_client.py` - LM Studio client with JSON cleaning
+- `llm_integration/claude_client.py` - Claude API client
+- `llm_integration/openai_client.py` - OpenAI API client
+- `scenarios/flood_scenario.json` - Karditsa flood scenario
+- `scenarios/forest_fire_evia.json` - Evia forest fire scenario
+- `scenarios/ammonia_leak_elefsina.json` - Elefsina ammonia leak scenario
 - `test_evaluation_fix.py` - Test suite
 
 ---
 
 ## Changelog
+
+### v2.1.0 (2025-11-12) - Greek Emergency Response Edition
+
+**New Features:**
+- **13 Greek Expert Agents:** Authentic Greek emergency response professionals with Greek names and ranks
+  - Medical: Dr. Dimitris Nikolaou (EKAB), Dr. Stavros Nikolaidis (EODY), Antonia Vassiliou (Mental Health)
+  - Tactical: Taxiarchos Nikos Konstantinou (ELAS Police), Pyragos Ioanna Michaelidou (Fire), Plotarchos Andreas Papadakis (Coast Guard)
+  - Coordination: Commander Maria Papadimitriou (EKAB Director), Katerina Georgiou (Civil Protection Logistics)
+  - Specialists: Dr. Eleni Papadopoulou (Meteorology), Dr. Sofia Karagianni (Environment), Dr. Georgios Athanasiou (Civil Engineering)
+  - Support: Theodoros Makris (Red Cross), Konstantinos Petrou (Disaster Recovery)
+
+- **Three Greek Crisis Scenarios:**
+  - Karditsa Flood Emergency (Thessaly, severity 0.8)
+  - Evia Forest Fire Emergency (Central Greece, severity 0.9)
+  - Elefsina Ammonia Leak HAZMAT Emergency (Attica, severity 0.85)
+
+**Technical Improvements:**
+- **Pydantic Model Validation:** LLMResponse, BeliefDistribution, and AgentAssessment now implement dict-like interfaces
+  - Added `__len__()`, `__getitem__()`, `__setitem__()`, `__contains__()` methods
+  - Support for `Union[Dict, LLMResponse]` in all validation functions
+- **JSON Parsing Robustness:** Clean trailing commas from LM Studio responses
+- **Greeklish Support:** Converted Greek characters to Latin alphabet for LLM compatibility
+- **Role Mapping Fix:** Updated agent role names to match LLM prompt template expectations
+
+**Documentation:**
+- Updated all examples to use Greek expert names and scenarios
+- Added Greek crisis scenario details with coordinates and severity levels
+- Updated architecture diagrams to reflect 13-expert system
+- Enhanced README with Greek scenario usage examples
+
+**Evaluation Updates:**
+- Examples now use realistic Greek emergency response decisions
+- Multi-agent evaluations test 13-expert pool with 5-7 expert selection
+- Consensus metrics validated on Greek expert belief distributions
+- Criteria weights reflect Greek emergency response priorities (safety-first approach)
 
 ### v2.0.1 (2025-01-09) - Fixed DQS Fallback Logic
 
