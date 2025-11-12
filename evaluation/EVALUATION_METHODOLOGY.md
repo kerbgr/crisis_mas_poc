@@ -72,17 +72,17 @@ The multi-agent system includes authentic Greek emergency response experts:
 **Decision Quality Score (DQS)** now properly evaluates criteria satisfaction:
 
 $$\text{DQS} = \begin{cases}
-\frac{1}{|C|} \sum_{c \in C} s_c(a^*) & \text{if criteria scores available} \\
-\text{MCDA}(a^*) & \text{if multi-agent with MCDA} \\
-f(a^*) & \text{if only final scores available}
+\frac{1}{|C|} \sum_{c \in C} s_c(a^{*}) & \text{if criteria scores available} \\
+\text{MCDA}(a^{*}) & \text{if multi-agent with MCDA} \\
+f(a^{*}) & \text{if only final scores available}
 \end{cases}$$
 
 Where:
-- $a^*$ = recommended alternative
+- $a^{*}$ = recommended alternative
 - $C$ = set of decision criteria
-- $s_c(a^*)$ = score of alternative $a^*$ on criterion $c$
-- $\text{MCDA}(a^*)$ = MCDA score for alternative $a^*$
-- $f(a^*)$ = final combined score for alternative $a^*$
+- $s_c(a^{*})$ = score of alternative $a^{*}$ on criterion $c$
+- $\text{MCDA}(a^{*})$ = MCDA score for alternative $a^{*}$
+- $f(a^{*})$ = final combined score for alternative $a^{*}$
 
 **Confidence** is now properly separated from quality:
 
@@ -124,7 +124,7 @@ DQS = (0.90 + 0.50 + 0.95) / 3 = 0.783
 ```
 
 Formula:
-$$\text{DQS}_{\text{SA}} = \frac{1}{|C|} \sum_{c \in C} s_c(a^*)$$
+$$\text{DQS}_{\text{SA}} = \frac{1}{|C|} \sum_{c \in C} s_c(a^{*})$$
 
 #### Multi-Agent DQS
 
@@ -142,7 +142,7 @@ DQS = mcda_scores['alt1'] = 0.720
 ```
 
 Formula:
-$$\text{DQS}_{\text{MA}} = \text{MCDA}(a^*)$$
+$$\text{DQS}_{\text{MA}} = \text{MCDA}(a^{*})$$
 
 Where MCDA is calculated using TOPSIS method (see below).
 
@@ -150,7 +150,7 @@ Where MCDA is calculated using TOPSIS method (see below).
 
 If criteria weights $w_c$ are provided:
 
-$$\text{DQS}_{\text{weighted}} = \frac{\sum_{c \in C} w_c \cdot s_c(a^*)}{\sum_{c \in C} w_c}$$
+$$\text{DQS}_{\text{weighted}} = \frac{\sum_{c \in C} w_c \cdot s_c(a^{*})}{\sum_{c \in C} w_c}$$
 
 **Output Format:**
 
@@ -317,7 +317,7 @@ Where:
 
 **Diversity Score:**
 
-$$\text{Diversity} = \frac{|\{a^*_1, a^*_2, \ldots, a^*_n\}|}{n}$$
+$$\text{Diversity} = \frac{|\{a^{*}_1, a^{*}_2, \ldots, a^{*}_n\}|}{n}$$
 
 Number of unique top preferences divided by total agents.
 
@@ -435,7 +435,7 @@ When ground truth is available:
 **Ground Truth Match:**
 
 $$\text{Match} = \begin{cases}
-1 & \text{if } a^* = a_{\text{correct}} \\
+1 & \text{if } a^{*} = a_{\text{correct}} \\
 0 & \text{otherwise}
 \end{cases}$$
 
