@@ -409,6 +409,401 @@ DO NOT include:
 
 ---
 
+## Data Versioning and Provenance Tracking
+
+### Why Data Versioning Matters
+
+**Critical for**:
+- **Reproducibility**: Re-train exact same model later
+- **Regulatory compliance**: EU AI Act requires data provenance
+- **Debugging**: Identify which data caused model issues
+- **Auditing**: Trace model behavior to training data source
+- **Liability protection**: Prove data quality in legal disputes
+
+**Problem without versioning**:
+```
+Training run #1: accuracy 82%
+Training run #2 (one month later): accuracy 75%
+
+Question: What changed?
+Answer: Unknown - no way to reproduce training run #1
+```
+
+**Solution**: Version control for datasets (like Git for code)
+
+---
+
+### Dataset Versioning System
+
+**Implementation**:
+
+```python
+# tools/data_versioning.py
+
+import hashlib
+import json
+from datetime import datetime
+from pathlib import Path
+
+class DatasetVersion:
+    """Track dataset versions with cryptographic hashing."""
+
+    def __init__(self, dataset_path):
+        self.dataset_path = Path(dataset_path)
+        self.metadata = {
+            "version": "1.0.0",
+            "created_at": datetime.now().isoformat(),
+            "dataset_hash": self._compute_hash(),
+            "num_examples": self._count_examples(),
+            "sources": [],
+            "contributors": [],
+            "validation_status": "pending",
+            "splits": {}
+        }
+
+    def _compute_hash(self):
+        """Compute SHA-256 hash of entire dataset."""
+        hasher = hashlib.sha256()
+
+        with open(self.dataset_path, 'rb') as f:
+            # Read in chunks for large files
+            while chunk := f.read(8192):
+                hasher.update(chunk)
+
+        return hasher.hexdigest()
+
+    def _count_examples(self):
+        """Count number of examples in dataset."""
+        count = 0
+        with open(self.dataset_path, 'r') as f:
+            for line in f:
+                if line.strip():
+                    count += 1
+        return count
+
+    def log_source(self, source_type, source_id, expert_id, expert_credentials, date):
+        """Track data provenance (where data came from)."""
+        self.metadata["sources"].append({
+            "type": source_type,  # "interview", "sop", "aar", "manual", "ai_generated"
+            "id": source_id,
+            "expert": {
+                "id": expert_id,
+                "name": "REDACTED",  # Don't store PII in logs
+                "credentials": expert_credentials,  # "Pyragos, 15 years experience"
+                "verified": True
+            },
+            "collection_date": date,
+            "timestamp": datetime.now().isoformat()
+        })
+
+    def log_validation(self, validator_id, quality_score, issues_found):
+        """Track validation results."""
+        self.metadata["validation"] = {
+            "validator_id": validator_id,
+            "quality_score": quality_score,  # 1-5
+            "issues_found": issues_found,
+            "timestamp": datetime.now().isoformat(),
+            "status": "approved" if quality_score >= 4 else "needs_revision"
+        }
+
+    def create_splits(self, train_ratio=0.8, val_ratio=0.1, test_ratio=0.1, seed=42):
+        """Create reproducible train/val/test splits."""
+        import random
+        random.seed(seed)
+
+        # Load all examples
+        with open(self.dataset_path, 'r') as f:
+            examples = [line.strip() for line in f if line.strip()]
+
+        # Shuffle with fixed seed
+        random.shuffle(examples)
+
+        # Calculate split sizes
+        n = len(examples)
+        train_size = int(n * train_ratio)
+        val_size = int(n * val_ratio)
+
+        # Create splits
+        train = examples[:train_size]
+        val = examples[train_size:train_size + val_size]
+        test = examples[train_size + val_size:]
+
+        # Save splits
+        split_dir = self.dataset_path.parent / "splits" / self.metadata["version"]
+        split_dir.mkdir(parents=True, exist_ok=True)
+
+        self._save_split(split_dir / "train.jsonl", train)
+        self._save_split(split_dir / "val.jsonl", val)
+        self._save_split(split_dir / "test.jsonl", test)
+
+        # Record split hashes
+        self.metadata["splits"] = {
+            "train": {"size": len(train), "hash": self._hash_list(train)},
+            "val": {"size": len(val), "hash": self._hash_list(val)},
+            "test": {"size": len(test), "hash": self._hash_list(test)},
+            "seed": seed
+        }
+
+    def _save_split(self, path, examples):
+        """Save split to file."""
+        with open(path, 'w') as f:
+            for example in examples:
+                f.write(example + '\n')
+
+    def _hash_list(self, items):
+        """Hash a list of strings."""
+        hasher = hashlib.sha256()
+        for item in items:
+            hasher.update(item.encode('utf-8'))
+        return hasher.hexdigest()
+
+    def save_metadata(self):
+        """Save metadata to JSON."""
+        metadata_path = self.dataset_path.parent / f"metadata_v{self.metadata['version']}.json"
+        with open(metadata_path, 'w') as f:
+            json.dump(self.metadata, f, indent=2)
+
+        print(f"✅ Metadata saved: {metadata_path}")
+        print(f"📊 Dataset hash: {self.metadata['dataset_hash']}")
+        print(f"📝 Examples: {self.metadata['num_examples']}")
+
+    def verify_integrity(self):
+        """Verify dataset hasn't been corrupted."""
+        current_hash = self._compute_hash()
+
+        if current_hash == self.metadata["dataset_hash"]:
+            print("✅ Dataset integrity verified (hash matches)")
+            return True
+        else:
+            print("❌ WARNING: Dataset hash mismatch!")
+            print(f"   Expected: {self.metadata['dataset_hash']}")
+            print(f"   Actual:   {current_hash}")
+            return False
+```
+
+**Usage**:
+
+```python
+# Create dataset version
+dataset = DatasetVersion("./firefighter_train.jsonl")
+
+# Log data sources
+dataset.log_source(
+    source_type="interview",
+    source_id="INT-001",
+    expert_id="EXP-042",
+    expert_credentials="Pyragos, Hellenic Fire Corps, 15 years",
+    date="2024-10-15"
+)
+
+dataset.log_source(
+    source_type="sop",
+    source_id="SOP-HFC-2024",
+    expert_id="Official",
+    expert_credentials="Hellenic Fire Corps Official Manual",
+    date="2024-01-01"
+)
+
+# Log validation
+dataset.log_validation(
+    validator_id="VAL-001",
+    quality_score=4.5,
+    issues_found=["2 typos corrected", "1 factual error fixed"]
+)
+
+# Create reproducible splits
+dataset.create_splits(train_ratio=0.8, val_ratio=0.1, test_ratio=0.1, seed=42)
+
+# Save metadata
+dataset.save_metadata()
+
+# Later: verify integrity
+dataset.verify_integrity()
+```
+
+---
+
+### Semantic Versioning for Datasets
+
+Follow **SemVer** (major.minor.patch):
+
+**MAJOR.MINOR.PATCH**
+
+- **MAJOR**: Breaking changes (incompatible format, major content changes)
+  - Example: `1.0.0` → `2.0.0` (changed from Alpaca to ChatML format)
+
+- **MINOR**: New features (added new examples, new categories)
+  - Example: `1.2.0` → `1.3.0` (added 500 HAZMAT examples)
+
+- **PATCH**: Bug fixes (corrected errors, typos)
+  - Example: `1.2.1` → `1.2.2` (fixed 10 factual errors)
+
+**Example Version History**:
+```
+v1.0.0 - Initial release (2,000 examples, firefighting only)
+v1.1.0 - Added police operations (500 examples)
+v1.1.1 - Fixed IDLH value errors (12 corrections)
+v1.2.0 - Added HAZMAT scenarios (300 examples)
+v2.0.0 - Migrated to ChatML format (breaking change)
+v2.1.0 - Added Greek language examples (200 examples)
+```
+
+---
+
+### Provenance Tracking
+
+**Track every example's journey**:
+
+```json
+{
+  "example_id": "FIR-001-042",
+  "content": {
+    "question": "What is the IDLH for ammonia?",
+    "answer": "The IDLH for ammonia (NH3) is 300 ppm..."
+  },
+  "provenance": {
+    "source_type": "expert_interview",
+    "source_id": "INT-005",
+    "expert": {
+      "id": "EXP-042",
+      "credentials": "Pyragos, 15 years, HAZMAT certified",
+      "verification": "Verified by 2 additional experts"
+    },
+    "collection_date": "2024-10-20",
+    "validation": {
+      "validator_1": {"approved": true, "score": 5},
+      "validator_2": {"approved": true, "score": 4}
+    },
+    "modifications": [
+      {
+        "date": "2024-10-25",
+        "type": "typo_fix",
+        "description": "Fixed 'amonia' → 'ammonia'"
+      }
+    ],
+    "inclusion_status": "included_in_training"
+  }
+}
+```
+
+---
+
+### Regulatory Compliance
+
+**EU AI Act Article 10 (Data Governance)** requires:
+
+✅ **Data provenance**: Know where each example came from
+✅ **Quality checks**: Documented validation process
+✅ **Expert verification**: Credentials of contributors
+✅ **Error tracking**: Log all corrections and modifications
+✅ **Bias audits**: Test for demographic/geographic bias
+
+**Implementation**:
+
+```python
+# Compliance report
+def generate_compliance_report(dataset):
+    """Generate EU AI Act Article 10 compliance report."""
+
+    report = {
+        "dataset_id": dataset.metadata["dataset_hash"][:16],
+        "version": dataset.metadata["version"],
+        "total_examples": dataset.metadata["num_examples"],
+
+        "data_sources": {
+            "expert_interviews": sum(1 for s in dataset.metadata["sources"] if s["type"] == "interview"),
+            "official_sops": sum(1 for s in dataset.metadata["sources"] if s["type"] == "sop"),
+            "after_action_reports": sum(1 for s in dataset.metadata["sources"] if s["type"] == "aar"),
+            "validated_ai_generated": sum(1 for s in dataset.metadata["sources"] if s["type"] == "ai_generated")
+        },
+
+        "expert_verification": {
+            "unique_experts": len(set(s["expert"]["id"] for s in dataset.metadata["sources"])),
+            "all_verified": all(s["expert"]["verified"] for s in dataset.metadata["sources"]),
+            "credentials_documented": True
+        },
+
+        "quality_assurance": {
+            "validation_score": dataset.metadata.get("validation", {}).get("quality_score", 0),
+            "issues_resolved": len(dataset.metadata.get("validation", {}).get("issues_found", [])),
+            "approved": dataset.metadata.get("validation", {}).get("status") == "approved"
+        },
+
+        "bias_audit": {
+            "conducted": "bias_audit" in dataset.metadata,
+            "results": dataset.metadata.get("bias_audit", {})
+        },
+
+        "traceability": {
+            "reproducible_splits": "splits" in dataset.metadata,
+            "seed_documented": dataset.metadata.get("splits", {}).get("seed"),
+            "hash_verified": dataset.verify_integrity()
+        }
+    }
+
+    return report
+```
+
+---
+
+### Best Practices
+
+1. **Version Every Release**:
+   ```bash
+   # Before training
+   python tools/data_versioning.py --dataset firefighter_train.jsonl --version 2.1.0
+   ```
+
+2. **Tag in Git**:
+   ```bash
+   git tag dataset-v2.1.0
+   git push --tags
+   ```
+
+3. **Document Changes**:
+   ```markdown
+   # CHANGELOG.md
+
+   ## [2.1.0] - 2024-11-15
+   ### Added
+   - 200 Greek language examples
+   - 50 HAZMAT ammonia leak scenarios
+
+   ### Fixed
+   - Corrected IDLH values for 3 chemicals
+   - Fixed typos in 12 examples
+   ```
+
+4. **Archive Old Versions**:
+   ```bash
+   # Keep copies of all versions
+   datasets/
+   ├── v1.0.0/
+   │   ├── firefighter_train.jsonl
+   │   └── metadata_v1.0.0.json
+   ├── v2.0.0/
+   │   ├── firefighter_train.jsonl
+   │   └── metadata_v2.0.0.json
+   └── v2.1.0/  # Current
+       ├── firefighter_train.jsonl
+       └── metadata_v2.1.0.json
+   ```
+
+5. **Link Dataset to Model**:
+   ```python
+   # model_metadata.json
+   {
+       "model_version": "2.1.0",
+       "training_dataset": {
+           "version": "2.1.0",
+           "hash": "a3f5b9c...",
+           "path": "datasets/v2.1.0/firefighter_train.jsonl"
+       }
+   }
+   ```
+
+---
+
 ## Dataset Templates
 
 See the `dataset_templates/` folder for starter examples:
