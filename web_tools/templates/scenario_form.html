@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit' if scenario else 'Create' }} Scenario - Crisis MAS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shield-fill-check"></i> Crisis MAS - Web Tools
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/scenarios">Scenarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/experts">Experts</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>
+                        <i class="bi bi-{{ 'pencil' if scenario else 'plus-circle' }} text-primary"></i>
+                        {{ 'Edit' if scenario else 'Create New' }} Scenario
+                    </h1>
+                    <a href="/scenarios" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+
+                <!-- Form -->
+                <div class="card shadow">
+                    <div class="card-body">
+                        <form method="POST">
+                            <!-- Question -->
+                            <div class="mb-3">
+                                <label for="question" class="form-label">
+                                    <i class="bi bi-question-circle"></i> Question *
+                                </label>
+                                <textarea class="form-control" id="question" name="question" rows="3" required 
+                                          placeholder="Enter the emergency scenario question...">{{ scenario.question if scenario else '' }}</textarea>
+                                <div class="form-text">
+                                    The question that will be asked to the LLM. Can be in Greek or English.
+                                </div>
+                            </div>
+
+                            <!-- Answer -->
+                            <div class="mb-3">
+                                <label for="answer" class="form-label">
+                                    <i class="bi bi-chat-right-text"></i> Expert Answer *
+                                </label>
+                                <textarea class="form-control" id="answer" name="answer" rows="5" required
+                                          placeholder="Enter the expert's detailed answer...">{{ scenario.answer if scenario else '' }}</textarea>
+                                <div class="form-text">
+                                    The expert's detailed response to the scenario.
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Category -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="category" class="form-label">
+                                        <i class="bi bi-tag"></i> Category *
+                                    </label>
+                                    <select class="form-select" id="category" name="category" required>
+                                        <option value="firefighting" {{ 'selected' if scenario and scenario.category == 'firefighting' else '' }}>Firefighting</option>
+                                        <option value="police" {{ 'selected' if scenario and scenario.category == 'police' else '' }}>Police</option>
+                                        <option value="medical" {{ 'selected' if scenario and scenario.category == 'medical' else '' }}>Medical/EMS</option>
+                                        <option value="search_rescue" {{ 'selected' if scenario and scenario.category == 'search_rescue' else '' }}>Search & Rescue</option>
+                                        <option value="disaster" {{ 'selected' if scenario and scenario.category == 'disaster' else '' }}>Disaster Response</option>
+                                        <option value="general" {{ 'selected' if scenario and scenario.category == 'general' else '' }}>General</option>
+                                    </select>
+                                </div>
+
+                                <!-- Severity -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="severity" class="form-label">
+                                        <i class="bi bi-exclamation-triangle"></i> Severity *
+                                    </label>
+                                    <select class="form-select" id="severity" name="severity" required>
+                                        <option value="low" {{ 'selected' if scenario and scenario.severity == 'low' else '' }}>Low</option>
+                                        <option value="medium" {{ 'selected' if scenario and scenario.severity == 'medium' else '' }}>Medium</option>
+                                        <option value="high" {{ 'selected' if scenario and scenario.severity == 'high' else '' }}>High</option>
+                                        <option value="critical" {{ 'selected' if scenario and scenario.severity == 'critical' else '' }}>Critical</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Location -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="location" class="form-label">
+                                        <i class="bi bi-geo-alt"></i> Location
+                                    </label>
+                                    <input type="text" class="form-control" id="location" name="location"
+                                           value="{{ scenario.location if scenario else '' }}"
+                                           placeholder="Athens, Thessaloniki, etc.">
+                                </div>
+
+                                <!-- Language -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="language" class="form-label">
+                                        <i class="bi bi-translate"></i> Language *
+                                    </label>
+                                    <select class="form-select" id="language" name="language" required>
+                                        <option value="en" {{ 'selected' if scenario and scenario.language == 'en' else '' }}>🇬🇧 English</option>
+                                        <option value="el" {{ 'selected' if scenario and scenario.language == 'el' else '' }}>🇬🇷 Greek</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Resources Required -->
+                            <div class="mb-3">
+                                <label for="resources_required" class="form-label">
+                                    <i class="bi bi-tools"></i> Resources Required
+                                </label>
+                                <input type="text" class="form-control" id="resources_required" name="resources_required"
+                                       value="{{ scenario.resources_required if scenario else '' }}"
+                                       placeholder="Fire trucks, ambulances, police units, etc.">
+                                <div class="form-text">
+                                    Equipment or personnel needed for this scenario.
+                                </div>
+                            </div>
+
+                            <!-- Expert ID -->
+                            <div class="mb-3">
+                                <label for="expert_id" class="form-label">
+                                    <i class="bi bi-person-badge"></i> Expert
+                                </label>
+                                <select class="form-select" id="expert_id" name="expert_id">
+                                    <option value="">-- No expert assigned --</option>
+                                    {% for expert in experts %}
+                                        <option value="{{ expert.id }}" {{ 'selected' if scenario and scenario.expert_id == expert.id else '' }}>
+                                            {{ expert.name }} ({{ expert.role }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">
+                                    The expert who provided this answer.
+                                </div>
+                            </div>
+
+                            <!-- Tags -->
+                            <div class="mb-3">
+                                <label for="tags" class="form-label">
+                                    <i class="bi bi-tags"></i> Tags
+                                </label>
+                                <input type="text" class="form-control" id="tags" name="tags"
+                                       value="{{ scenario.tags | join(', ') if scenario and scenario.tags else '' }}"
+                                       placeholder="fire, emergency, urban, etc. (comma-separated)">
+                                <div class="form-text">
+                                    Keywords for categorization (comma-separated).
+                                </div>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="/scenarios" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-{{ 'save' if scenario else 'plus-circle' }}"></i>
+                                    {{ 'Update' if scenario else 'Create' }} Scenario
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Help Text -->
+                <div class="alert alert-info mt-4">
+                    <i class="bi bi-info-circle"></i> <strong>Tips:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Use clear, specific questions that emergency personnel might encounter</li>
+                        <li>Expert answers should be detailed and actionable</li>
+                        <li>Include bilingual scenarios (Greek and English) for better coverage</li>
+                        <li>Tags help with filtering and organization</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">
+                <i class="bi bi-shield-fill-check"></i> Crisis MAS - LLM Training Web Tools
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
