@@ -16,12 +16,12 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 setup(
     name="llm-training-tools",
     version="1.0.0",
-    author="Crisis MAS Team",
-    author_email="contact@crisis-mas.org",
+    author="kerbgr",
+    author_email="kerbgr@users.noreply.github.com",
     description="Production-ready tools for domain-specific LLM training and deployment",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/crisis-mas-llm-training",
+    url="https://github.com/kerbgr/crisis_mas_poc",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
