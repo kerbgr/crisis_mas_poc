@@ -1,0 +1,44 @@
+[
+  {
+    "id": "scenario_001",
+    "question": "Πώς αντιμετωπίζετε πυρκαγιά σε δασική περιοχή με ισχυρούς ανέμους;",
+    "answer": "Σε συνθήκες ισχυρών ανέμων, η προτεραιότητα είναι η προστασία κατοικημένων περιοχών και η ασφάλεια του προσωπικού. Εφαρμόζουμε τακτική αμυντικής καταπολέμησης: δημιουργούμε αντιπυρικές ζώνες, χρησιμοποιούμε εναέρια μέσα για έλεγχο της εξάπλωσης, και εκκενώνουμε κατοίκους εγκαίρως. Αποφεύγουμε επιθετική τακτική όταν οι άνεμοι ξεπερνούν τα 40 km/h.",
+    "category": "firefighting",
+    "location": "Athens Region",
+    "severity": "high",
+    "resources_required": "Fire trucks, aerial support, evacuation teams",
+    "expert_id": "expert_001",
+    "language": "el",
+    "tags": ["wildfire", "emergency", "evacuation"],
+    "created_at": "2024-11-14T10:00:00",
+    "updated_at": "2024-11-14T10:00:00"
+  },
+  {
+    "id": "scenario_002",
+    "question": "What is the protocol for a multi-vehicle accident on the highway?",
+    "answer": "First, secure the scene by positioning emergency vehicles to protect the area. Request immediate backup including police and additional ambulances. Conduct rapid triage to identify critical patients using START triage method. Establish a treatment area upwind from any hazardous materials. Coordinate with traffic police for road closure and diversion. Document all patient transfers and maintain communication with receiving hospitals.",
+    "category": "medical",
+    "location": "National Highway",
+    "severity": "critical",
+    "resources_required": "Multiple ambulances, police units, fire department, medical helicopter",
+    "expert_id": "expert_002",
+    "language": "en",
+    "tags": ["highway", "trauma", "triage", "multi-casualty"],
+    "created_at": "2024-11-14T11:00:00",
+    "updated_at": "2024-11-14T11:00:00"
+  },
+  {
+    "id": "scenario_003",
+    "question": "Ποια είναι η διαδικασία εκκένωσης κτιρίου κατά τη διάρκεια σεισμού;",
+    "answer": "Κατά τη διάρκεια σεισμού, οι πολίτες πρέπει να προστατευτούν (drop, cover, hold on). Μετά, διευθύνουμε οργανωμένη εκκένωση: ελέγχουμε για δομικές ζημιές, κλείνουμε κεντρικούς διακόπτες φυσικού αερίου, χρησιμοποιούμε σκάλες (όχι ανελκυστήρες), συγκεντρώνουμε κόσμο σε προκαθορισμένα ασφαλή σημεία. Καταγράφουμε τραυματίες και ελέγχουμε για εγκλωβισμένους.",
+    "category": "police",
+    "location": "Urban Areas",
+    "severity": "high",
+    "resources_required": "Police units, structural engineers, search and rescue teams",
+    "expert_id": "expert_003",
+    "language": "el",
+    "tags": ["earthquake", "evacuation", "public safety"],
+    "created_at": "2024-11-14T12:00:00",
+    "updated_at": "2024-11-14T12:00:00"
+  }
+]
