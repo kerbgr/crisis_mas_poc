@@ -1,6 +1,8 @@
 """
 Web Tools for Crisis MAS - LLM Training
 User-friendly web interface for managing scenarios and expert profiles
+
+Author: kerbgr
 """
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import json
