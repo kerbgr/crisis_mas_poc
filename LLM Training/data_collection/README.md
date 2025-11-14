@@ -873,6 +873,719 @@ You have a good dataset when:
 
 ---
 
+## Inter-Rater Reliability Metrics
+
+### Why Measure Agreement Between Experts?
+
+**Problem**: When multiple experts review the same data, they may disagree. High disagreement = unreliable training data.
+
+**Goal**: Quantify expert agreement to ensure data quality
+
+**Impact**:
+- Low agreement (Kappa <0.4) → Unreliable data, model will learn inconsistent patterns
+- High agreement (Kappa >0.7) → Reliable data, confident model training
+
+---
+
+### Cohen's Kappa (Two Experts)
+
+**Use when**: Two experts independently rate the same set of examples
+
+**Formula**: Measures agreement beyond random chance
+
+```python
+# tools/inter_rater_reliability.py
+
+from sklearn.metrics import cohen_kappa_score
+import numpy as np
+
+def calculate_cohens_kappa(expert1_ratings, expert2_ratings):
+    """
+    Calculate Cohen's Kappa for two experts.
+
+    Args:
+        expert1_ratings: List of ratings from expert 1 (e.g., [5, 4, 5, 3, 4])
+        expert2_ratings: List of ratings from expert 2 (e.g., [5, 4, 4, 3, 5])
+
+    Returns:
+        kappa: Agreement score (0.0-1.0)
+    """
+    kappa = cohen_kappa_score(expert1_ratings, expert2_ratings)
+
+    print(f"Cohen's Kappa: {kappa:.3f}")
+    print(f"Interpretation: {interpret_kappa(kappa)}")
+
+    return kappa
+
+def interpret_kappa(kappa):
+    """Interpret Cohen's Kappa score."""
+    if kappa < 0:
+        return "Poor (no agreement, worse than random)"
+    elif kappa < 0.20:
+        return "Slight (minimal agreement)"
+    elif kappa < 0.40:
+        return "Fair (low agreement)"
+    elif kappa < 0.60:
+        return "Moderate (acceptable agreement)"
+    elif kappa < 0.80:
+        return "Substantial (good agreement)"
+    else:
+        return "Almost Perfect (excellent agreement)"
+
+# Example usage
+expert1 = [5, 4, 5, 3, 4, 5, 2, 4, 5, 3]  # Quality ratings (1-5 scale)
+expert2 = [5, 4, 4, 3, 5, 5, 2, 4, 4, 3]
+
+kappa = calculate_cohens_kappa(expert1, expert2)
+
+# Target: Kappa > 0.70 (substantial agreement)
+if kappa < 0.40:
+    print("⚠️ WARNING: Low agreement - review data collection process")
+elif kappa < 0.70:
+    print("⚠️ Moderate agreement - consider third expert review")
+else:
+    print("✓ Good agreement - data quality acceptable")
+```
+
+**Interpretation**:
+
+| Kappa Score | Agreement Level | Action |
+|-------------|----------------|--------|
+| < 0.40 | Poor/Fair | ❌ **Stop**: Retrain experts, clarify guidelines |
+| 0.40-0.70 | Moderate | ⚠️ **Review**: Third expert tie-breaker |
+| > 0.70 | Substantial | ✅ **Proceed**: Data quality acceptable |
+
+---
+
+### Fleiss' Kappa (Three+ Experts)
+
+**Use when**: Three or more experts rate the same examples
+
+**Advantage**: Accounts for multiple raters, more robust
+
+```python
+from statsmodels.stats.inter_rater import fleiss_kappa
+
+def calculate_fleiss_kappa(ratings_matrix):
+    """
+    Calculate Fleiss' Kappa for 3+ experts.
+
+    Args:
+        ratings_matrix: 2D array where rows = examples, columns = experts
+        Example:
+          [[5, 5, 4],  # Example 1: Expert A=5, B=5, C=4
+           [4, 4, 5],  # Example 2: Expert A=4, B=4, C=5
+           [3, 3, 3]]  # Example 3: All agree = 3
+
+    Returns:
+        kappa: Fleiss' Kappa score
+    """
+    # Convert ratings to categorical counts
+    # (Required format for statsmodels)
+    from collections import Counter
+
+    num_examples = len(ratings_matrix)
+    categories = [1, 2, 3, 4, 5]  # Rating scale
+
+    # Count category occurrences per example
+    table = []
+    for example_ratings in ratings_matrix:
+        counts = Counter(example_ratings)
+        row = [counts.get(cat, 0) for cat in categories]
+        table.append(row)
+
+    # Calculate Fleiss' Kappa
+    kappa = fleiss_kappa(table, method='fleiss')
+
+    print(f"Fleiss' Kappa (n={len(ratings_matrix[0])} raters): {kappa:.3f}")
+    print(f"Interpretation: {interpret_kappa(kappa)}")
+
+    return kappa
+
+# Example: 3 experts rate 5 examples
+ratings = [
+    [5, 5, 4],  # Example 1
+    [4, 4, 5],  # Example 2
+    [3, 3, 3],  # Example 3 (perfect agreement)
+    [5, 4, 5],  # Example 4
+    [2, 3, 2]   # Example 5
+]
+
+kappa = calculate_fleiss_kappa(ratings)
+```
+
+---
+
+### Intraclass Correlation Coefficient (ICC)
+
+**Use when**: Measuring consistency of continuous ratings (e.g., confidence scores 0.0-1.0)
+
+```python
+from pingouin import intraclass_corr
+import pandas as pd
+
+def calculate_icc(ratings_df):
+    """
+    Calculate ICC for continuous ratings.
+
+    Args:
+        ratings_df: DataFrame with columns ['Example', 'Expert', 'Rating']
+
+    Returns:
+        icc: ICC score (0.0-1.0)
+    """
+    # Calculate ICC(2,1) - two-way random effects, single rater
+    icc_result = intraclass_corr(
+        data=ratings_df,
+        targets='Example',  # What's being rated
+        raters='Expert',    # Who's rating
+        ratings='Rating',   # The rating value
+        nan_policy='omit'
+    )
+
+    # Get ICC(2,1) value (most commonly used)
+    icc_value = icc_result[icc_result['Type'] == 'ICC2']['ICC'].values[0]
+
+    print(f"ICC(2,1): {icc_value:.3f}")
+    print(f"Interpretation: {interpret_icc(icc_value)}")
+
+    return icc_value
+
+def interpret_icc(icc):
+    """Interpret ICC score."""
+    if icc < 0.50:
+        return "Poor reliability"
+    elif icc < 0.75:
+        return "Moderate reliability"
+    elif icc < 0.90:
+        return "Good reliability"
+    else:
+        return "Excellent reliability"
+
+# Example usage
+data = {
+    'Example': ['EX1', 'EX1', 'EX1', 'EX2', 'EX2', 'EX2', 'EX3', 'EX3', 'EX3'],
+    'Expert':  ['A',   'B',   'C',   'A',   'B',   'C',   'A',   'B',   'C'],
+    'Rating':  [0.85,  0.90,  0.80,  0.70,  0.75,  0.72,  0.95,  0.92,  0.94]
+}
+df = pd.DataFrame(data)
+
+icc = calculate_icc(df)
+
+# Target: ICC > 0.75 (good reliability)
+```
+
+---
+
+### Practical Workflow for Measuring Agreement
+
+**Step 1: Select Sample for Multi-Rating**
+
+```python
+import random
+
+def select_sample_for_multi_rating(dataset_path, sample_size=50, seed=42):
+    """Select random sample for multiple experts to rate."""
+
+    random.seed(seed)
+
+    with open(dataset_path, 'r') as f:
+        all_examples = [line.strip() for line in f if line.strip()]
+
+    # Random sample
+    sample = random.sample(all_examples, min(sample_size, len(all_examples)))
+
+    # Save sample for expert review
+    with open('multi_rating_sample.jsonl', 'w') as f:
+        for example in sample:
+            f.write(example + '\n')
+
+    print(f"✅ Selected {len(sample)} examples for multi-rating")
+    print("Send 'multi_rating_sample.jsonl' to 2-3 experts")
+
+    return sample
+```
+
+**Step 2: Collect Expert Ratings**
+
+Create rating sheet:
+```csv
+example_id,question,answer,expert_a_quality,expert_b_quality,expert_c_quality
+EX001,"What is IDLH for ammonia?","300 ppm",5,5,4
+EX002,"Evacuate or defend?","Evacuate",4,5,5
+EX003,"START triage steps?","...",5,4,5
+```
+
+**Step 3: Calculate Agreement**
+
+```python
+# Load ratings
+import pandas as pd
+
+ratings = pd.read_csv('expert_ratings.csv')
+
+# Calculate Cohen's Kappa (Expert A vs B)
+kappa_ab = cohen_kappa_score(
+    ratings['expert_a_quality'],
+    ratings['expert_b_quality']
+)
+
+kappa_ac = cohen_kappa_score(
+    ratings['expert_a_quality'],
+    ratings['expert_c_quality']
+)
+
+kappa_bc = cohen_kappa_score(
+    ratings['expert_b_quality'],
+    ratings['expert_c_quality']
+)
+
+print(f"Pairwise Agreement:")
+print(f"  Expert A vs B: κ = {kappa_ab:.3f}")
+print(f"  Expert A vs C: κ = {kappa_ac:.3f}")
+print(f"  Expert B vs C: κ = {kappa_bc:.3f}")
+print(f"  Average: κ = {np.mean([kappa_ab, kappa_ac, kappa_bc]):.3f}")
+
+# Calculate Fleiss' Kappa (all 3 experts)
+ratings_matrix = ratings[['expert_a_quality', 'expert_b_quality', 'expert_c_quality']].values.tolist()
+fleiss_k = calculate_fleiss_kappa(ratings_matrix)
+```
+
+**Step 4: Take Action Based on Results**
+
+```python
+def recommend_action(kappa):
+    """Recommend action based on agreement level."""
+
+    if kappa < 0.40:
+        return """
+⚠️ LOW AGREEMENT DETECTED (κ < 0.40)
+
+Actions Required:
+1. Review rating criteria with experts (are they using same standards?)
+2. Provide calibration examples (show what 1-5 ratings mean)
+3. Conduct group discussion to align understanding
+4. Re-rate sample after calibration
+5. If still low: simplify rating scale (binary good/bad instead of 1-5)
+"""
+
+    elif kappa < 0.70:
+        return """
+⚠️ MODERATE AGREEMENT (κ = 0.40-0.70)
+
+Actions Recommended:
+1. For disputed examples: Add third expert tie-breaker
+2. Document disagreements for future training improvements
+3. Consider averaging ratings instead of majority vote
+4. Acceptable for training, but monitor model performance
+"""
+
+    else:
+        return """
+✅ GOOD AGREEMENT (κ > 0.70)
+
+Actions:
+1. Proceed with data collection
+2. Continue using current rating guidelines
+3. Periodically re-check agreement (every 500 examples)
+"""
+
+print(recommend_action(fleiss_k))
+```
+
+---
+
+### Best Practices
+
+1. **Sample size**: At least 50 examples for reliable kappa estimate
+2. **Frequency**: Check agreement every 500-1000 examples collected
+3. **Expert calibration**: Before starting, rate 10 examples together to align understanding
+4. **Clear rubric**: Provide explicit rating criteria
+
+**Example Rating Rubric**:
+```markdown
+Quality Rating Scale (1-5):
+
+5 - Excellent:
+  ✅ Factually perfect, verified with SOPs
+  ✅ Comprehensive, covers edge cases
+  ✅ Clear, professional language
+  ✅ Actionable for emergency responders
+
+4 - Good:
+  ✅ Factually correct
+  ✅ Sufficient detail
+  ⚠️ Minor style/clarity issues
+
+3 - Acceptable:
+  ✅ Mostly correct
+  ⚠️ Missing some details
+  ⚠️ Could be clearer
+
+2 - Needs Revision:
+  ⚠️ Some factual errors
+  ⚠️ Incomplete information
+  ⚠️ Unclear or confusing
+
+1 - Reject:
+  ❌ Factually wrong
+  ❌ Dangerous advice
+  ❌ Unusable for training
+```
+
+---
+
+## Conflict Resolution Protocol
+
+### When Experts Disagree
+
+**Common Disagreement Scenarios**:
+
+1. **Tactical decision**: Expert A says "evacuate", Expert B says "defend structure"
+2. **Priority order**: Expert A prioritizes X→Y→Z, Expert B prioritizes Y→X→Z
+3. **Factual data**: Expert A says IDLH = 300 ppm, Expert B says 500 ppm
+4. **Confidence level**: Expert A is certain, Expert B is uncertain
+
+**Impact of Poor Conflict Resolution**:
+- ❌ Introduces bias (always picking one expert's view)
+- ❌ Loses valuable nuance (both perspectives may be valid)
+- ❌ Reduces model confidence (contradictory training signals)
+
+---
+
+### Resolution Strategy 1: Tie-Breaker (Simple Disagreements)
+
+**When to use**: Clear factual disagreement, need one correct answer
+
+**Process**:
+
+```python
+def resolve_with_tiebreaker(question, answer_a, answer_b, confidence_a, confidence_b):
+    """Resolve disagreement with third expert tie-breaker."""
+
+    print(f"Disagreement detected:")
+    print(f"  Expert A ({confidence_a:.0%} confident): {answer_a}")
+    print(f"  Expert B ({confidence_b:.0%} confident): {answer_b}")
+
+    # Consult third expert
+    answer_c = get_expert_c_answer(question)
+
+    # Majority vote
+    answers = [answer_a, answer_b, answer_c]
+    from collections import Counter
+    vote_counts = Counter(answers)
+    majority_answer = vote_counts.most_common(1)[0][0]
+
+    agreement_level = vote_counts[majority_answer] / 3
+
+    if agreement_level >= 0.66:  # 2/3 agree
+        print(f"✅ Resolved: {majority_answer} (2/3 experts agree)")
+        return {
+            "answer": majority_answer,
+            "confidence": 0.8,  # High confidence (majority)
+            "metadata": {
+                "resolution_method": "tie-breaker",
+                "votes": dict(vote_counts),
+                "disputed": True
+            }
+        }
+    else:
+        print("⚠️ No consensus (all 3 disagree)")
+        return resolve_with_context(question, [answer_a, answer_b, answer_c])
+
+# Example
+resolve_with_tiebreaker(
+    question="Evacuate or defend structure fire with limited resources?",
+    answer_a="Evacuate - insufficient resources for safe defense",
+    answer_b="Defend - structure can be saved",
+    confidence_a=0.9,
+    confidence_b=0.7
+)
+```
+
+---
+
+### Resolution Strategy 2: Context-Dependent (Both Valid)
+
+**When to use**: Disagreement stems from different assumptions/contexts
+
+**Process**: Create multiple training examples showing different scenarios
+
+```python
+def resolve_with_context(question, answers):
+    """Create context-specific examples when both answers are valid."""
+
+    print("Creating context-specific training examples:")
+
+    examples = []
+
+    # Example 1: Context favors answer A
+    examples.append({
+        "question": question + " (limited resources, high wind)",
+        "answer": answers[0],  # Evacuate
+        "reasoning": "With limited resources and dangerous conditions, evacuation is the only safe option.",
+        "context": "resource_constrained"
+    })
+
+    # Example 2: Context favors answer B
+    examples.append({
+        "question": question + " (sufficient resources, moderate conditions)",
+        "answer": answers[1],  # Defend
+        "reasoning": "With adequate resources and manageable conditions, structural defense is viable.",
+        "context": "resource_adequate"
+    })
+
+    print(f"✅ Created {len(examples)} context-specific examples")
+    return examples
+
+# Example: Tactical disagreement
+examples = resolve_with_context(
+    question="Should we defend the structure or evacuate?",
+    answers=[
+        "Evacuate immediately - insufficient resources",
+        "Defend structure - we have the capability"
+    ]
+)
+
+for ex in examples:
+    print(f"\nQ: {ex['question']}")
+    print(f"A: {ex['answer']}")
+    print(f"Context: {ex['context']}")
+```
+
+**Output**:
+```json
+[
+  {
+    "question": "Should we defend the structure or evacuate? (limited resources, high wind)",
+    "answer": "Evacuate immediately - insufficient resources for safe defense in these conditions.",
+    "context": "resource_constrained"
+  },
+  {
+    "question": "Should we defend the structure or evacuate? (sufficient resources, moderate conditions)",
+    "answer": "Defend structure - we have adequate personnel and equipment to mount effective defense.",
+    "context": "resource_adequate"
+  }
+]
+```
+
+**Advantage**: Model learns nuance (answer depends on context)
+
+---
+
+### Resolution Strategy 3: Confidence Weighting
+
+**When to use**: One expert much more confident than others
+
+```python
+def resolve_with_confidence_weighting(answers_with_confidence):
+    """Weight answers by expert confidence."""
+
+    # answers_with_confidence = [(answer_a, 0.9), (answer_b, 0.5), (answer_c, 0.8)]
+
+    # Group by answer text
+    from collections import defaultdict
+    answer_scores = defaultdict(float)
+
+    for answer, confidence in answers_with_confidence:
+        answer_scores[answer] += confidence
+
+    # Select answer with highest weighted confidence
+    best_answer = max(answer_scores.items(), key=lambda x: x[1])
+
+    avg_confidence = best_answer[1] / len(answers_with_confidence)
+
+    print(f"Confidence-weighted resolution:")
+    print(f"  Selected: {best_answer[0]}")
+    print(f"  Weighted confidence: {avg_confidence:.2f}")
+
+    return {
+        "answer": best_answer[0],
+        "confidence": avg_confidence,
+        "metadata": {
+            "resolution_method": "confidence_weighting",
+            "all_answers": dict(answer_scores)
+        }
+    }
+
+# Example
+resolve_with_confidence_weighting([
+    ("Evacuate", 0.95),  # Expert A: very confident
+    ("Defend", 0.50),    # Expert B: uncertain
+    ("Evacuate", 0.80)   # Expert C: confident
+])
+# Result: "Evacuate" with weighted confidence 0.75
+```
+
+---
+
+### Resolution Strategy 4: Flag for Review
+
+**When to use**: Unresolvable disagreement, safety-critical scenario
+
+```python
+def flag_for_review(question, answers, reason):
+    """Flag example as disputed for senior expert review."""
+
+    flagged_example = {
+        "question": question,
+        "disputed_answers": answers,
+        "status": "flagged_for_review",
+        "reason": reason,
+        "flagged_date": datetime.now().isoformat(),
+        "assigned_to": "senior_expert_reviewer",
+        "priority": "high" if "safety" in reason.lower() else "medium"
+    }
+
+    # Save to review queue
+    with open('disputed_examples.jsonl', 'a') as f:
+        f.write(json.dumps(flagged_example) + '\n')
+
+    print(f"⚠️ Flagged for senior review:")
+    print(f"   Reason: {reason}")
+    print(f"   Priority: {flagged_example['priority']}")
+
+    return flagged_example
+
+# Example: Safety-critical disagreement
+flag_for_review(
+    question="What is the IDLH for ammonia?",
+    answers=[
+        ("300 ppm", 0.9),
+        ("500 ppm", 0.8)
+    ],
+    reason="Safety-critical: Incorrect IDLH could endanger lives"
+)
+```
+
+---
+
+### Complete Conflict Resolution Workflow
+
+```python
+def resolve_disagreement(question, expert_ratings):
+    """
+    Comprehensive conflict resolution workflow.
+
+    Args:
+        question: The question being rated
+        expert_ratings: [
+            {"expert": "A", "answer": "...", "confidence": 0.9, "quality": 5},
+            {"expert": "B", "answer": "...", "confidence": 0.7, "quality": 4},
+            {"expert": "C", "answer": "...", "confidence": 0.8, "quality": 5}
+        ]
+
+    Returns:
+        Resolved example or list of context-specific examples
+    """
+
+    # Step 1: Check if consensus exists
+    answers = [r["answer"] for r in expert_ratings]
+    if len(set(answers)) == 1:
+        print("✅ Perfect consensus - no conflict")
+        return {
+            "question": question,
+            "answer": answers[0],
+            "confidence": np.mean([r["confidence"] for r in expert_ratings]),
+            "metadata": {"agreement": "unanimous"}
+        }
+
+    # Step 2: Calculate confidence delta
+    confidences = [r["confidence"] for r in expert_ratings]
+    confidence_delta = max(confidences) - min(confidences)
+
+    # Step 3: Route to appropriate resolution strategy
+    if confidence_delta > 0.3:
+        # Large confidence gap - use confidence weighting
+        print("Using confidence weighting (large gap)")
+        return resolve_with_confidence_weighting(
+            [(r["answer"], r["confidence"]) for r in expert_ratings]
+        )
+
+    elif is_factual_question(question):
+        # Factual disagreement - use tie-breaker
+        print("Using tie-breaker (factual disagreement)")
+        return resolve_with_tiebreaker(
+            question,
+            expert_ratings[0]["answer"],
+            expert_ratings[1]["answer"],
+            expert_ratings[0]["confidence"],
+            expert_ratings[1]["confidence"]
+        )
+
+    elif is_tactical_question(question):
+        # Tactical disagreement - create context-specific examples
+        print("Creating context-specific examples (tactical disagreement)")
+        return resolve_with_context(question, answers)
+
+    else:
+        # Unresolvable - flag for review
+        print("Flagging for senior review")
+        return flag_for_review(
+            question,
+            [(r["answer"], r["confidence"]) for r in expert_ratings],
+            reason="Complex disagreement requiring senior expert review"
+        )
+
+def is_factual_question(question):
+    """Check if question is factual (has one correct answer)."""
+    factual_keywords = ["what is", "idlh", "temperature", "pressure", "regulation", "law"]
+    return any(kw in question.lower() for kw in factual_keywords)
+
+def is_tactical_question(question):
+    """Check if question is tactical (multiple valid approaches)."""
+    tactical_keywords = ["should", "evacuate or", "defend or", "priority", "resource allocation"]
+    return any(kw in question.lower() for kw in tactical_keywords)
+```
+
+---
+
+### Documentation Template
+
+**For each resolved disagreement**, document in metadata:
+
+```json
+{
+  "example_id": "FIR-042",
+  "question": "Evacuate or defend structure fire?",
+  "final_answer": "Context-dependent (see examples A and B)",
+  "disagreement_log": {
+    "initial_disagreement": {
+      "expert_a": {
+        "answer": "Evacuate",
+        "confidence": 0.9,
+        "reasoning": "Insufficient resources"
+      },
+      "expert_b": {
+        "answer": "Defend",
+        "confidence": 0.7,
+        "reasoning": "Structure is defensible"
+      }
+    },
+    "resolution_method": "context-specific_examples",
+    "resolution_date": "2024-11-13",
+    "reviewed_by": "Senior Fire Commander Papadopoulos",
+    "outcome": "Created 2 context-specific training examples",
+    "confidence_final": 0.85
+  }
+}
+```
+
+---
+
+### Best Practices Summary
+
+1. **Expect 10-20% disagreement** - Normal for complex domain knowledge
+2. **Document everything** - All disagreements and resolutions
+3. **Prefer context over elimination** - Both views often valid in different contexts
+4. **Safety first** - Flag safety-critical disagreements for senior review
+5. **Regular calibration** - Review disagreements quarterly to improve guidelines
+6. **Learn from disputes** - Disagreements reveal edge cases and nuance
+
+**Disagreement is a feature, not a bug**: It reveals the complexity and context-dependence of real-world decision-making.
+
+---
+
 ## Next Steps
 
 After completing data collection:
@@ -884,4 +1597,4 @@ After completing data collection:
 ---
 
 **Generated**: 2025-11-13
-**Version**: 1.0
+**Version**: 1.1
