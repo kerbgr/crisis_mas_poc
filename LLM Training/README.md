@@ -433,4 +433,4 @@ For questions about this methodology:
 **Generated**: 2025-11-13
 **System**: Crisis Management Multi-Agent System (Greek Emergency Response Edition)
 **Version**: 1.0
-**Authors**: Crisis MAS POC Team
+**Author**: kerbgr

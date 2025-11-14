@@ -144,9 +144,9 @@ If you use these tools in your research, please cite:
 ```bibtex
 @software{llm_training_tools2025,
   title = {LLM Training Tools: Production-Ready Toolkit for Domain-Specific LLMs},
-  author = {Crisis MAS Team},
+  author = {kerbgr},
   year = {2025},
-  url = {https://github.com/yourusername/crisis-mas-llm-training}
+  url = {https://github.com/kerbgr/crisis_mas_poc}
 }
 ```
 

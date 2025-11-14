@@ -287,6 +287,10 @@ To contribute improvements:
 
 Part of the Crisis MAS LLM Training project.
 
+## Author
+
+**kerbgr** - [GitHub Profile](https://github.com/kerbgr)
+
 ## Support
 
 For issues or questions:
