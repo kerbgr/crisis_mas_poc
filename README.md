@@ -1,4 +1,4 @@
-# A Multi-Agent System (MAS) for crisis management and decision-making
+# A Multi-Agent System (MAS) for Crisis Management and Decision-Making
 
 A Proof-of-concept system demonstrating the application of **Multi-Agent Systems (MAS)** to crisis management decision-making, developed as part of a Master's thesis in Operational Research & Decision Making with the title:
 
@@ -34,7 +34,6 @@ Department of Military Sciences - School of Production Engineering and Managemen
 9. [Citation](#citation)
 
 ---
-
 ## Project Overview
 
 ### Purpose
@@ -2219,7 +2218,6 @@ If you use this work in your research, please cite:
 
 ## Acknowledgments
 
-- **Anthropic** for providing the Claude API and excellent documentation
 - **Thesis Advisors** at Technical University of Crete for guidance and feedback
 - **Crisis Management Experts** who provided domain knowledge for validation
 - **Open Source Community** for foundational libraries (NumPy, Matplotlib, pytest)
@@ -2230,8 +2228,8 @@ If you use this work in your research, please cite:
 
 **Author:** Vasileios Kazoukas
 **Email:** kazoukas@gmail.com, vkazoukas@tuc.gr
-**Institution:** Technical University of Crete (TUC)
-**Department:** School of Production Engineering and Management
+**Institution:** Military Academy (SSE) Technical University of Crete (TUC)
+**Department:** Department of Military Sciences - School of Production Engineering and Management
 **Program:** Operational Research & Decision Making
 
 For questions about this research project, collaboration inquiries, or access to thesis materials, please contact via email.
@@ -2246,6 +2244,6 @@ For academic use, please cite the associated Master's thesis (see Citation secti
 
 ---
 
-**README Version:** 2.0.0
-**Last Updated:** November 6, 2025
+**README Version:** 1.0.0
+**Last Updated:** November 12, 2025
 **Document Status:** Complete - Suitable for Thesis Appendix

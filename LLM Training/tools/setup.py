@@ -17,7 +17,7 @@ setup(
     name="llm-training-tools",
     version="1.0.0",
     author="kerbgr",
-    author_email="kazoukas@gmail.com",
+    author_email="kerbgr@users.noreply.github.com",
     description="Production-ready tools for domain-specific LLM training and deployment",
     long_description=long_description,
     long_description_content_type="text/markdown",
