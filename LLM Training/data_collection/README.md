@@ -1586,6 +1586,776 @@ def is_tactical_question(question):
 
 ---
 
+## Tools and Automation
+
+### Why Use Specialized Tools?
+
+Manual data collection, annotation, and quality control is:
+- **Time-consuming**: 100+ hours for 1,000 examples
+- **Error-prone**: Manual formatting, typos, inconsistencies
+- **Hard to track**: Versioning, lineage, contributor management
+- **Difficult to scale**: Adding more contributors is chaotic
+
+**Solution**: Use specialized tools designed for ML data workflows
+
+---
+
+### Recommended Tool Stack
+
+| Tool | Purpose | Cost | Use Case |
+|------|---------|------|----------|
+| **KNIME** | Visual data pipelines | Free | Data preprocessing, QA automation |
+| **Label Studio** | Data annotation | Free | Expert annotation with custom UI |
+| **DVC** | Data version control | Free | Dataset versioning, lineage tracking |
+| **Weights & Biases** | Experiment tracking | Free tier | Track data quality metrics, A/B tests |
+| **Argilla** | Data curation | Free | Collaborative annotation, feedback loops |
+| **LangSmith** | LLM data management | Paid | Trace LLM outputs, collect feedback |
+
+---
+
+### KNIME: Visual Data Pipelines
+
+**What is KNIME**: Open-source data analytics platform with drag-and-drop workflow builder
+
+**Use Cases for LLM Training**:
+1. **Data Preprocessing**: Clean, deduplicate, format data
+2. **Quality Control**: Automated checks for completeness, consistency
+3. **Data Augmentation**: Generate paraphrases, translations
+4. **Statistical Analysis**: Inter-rater reliability, distribution analysis
+
+#### Example KNIME Workflow: Data Quality Pipeline
+
+**Workflow**: `data_quality_check.knwf`
+
+```
+[CSV Reader] → [Missing Value Check] → [Duplicate Detection] → [Length Validation] → [Quality Report]
+      ↓              ↓                       ↓                        ↓                    ↓
+   Read data    Flag nulls           Find duplicates         Check lengths        Generate report
+```
+
+**Nodes Used**:
+1. **CSV Reader**: Load training_data.csv
+2. **Missing Value**: Flag rows with empty `question` or `answer` fields
+3. **Duplicate Detector**: Find near-duplicate questions (similarity >0.9)
+4. **Length Validator**: Ensure questions 10-500 chars, answers 20-2000 chars
+5. **Row Filter**: Remove invalid rows
+6. **CSV Writer**: Export clean_training_data.csv
+
+**Download**: https://hub.knime.com (search "LLM data quality")
+
+#### KNIME Workflow: Inter-Rater Reliability
+
+**Workflow**: `inter_rater_reliability.knwf`
+
+```
+[CSV Reader: Expert 1] ─┐
+                         ├─→ [Joiner] → [Cohen's Kappa Calculator] → [Report Generator]
+[CSV Reader: Expert 2] ─┘
+```
+
+**Configuration**:
+```python
+# Python Script Node for Cohen's Kappa
+from sklearn.metrics import cohen_kappa_score
+import pandas as pd
+
+# Input: ratings from two experts
+expert1 = input_table_1['rating'].values
+expert2 = input_table_2['rating'].values
+
+kappa = cohen_kappa_score(expert1, expert2)
+
+# Output table
+output_table = pd.DataFrame({
+    'metric': ['Cohen\'s Kappa'],
+    'value': [kappa],
+    'interpretation': ['Substantial' if kappa > 0.7 else 'Moderate' if kappa > 0.4 else 'Poor']
+})
+```
+
+**Download Pre-built Workflows**:
+```bash
+# Clone repository with KNIME workflows
+git clone https://github.com/yourusername/llm-training-knime-workflows.git
+
+# Import into KNIME Analytics Platform:
+# File → Import KNIME Workflow → Select .knwf file
+```
+
+#### KNIME Workflow: Data Deduplication
+
+**Problem**: Training on near-duplicates wastes compute and reduces diversity
+
+**Solution**: Automated similarity detection
+
+```
+[CSV Reader] → [Document Vector] → [Distance Matrix] → [Threshold Filter] → [Duplicate Report]
+```
+
+**Configuration**:
+```
+Document Vector Node:
+- Input column: "question"
+- Vector model: TF-IDF or sentence-transformers
+- Output: embedding vector
+
+Distance Matrix Node:
+- Metric: Cosine similarity
+- Threshold: 0.9 (90% similar)
+
+Threshold Filter:
+- Keep: similarity < 0.9 (sufficiently different)
+- Flag: similarity >= 0.9 (potential duplicate)
+```
+
+**Example Output**:
+```
+Potential Duplicates:
+1. Q: "What is IDLH for ammonia?" (ID: 042)
+   Q: "What is the IDLH concentration for NH3?" (ID: 137)
+   Similarity: 0.94
+
+2. Q: "How to evacuate during wildfire?" (ID: 089)
+   Q: "What are wildfire evacuation procedures?" (ID: 201)
+   Similarity: 0.91
+
+Action: Review and merge or keep based on context differences
+```
+
+---
+
+### Label Studio: Expert Annotation Interface
+
+**What is Label Studio**: Open-source data labeling platform with customizable UI
+
+**Why Use It**:
+- Custom annotation interface for your specific task
+- Track contributor progress and quality
+- Export to any format (JSON, CSV, JSONL)
+- Support for multiple annotators per example
+
+#### Setup for Emergency Response Training Data
+
+**Install**:
+```bash
+pip install label-studio
+label-studio start
+# Access: http://localhost:8080
+```
+
+**Custom Annotation Template**:
+```xml
+<View>
+  <Header value="Emergency Response Q&A Annotation"/>
+
+  <!-- Question Input -->
+  <Text name="question" value="$question"/>
+
+  <!-- Expert Answer -->
+  <TextArea name="answer" toName="question"
+            placeholder="Provide expert response..."
+            rows="10" maxSubmissions="1"/>
+
+  <!-- Quality Rating -->
+  <Rating name="quality" toName="question"
+          maxRating="5" icon="star" size="large"/>
+
+  <!-- Category Tags -->
+  <Choices name="category" toName="question" choice="multiple">
+    <Choice value="Firefighting"/>
+    <Choice value="Police"/>
+    <Choice value="Medical"/>
+    <Choice value="HAZMAT"/>
+    <Choice value="Evacuation"/>
+    <Choice value="Coordination"/>
+  </Choices>
+
+  <!-- Difficulty Level -->
+  <Choices name="difficulty" toName="question" choice="single">
+    <Choice value="Basic"/>
+    <Choice value="Intermediate"/>
+    <Choice value="Advanced"/>
+    <Choice value="Expert"/>
+  </Choices>
+
+  <!-- Safety Critical Flag -->
+  <Checkbox name="safety_critical" toName="question">
+    <Label value="This is safety-critical information"/>
+  </Checkbox>
+
+  <!-- Confidence Score -->
+  <Number name="confidence" toName="question"
+          min="0" max="100" step="5"
+          placeholder="Expert confidence (%)"/>
+</View>
+```
+
+**Import Data**:
+```bash
+# Convert your data to Label Studio format
+python tools/convert_to_label_studio.py \
+  --input raw_questions.csv \
+  --output label_studio_tasks.json
+```
+
+**Workflow**:
+1. Upload `label_studio_tasks.json` to Label Studio
+2. Assign tasks to expert annotators
+3. Experts annotate through web interface
+4. Export completed annotations
+5. Convert to training format
+
+**Export**:
+```python
+# tools/export_from_label_studio.py
+
+import json
+
+def convert_label_studio_to_training(export_file, output_file):
+    """Convert Label Studio export to training format."""
+
+    with open(export_file, 'r') as f:
+        annotations = json.load(f)
+
+    training_data = []
+
+    for item in annotations:
+        # Extract annotations
+        question = item['data']['question']
+        answer = item['annotations'][0]['result'][0]['value']['text'][0]
+        quality = item['annotations'][0]['result'][1]['value']['rating']
+        category = item['annotations'][0]['result'][2]['value']['choices']
+
+        training_data.append({
+            "instruction": question,
+            "output": answer,
+            "metadata": {
+                "quality": quality,
+                "category": category,
+                "annotator": item['annotations'][0]['completed_by']
+            }
+        })
+
+    with open(output_file, 'w') as f:
+        json.dump(training_data, f, indent=2, ensure_ascii=False)
+
+# Usage
+convert_label_studio_to_training(
+    "label_studio_export.json",
+    "training_data.json"
+)
+```
+
+---
+
+### DVC: Data Version Control
+
+**What is DVC**: Git for data - track datasets, models, and experiments
+
+**Why Use It**:
+- Version your training datasets like code
+- Reproduce exact training runs
+- Share large datasets efficiently
+- Track data lineage and provenance
+
+#### Setup
+
+```bash
+# Install DVC
+pip install dvc
+
+# Initialize in your project
+cd crisis_mas_poc/LLM\ Training
+dvc init
+
+# Add remote storage (S3, GCS, Azure, or local)
+dvc remote add -d storage s3://your-bucket/llm-training-data
+
+# Or use local storage for testing
+dvc remote add -d storage /path/to/storage
+```
+
+#### Track Training Data
+
+```bash
+# Add training data to DVC
+dvc add data_collection/training_data.json
+
+# This creates:
+# - training_data.json.dvc (metadata file, commit to git)
+# - .gitignore entry for training_data.json (don't commit actual data)
+
+# Commit metadata
+git add data_collection/training_data.json.dvc .gitignore
+git commit -m "Add training data v1.0"
+
+# Push data to remote storage
+dvc push
+```
+
+#### Create Data Pipelines
+
+```yaml
+# dvc.yaml - Define data processing pipeline
+
+stages:
+  collect:
+    cmd: python tools/collect_expert_data.py --output raw_data.json
+    outs:
+      - raw_data.json
+
+  clean:
+    cmd: python tools/clean_data.py --input raw_data.json --output clean_data.json
+    deps:
+      - raw_data.json
+      - tools/clean_data.py
+    outs:
+      - clean_data.json
+
+  deduplicate:
+    cmd: python tools/deduplicate.py --input clean_data.json --output dedup_data.json
+    deps:
+      - clean_data.json
+    outs:
+      - dedup_data.json
+
+  split:
+    cmd: python tools/split_data.py --input dedup_data.json
+    deps:
+      - dedup_data.json
+    outs:
+      - train_data.json
+      - val_data.json
+      - test_data.json
+```
+
+**Run Pipeline**:
+```bash
+# Run entire pipeline
+dvc repro
+
+# DVC will:
+# 1. Check which stages need to run (based on dependencies)
+# 2. Execute only changed stages
+# 3. Cache outputs
+# 4. Track metrics
+```
+
+#### Version Datasets
+
+```bash
+# Tag current version
+git tag -a data-v1.0 -m "Initial firefighter training data"
+
+# Later, add more data
+python tools/add_new_examples.py
+dvc add data_collection/training_data.json
+git add data_collection/training_data.json.dvc
+git commit -m "Add 200 new examples"
+git tag -a data-v1.1 -m "Added wildfire scenarios"
+
+# Rollback to previous version
+git checkout data-v1.0
+dvc checkout  # Downloads v1.0 data from remote
+```
+
+#### Track Data Quality Metrics
+
+```yaml
+# dvc.yaml - Add metrics tracking
+
+stages:
+  quality_check:
+    cmd: python tools/calculate_quality_metrics.py
+    deps:
+      - train_data.json
+    metrics:
+      - metrics/data_quality.json:
+          cache: false
+```
+
+**metrics/data_quality.json**:
+```json
+{
+  "total_examples": 1247,
+  "avg_question_length": 87.3,
+  "avg_answer_length": 342.1,
+  "categories": {
+    "firefighting": 421,
+    "police": 389,
+    "medical": 437
+  },
+  "quality_distribution": {
+    "5_star": 823,
+    "4_star": 312,
+    "3_star": 89,
+    "2_star": 23
+  },
+  "inter_rater_kappa": 0.78
+}
+```
+
+**View Metrics**:
+```bash
+dvc metrics show
+
+# Compare across versions
+dvc metrics diff data-v1.0 data-v1.1
+```
+
+---
+
+### Weights & Biases: Experiment Tracking
+
+**What is W&B**: Platform for tracking ML experiments, visualizing data, collaborating
+
+**Use Cases**:
+- Track data collection progress
+- Monitor annotation quality
+- Compare dataset versions
+- Visualize data distributions
+
+#### Setup
+
+```bash
+pip install wandb
+wandb login
+```
+
+#### Track Data Collection Progress
+
+```python
+# tools/track_collection.py
+
+import wandb
+import json
+
+# Initialize W&B project
+wandb.init(project="crisis-mas-llm-training", name="data-collection")
+
+# Load training data
+with open("training_data.json", "r") as f:
+    data = json.load(f)
+
+# Log metrics
+wandb.log({
+    "total_examples": len(data),
+    "avg_question_length": sum(len(d["question"]) for d in data) / len(data),
+    "avg_answer_length": sum(len(d["answer"]) for d in data) / len(data),
+})
+
+# Log data distribution
+categories = {}
+for item in data:
+    cat = item["metadata"]["category"]
+    categories[cat] = categories.get(cat, 0) + 1
+
+wandb.log({"category_distribution": wandb.Histogram(list(categories.values()))})
+
+# Log quality distribution
+qualities = [item["metadata"]["quality"] for item in data]
+wandb.log({"quality_distribution": wandb.Histogram(qualities)})
+
+# Create table of examples
+table = wandb.Table(columns=["question", "answer", "quality", "category"])
+for item in data[:100]:  # First 100 examples
+    table.add_data(
+        item["question"][:100],
+        item["answer"][:100],
+        item["metadata"]["quality"],
+        item["metadata"]["category"]
+    )
+wandb.log({"examples": table})
+
+wandb.finish()
+```
+
+**View Dashboard**: https://wandb.ai/your-username/crisis-mas-llm-training
+
+---
+
+### Argilla: Collaborative Annotation Platform
+
+**What is Argilla**: Modern annotation platform with active learning and feedback loops
+
+**Key Features**:
+- Real-time collaboration
+- Disagreement resolution workflows
+- Quality metrics dashboard
+- Integration with LLMs for suggestions
+
+#### Setup
+
+```bash
+docker run -d --name argilla -p 6900:6900 argilla/argilla-quickstart
+# Access: http://localhost:6900
+# Default login: argilla / 12345678
+```
+
+#### Create Annotation Workspace
+
+```python
+# tools/setup_argilla.py
+
+import argilla as rg
+
+# Initialize client
+rg.init(api_url="http://localhost:6900", api_key="argilla.apikey")
+
+# Create dataset for annotation
+dataset = rg.DatasetForTextClassification(
+    name="emergency_response_qa",
+    description="Expert Q&A for emergency response training"
+)
+
+# Add records
+records = []
+for item in raw_questions:
+    records.append(
+        rg.TextClassificationRecord(
+            text=f"Q: {item['question']}\nA: ",
+            metadata={"expert_id": item["expert"], "date": item["date"]},
+            annotation=[],  # To be filled by annotators
+        )
+    )
+
+rg.log(records, name="emergency_response_qa")
+```
+
+---
+
+### Automation Scripts
+
+#### Complete Data Pipeline Script
+
+```bash
+#!/bin/bash
+# tools/run_full_pipeline.sh
+
+set -e  # Exit on error
+
+echo "🚀 Starting LLM Training Data Pipeline"
+
+# 1. Collect raw data from interviews
+echo "📝 Step 1: Collecting expert data..."
+python tools/collect_expert_data.py \
+  --interviews_dir interviews/ \
+  --output data/raw_data.json
+
+# 2. Clean and validate
+echo "🧹 Step 2: Cleaning data..."
+python tools/clean_data.py \
+  --input data/raw_data.json \
+  --output data/clean_data.json
+
+# 3. Deduplicate
+echo "🔍 Step 3: Detecting duplicates..."
+python tools/deduplicate.py \
+  --input data/clean_data.json \
+  --output data/dedup_data.json \
+  --similarity_threshold 0.9
+
+# 4. Calculate quality metrics
+echo "📊 Step 4: Calculating quality metrics..."
+python tools/calculate_quality_metrics.py \
+  --input data/dedup_data.json \
+  --output metrics/data_quality.json
+
+# 5. Check inter-rater reliability
+echo "🤝 Step 5: Calculating inter-rater reliability..."
+python tools/calculate_inter_rater_reliability.py \
+  --input data/dedup_data.json \
+  --output metrics/inter_rater.json
+
+# 6. Split into train/val/test
+echo "✂️  Step 6: Splitting dataset..."
+python tools/split_data.py \
+  --input data/dedup_data.json \
+  --train_ratio 0.8 \
+  --val_ratio 0.1 \
+  --test_ratio 0.1
+
+# 7. Format for training
+echo "🎯 Step 7: Formatting for training..."
+python tools/format_for_training.py \
+  --input data/train_data.json \
+  --output data/formatted_train.jsonl \
+  --format alpaca
+
+# 8. Version with DVC
+echo "📦 Step 8: Versioning with DVC..."
+dvc add data/formatted_train.jsonl
+git add data/formatted_train.jsonl.dvc
+git commit -m "Add training data version $(date +%Y%m%d)"
+dvc push
+
+# 9. Track with W&B
+echo "📈 Step 9: Tracking with W&B..."
+python tools/track_collection.py
+
+echo "✅ Pipeline complete! Data ready for training."
+echo "📁 Output: data/formatted_train.jsonl"
+echo "📊 Metrics: metrics/data_quality.json"
+```
+
+**Run**:
+```bash
+chmod +x tools/run_full_pipeline.sh
+./tools/run_full_pipeline.sh
+```
+
+---
+
+### Quality Control Checklist with Tools
+
+| Task | Manual | Automated Tool | Time Saved |
+|------|--------|---------------|------------|
+| Duplicate detection | 4 hours | KNIME (5 min) | 95% |
+| Format validation | 2 hours | Python script (1 min) | 98% |
+| Inter-rater reliability | 1 hour | KNIME/Python (2 min) | 97% |
+| Data versioning | Manual tracking | DVC (automated) | 100% |
+| Progress tracking | Spreadsheet | W&B dashboard | 90% |
+| Expert annotation | Email/docs | Label Studio | 80% |
+| **Total time for 1000 examples** | **40 hours** | **2 hours** | **95%** |
+
+---
+
+### Tool Selection Guide
+
+**Start with**:
+- DVC (versioning) - Day 1
+- Python scripts (basic cleaning) - Day 1
+- Git (code version control) - Day 1
+
+**Add when scaling**:
+- Label Studio - When you have >3 annotators
+- KNIME - When data pipeline gets complex (>5 steps)
+- W&B - When running multiple experiments
+- Argilla - When you need active learning feedback
+
+**Don't Need**:
+- Complex tools for <500 examples
+- Multiple platforms if team <5 people
+- Paid tools until you validate approach
+
+---
+
+### Example: End-to-End Workflow with Tools
+
+**Week 1: Setup**
+```bash
+# Initialize version control
+git init
+dvc init
+dvc remote add -d storage s3://crisis-mas-data
+
+# Setup annotation platform
+docker run -d -p 8080:8080 label-studio
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+**Week 2-4: Data Collection**
+```bash
+# Collect from 10 expert interviews
+for i in {1..10}; do
+  python tools/transcribe_interview.py \
+    --audio interviews/interview_$i.mp3 \
+    --output raw_data/interview_$i.json
+done
+
+# Import to Label Studio for annotation
+python tools/import_to_label_studio.py \
+  --input raw_data/*.json
+```
+
+**Week 5: Quality Control**
+```bash
+# Run KNIME quality pipeline
+knime -nosplash -application org.knime.product.KNIME_BATCH_APPLICATION \
+  -workflowFile="workflows/data_quality_check.knwf"
+
+# Export cleaned data
+python tools/export_from_label_studio.py \
+  --output data/training_data_v1.json
+
+# Version
+dvc add data/training_data_v1.json
+git add data/training_data_v1.json.dvc
+git commit -m "Initial training data"
+git tag -a data-v1.0 -m "First complete dataset"
+dvc push
+```
+
+**Week 6: Validation**
+```bash
+# Calculate metrics
+python tools/calculate_quality_metrics.py
+
+# Track in W&B
+python tools/track_collection.py
+
+# Generate report
+python tools/generate_data_report.py \
+  --output reports/data_quality_report.pdf
+```
+
+---
+
+### Best Practices for Tool Adoption
+
+**1. Start Simple**
+- Don't adopt all tools at once
+- Begin with version control (Git + DVC)
+- Add tools as pain points emerge
+
+**2. Document Your Workflows**
+- Create `TOOLS.md` in your repo
+- Document which tool does what
+- Include troubleshooting tips
+
+**3. Train Your Team**
+- Schedule tool training sessions
+- Create video tutorials
+- Maintain FAQ document
+
+**4. Measure ROI**
+- Track time saved
+- Monitor data quality improvements
+- Justify tool costs with metrics
+
+**5. Automate Repetitively**
+- If you do it >3 times, automate it
+- Use shell scripts for common workflows
+- Set up CI/CD for data pipelines
+
+---
+
+### Troubleshooting
+
+**KNIME**: "Workflow won't execute"
+- Check Java version (requires Java 11+)
+- Verify file paths are absolute
+- Install missing extensions from KNIME Hub
+
+**Label Studio**: "Can't import data"
+- Check JSON format (must be list of dicts)
+- Verify all required fields present
+- Use `tools/validate_format.py` first
+
+**DVC**: "Push fails"
+- Check remote storage credentials
+- Verify network connectivity
+- Try `dvc push --verbose` for details
+
+**W&B**: "Login fails"
+- Run `wandb login` with API key
+- Check firewall settings
+- Try `wandb offline` for local-only
+
+---
+
 ## Next Steps
 
 After completing data collection:
@@ -1596,5 +2366,5 @@ After completing data collection:
 
 ---
 
-**Generated**: 2025-11-13
-**Version**: 1.1
+**Generated**: 2025-11-14
+**Version**: 1.2
