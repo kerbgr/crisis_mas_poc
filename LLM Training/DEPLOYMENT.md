@@ -459,6 +459,913 @@ def chat():
 
 ---
 
+## Production Monitoring and Drift Detection
+
+### Why Production Monitoring is Critical
+
+**Problem**: Models degrade over time in production due to:
+- **Concept drift**: Real-world patterns change (new fire suppression techniques, updated regulations)
+- **Data drift**: Input distribution changes (different types of emergencies, seasonal patterns)
+- **Model staleness**: Training data becomes outdated
+- **Performance degradation**: Accuracy drops without you knowing
+
+**Without monitoring**:
+- Model quietly degrades from 85% → 70% accuracy over months
+- Users lose trust in the system
+- Dangerous recommendations go undetected
+- You only find out when someone complains
+
+**With monitoring**:
+- Detect degradation within hours/days
+- Trigger automatic retraining
+- Alert operators to issues
+- Maintain user trust
+
+---
+
+### Real-Time Performance Monitoring
+
+#### 1. Response Quality Tracking
+
+**Metrics to monitor**:
+
+```python
+# tools/production_monitor.py
+
+import time
+import json
+from collections import deque
+from dataclasses import dataclass
+from typing import Dict, List
+import numpy as np
+
+@dataclass
+class ResponseMetrics:
+    """Track metrics for each model response."""
+    timestamp: float
+    request_id: str
+    latency_ms: float
+    input_tokens: int
+    output_tokens: int
+    user_feedback: int  # -1 (thumbs down), 0 (no feedback), 1 (thumbs up)
+    safety_flags: List[str]  # ["hallucination", "unsafe_recommendation", etc.]
+    confidence_score: float  # Model's self-reported confidence
+
+class ProductionMonitor:
+    """Real-time monitoring for production LLM."""
+
+    def __init__(self, window_size=1000):
+        self.window_size = window_size
+        self.recent_metrics = deque(maxlen=window_size)
+
+        # Baseline metrics (from initial deployment)
+        self.baseline = {
+            "avg_latency_ms": 300.0,
+            "thumbs_up_rate": 0.75,
+            "safety_failure_rate": 0.02,
+            "avg_confidence": 0.80
+        }
+
+        # Alert thresholds
+        self.thresholds = {
+            "latency_p95_ms": 800,  # Alert if p95 latency > 800ms
+            "thumbs_down_rate": 0.20,  # Alert if >20% thumbs down
+            "safety_failure_rate": 0.05,  # Alert if >5% safety failures
+            "confidence_drop": 0.15  # Alert if confidence drops >15%
+        }
+
+    def log_response(self, metrics: ResponseMetrics):
+        """Log a model response for monitoring."""
+        self.recent_metrics.append(metrics)
+
+        # Check for immediate issues
+        self._check_alerts(metrics)
+
+        # Periodic drift detection (every 100 requests)
+        if len(self.recent_metrics) % 100 == 0:
+            self._detect_drift()
+
+    def _check_alerts(self, metrics: ResponseMetrics):
+        """Check for immediate issues requiring alerts."""
+
+        # Alert 1: High latency
+        if metrics.latency_ms > self.thresholds["latency_p95_ms"]:
+            self._send_alert(
+                severity="warning",
+                message=f"High latency detected: {metrics.latency_ms:.0f}ms",
+                request_id=metrics.request_id
+            )
+
+        # Alert 2: Safety flags
+        if len(metrics.safety_flags) > 0:
+            self._send_alert(
+                severity="critical",
+                message=f"Safety issue: {metrics.safety_flags}",
+                request_id=metrics.request_id
+            )
+
+        # Alert 3: Low confidence on critical query
+        if metrics.confidence_score < 0.5:
+            self._send_alert(
+                severity="info",
+                message=f"Low confidence response: {metrics.confidence_score:.2f}",
+                request_id=metrics.request_id
+            )
+
+    def _detect_drift(self):
+        """Detect performance drift over time."""
+
+        if len(self.recent_metrics) < 100:
+            return  # Not enough data
+
+        current_metrics = self._calculate_current_metrics()
+
+        # Compare to baseline
+        issues = []
+
+        # Check latency drift
+        if current_metrics["avg_latency_ms"] > self.baseline["avg_latency_ms"] * 1.5:
+            issues.append(f"Latency increased by {100*(current_metrics['avg_latency_ms']/self.baseline['avg_latency_ms']-1):.0f}%")
+
+        # Check user satisfaction drift
+        if current_metrics["thumbs_up_rate"] < self.baseline["thumbs_up_rate"] - 0.10:
+            issues.append(f"User satisfaction dropped to {current_metrics['thumbs_up_rate']:.1%}")
+
+        # Check safety drift
+        if current_metrics["safety_failure_rate"] > self.baseline["safety_failure_rate"] * 2:
+            issues.append(f"Safety failures increased to {current_metrics['safety_failure_rate']:.1%}")
+
+        # Check confidence drift
+        if current_metrics["avg_confidence"] < self.baseline["avg_confidence"] - self.thresholds["confidence_drop"]:
+            issues.append(f"Model confidence dropped to {current_metrics['avg_confidence']:.2f}")
+
+        if issues:
+            self._send_alert(
+                severity="warning",
+                message="Performance drift detected:\n" + "\n".join(f"  - {issue}" for issue in issues)
+            )
+
+    def _calculate_current_metrics(self) -> Dict:
+        """Calculate metrics over recent window."""
+
+        recent = list(self.recent_metrics)[-self.window_size:]
+
+        return {
+            "avg_latency_ms": np.mean([m.latency_ms for m in recent]),
+            "p95_latency_ms": np.percentile([m.latency_ms for m in recent], 95),
+            "thumbs_up_rate": sum(1 for m in recent if m.user_feedback == 1) / len(recent),
+            "thumbs_down_rate": sum(1 for m in recent if m.user_feedback == -1) / len(recent),
+            "safety_failure_rate": sum(1 for m in recent if len(m.safety_flags) > 0) / len(recent),
+            "avg_confidence": np.mean([m.confidence_score for m in recent])
+        }
+
+    def _send_alert(self, severity: str, message: str, request_id: str = None):
+        """Send alert to monitoring system."""
+        alert = {
+            "timestamp": time.time(),
+            "severity": severity,
+            "message": message,
+            "request_id": request_id
+        }
+
+        # Log to file
+        with open("production_alerts.jsonl", "a") as f:
+            f.write(json.dumps(alert) + "\n")
+
+        # Send to monitoring service (Slack, PagerDuty, etc.)
+        if severity == "critical":
+            self._send_to_pagerduty(alert)
+        else:
+            self._send_to_slack(alert)
+
+        print(f"[{severity.upper()}] {message}")
+
+    def _send_to_slack(self, alert: Dict):
+        """Send alert to Slack channel."""
+        # Placeholder - integrate with your Slack webhook
+        pass
+
+    def _send_to_pagerduty(self, alert: Dict):
+        """Send critical alert to PagerDuty."""
+        # Placeholder - integrate with PagerDuty API
+        pass
+
+    def get_dashboard_metrics(self) -> Dict:
+        """Get current metrics for monitoring dashboard."""
+
+        if len(self.recent_metrics) == 0:
+            return {}
+
+        current = self._calculate_current_metrics()
+
+        # Calculate trends (last 100 vs previous 100)
+        if len(self.recent_metrics) >= 200:
+            recent_100 = list(self.recent_metrics)[-100:]
+            previous_100 = list(self.recent_metrics)[-200:-100]
+
+            recent_latency = np.mean([m.latency_ms for m in recent_100])
+            previous_latency = np.mean([m.latency_ms for m in previous_100])
+            latency_trend = "↑" if recent_latency > previous_latency * 1.1 else "↓" if recent_latency < previous_latency * 0.9 else "→"
+
+            recent_satisfaction = sum(1 for m in recent_100 if m.user_feedback == 1) / len(recent_100)
+            previous_satisfaction = sum(1 for m in previous_100 if m.user_feedback == 1) / len(previous_100)
+            satisfaction_trend = "↑" if recent_satisfaction > previous_satisfaction * 1.1 else "↓" if recent_satisfaction < previous_satisfaction * 0.9 else "→"
+        else:
+            latency_trend = "→"
+            satisfaction_trend = "→"
+
+        return {
+            "current": current,
+            "baseline": self.baseline,
+            "trends": {
+                "latency": latency_trend,
+                "satisfaction": satisfaction_trend
+            },
+            "total_requests": len(self.recent_metrics)
+        }
+
+# Usage in production server
+monitor = ProductionMonitor(window_size=1000)
+
+@app.route("/v1/chat/completions", methods=["POST"])
+def chat():
+    data = request.json
+    request_id = str(time.time())
+
+    start_time = time.time()
+
+    # Generate response
+    response = model.generate(data["messages"])
+
+    latency_ms = (time.time() - start_time) * 1000
+
+    # Extract confidence (if model provides it)
+    confidence = extract_confidence(response)
+
+    # Detect safety issues
+    safety_flags = detect_safety_issues(response)
+
+    # Log metrics
+    metrics = ResponseMetrics(
+        timestamp=time.time(),
+        request_id=request_id,
+        latency_ms=latency_ms,
+        input_tokens=len(tokenizer.encode(str(data["messages"]))),
+        output_tokens=len(tokenizer.encode(response)),
+        user_feedback=0,  # Updated later via feedback endpoint
+        safety_flags=safety_flags,
+        confidence_score=confidence
+    )
+
+    monitor.log_response(metrics)
+
+    return jsonify({"choices": [{"message": {"content": response}}]})
+
+# Feedback endpoint
+@app.route("/feedback", methods=["POST"])
+def feedback():
+    """Collect user feedback (thumbs up/down)."""
+    data = request.json
+    request_id = data["request_id"]
+    feedback_value = data["feedback"]  # 1 or -1
+
+    # Update metrics for this request
+    for metrics in monitor.recent_metrics:
+        if metrics.request_id == request_id:
+            metrics.user_feedback = feedback_value
+            break
+
+    return jsonify({"status": "feedback recorded"})
+```
+
+---
+
+#### 2. Concept Drift Detection
+
+**What is concept drift**: The relationship between inputs and outputs changes over time.
+
+**Example in emergency response**:
+- **2023**: "Evacuate buildings during wildfire" → Correct answer
+- **2024**: New regulation requires "shelter in place if fire >5km away" → Old answer now partially wrong
+
+**Detection methods**:
+
+```python
+class ConceptDriftDetector:
+    """Detect when model's learned concepts become outdated."""
+
+    def __init__(self):
+        self.reference_set = self._load_reference_set()
+        self.drift_threshold = 0.15  # Alert if accuracy drops >15%
+
+    def _load_reference_set(self):
+        """Load gold-standard test set for drift detection."""
+        # This is your evaluation benchmark from training
+        with open("reference_test_set.json", "r") as f:
+            return json.load(f)
+
+    def check_drift_monthly(self, model):
+        """Run drift detection monthly on reference set."""
+
+        print("Running concept drift detection...")
+
+        correct = 0
+        total = len(self.reference_set)
+
+        for item in self.reference_set:
+            response = model.generate(item["question"])
+
+            # Check if answer is correct (fuzzy match)
+            if self._is_correct(response, item["correct_answer"]):
+                correct += 1
+
+        current_accuracy = correct / total
+        baseline_accuracy = 0.85  # Your accuracy at deployment time
+
+        accuracy_drop = baseline_accuracy - current_accuracy
+
+        print(f"Reference Set Accuracy: {current_accuracy:.1%}")
+        print(f"Baseline Accuracy: {baseline_accuracy:.1%}")
+        print(f"Accuracy Drop: {accuracy_drop:+.1%}")
+
+        if accuracy_drop > self.drift_threshold:
+            self._send_drift_alert(
+                current_accuracy=current_accuracy,
+                baseline_accuracy=baseline_accuracy,
+                accuracy_drop=accuracy_drop
+            )
+
+            return True  # Drift detected
+
+        return False  # No drift
+
+    def _is_correct(self, response: str, correct_answer: str) -> bool:
+        """Check if response matches correct answer (fuzzy)."""
+        from difflib import SequenceMatcher
+
+        similarity = SequenceMatcher(None, response.lower(), correct_answer.lower()).ratio()
+        return similarity > 0.8
+
+    def _send_drift_alert(self, current_accuracy, baseline_accuracy, accuracy_drop):
+        """Alert that concept drift detected."""
+        alert = {
+            "type": "concept_drift",
+            "severity": "critical",
+            "message": f"Model accuracy dropped from {baseline_accuracy:.1%} to {current_accuracy:.1%}",
+            "recommendation": "Retrain model with updated data",
+            "timestamp": time.time()
+        }
+
+        with open("drift_alerts.jsonl", "a") as f:
+            f.write(json.dumps(alert) + "\n")
+
+        # Send to monitoring
+        send_to_pagerduty(alert)
+
+# Schedule monthly drift detection
+import schedule
+
+drift_detector = ConceptDriftDetector()
+
+def run_drift_detection():
+    drift_detected = drift_detector.check_drift_monthly(model)
+    if drift_detected:
+        print("⚠️ CONCEPT DRIFT DETECTED - Retraining recommended")
+
+# Run on first day of each month
+schedule.every().month.at("00:00").do(run_drift_detection)
+```
+
+---
+
+#### 3. Data Drift Detection
+
+**What is data drift**: The distribution of input queries changes over time.
+
+**Example**:
+- **Training**: 60% wildfire, 30% structure fire, 10% HAZMAT
+- **Production (Summer)**: 80% wildfire, 15% structure fire, 5% HAZMAT
+- **Production (Winter)**: 20% wildfire, 70% structure fire, 10% HAZMAT
+
+**Detection using embedding distance**:
+
+```python
+class DataDriftDetector:
+    """Detect when input distribution changes."""
+
+    def __init__(self, model):
+        self.model = model
+        self.tokenizer = tokenizer
+        self.reference_embeddings = self._compute_reference_embeddings()
+        self.drift_threshold = 0.25  # Alert if distance > 0.25
+
+    def _compute_reference_embeddings(self):
+        """Compute embeddings for training data distribution."""
+        # Sample 1000 examples from training data
+        with open("training_sample.json", "r") as f:
+            training_data = json.load(f)
+
+        embeddings = []
+        for item in training_data[:1000]:
+            emb = self._get_embedding(item["input"])
+            embeddings.append(emb)
+
+        # Average embedding (centroid)
+        reference_centroid = np.mean(embeddings, axis=0)
+
+        return {"centroid": reference_centroid, "embeddings": embeddings}
+
+    def _get_embedding(self, text: str):
+        """Get embedding for text using model."""
+        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+        with torch.no_grad():
+            outputs = self.model(**inputs, output_hidden_states=True)
+            # Use last hidden state, mean pooling
+            embedding = outputs.hidden_states[-1].mean(dim=1).cpu().numpy()[0]
+        return embedding
+
+    def check_drift_weekly(self, recent_queries: List[str]):
+        """Check if recent queries have drifted from training distribution."""
+
+        print("Running data drift detection...")
+
+        # Get embeddings for recent queries
+        recent_embeddings = [self._get_embedding(q) for q in recent_queries]
+        recent_centroid = np.mean(recent_embeddings, axis=0)
+
+        # Calculate distance between centroids (cosine distance)
+        from scipy.spatial.distance import cosine
+
+        distance = cosine(self.reference_embeddings["centroid"], recent_centroid)
+
+        print(f"Data Drift Distance: {distance:.3f}")
+
+        if distance > self.drift_threshold:
+            self._send_drift_alert(distance)
+            return True
+
+        return False
+
+    def _send_drift_alert(self, distance):
+        """Alert that data drift detected."""
+        alert = {
+            "type": "data_drift",
+            "severity": "warning",
+            "message": f"Input distribution has drifted (distance: {distance:.3f})",
+            "recommendation": "Analyze recent queries for new patterns. Consider collecting new training data.",
+            "timestamp": time.time()
+        }
+
+        with open("drift_alerts.jsonl", "a") as f:
+            f.write(json.dumps(alert) + "\n")
+
+        send_to_slack(alert)
+
+# Run weekly
+data_drift_detector = DataDriftDetector(model)
+
+def check_data_drift():
+    # Get last 500 queries
+    with open("llm_requests.log", "r") as f:
+        recent_queries = [json.loads(line)["messages"][-1]["content"] for line in f.readlines()[-500:]]
+
+    drift_detected = data_drift_detector.check_drift_weekly(recent_queries)
+    if drift_detected:
+        print("⚠️ DATA DRIFT DETECTED - Input distribution has changed")
+
+schedule.every().monday.at("00:00").do(check_data_drift)
+```
+
+---
+
+#### 4. Automated Monitoring Dashboard
+
+**Real-time dashboard for monitoring model health**:
+
+```python
+# tools/monitoring_dashboard.py
+
+from flask import Flask, render_template, jsonify
+import json
+from datetime import datetime, timedelta
+
+app = Flask(__name__)
+
+@app.route("/dashboard")
+def dashboard():
+    """Production monitoring dashboard."""
+    return render_template("monitor.html")
+
+@app.route("/api/metrics")
+def get_metrics():
+    """API endpoint for dashboard data."""
+
+    metrics = monitor.get_dashboard_metrics()
+
+    # Add drift status
+    metrics["drift_status"] = {
+        "concept_drift": check_concept_drift_status(),
+        "data_drift": check_data_drift_status()
+    }
+
+    # Add recent alerts
+    metrics["recent_alerts"] = get_recent_alerts(limit=10)
+
+    return jsonify(metrics)
+
+@app.route("/api/timeseries")
+def get_timeseries():
+    """Get time-series data for charts."""
+
+    # Load metrics from last 24 hours
+    with open("llm_requests.log", "r") as f:
+        logs = [json.loads(line) for line in f]
+
+    cutoff_time = time.time() - 86400  # 24 hours ago
+    recent_logs = [log for log in logs if log["timestamp"] > cutoff_time]
+
+    # Aggregate by hour
+    hourly_metrics = {}
+
+    for log in recent_logs:
+        hour = datetime.fromtimestamp(log["timestamp"]).strftime("%Y-%m-%d %H:00")
+
+        if hour not in hourly_metrics:
+            hourly_metrics[hour] = {
+                "requests": 0,
+                "total_latency": 0,
+                "errors": 0,
+                "thumbs_up": 0,
+                "thumbs_down": 0
+            }
+
+        hourly_metrics[hour]["requests"] += 1
+        hourly_metrics[hour]["total_latency"] += log.get("latency_ms", 0)
+        if log.get("error"):
+            hourly_metrics[hour]["errors"] += 1
+        if log.get("feedback") == 1:
+            hourly_metrics[hour]["thumbs_up"] += 1
+        elif log.get("feedback") == -1:
+            hourly_metrics[hour]["thumbs_down"] += 1
+
+    # Format for chart
+    timeseries = {
+        "timestamps": sorted(hourly_metrics.keys()),
+        "requests_per_hour": [hourly_metrics[h]["requests"] for h in sorted(hourly_metrics.keys())],
+        "avg_latency_ms": [hourly_metrics[h]["total_latency"] / hourly_metrics[h]["requests"] if hourly_metrics[h]["requests"] > 0 else 0 for h in sorted(hourly_metrics.keys())],
+        "error_rate": [hourly_metrics[h]["errors"] / hourly_metrics[h]["requests"] if hourly_metrics[h]["requests"] > 0 else 0 for h in sorted(hourly_metrics.keys())],
+        "satisfaction_rate": [hourly_metrics[h]["thumbs_up"] / (hourly_metrics[h]["thumbs_up"] + hourly_metrics[h]["thumbs_down"]) if (hourly_metrics[h]["thumbs_up"] + hourly_metrics[h]["thumbs_down"]) > 0 else 0 for h in sorted(hourly_metrics.keys())]
+    }
+
+    return jsonify(timeseries)
+
+def check_concept_drift_status():
+    """Check if concept drift alert exists in last 30 days."""
+    # Check drift_alerts.jsonl
+    try:
+        with open("drift_alerts.jsonl", "r") as f:
+            alerts = [json.loads(line) for line in f]
+
+        cutoff = time.time() - (30 * 86400)  # 30 days
+        recent_concept_drift = any(
+            a for a in alerts
+            if a["type"] == "concept_drift" and a["timestamp"] > cutoff
+        )
+
+        return "DRIFTED" if recent_concept_drift else "STABLE"
+    except FileNotFoundError:
+        return "UNKNOWN"
+
+def check_data_drift_status():
+    """Check if data drift alert exists in last 7 days."""
+    try:
+        with open("drift_alerts.jsonl", "r") as f:
+            alerts = [json.loads(line) for line in f]
+
+        cutoff = time.time() - (7 * 86400)  # 7 days
+        recent_data_drift = any(
+            a for a in alerts
+            if a["type"] == "data_drift" and a["timestamp"] > cutoff
+        )
+
+        return "DRIFTED" if recent_data_drift else "STABLE"
+    except FileNotFoundError:
+        return "UNKNOWN"
+
+def get_recent_alerts(limit=10):
+    """Get most recent alerts."""
+    try:
+        with open("production_alerts.jsonl", "r") as f:
+            alerts = [json.loads(line) for line in f]
+
+        # Sort by timestamp, most recent first
+        alerts.sort(key=lambda x: x["timestamp"], reverse=True)
+
+        return alerts[:limit]
+    except FileNotFoundError:
+        return []
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+```
+
+**Dashboard HTML Template** (`templates/monitor.html`):
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LLM Production Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metric-value { font-size: 36px; font-weight: bold; margin: 10px 0; }
+        .metric-label { color: #666; font-size: 14px; }
+        .metric-trend { font-size: 18px; }
+        .chart-container { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .alert { padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .alert-critical { background: #ffebee; border-left: 4px solid #f44336; }
+        .alert-warning { background: #fff3e0; border-left: 4px solid #ff9800; }
+        .alert-info { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        .status-stable { color: #4caf50; }
+        .status-drifted { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>LLM Production Monitor</h1>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Requests (24h)</div>
+            <div class="metric-value" id="total-requests">-</div>
+            <div class="metric-trend" id="request-trend">-</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Avg Latency (ms)</div>
+            <div class="metric-value" id="avg-latency">-</div>
+            <div class="metric-trend" id="latency-trend">-</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">User Satisfaction</div>
+            <div class="metric-value" id="satisfaction-rate">-</div>
+            <div class="metric-trend" id="satisfaction-trend">-</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Error Rate</div>
+            <div class="metric-value" id="error-rate">-</div>
+            <div class="metric-trend">-</div>
+        </div>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Concept Drift Status</div>
+            <div class="metric-value" id="concept-drift-status">-</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Data Drift Status</div>
+            <div class="metric-value" id="data-drift-status">-</div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h2>Requests per Hour (24h)</h2>
+        <canvas id="requests-chart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>Average Latency (24h)</h2>
+        <canvas id="latency-chart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>User Satisfaction Rate (24h)</h2>
+        <canvas id="satisfaction-chart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>Recent Alerts</h2>
+        <div id="alerts-container"></div>
+    </div>
+
+    <script>
+        // Fetch and update metrics every 10 seconds
+        function updateDashboard() {
+            fetch('/api/metrics')
+                .then(response => response.json())
+                .then(data => {
+                    // Update metric cards
+                    document.getElementById('total-requests').textContent = data.total_requests || '-';
+                    document.getElementById('avg-latency').textContent =
+                        data.current?.avg_latency_ms?.toFixed(0) || '-';
+                    document.getElementById('satisfaction-rate').textContent =
+                        ((data.current?.thumbs_up_rate || 0) * 100).toFixed(0) + '%';
+                    document.getElementById('error-rate').textContent =
+                        ((data.current?.safety_failure_rate || 0) * 100).toFixed(1) + '%';
+
+                    // Update trends
+                    document.getElementById('latency-trend').textContent = data.trends?.latency || '-';
+                    document.getElementById('satisfaction-trend').textContent = data.trends?.satisfaction || '-';
+
+                    // Update drift status
+                    const conceptDriftEl = document.getElementById('concept-drift-status');
+                    conceptDriftEl.textContent = data.drift_status?.concept_drift || 'UNKNOWN';
+                    conceptDriftEl.className = 'metric-value ' +
+                        (data.drift_status?.concept_drift === 'STABLE' ? 'status-stable' : 'status-drifted');
+
+                    const dataDriftEl = document.getElementById('data-drift-status');
+                    dataDriftEl.textContent = data.drift_status?.data_drift || 'UNKNOWN';
+                    dataDriftEl.className = 'metric-value ' +
+                        (data.drift_status?.data_drift === 'STABLE' ? 'status-stable' : 'status-drifted');
+
+                    // Update alerts
+                    const alertsContainer = document.getElementById('alerts-container');
+                    alertsContainer.innerHTML = '';
+                    (data.recent_alerts || []).forEach(alert => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-' + alert.severity;
+                        alertDiv.innerHTML = `
+                            <strong>${alert.severity.toUpperCase()}</strong>: ${alert.message}
+                            <br><small>${new Date(alert.timestamp * 1000).toLocaleString()}</small>
+                        `;
+                        alertsContainer.appendChild(alertDiv);
+                    });
+                });
+
+            // Fetch time-series data for charts
+            fetch('/api/timeseries')
+                .then(response => response.json())
+                .then(data => {
+                    updateCharts(data);
+                });
+        }
+
+        function updateCharts(data) {
+            // Implementation of Chart.js charts
+            // (chart code here)
+        }
+
+        // Update dashboard every 10 seconds
+        updateDashboard();
+        setInterval(updateDashboard, 10000);
+    </script>
+</body>
+</html>
+```
+
+**Access dashboard**: http://localhost:5000/dashboard
+
+---
+
+#### 5. Alerting Best Practices
+
+**Alert Severity Levels**:
+
+| Severity | Trigger | Response Time | Example |
+|----------|---------|---------------|---------|
+| **Critical** | Safety failure, model crash | Immediate (PagerDuty) | Hallucinated HAZMAT data, unsafe recommendation |
+| **Warning** | Performance degradation | 1 hour | Latency >2x baseline, accuracy drop >10% |
+| **Info** | Minor issues | 24 hours | Low confidence response, typo detected |
+
+**Alert Fatigue Prevention**:
+
+```python
+class AlertManager:
+    """Prevent alert fatigue with smart grouping and throttling."""
+
+    def __init__(self):
+        self.alert_history = {}
+        self.throttle_window = 3600  # 1 hour
+
+    def should_send_alert(self, alert_type: str) -> bool:
+        """Throttle repeated alerts."""
+
+        last_alert_time = self.alert_history.get(alert_type, 0)
+        current_time = time.time()
+
+        if current_time - last_alert_time < self.throttle_window:
+            return False  # Alert sent recently, throttle
+
+        self.alert_history[alert_type] = current_time
+        return True
+
+    def group_alerts(self, alerts: List[Dict]) -> List[Dict]:
+        """Group similar alerts together."""
+
+        grouped = {}
+
+        for alert in alerts:
+            key = (alert["severity"], alert["type"])
+
+            if key not in grouped:
+                grouped[key] = {
+                    "severity": alert["severity"],
+                    "type": alert["type"],
+                    "count": 0,
+                    "first_occurrence": alert["timestamp"],
+                    "messages": []
+                }
+
+            grouped[key]["count"] += 1
+            grouped[key]["messages"].append(alert["message"])
+
+        # Format grouped alerts
+        result = []
+        for (severity, alert_type), data in grouped.items():
+            if data["count"] > 1:
+                message = f"{data['count']} {alert_type} alerts (first: {data['messages'][0]})"
+            else:
+                message = data["messages"][0]
+
+            result.append({
+                "severity": severity,
+                "type": alert_type,
+                "message": message,
+                "count": data["count"]
+            })
+
+        return result
+```
+
+---
+
+### Monitoring Checklist
+
+**Daily**:
+- [ ] Check dashboard for any critical alerts
+- [ ] Review user feedback (thumbs up/down ratio)
+- [ ] Check p95 latency < 800ms
+- [ ] Verify error rate < 2%
+
+**Weekly**:
+- [ ] Run data drift detection
+- [ ] Review sample of model responses (10-20 random)
+- [ ] Check for new failure modes
+- [ ] Update reference test set if needed
+
+**Monthly**:
+- [ ] Run concept drift detection on reference set
+- [ ] Analyze long-term trends (latency, satisfaction)
+- [ ] Expert evaluation of 50 random responses
+- [ ] Review and update alert thresholds
+
+**Quarterly**:
+- [ ] Full model evaluation on benchmark
+- [ ] Compare to baseline metrics from deployment
+- [ ] Decision: Retrain or continue monitoring
+- [ ] Update documentation with findings
+
+---
+
+### Retraining Decision Criteria
+
+**Trigger retraining if**:
+
+| Criterion | Threshold | Severity |
+|-----------|-----------|----------|
+| **Concept drift detected** | Accuracy drop >15% | Critical |
+| **User satisfaction** | Thumbs up rate <60% | Critical |
+| **Safety failures** | Rate >5% | Critical |
+| **Data drift** | Sustained >4 weeks | High |
+| **New procedures** | Major regulation change | High |
+| **Time since training** | >6 months | Medium |
+
+**Retraining workflow**:
+
+```bash
+# 1. Collect new training data (include recent production queries)
+python data_collection/collect_recent_production_data.py \
+  --output new_training_data.json
+
+# 2. Merge with existing training data
+python data_collection/merge_datasets.py \
+  --existing training_data.json \
+  --new new_training_data.json \
+  --output training_data_v2.json
+
+# 3. Retrain model
+python fine_tuning/finetune.py \
+  --data training_data_v2.json \
+  --model meta-llama/Meta-Llama-3.1-8B-Instruct \
+  --output firefighter-llama3.1-8b-v2
+
+# 4. Evaluate new model
+python evaluation/run_benchmark.py \
+  --model firefighter-llama3.1-8b-v2 \
+  --benchmark firefighter
+
+# 5. A/B test new model vs production
+# (See A/B Testing Framework section)
+```
+
+---
+
 ## A/B Testing Framework
 
 ### Why A/B Testing for LLM Deployment?
@@ -1122,18 +2029,36 @@ curl -X POST http://localhost:8000/rollback
 
 Before deploying to production:
 
+### Model Preparation
 - [ ] Model evaluated and meets quality targets (>80% accuracy)
 - [ ] Quantized for target hardware (q4_k_m or q5_k_m)
 - [ ] API endpoint tested with load testing
-- [ ] Logging and monitoring configured
+- [ ] Expert validation completed
+
+### Security and Validation
 - [ ] Rate limiting and authentication enabled
 - [ ] Input validation implemented
+- [ ] Security audit completed
+
+### Monitoring and Alerting
+- [ ] **Production monitoring dashboard deployed** (real-time metrics)
+- [ ] **Drift detection configured** (concept drift + data drift)
+- [ ] **Alert thresholds configured** (latency, safety, satisfaction)
+- [ ] **Logging and monitoring configured** (requests, responses, feedback)
+- [ ] **Baseline metrics recorded** (accuracy, latency, satisfaction at deployment)
+- [ ] **Reference test set prepared** (for monthly drift detection)
+
+### Deployment Strategy
 - [ ] **A/B testing plan defined** (shadow → canary → full rollout)
 - [ ] **Decision criteria established** (accuracy, safety, latency thresholds)
 - [ ] **Rollback procedure tested** (automatic + manual triggers)
 - [ ] Backup model available (rollback plan)
-- [ ] Expert validation completed
+
+### Documentation
+- [ ] **Monitoring runbook** (how to interpret dashboard, respond to alerts)
+- [ ] **Retraining procedure documented** (when and how to retrain)
 - [ ] Documentation for operators written
+- [ ] Incident response plan created
 
 ---
 
@@ -1141,10 +2066,11 @@ Before deploying to production:
 
 1. **Start with LM Studio** for local testing
 2. **Move to vLLM** for production deployment
-3. **Monitor performance** and collect feedback
-4. **Iterate**: Retrain with new data every 3-6 months
+3. **Deploy monitoring dashboard** and configure alerts
+4. **Monitor performance** continuously (daily/weekly/monthly checks)
+5. **Iterate**: Retrain when drift detected or every 3-6 months
 
 ---
 
-**Generated**: 2025-11-13
-**Version**: 1.0
+**Generated**: 2025-11-14
+**Version**: 1.1
