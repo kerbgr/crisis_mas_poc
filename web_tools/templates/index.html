@@ -24,7 +24,10 @@
                         <a class="nav-link active" href="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/scenarios">Scenarios</a>
+                        <a class="nav-link" href="/protocols">Incident Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/crisis-scenarios">Crisis Scenarios</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/experts">Experts</a>
@@ -70,8 +73,8 @@
                 <div class="card stat-card bg-primary text-white">
                     <div class="card-body text-center">
                         <i class="bi bi-file-text stat-icon"></i>
-                        <h2 class="mt-3">{{ stats.total_scenarios }}</h2>
-                        <p class="mb-0">Total Scenarios</p>
+                        <h2 class="mt-3">{{ stats.total_protocols }}</h2>
+                        <p class="mb-0">Training Protocols</p>
                     </div>
                 </div>
             </div>
@@ -96,9 +99,9 @@
             <div class="col-md-3">
                 <div class="card stat-card bg-warning text-white">
                     <div class="card-body text-center">
-                        <i class="bi bi-translate stat-icon"></i>
-                        <h2 class="mt-3">{{ stats.languages }}</h2>
-                        <p class="mb-0">Greek Scenarios</p>
+                        <i class="bi bi-map stat-icon"></i>
+                        <h2 class="mt-3">{{ stats.crisis_scenarios }}</h2>
+                        <p class="mb-0">Crisis Scenarios</p>
                     </div>
                 </div>
             </div>
@@ -106,28 +109,48 @@
 
         <!-- Quick Actions -->
         <div class="row mb-5">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
                         <h3 class="card-title">
-                            <i class="bi bi-file-text-fill text-primary"></i> Scenarios
+                            <i class="bi bi-book-fill text-primary"></i> Incident Handling Protocols
                         </h3>
                         <p class="card-text text-muted">
-                            Create and manage emergency response scenarios with questions and expert answers.
-                            Support for Greek and English languages.
+                            <span class="badge bg-info mb-2">LLM Training Data</span><br>
+                            Create Q&A pairs for training emergency response AI. Questions and expert answers for various incident types.
                         </p>
                         <div class="btn-group" role="group">
-                            <a href="/scenarios" class="btn btn-outline-primary">
+                            <a href="/protocols" class="btn btn-outline-primary">
                                 <i class="bi bi-list"></i> View All
                             </a>
-                            <a href="/scenarios/new" class="btn btn-primary">
+                            <a href="/protocols/new" class="btn btn-primary">
                                 <i class="bi bi-plus-circle"></i> Create New
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <i class="bi bi-map-fill text-danger"></i> Crisis Scenarios
+                        </h3>
+                        <p class="card-text text-muted">
+                            Build complete crisis scenarios with geographic data, response actions, and decision criteria for multi-agent simulation.
+                        </p>
+                        <div class="btn-group" role="group">
+                            <a href="/crisis-scenarios" class="btn btn-outline-danger">
+                                <i class="bi bi-list"></i> Browse
+                            </a>
+                            <a href="/crisis-scenarios/new" class="btn btn-danger">
+                                <i class="bi bi-plus-circle"></i> Create New
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
                         <h3 class="card-title">

@@ -13,17 +13,20 @@ from pathlib import Path
 app = Flask(__name__)
 app.secret_key = 'crisis_mas_web_tools_secret_key_2024'
 
-# Data directory
+# Data directories
 DATA_DIR = Path(__file__).parent / 'data'
-SCENARIOS_FILE = DATA_DIR / 'scenarios.json'
+PROTOCOLS_FILE = DATA_DIR / 'scenarios.json'  # Keep filename for backward compatibility
 EXPERTS_FILE = DATA_DIR / 'experts.json'
+
+# Crisis scenarios directory (in project root)
+CRISIS_SCENARIOS_DIR = Path(__file__).parent.parent / 'scenarios'
 
 # Ensure data directory exists
 DATA_DIR.mkdir(exist_ok=True)
 
 # Initialize data files if they don't exist
-if not SCENARIOS_FILE.exists():
-    with open(SCENARIOS_FILE, 'w', encoding='utf-8') as f:
+if not PROTOCOLS_FILE.exists():
+    with open(PROTOCOLS_FILE, 'w', encoding='utf-8') as f:
         json.dump([], f, ensure_ascii=False, indent=2)
 
 if not EXPERTS_FILE.exists():
@@ -35,16 +38,55 @@ if not EXPERTS_FILE.exists():
 # Helper Functions
 # ============================================================================
 
-def load_scenarios():
-    """Load scenarios from JSON file."""
-    with open(SCENARIOS_FILE, 'r', encoding='utf-8') as f:
+def load_protocols():
+    """Load incident handling protocols from JSON file."""
+    with open(PROTOCOLS_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
-def save_scenarios(scenarios):
-    """Save scenarios to JSON file."""
-    with open(SCENARIOS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(scenarios, f, ensure_ascii=False, indent=2)
+def save_protocols(protocols):
+    """Save incident handling protocols to JSON file."""
+    with open(PROTOCOLS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(protocols, f, ensure_ascii=False, indent=2)
+
+
+def load_crisis_scenarios():
+    """Load crisis scenarios from /scenarios directory."""
+    scenarios = []
+    if CRISIS_SCENARIOS_DIR.exists():
+        for json_file in CRISIS_SCENARIOS_DIR.glob('*.json'):
+            # Skip template and non-scenario files
+            if json_file.name in ['scenario_template.json', 'criteria_weights.json']:
+                continue
+            try:
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    scenario = json.load(f)
+                    scenario['_filename'] = json_file.name
+                    scenarios.append(scenario)
+            except Exception as e:
+                print(f"Error loading {json_file.name}: {e}")
+    return scenarios
+
+
+def save_crisis_scenario(scenario, filename=None, save_dir=None):
+    """Save crisis scenario to JSON file."""
+    if save_dir is None:
+        save_dir = CRISIS_SCENARIOS_DIR
+    else:
+        save_dir = Path(save_dir)
+
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    if filename is None:
+        # Generate filename from scenario id and type
+        scenario_id = scenario.get('id', 'scenario')
+        filename = f"{scenario_id}.json"
+
+    file_path = save_dir / filename
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(scenario, f, ensure_ascii=False, indent=2)
+
+    return file_path
 
 
 def load_experts():
@@ -77,39 +119,40 @@ def generate_id(items, prefix='item'):
 @app.route('/')
 def index():
     """Home page with overview."""
-    scenarios = load_scenarios()
+    protocols = load_protocols()
     experts = load_experts()
-    
+    crisis_scenarios = load_crisis_scenarios()
+
     stats = {
-        'total_scenarios': len(scenarios),
+        'total_protocols': len(protocols),
         'total_experts': len(experts),
-        'categories': len(set(s.get('category', 'Unknown') for s in scenarios)),
-        'languages': sum(1 for s in scenarios if any(ord(c) > 127 for c in s.get('question', '')))
+        'categories': len(set(s.get('category', 'Unknown') for s in protocols)),
+        'crisis_scenarios': len(crisis_scenarios)
     }
-    
+
     return render_template('index.html', stats=stats)
 
 
 # ============================================================================
-# Routes - Scenarios
+# Routes - Incident Handling Protocols (LLM Training)
 # ============================================================================
 
-@app.route('/scenarios')
-def scenarios_list():
-    """List all scenarios."""
-    scenarios = load_scenarios()
-    return render_template('scenarios.html', scenarios=scenarios)
+@app.route('/protocols')
+def protocols_list():
+    """List all incident handling protocols."""
+    protocols = load_protocols()
+    return render_template('scenarios.html', protocols=protocols)
 
 
-@app.route('/scenarios/new', methods=['GET', 'POST'])
-def scenario_new():
-    """Create new scenario."""
+@app.route('/protocols/new', methods=['GET', 'POST'])
+def protocol_new():
+    """Create new incident handling protocol."""
     if request.method == 'POST':
-        scenarios = load_scenarios()
-        
-        # Create new scenario from form data
-        new_scenario = {
-            'id': generate_id(scenarios, 'scenario'),
+        protocols = load_protocols()
+
+        # Create new protocol from form data
+        new_protocol = {
+            'id': generate_id(protocols, 'protocol'),
             'question': request.form.get('question', '').strip(),
             'answer': request.form.get('answer', '').strip(),
             'category': request.form.get('category', 'general'),
@@ -122,58 +165,137 @@ def scenario_new():
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat()
         }
-        
-        scenarios.append(new_scenario)
-        save_scenarios(scenarios)
-        
-        flash(f'✅ Scenario "{new_scenario["id"]}" created successfully!', 'success')
-        return redirect(url_for('scenarios_list'))
-    
+
+        protocols.append(new_protocol)
+        save_protocols(protocols)
+
+        flash(f'✅ Protocol "{new_protocol["id"]}" created successfully!', 'success')
+        return redirect(url_for('protocols_list'))
+
     experts = load_experts()
-    return render_template('scenario_form.html', scenario=None, experts=experts)
+    return render_template('scenario_form.html', protocol=None, experts=experts)
 
 
-@app.route('/scenarios/<scenario_id>/edit', methods=['GET', 'POST'])
-def scenario_edit(scenario_id):
-    """Edit existing scenario."""
-    scenarios = load_scenarios()
-    scenario = next((s for s in scenarios if s['id'] == scenario_id), None)
-    
-    if not scenario:
-        flash(f'❌ Scenario "{scenario_id}" not found!', 'error')
-        return redirect(url_for('scenarios_list'))
-    
+@app.route('/protocols/<protocol_id>/edit', methods=['GET', 'POST'])
+def protocol_edit(protocol_id):
+    """Edit existing incident handling protocol."""
+    protocols = load_protocols()
+    protocol = next((s for s in protocols if s['id'] == protocol_id), None)
+
+    if not protocol:
+        flash(f'❌ Protocol "{protocol_id}" not found!', 'error')
+        return redirect(url_for('protocols_list'))
+
     if request.method == 'POST':
-        # Update scenario with form data
-        scenario['question'] = request.form.get('question', '').strip()
-        scenario['answer'] = request.form.get('answer', '').strip()
-        scenario['category'] = request.form.get('category', 'general')
-        scenario['location'] = request.form.get('location', '').strip()
-        scenario['severity'] = request.form.get('severity', 'medium')
-        scenario['resources_required'] = request.form.get('resources_required', '').strip()
-        scenario['expert_id'] = request.form.get('expert_id', '').strip()
-        scenario['language'] = request.form.get('language', 'en')
-        scenario['tags'] = [tag.strip() for tag in request.form.get('tags', '').split(',') if tag.strip()]
-        scenario['updated_at'] = datetime.now().isoformat()
-        
-        save_scenarios(scenarios)
-        
-        flash(f'✅ Scenario "{scenario_id}" updated successfully!', 'success')
-        return redirect(url_for('scenarios_list'))
-    
+        # Update protocol with form data
+        protocol['question'] = request.form.get('question', '').strip()
+        protocol['answer'] = request.form.get('answer', '').strip()
+        protocol['category'] = request.form.get('category', 'general')
+        protocol['location'] = request.form.get('location', '').strip()
+        protocol['severity'] = request.form.get('severity', 'medium')
+        protocol['resources_required'] = request.form.get('resources_required', '').strip()
+        protocol['expert_id'] = request.form.get('expert_id', '').strip()
+        protocol['language'] = request.form.get('language', 'en')
+        protocol['tags'] = [tag.strip() for tag in request.form.get('tags', '').split(',') if tag.strip()]
+        protocol['updated_at'] = datetime.now().isoformat()
+
+        save_protocols(protocols)
+
+        flash(f'✅ Protocol "{protocol_id}" updated successfully!', 'success')
+        return redirect(url_for('protocols_list'))
+
     experts = load_experts()
-    return render_template('scenario_form.html', scenario=scenario, experts=experts)
+    return render_template('scenario_form.html', protocol=protocol, experts=experts)
 
 
-@app.route('/scenarios/<scenario_id>/delete', methods=['POST'])
-def scenario_delete(scenario_id):
-    """Delete scenario."""
-    scenarios = load_scenarios()
-    scenarios = [s for s in scenarios if s['id'] != scenario_id]
-    save_scenarios(scenarios)
-    
-    flash(f'✅ Scenario "{scenario_id}" deleted successfully!', 'success')
-    return redirect(url_for('scenarios_list'))
+@app.route('/protocols/<protocol_id>/delete', methods=['POST'])
+def protocol_delete(protocol_id):
+    """Delete incident handling protocol."""
+    protocols = load_protocols()
+    protocols = [s for s in protocols if s['id'] != protocol_id]
+    save_protocols(protocols)
+
+    flash(f'✅ Protocol "{protocol_id}" deleted successfully!', 'success')
+    return redirect(url_for('protocols_list'))
+
+
+# ============================================================================
+# Routes - Crisis Scenarios (Multi-Agent Simulation)
+# ============================================================================
+
+@app.route('/crisis-scenarios')
+def crisis_scenarios_list():
+    """List all crisis scenarios."""
+    scenarios = load_crisis_scenarios()
+    return render_template('crisis_scenarios.html', scenarios=scenarios)
+
+
+@app.route('/crisis-scenarios/new', methods=['GET', 'POST'])
+def crisis_scenario_new():
+    """Create new crisis scenario."""
+    if request.method == 'POST':
+        # This will be handled by JavaScript/AJAX for complex form
+        pass
+
+    return render_template('crisis_scenario_form_enhanced.html', scenario=None, mode='create')
+
+
+@app.route('/crisis-scenarios/<filename>/view')
+def crisis_scenario_view(filename):
+    """View crisis scenario details."""
+    scenario_path = CRISIS_SCENARIOS_DIR / filename
+    if not scenario_path.exists():
+        flash(f'❌ Scenario "{filename}" not found!', 'error')
+        return redirect(url_for('crisis_scenarios_list'))
+
+    with open(scenario_path, 'r', encoding='utf-8') as f:
+        scenario = json.load(f)
+
+    scenario['_filename'] = filename
+    return render_template('crisis_scenario_view.html', scenario=scenario)
+
+
+@app.route('/crisis-scenarios/<filename>/edit', methods=['GET', 'POST'])
+def crisis_scenario_edit(filename):
+    """Edit existing crisis scenario."""
+    scenario_path = CRISIS_SCENARIOS_DIR / filename
+    if not scenario_path.exists():
+        flash(f'❌ Scenario "{filename}" not found!', 'error')
+        return redirect(url_for('crisis_scenarios_list'))
+
+    with open(scenario_path, 'r', encoding='utf-8') as f:
+        scenario = json.load(f)
+
+    scenario['_filename'] = filename
+    return render_template('crisis_scenario_form_enhanced.html', scenario=scenario, mode='edit')
+
+
+@app.route('/api/crisis-scenarios/save', methods=['POST'])
+def api_crisis_scenario_save():
+    """API endpoint to save crisis scenario."""
+    try:
+        scenario_data = request.json
+        filename = scenario_data.get('_filename')
+        save_location = scenario_data.get('_save_location', str(CRISIS_SCENARIOS_DIR))
+
+        # Remove metadata fields
+        if '_filename' in scenario_data:
+            del scenario_data['_filename']
+        if '_save_location' in scenario_data:
+            del scenario_data['_save_location']
+
+        file_path = save_crisis_scenario(scenario_data, filename, save_location)
+
+        return jsonify({
+            'success': True,
+            'message': f'Scenario saved to {file_path}',
+            'filename': file_path.name
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
 
 
 # ============================================================================
@@ -270,10 +392,17 @@ def expert_delete(expert_id):
 # API Routes (for AJAX operations)
 # ============================================================================
 
-@app.route('/api/scenarios')
-def api_scenarios():
-    """Get all scenarios as JSON."""
-    scenarios = load_scenarios()
+@app.route('/api/protocols')
+def api_protocols():
+    """Get all incident handling protocols as JSON."""
+    protocols = load_protocols()
+    return jsonify(protocols)
+
+
+@app.route('/api/crisis-scenarios')
+def api_crisis_scenarios():
+    """Get all crisis scenarios as JSON."""
+    scenarios = load_crisis_scenarios()
     return jsonify(scenarios)
 
 
@@ -287,16 +416,18 @@ def api_experts():
 @app.route('/api/export')
 def api_export():
     """Export all data as combined JSON."""
-    scenarios = load_scenarios()
+    protocols = load_protocols()
+    crisis_scenarios = load_crisis_scenarios()
     experts = load_experts()
-    
+
     export_data = {
-        'scenarios': scenarios,
+        'protocols': protocols,
+        'crisis_scenarios': crisis_scenarios,
         'experts': experts,
         'exported_at': datetime.now().isoformat(),
-        'version': '1.0'
+        'version': '2.0'
     }
-    
+
     return jsonify(export_data)
 
 
