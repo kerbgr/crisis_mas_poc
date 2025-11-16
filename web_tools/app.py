@@ -9,6 +9,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
+from protocol_integration import get_protocol_integration
 
 app = Flask(__name__)
 app.secret_key = 'crisis_mas_web_tools_secret_key_2024'
@@ -429,6 +430,124 @@ def api_export():
     }
 
     return jsonify(export_data)
+
+
+# ============================================================================
+# API Routes - Protocol Integration
+# ============================================================================
+
+@app.route('/api/protocols/relevant/<crisis_type>')
+def api_get_relevant_protocols(crisis_type):
+    """
+    Get protocols relevant to a crisis type.
+
+    Args:
+        crisis_type: Type of crisis (wildfire, flood, etc.)
+
+    Returns:
+        JSON list of relevant protocols
+    """
+    try:
+        integrator = get_protocol_integration()
+        category = request.args.get('category')
+        limit = int(request.args.get('limit', 5))
+
+        relevant_protocols = integrator.get_relevant_protocols(
+            crisis_type=crisis_type,
+            category=category,
+            limit=limit
+        )
+
+        return jsonify({
+            'success': True,
+            'crisis_type': crisis_type,
+            'count': len(relevant_protocols),
+            'protocols': relevant_protocols
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+
+
+@app.route('/api/protocols/suggest-actions/<crisis_type>')
+def api_suggest_actions(crisis_type):
+    """
+    Suggest response actions based on protocol knowledge.
+
+    Args:
+        crisis_type: Type of crisis
+
+    Returns:
+        JSON list of suggested actions
+    """
+    try:
+        integrator = get_protocol_integration()
+        context = request.args.get('context', '')
+
+        suggestions = integrator.suggest_action_from_protocol(
+            crisis_type=crisis_type,
+            action_context=context
+        )
+
+        return jsonify({
+            'success': True,
+            'crisis_type': crisis_type,
+            'count': len(suggestions),
+            'suggested_actions': suggestions
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+
+
+@app.route('/api/protocols/extract-actions', methods=['POST'])
+def api_extract_actions():
+    """
+    Extract potential actions from a protocol answer.
+
+    Expects JSON body with 'protocol_id' or 'answer' field.
+
+    Returns:
+        JSON list of extracted actions
+    """
+    try:
+        data = request.json
+        integrator = get_protocol_integration()
+
+        if 'protocol_id' in data:
+            # Find protocol by ID
+            protocols = load_protocols()
+            protocol = next((p for p in protocols if p['id'] == data['protocol_id']), None)
+            if not protocol:
+                return jsonify({
+                    'success': False,
+                    'error': 'Protocol not found'
+                }), 404
+        elif 'answer' in data:
+            # Use provided answer
+            protocol = {'answer': data['answer']}
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Either protocol_id or answer required'
+            }), 400
+
+        extracted = integrator.extract_actions_from_protocol(protocol)
+
+        return jsonify({
+            'success': True,
+            'count': len(extracted),
+            'extracted_actions': extracted
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
 
 
 # ============================================================================
