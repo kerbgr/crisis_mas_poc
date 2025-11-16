@@ -592,3 +592,303 @@ async function handleSubmit(e) {
         showValidation('error', `❌ Error saving scenario: ${error.message}`);
     }
 }
+
+// ============================================================================
+// Protocol Integration - Knowledge Base
+// ============================================================================
+
+/**
+ * Load and display relevant protocols when crisis type changes
+ */
+async function loadRelevantProtocols(crisisType) {
+    if (!crisisType) return;
+
+    try {
+        const response = await fetch(`/api/protocols/relevant/${encodeURIComponent(crisisType)}?limit=3`);
+        const result = await response.json();
+
+        if (result.success && result.protocols.length > 0) {
+            showProtocolsPanel(result.protocols);
+        }
+    } catch (error) {
+        console.error('Error loading protocols:', error);
+    }
+}
+
+/**
+ * Display relevant protocols in a side panel or info box
+ */
+function showProtocolsPanel(protocols) {
+    const panelHtml = `
+        <div class="alert alert-info mt-3" id="protocolsPanel">
+            <h6><i class="bi bi-book"></i> Related Knowledge Base</h6>
+            <p class="small mb-2">Found ${protocols.length} relevant incident handling protocol(s):</p>
+            ${protocols.map(p => `
+                <div class="card card-body bg-white mb-2 small">
+                    <strong>${p.category.toUpperCase()}</strong>: ${p.question.substring(0, 100)}...
+                    <button class="btn btn-xs btn-outline-primary mt-1" onclick="extractActionsFromProtocol('${p.id}')">
+                        <i class="bi bi-lightbulb"></i> Extract Actions
+                    </button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    // Insert after actions container
+    const actionsContainer = document.getElementById('actionsContainer').parentElement;
+    const existing = document.getElementById('protocolsPanel');
+    if (existing) existing.remove();
+
+    actionsContainer.insertAdjacentHTML('afterend', panelHtml);
+}
+
+/**
+ * Extract and suggest actions from a specific protocol
+ */
+async function extractActionsFromProtocol(protocolId) {
+    try {
+        const response = await fetch('/api/protocols/extract-actions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ protocol_id: protocolId })
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.extracted_actions.length > 0) {
+            showExtractedActions(result.extracted_actions);
+        } else {
+            showValidation('info', 'No actionable steps found in this protocol');
+        }
+    } catch (error) {
+        showValidation('error', `Error extracting actions: ${error.message}`);
+    }
+}
+
+/**
+ * Display extracted actions and allow user to add them
+ */
+function showExtractedActions(actions) {
+    const modalHtml = `
+        <div class="modal fade" id="extractedActionsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="bi bi-lightbulb"></i> Extracted Actions from Protocol</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Select actions to add to your scenario:</p>
+                        ${actions.map((action, idx) => `
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="${idx}" id="extractedAction${idx}">
+                                <label class="form-check-label" for="extractedAction${idx}">
+                                    <strong>${action.name}</strong><br>
+                                    <small class="text-muted">${action.description}</small>
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="applyExtractedActions()">
+                            Add Selected Actions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Remove existing modal if any
+    const existing = document.getElementById('extractedActionsModal');
+    if (existing) existing.remove();
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Store extracted actions globally for later use
+    window.currentExtractedActions = actions;
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('extractedActionsModal'));
+    modal.show();
+}
+
+/**
+ * Apply selected extracted actions to the form
+ */
+function applyExtractedActions() {
+    const checkboxes = document.querySelectorAll('#extractedActionsModal input[type="checkbox"]:checked');
+
+    checkboxes.forEach(checkbox => {
+        const idx = parseInt(checkbox.value);
+        const action = window.currentExtractedActions[idx];
+
+        // Add action to form
+        addAction();
+        const actionNum = actionCounter;
+
+        // Populate with extracted data
+        document.querySelector(`[name="action_${actionNum}_name"]`).value = action.name;
+        document.querySelector(`[name="action_${actionNum}_description"]`).value = action.description;
+    });
+
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('extractedActionsModal'));
+    modal.hide();
+
+    showValidation('success', `Added ${checkboxes.length} action(s) from protocol knowledge`);
+}
+
+/**
+ * Suggest complete actions with criteria scores based on crisis type
+ */
+async function suggestActionsFromKnowledge() {
+    const crisisType = document.getElementById('type').value;
+
+    if (!crisisType) {
+        showValidation('error', 'Please select a crisis type first');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/protocols/suggest-actions/${encodeURIComponent(crisisType)}`);
+        const result = await response.json();
+
+        if (result.success && result.suggested_actions.length > 0) {
+            showSuggestedActions(result.suggested_actions);
+        } else {
+            showValidation('info', 'No action suggestions available for this crisis type');
+        }
+    } catch (error) {
+        showValidation('error', `Error getting suggestions: ${error.message}`);
+    }
+}
+
+/**
+ * Display suggested actions with full details including criteria scores
+ */
+function showSuggestedActions(actions) {
+    const modalHtml = `
+        <div class="modal fade" id="suggestedActionsModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title"><i class="bi bi-stars"></i> AI-Suggested Actions from Knowledge Base</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                        <p>These actions are suggested based on expert protocols. Select to add with pre-filled criteria scores:</p>
+                        ${actions.map((action, idx) => `
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="${idx}" id="suggestedAction${idx}">
+                                        <label class="form-check-label" for="suggestedAction${idx}">
+                                            <strong>${action.name}</strong>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p class="small mb-2">${action.description}</p>
+                                    <div class="row small">
+                                        <div class="col-6">
+                                            <strong>Resources:</strong> ${action.required_resources.join(', ')}<br>
+                                            <strong>Duration:</strong> ${action.estimated_duration}<br>
+                                            <strong>Risk:</strong> ${(action.risk_level * 100).toFixed(0)}%
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>Criteria Scores:</strong><br>
+                                            ${Object.entries(action.criteria_scores).map(([k, v]) =>
+                                                `<span class="badge bg-secondary me-1">${k}: ${(v * 100).toFixed(0)}%</span>`
+                                            ).join('')}
+                                        </div>
+                                    </div>
+                                    <div class="small text-muted mt-2">
+                                        <i class="bi bi-info-circle"></i> Source: Protocol ${action.source_protocol}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" onclick="applySuggestedActions()">
+                            <i class="bi bi-check-circle"></i> Add Selected Actions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Remove existing modal if any
+    const existing = document.getElementById('suggestedActionsModal');
+    if (existing) existing.remove();
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Store suggested actions globally
+    window.currentSuggestedActions = actions;
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('suggestedActionsModal'));
+    modal.show();
+}
+
+/**
+ * Apply selected suggested actions with full details
+ */
+function applySuggestedActions() {
+    const checkboxes = document.querySelectorAll('#suggestedActionsModal input[type="checkbox"]:checked');
+
+    checkboxes.forEach(checkbox => {
+        const idx = parseInt(checkbox.value);
+        const action = window.currentSuggestedActions[idx];
+
+        // Add action to form
+        addAction();
+        const actionNum = actionCounter;
+
+        // Populate ALL fields including criteria scores
+        document.querySelector(`[name="action_${actionNum}_id"]`).value = action.id;
+        document.querySelector(`[name="action_${actionNum}_name"]`).value = action.name;
+        document.querySelector(`[name="action_${actionNum}_description"]`).value = action.description;
+        document.querySelector(`[name="action_${actionNum}_resources"]`).value = action.required_resources.join(', ');
+        document.querySelector(`[name="action_${actionNum}_duration"]`).value = action.estimated_duration;
+        document.querySelector(`[name="action_${actionNum}_risk"]`).value = action.risk_level;
+
+        // Fill criteria scores
+        const scores = action.criteria_scores;
+        document.querySelector(`[name="action_${actionNum}_effectiveness"]`).value = scores.effectiveness;
+        document.querySelector(`[name="action_${actionNum}_safety"]`).value = scores.safety;
+        document.querySelector(`[name="action_${actionNum}_speed"]`).value = scores.speed;
+        document.querySelector(`[name="action_${actionNum}_cost"]`).value = scores.cost;
+        document.querySelector(`[name="action_${actionNum}_public_acceptance"]`).value = scores.public_acceptance;
+    });
+
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('suggestedActionsModal'));
+    modal.hide();
+
+    showValidation('success', `Added ${checkboxes.length} action(s) with AI-suggested criteria scores`);
+}
+
+// ============================================================================
+// Event Listeners for Protocol Integration
+// ============================================================================
+
+// Add listener to crisis type change
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('type');
+    if (typeSelect) {
+        typeSelect.addEventListener('change', function() {
+            loadRelevantProtocols(this.value);
+        });
+
+        // Load protocols if type is already selected (edit mode)
+        if (typeSelect.value) {
+            loadRelevantProtocols(typeSelect.value);
+        }
+    }
+});
