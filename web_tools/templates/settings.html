@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Crisis MAS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shield-fill-check"></i> Crisis MAS - Web Tools
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/protocols">Incident Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/crisis-scenarios">Crisis Scenarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/experts">Experts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/settings">
+                            <i class="bi bi-gear-fill"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Settings Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-gear-fill text-primary"></i> Application Settings</h1>
+        </div>
+
+        <!-- Expert Profiles Configuration -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-people-fill"></i> Expert Profiles Data Source</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong><i class="bi bi-info-circle"></i> About Expert Profiles:</strong><br>
+                    The web tools can load expert profiles from different JSON files. The default location is
+                    <code>agents/agent_profiles.json</code> which contains all 14 agent profiles used by the core framework.
+                    You can change this path to point to a different expert profiles file.
+                </div>
+
+                <!-- Current Status -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="bi bi-file-earmark-text"></i> Current File</h6>
+                                <p class="mb-1"><code>{{ expert_stats.file_path }}</code></p>
+                                {% if expert_stats.exists %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> File Exists</span>
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> File Not Found</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="bi bi-bar-chart"></i> Expert Statistics</h6>
+                                <p class="mb-1"><strong>Format:</strong> {{ expert_stats.format }}</p>
+                                <p class="mb-1"><strong>Count:</strong>
+                                    <span class="badge bg-primary">{{ expert_stats.count }} experts</span>
+                                </p>
+                                {% if expert_stats.error %}
+                                    <p class="text-danger mb-0"><small>Error: {{ expert_stats.error }}</small></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change File Path Form -->
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="experts_file" class="form-label">
+                            <i class="bi bi-folder2-open"></i> Expert Profiles File Path
+                        </label>
+                        <input type="text" class="form-control" id="experts_file" name="experts_file"
+                               value="{{ config.experts_file }}"
+                               placeholder="/path/to/experts.json"
+                               required>
+                        <div class="form-text">
+                            Enter the absolute or relative path to the expert profiles JSON file.
+                        </div>
+                    </div>
+
+                    <!-- Quick Select Options -->
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-lightning-fill"></i> Quick Select:</label>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                    onclick="document.getElementById('experts_file').value = '{{ config.experts_file.replace('agents/agent_profiles.json', 'agents/agent_profiles.json') }}'">
+                                Agent Profiles (Default)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="document.getElementById('experts_file').value = 'web_tools/data/experts.json'">
+                                Legacy Experts
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Settings
+                        </button>
+                        <a href="/" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- File Format Help -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-question-circle"></i> Supported File Formats</h5>
+            </div>
+            <div class="card-body">
+                <h6>1. Nested Format (agent_profiles.json)</h6>
+                <pre><code>{
+  "agents": [
+    {
+      "agent_id": "medical_expert_01",
+      "name": "Dr. Dimitris Nikolaou",
+      "role": "Medical Expert",
+      "expertise": "emergency_medicine",
+      "experience_years": 20,
+      ...
+    }
+  ]
+}</code></pre>
+
+                <h6 class="mt-3">2. Flat Array Format (legacy experts.json)</h6>
+                <pre><code>[
+  {
+    "id": "expert_001",
+    "name": "Dimitrios Papadopoulos",
+    "role": "Senior Firefighter",
+    "experience_years": 15,
+    ...
+  }
+]</code></pre>
+
+                <p class="mb-0 mt-3">
+                    <i class="bi bi-info-circle text-info"></i>
+                    Both formats are automatically detected and supported by the web tools.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

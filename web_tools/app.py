@@ -17,10 +17,16 @@ app.secret_key = 'crisis_mas_web_tools_secret_key_2024'
 # Data directories
 DATA_DIR = Path(__file__).parent / 'data'
 PROTOCOLS_FILE = DATA_DIR / 'scenarios.json'  # Keep filename for backward compatibility
-EXPERTS_FILE = DATA_DIR / 'experts.json'
+
+# Expert profiles - use agent_profiles.json from agents directory
+AGENTS_PROFILES_FILE = Path(__file__).parent.parent / 'agents' / 'agent_profiles.json'
+EXPERTS_FILE = AGENTS_PROFILES_FILE  # Default to agent profiles
 
 # Crisis scenarios directory (in project root)
 CRISIS_SCENARIOS_DIR = Path(__file__).parent.parent / 'scenarios'
+
+# Configuration file for custom paths
+CONFIG_FILE = DATA_DIR / 'config.json'
 
 # Ensure data directory exists
 DATA_DIR.mkdir(exist_ok=True)
@@ -30,9 +36,26 @@ if not PROTOCOLS_FILE.exists():
     with open(PROTOCOLS_FILE, 'w', encoding='utf-8') as f:
         json.dump([], f, ensure_ascii=False, indent=2)
 
-if not EXPERTS_FILE.exists():
-    with open(EXPERTS_FILE, 'w', encoding='utf-8') as f:
-        json.dump([], f, ensure_ascii=False, indent=2)
+# Load configuration
+def load_config():
+    """Load configuration with custom file paths."""
+    if CONFIG_FILE.exists():
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {
+        'experts_file': str(AGENTS_PROFILES_FILE),
+        'scenarios_dir': str(CRISIS_SCENARIOS_DIR)
+    }
+
+def save_config(config):
+    """Save configuration."""
+    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+        json.dump(config, f, indent=2)
+
+# Load config and update paths
+config = load_config()
+if 'experts_file' in config:
+    EXPERTS_FILE = Path(config['experts_file'])
 
 
 # ============================================================================
@@ -91,15 +114,53 @@ def save_crisis_scenario(scenario, filename=None, save_dir=None):
 
 
 def load_experts():
-    """Load expert profiles from JSON file."""
+    """Load expert profiles from JSON file.
+    Supports both formats:
+    1. Flat array: [{"id": "expert_001", ...}, ...]
+    2. Nested format: {"agents": [{"agent_id": "...", ...}, ...]}
+    """
+    if not EXPERTS_FILE.exists():
+        return []
+
     with open(EXPERTS_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
+        data = json.load(f)
+
+    # Handle nested format (agent_profiles.json)
+    if isinstance(data, dict) and 'agents' in data:
+        experts = data['agents']
+        # Map agent_id to id for compatibility with web tools
+        for expert in experts:
+            if 'agent_id' in expert and 'id' not in expert:
+                expert['id'] = expert['agent_id']
+        return experts
+
+    # Handle flat array format
+    return data
 
 
 def save_experts(experts):
-    """Save expert profiles to JSON file."""
+    """Save expert profiles to JSON file.
+    Detects format and saves accordingly."""
+    # Check if original file has nested format
+    original_format = 'flat'
+    if EXPERTS_FILE.exists():
+        with open(EXPERTS_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if isinstance(data, dict) and 'agents' in data:
+                original_format = 'nested'
+
+    # Ensure agent_id is synced with id for nested format
+    for expert in experts:
+        if 'id' in expert and 'agent_id' not in expert:
+            expert['agent_id'] = expert['id']
+        elif 'agent_id' in expert and 'id' not in expert:
+            expert['id'] = expert['agent_id']
+
     with open(EXPERTS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(experts, f, ensure_ascii=False, indent=2)
+        if original_format == 'nested':
+            json.dump({'agents': experts}, f, ensure_ascii=False, indent=2)
+        else:
+            json.dump(experts, f, ensure_ascii=False, indent=2)
 
 
 def generate_id(items, prefix='item'):
@@ -548,6 +609,65 @@ def api_extract_actions():
             'success': False,
             'error': str(e)
         }), 400
+
+
+# ============================================================================
+# Settings Routes
+# ============================================================================
+
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    """View and update application settings."""
+    global EXPERTS_FILE, config
+
+    if request.method == 'POST':
+        # Update experts file path
+        new_experts_path = request.form.get('experts_file', '').strip()
+
+        if new_experts_path:
+            experts_path = Path(new_experts_path)
+
+            # Validate path exists
+            if not experts_path.exists():
+                flash(f'❌ File not found: {new_experts_path}', 'error')
+            else:
+                # Update configuration
+                config['experts_file'] = new_experts_path
+                save_config(config)
+
+                # Update global variable
+                EXPERTS_FILE = experts_path
+
+                flash('✅ Settings saved successfully!', 'success')
+                return redirect(url_for('settings'))
+
+    # Load current configuration
+    current_config = load_config()
+
+    # Get expert file stats
+    expert_stats = {
+        'file_path': str(EXPERTS_FILE),
+        'exists': EXPERTS_FILE.exists(),
+        'count': 0,
+        'format': 'Unknown'
+    }
+
+    if EXPERTS_FILE.exists():
+        try:
+            with open(EXPERTS_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, dict) and 'agents' in data:
+                    expert_stats['count'] = len(data['agents'])
+                    expert_stats['format'] = 'Nested (agent_profiles.json)'
+                elif isinstance(data, list):
+                    expert_stats['count'] = len(data)
+                    expert_stats['format'] = 'Flat array'
+        except Exception as e:
+            expert_stats['error'] = str(e)
+
+    return render_template('settings.html',
+                          config=current_config,
+                          expert_stats=expert_stats)
 
 
 # ============================================================================
