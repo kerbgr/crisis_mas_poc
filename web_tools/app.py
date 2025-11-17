@@ -697,7 +697,7 @@ if __name__ == '__main__':
     print("  Crisis MAS - Web Tools for LLM Training")
     print("=" * 60)
     print("\n🚀 Starting web server...")
-    print("📱 Open your browser to: http://localhost:5000")
+    print("📱 Open your browser to: http://localhost:5001")
     print("🛑 Press Ctrl+C to stop\n")
     
     app.run(debug=True, host='0.0.0.0', port=5000)
