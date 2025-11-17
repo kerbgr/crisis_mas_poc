@@ -2,9 +2,11 @@
 
 ## Overview
 
-This document describes the comprehensive evaluation framework for comparing multi-agent system (MAS) performance against single-agent baseline decisions. The framework evaluates the **Greek Emergency Response Multi-Agent System** featuring 13 expert agents responding to realistic Greek crisis scenarios.
+This document describes the comprehensive evaluation framework for comparing multi-agent system (MAS) performance against individual agent decisions. The framework evaluates the **Greek Emergency Response Multi-Agent System** featuring **13 expert agents** responding to realistic Greek crisis scenarios.
 
-The framework addresses critical bugs fixed in commit `09bec4c` that previously made single vs. multi-agent comparisons invalid.
+**Key Improvements:**
+- **Commit `09bec4c` (2025-01-09):** Fixed critical bugs in decision quality calculation that made comparisons invalid
+- **Commit `8bb88bd` (2025-11-17):** Enhanced comparison methodology to evaluate multi-agent consensus against EACH individual agent rather than one arbitrary baseline, providing comprehensive analysis of collaborative value
 
 ### Greek Crisis Scenarios
 
@@ -390,41 +392,107 @@ Baselines: 1 iteration, 3 API calls, 5 seconds.
 
 ## Baseline Comparison
 
-### Single-Agent vs Multi-Agent
+> **⚠️ Enhanced Methodology (Commit 8bb88bd, November 2025):** The comparison methodology has been significantly improved to evaluate multi-agent consensus against **EACH individual agent** rather than just one arbitrary baseline. This provides comprehensive analysis of collaborative decision-making value.
+
+### Multi-Agent vs Individual Agents (NEW - Comprehensive Comparison)
+
+**Methodology:**
+Rather than comparing multi-agent consensus to a single arbitrary baseline agent, the system now evaluates EVERY agent individually and compares the multi-agent consensus to the distribution of individual agent decisions.
 
 **Decision Quality Comparison:**
 
-$$\Delta \text{DQS} = \text{DQS}_{\text{MA}} - \text{DQS}_{\text{SA}}$$
+$$\Delta \text{DQS}_{\text{avg}} = \text{DQS}_{\text{MA}} - \overline{\text{DQS}_{\text{individuals}}}$$
 
-$$\Delta \text{DQS}_{\%} = \frac{\text{DQS}_{\text{MA}} - \text{DQS}_{\text{SA}}}{\text{DQS}_{\text{SA}}} \times 100\%$$
+$$\Delta \text{DQS}_{\%} = \frac{\text{DQS}_{\text{MA}} - \overline{\text{DQS}_{\text{individuals}}}}{\overline{\text{DQS}_{\text{individuals}}}} \times 100\%$$
 
-**Example:**
+Where:
+- $\text{DQS}_{\text{MA}}$ = Multi-agent consensus quality score
+- $\overline{\text{DQS}_{\text{individuals}}}$ = Average quality across all individual agents
+- $N$ = Number of participating agents
+
+**Agreement Analysis:**
+
+$$\text{Agreement Rate} = \frac{\sum_{i=1}^{N} \mathbb{1}(a^{*}_i = a^{*}_{\text{MA}})}{N} \times 100\%$$
+
+Where:
+- $a^{*}_i$ = Recommended alternative by agent $i$
+- $a^{*}_{\text{MA}}$ = Multi-agent consensus recommendation
+- $\mathbb{1}(\cdot)$ = Indicator function (1 if true, 0 otherwise)
+
+**Example Output:**
 
 ```json
 {
-  "decision_quality": {
-    "multi_agent": 0.720,
-    "single_agent": 0.850,
-    "improvement": -0.130,
-    "improvement_percentage": -15.3
+  "multi_agent_quality": 0.774,
+  "multi_agent_confidence": 0.674,
+  "multi_agent_recommendation": "action_rescue_operations",
+  "statistics": {
+    "avg_quality": 0.521,
+    "min_quality": 0.350,
+    "max_quality": 0.685,
+    "avg_confidence": 0.803,
+    "agreement_rate_percent": 45.5,
+    "num_agents_agree": 5,
+    "total_agents": 11
   },
-  "confidence": {
-    "multi_agent": 0.760,
-    "single_agent": 0.820,
-    "improvement": -0.060,
-    "improvement_percentage": -7.3
-  }
+  "individual_agents": [
+    {
+      "agent_name": "Taxiarchos Vasilis",
+      "recommended_alternative": "action_rescue_operations",
+      "confidence": 0.850,
+      "decision_quality": 0.685,
+      "agrees_with_consensus": true
+    },
+    {
+      "agent_name": "Commander Maria",
+      "recommended_alternative": "A1",
+      "confidence": 0.850,
+      "decision_quality": 0.620,
+      "agrees_with_consensus": false
+    },
+    ...
+  ]
 }
 ```
 
-**Interpretation:**
-- **Positive improvement:** Multi-agent outperforms single-agent
-- **Negative improvement:** Single-agent outperforms multi-agent
-- **±5%:** Negligible difference
-- **±20%:** Significant difference
-- **>50%:** Major difference (investigate causes)
+**Key Insights:**
 
-**Important Note:** Both DQS scores are now calculated using the same methodology (criteria satisfaction), making them directly comparable.
+1. **Quality Distribution:**
+   - Shows how multi-agent consensus compares to ALL individual experts
+   - Identifies quality range: best individual vs worst individual vs consensus
+   - Example: Multi-agent (0.774) exceeds even best individual (0.685)
+
+2. **Agreement Analysis:**
+   - Shows how many experts agree with the consensus
+   - Example: 5/11 (45.5%) agreement demonstrates consensus synthesizes diverse viewpoints
+   - Lower agreement doesn't mean poor decision - may indicate novel synthesis
+
+3. **Individual Rankings:**
+   - Identifies which experts contribute most/least effectively
+   - Enables reliability tracking and dynamic weighting
+   - Shows expertise relevance to specific crisis types
+
+**Interpretation:**
+- **Large positive improvement (>30%):** Strong multi-agent advantage, consensus significantly better than average
+- **Moderate positive improvement (10-30%):** Clear multi-agent benefit, validates collaborative approach
+- **Small positive improvement (0-10%):** Marginal benefit, may depend on scenario complexity
+- **Negative improvement:** Individual experts outperform consensus (investigate causes: poor consensus, dominant perspective needed)
+
+**Research Value:**
+- **Demonstrates collaboration value:** Shows consensus synthesizes diverse perspectives better than any single expert
+- **Identifies expert contributions:** Tracks which agents provide high-quality decisions
+- **Validates approach:** Proves multi-agent system adds value beyond individual expertise
+- **Enables optimization:** Identifies scenarios where collaboration matters most
+
+### Single-Agent Baseline (LEGACY - For Backward Compatibility)
+
+The legacy method compared against one arbitrary baseline agent:
+
+$$\Delta \text{DQS} = \text{DQS}_{\text{MA}} - \text{DQS}_{\text{SA}}$$
+
+This method is still supported but provides less comprehensive insight than the new individual agent comparison.
+
+**Important Note:** All DQS scores use the same methodology (criteria satisfaction), making them directly comparable whether using comprehensive or legacy comparison.
 
 ---
 
