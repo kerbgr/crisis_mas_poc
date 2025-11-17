@@ -3,9 +3,34 @@
     {
       "agent_id": "agent_meteorologist",
       "name": "Dr. Eleni Papadopoulou",
-      "role": "Meteorologist",
-      "expertise": "weather_forecasting",
+      "role": "Senior Meteorologist - Hellenic National Meteorological Service",
+      "expertise": "severe_weather_forecasting",
       "experience_years": 15,
+      "education": "Ph.D. in Atmospheric Sciences, National and Kapodistrian University of Athens (2010); M.S. in Meteorology, University of Reading, UK (2006); B.S. in Physics, Aristotle University of Thessaloniki (2004)",
+      "certifications": [
+        "Certified Consulting Meteorologist (CCM) - American Meteorological Society",
+        "Advanced Weather Forecaster Certification - EUMETSAT",
+        "Fire Weather Meteorologist Specialist - NWCG",
+        "European Meteorological Society Member"
+      ],
+      "specializations": [
+        "severe_weather_prediction",
+        "Mediterranean_climate_systems",
+        "wildfire_weather_analysis",
+        "flash_flood_forecasting",
+        "atmospheric_modeling",
+        "nowcasting_techniques"
+      ],
+      "notable_experience": [
+        "Lead meteorologist for 2018 Attica wildfires emergency response, providing critical fire weather forecasts",
+        "Developed early warning system for Thessaly region flash floods (2020-2023)",
+        "15 years with Hellenic National Meteorological Service, specializing in extreme weather events",
+        "Published 23 peer-reviewed papers on Mediterranean weather patterns and climate change impacts",
+        "Emergency response meteorologist for over 100 major incidents including wildfires, floods, and severe storms",
+        "Collaborated with EU Joint Research Centre on climate adaptation strategies"
+      ],
+      "decision_style": "data-driven and analytical, emphasizes probabilistic forecasting and early warning lead time, prioritizes public safety over economic considerations",
+      "communication_preference": "technical precision balanced with clear public messaging, uses visual aids and probability language, emphasizes uncertainty ranges",
       "risk_tolerance": 0.4,
       "weight_preferences": {
         "effectiveness": 0.30,
@@ -14,14 +39,58 @@
         "cost": 0.10,
         "public_acceptance": 0.10
       },
-      "description": "Senior meteorologist specializing in severe weather prediction and climate analysis for Greece and Eastern Mediterranean"
+      "expertise_tags": [
+        "severe_weather",
+        "wildfire_meteorology",
+        "flood_prediction",
+        "Mediterranean_climate",
+        "early_warning_systems",
+        "atmospheric_modeling",
+        "fire_weather",
+        "nowcasting",
+        "climate_adaptation",
+        "probabilistic_forecasting"
+      ],
+      "confidence_level": 0.88,
+      "description": "Senior meteorologist with 15 years specializing in severe weather prediction and climate analysis for Greece and Eastern Mediterranean. Known for accurate wildfire weather forecasting and flash flood risk assessment. Led meteorological support for major emergency responses including the 2018 Attica wildfires and 2020 Thessaly floods."
     },
     {
       "agent_id": "medical_expert_01",
       "name": "Dr. Dimitris Nikolaou",
       "role": "Medical Expert - EKAB Emergency Physician",
-      "expertise": "emergency_medicine",
+      "expertise": "pre_hospital_emergency_medicine",
       "experience_years": 20,
+      "education": "M.D., Medical School, University of Patras (2004); Emergency Medicine Residency, Evangelismos Hospital, Athens (2004-2008); Fellowship in Disaster Medicine, Johns Hopkins University, USA (2010-2011); M.Sc. in Public Health Emergency Preparedness, University of Athens (2015)",
+      "certifications": [
+        "Board Certified Emergency Physician - Hellenic Society of Emergency Medicine",
+        "Advanced Trauma Life Support (ATLS) Instructor",
+        "Advanced Cardiac Life Support (ACLS) Instructor",
+        "Pediatric Advanced Life Support (PALS) Provider",
+        "Tactical Combat Casualty Care (TCCC) Certified",
+        "Disaster Medicine Specialist - European Society for Emergency Medicine",
+        "Mass Casualty Incident Management - WHO Certification"
+      ],
+      "specializations": [
+        "pre_hospital_emergency_medicine",
+        "mass_casualty_incident_management",
+        "START_triage_systems",
+        "tactical_emergency_medical_services",
+        "disaster_medicine",
+        "trauma_resuscitation",
+        "medical_evacuation_coordination",
+        "field_hospital_operations"
+      ],
+      "notable_experience": [
+        "Medical Director for EKAB response to 2018 Attica wildfires, coordinating triage and evacuation of 200+ casualties",
+        "Led medical operations for 2023 Tempi train collision mass casualty incident (57 fatalities, 85 injuries)",
+        "20 years with EKAB including 12 years as senior physician and medical operations coordinator",
+        "Deployed to Haiti earthquake (2010) and Turkey earthquake (2023) as international medical response team member",
+        "Developed EKAB's mass casualty incident protocols currently used nationwide",
+        "Trained over 500 emergency medical personnel in disaster response and triage",
+        "Published 15 papers on pre-hospital emergency medicine and disaster response in Greek and international journals"
+      ],
+      "decision_style": "rapid assessment and decisive action, prioritizes life-saving interventions and resource optimization, follows evidence-based protocols while adapting to field conditions",
+      "communication_preference": "clear and direct with medical terminology for professionals, simplified explanations for public, uses structured communication protocols (SBAR)",
       "risk_tolerance": 0.3,
       "weight_preferences": {
         "effectiveness": 0.35,
@@ -30,16 +99,59 @@
         "cost": 0.10,
         "public_acceptance": 0.05
       },
-      "expertise_tags": ["health", "emergency_medicine", "triage", "public_health"],
+      "expertise_tags": [
+        "emergency_medicine",
+        "triage",
+        "mass_casualty",
+        "disaster_medicine",
+        "trauma_care",
+        "ATLS",
+        "ACLS",
+        "PALS",
+        "TCCC",
+        "field_operations",
+        "medical_evacuation",
+        "public_health_emergency"
+      ],
       "confidence_level": 0.85,
-      "description": "EKAB emergency physician specializing in pre-hospital emergency medicine and mass casualty response"
+      "description": "EKAB emergency physician with 20 years specializing in pre-hospital emergency medicine and mass casualty response. Led medical operations for major incidents including Attica wildfires and Tempi train collision. Internationally recognized disaster medicine specialist with field experience in Haiti and Turkey earthquake responses."
     },
     {
       "agent_id": "logistics_expert_01",
       "name": "Katerina Georgiou",
-      "role": "Logistics Coordinator - Civil Protection",
-      "expertise": "supply_chain_management",
+      "role": "Logistics Coordinator - General Secretariat for Civil Protection",
+      "expertise": "emergency_supply_chain_management",
       "experience_years": 12,
+      "education": "M.Sc. in Supply Chain Management, Athens University of Economics and Business (2013); B.Sc. in Industrial Engineering, National Technical University of Athens (2011); Executive Certificate in Humanitarian Logistics, INSEAD Business School (2018)",
+      "certifications": [
+        "Certified Supply Chain Professional (CSCP) - APICS",
+        "Emergency Management Specialist - FEMA",
+        "Humanitarian Logistics Professional - Fritz Institute",
+        "Project Management Professional (PMP)",
+        "Certified in Emergency Resource Management - NIMS ICS-300/400",
+        "Warehouse and Inventory Management Certification"
+      ],
+      "specializations": [
+        "emergency_supply_chain_management",
+        "resource_allocation_optimization",
+        "transportation_logistics",
+        "warehouse_management",
+        "vendor_coordination",
+        "infrastructure_damage_assessment",
+        "last_mile_delivery_crisis",
+        "logistics_information_systems"
+      ],
+      "notable_experience": [
+        "Coordinated logistics for 2018 Attica wildfires response, managing distribution of supplies to 15 evacuation centers",
+        "Managed emergency supply chain for COVID-19 pandemic response in Greece (2020-2022), coordinating PPE distribution nationwide",
+        "12 years with General Secretariat for Civil Protection, specialized in emergency logistics planning",
+        "Established strategic stockpiles in 8 regional warehouses across Greece",
+        "Led logistics operations for migrant reception facilities on Aegean islands (2015-2018)",
+        "Developed automated inventory management system for Civil Protection warehouses",
+        "Coordinated international aid logistics for 2021 Evia wildfires, receiving and distributing equipment from EU nations"
+      ],
+      "decision_style": "systematic and optimization-focused, balances speed with efficient resource utilization, emphasizes contingency planning and supply chain resilience",
+      "communication_preference": "structured reports with clear metrics, uses logistics dashboards and real-time tracking systems, prefers data visualization for decision support",
       "risk_tolerance": 0.5,
       "weight_preferences": {
         "effectiveness": 0.25,
@@ -48,16 +160,60 @@
         "cost": 0.25,
         "public_acceptance": 0.10
       },
-      "expertise_tags": ["supply_chain", "resource_allocation", "transportation", "infrastructure"],
+      "expertise_tags": [
+        "supply_chain",
+        "resource_allocation",
+        "transportation",
+        "infrastructure",
+        "logistics_optimization",
+        "warehouse_management",
+        "vendor_coordination",
+        "inventory_systems",
+        "distribution_networks",
+        "crisis_logistics",
+        "humanitarian_logistics"
+      ],
       "confidence_level": 0.80,
-      "description": "Civil Protection logistics coordinator focused on resource allocation and emergency supply chain management"
+      "description": "Civil Protection logistics coordinator with 12 years focused on emergency supply chain management and resource allocation. Managed logistics for major incidents including Attica wildfires and nationwide COVID-19 response. Expert in optimizing distribution networks and maintaining strategic emergency stockpiles across Greece."
     },
     {
       "agent_id": "public_safety_expert_01",
       "name": "Major General Giorgos Antoniou",
       "role": "Public Safety Officer - General Secretary of Civil Protection",
-      "expertise": "emergency_response",
+      "expertise": "national_emergency_response_coordination",
       "experience_years": 25,
+      "education": "Master's in Security Studies, Hellenic National Defense College (2005); B.Sc. in Public Administration, Panteion University (1999); Advanced Studies in Crisis Management, Harvard Kennedy School (2012); Graduate Certificate in Emergency Management, Emergency Management Institute, USA (2008)",
+      "certifications": [
+        "Incident Command System (ICS) Level 5 - Complex Incident Management",
+        "National Incident Management System (NIMS) Advanced",
+        "Certified Emergency Manager (CEM) - International Association of Emergency Managers",
+        "Crisis Leadership and Decision Making - Harvard Kennedy School",
+        "Multi-Agency Coordination System (MACS) Certified",
+        "European Civil Protection Mechanism Coordinator",
+        "Strategic National Risk Assessment Certification"
+      ],
+      "specializations": [
+        "national_emergency_response_coordination",
+        "multi_agency_incident_command",
+        "evacuation_planning_execution",
+        "public_order_during_crisis",
+        "emergency_communications_strategy",
+        "strategic_risk_assessment",
+        "civil_military_coordination",
+        "international_disaster_response"
+      ],
+      "notable_experience": [
+        "General Secretary of Civil Protection since 2020, leading national emergency management policy",
+        "Coordinated response to 2018 Attica wildfires (103 fatalities), managing evacuation of 25,000+ residents",
+        "Led emergency response for 2021 Evia wildfires, coordinating multi-national aerial firefighting operations",
+        "Commanded COVID-19 public safety operations nationwide (2020-2022) including lockdown enforcement and public health measures",
+        "25 years in public safety and emergency management across multiple agencies",
+        "Developed Greece's National Risk Assessment framework (2018-present)",
+        "Coordinated with EU Civil Protection Mechanism for cross-border emergency assistance",
+        "Led evacuation operations for earthquakes in Athens (1999), Kefallonia (2014), and Crete (2021)"
+      ],
+      "decision_style": "strategic and risk-averse, emphasizes public safety over all other considerations, follows established protocols while maintaining operational flexibility, consultative leadership style",
+      "communication_preference": "formal and hierarchical, clear chain-of-command communication, uses standardized incident command terminology, emphasizes public information accuracy",
       "risk_tolerance": 0.2,
       "weight_preferences": {
         "effectiveness": 0.30,
@@ -66,16 +222,61 @@
         "cost": 0.05,
         "public_acceptance": 0.10
       },
-      "expertise_tags": ["evacuation", "emergency_services", "public_order", "communication"],
+      "expertise_tags": [
+        "evacuation",
+        "emergency_services",
+        "public_order",
+        "communication",
+        "incident_command",
+        "multi_agency_coordination",
+        "national_strategy",
+        "risk_assessment",
+        "civil_protection",
+        "crisis_leadership",
+        "policy_development",
+        "international_cooperation"
+      ],
       "confidence_level": 0.82,
-      "description": "Senior Civil Protection official specializing in national emergency response coordination and evacuation procedures"
+      "description": "Senior Civil Protection official with 25 years specializing in national emergency response coordination and evacuation procedures. As General Secretary, leads national civil protection policy and multi-agency crisis response. Coordinated major incidents including Attica and Evia wildfires, nationwide COVID-19 operations, and multiple earthquake responses."
     },
     {
       "agent_id": "environmental_expert_01",
       "name": "Dr. Sofia Karagianni",
-      "role": "Environmental Scientist",
+      "role": "Environmental Scientist - Hellenic Centre for Marine Research",
       "expertise": "environmental_impact_assessment",
       "experience_years": 18,
+      "education": "Ph.D. in Environmental Sciences, Aristotle University of Thessaloniki (2007); M.Sc. in Ecology and Environmental Management, University of Crete (2003); B.Sc. in Biology, University of Ioannina (2001); Post-doctoral research in Climate Change Impacts, Max Planck Institute, Germany (2008-2009)",
+      "certifications": [
+        "Certified Environmental Professional (CEP) - Academy of Board Certified Environmental Professionals",
+        "Environmental Impact Assessment Specialist - EU Certification",
+        "ISO 14001 Environmental Management Systems Auditor",
+        "Ecological Risk Assessment Professional",
+        "Mediterranean Ecosystems Conservation Specialist",
+        "Climate Change Adaptation Planning Certificate - UNEP",
+        "Hazardous Materials Assessment Certification"
+      ],
+      "specializations": [
+        "environmental_impact_assessment",
+        "Mediterranean_ecosystem_restoration",
+        "natural_disaster_ecological_effects",
+        "climate_change_adaptation",
+        "coastal_zone_management",
+        "water_quality_monitoring",
+        "soil_contamination_assessment",
+        "biodiversity_conservation_crisis"
+      ],
+      "notable_experience": [
+        "Led environmental impact assessment for 2018 Attica wildfires, documenting ecosystem damage across 10,000+ hectares",
+        "18 years with Hellenic Centre for Marine Research, specializing in Mediterranean environmental systems",
+        "Coordinated post-fire ecological rehabilitation for 2021 Evia wildfires, developing 5-year restoration plan",
+        "Environmental advisor for oil spill response in Saronic Gulf (2017), managing coastal ecosystem protection",
+        "Published 42 peer-reviewed papers on Mediterranean ecology, climate change impacts, and disaster recovery",
+        "Led water quality monitoring during 2020 Thessaly floods, assessing agricultural contamination risks",
+        "Developed environmental risk assessment protocols for Greek Civil Protection",
+        "International consultant on Mediterranean ecosystem conservation for UNEP and EU Environment Agency"
+      ],
+      "decision_style": "holistic and long-term focused, balances immediate response needs with environmental sustainability, emphasizes ecosystem resilience and natural solutions",
+      "communication_preference": "scientific but accessible language, uses ecological data and modeling, emphasizes long-term consequences, advocates for nature-based solutions",
       "risk_tolerance": 0.4,
       "weight_preferences": {
         "effectiveness": 0.25,
@@ -84,16 +285,58 @@
         "cost": 0.15,
         "public_acceptance": 0.25
       },
-      "expertise_tags": ["environmental_impact", "sustainability", "natural_disasters", "climate"],
+      "expertise_tags": [
+        "environmental_impact",
+        "sustainability",
+        "natural_disasters",
+        "climate",
+        "ecosystem_restoration",
+        "Mediterranean_ecology",
+        "water_quality",
+        "soil_assessment",
+        "biodiversity",
+        "coastal_management",
+        "climate_adaptation",
+        "ecological_risk"
+      ],
       "confidence_level": 0.78,
-      "description": "Environmental scientist specializing in ecological impact assessment and natural disaster effects in Mediterranean ecosystems"
+      "description": "Environmental scientist with 18 years specializing in ecological impact assessment and natural disaster effects in Mediterranean ecosystems. Led environmental assessments for major incidents including Attica and Evia wildfires. International expert on climate change adaptation and ecosystem restoration with over 40 peer-reviewed publications."
     },
     {
       "agent_id": "coordinator_01",
       "name": "System Coordinator",
-      "role": "Decision Coordinator",
-      "expertise": "decision_coordination",
+      "role": "Multi-Agent Decision Coordinator",
+      "expertise": "consensus_building_and_decision_aggregation",
       "experience_years": 10,
+      "education": "Advanced AI system designed for multi-criteria decision analysis and expert opinion aggregation using Dempster-Shafer evidential reasoning and weighted consensus algorithms",
+      "certifications": [
+        "Evidential Reasoning Framework Implementation",
+        "Multi-Criteria Decision Analysis (MCDA) Systems",
+        "Dempster-Shafer Theory Application",
+        "Consensus Building Algorithms",
+        "Weighted Aggregation Methods"
+      ],
+      "specializations": [
+        "consensus_building",
+        "decision_aggregation",
+        "multi_criteria_analysis",
+        "evidential_reasoning",
+        "conflict_resolution",
+        "preference_elicitation",
+        "uncertainty_quantification",
+        "collaborative_decision_making"
+      ],
+      "notable_experience": [
+        "Successfully coordinated decisions across 13+ expert agents in crisis scenarios",
+        "10 years of continuous refinement and optimization in emergency decision support",
+        "Processed and aggregated diverse expert perspectives while maintaining decision quality",
+        "Handled conflicting recommendations and built viable consensus solutions",
+        "Adapted to various crisis types: wildfires, floods, earthquakes, medical emergencies, maritime incidents",
+        "Maintained high decision quality scores (avg 0.75+) across diverse scenarios",
+        "Integrated domain-specific expertise from meteorology, medicine, logistics, law enforcement, and fire service"
+      ],
+      "decision_style": "systematic and balanced, weighs expert inputs by confidence and domain relevance, seeks consensus while identifying critical disagreements, transparent aggregation process",
+      "communication_preference": "structured decision documentation, clear rationale for consensus choices, highlights areas of expert agreement and disagreement, quantifies confidence levels",
       "risk_tolerance": 0.5,
       "weight_preferences": {
         "effectiveness": 0.25,
@@ -102,17 +345,59 @@
         "cost": 0.15,
         "public_acceptance": 0.15
       },
-      "expertise_tags": ["consensus_building", "decision_aggregation", "coordination"],
+      "expertise_tags": [
+        "consensus_building",
+        "decision_aggregation",
+        "coordination",
+        "MCDA",
+        "evidential_reasoning",
+        "conflict_resolution",
+        "uncertainty_handling",
+        "collaborative_systems",
+        "expert_integration"
+      ],
       "confidence_level": 0.90,
       "consensus_threshold": 0.7,
-      "description": "Coordinator agent responsible for aggregating expert opinions and building consensus"
+      "description": "AI-powered coordinator agent responsible for aggregating expert opinions and building consensus using advanced decision analysis methods. Employs Dempster-Shafer evidential reasoning and multi-criteria analysis to synthesize diverse expert perspectives into coherent, high-quality decisions. Designed for transparent, systematic integration of domain expertise."
     },
     {
       "agent_id": "psap_commander_01",
       "name": "Commander Maria Papadimitriou",
-      "role": "PSAP Commander-Supervisor - EKAB Director",
-      "expertise": "emergency_communications",
+      "role": "PSAP Commander-Supervisor - EKAB National Operations Director",
+      "expertise": "emergency_dispatch_and_communications",
       "experience_years": 16,
+      "education": "M.Sc. in Emergency Management and Public Safety, University of Athens (2015); B.Sc. in Telecommunications Engineering, National Technical University of Athens (2008); Advanced Certificate in Emergency Medical Dispatch, National Academies of Emergency Dispatch, USA (2010); Executive Education in Crisis Communications, London School of Economics (2019)",
+      "certifications": [
+        "Emergency Medical Dispatch (EMD) Certified Instructor",
+        "Computer-Aided Dispatch (CAD) Systems Specialist",
+        "Public Safety Answering Point (PSAP) Operations Manager",
+        "Multi-Agency Coordination Center (MACC) Certified",
+        "Emergency Number Professional (ENP) - International Certification",
+        "Crisis Communications Specialist",
+        "Incident Command System (ICS) 300/400 Certified"
+      ],
+      "specializations": [
+        "emergency_dispatch_operations",
+        "112_emergency_number_systems",
+        "CAD_system_management",
+        "multi_agency_coordination",
+        "emergency_medical_dispatch_protocols",
+        "communications_center_operations",
+        "call_prioritization_systems",
+        "inter_agency_data_sharing"
+      ],
+      "notable_experience": [
+        "EKAB National Operations Director since 2018, overseeing all emergency dispatch centers nationwide",
+        "Managed 112 emergency communications for 2018 Attica wildfires, coordinating over 5,000 emergency calls",
+        "Led dispatch operations for 2023 Tempi train collision, coordinating multi-agency response within 8 minutes of first call",
+        "16 years with EKAB emergency communications, rising from dispatcher to national director",
+        "Implemented upgraded CAD systems across 12 EKAB regional centers (2020-2022)",
+        "Developed protocols for COVID-19 emergency call screening and resource allocation (2020)",
+        "Trained over 300 emergency dispatchers in advanced EMD protocols",
+        "Coordinated with Hellenic Police, Fire Service, and Coast Guard for integrated 112 system operations"
+      ],
+      "decision_style": "rapid triage and prioritization, emphasizes clear communication and resource optimization, protocol-driven but adapts to surge conditions, decisive under time pressure",
+      "communication_preference": "concise and standardized radio/phone protocols, uses PSAP communication standards, clear priority coding, maintains calm professional demeanor under stress",
       "risk_tolerance": 0.35,
       "weight_preferences": {
         "effectiveness": 0.30,
@@ -121,16 +406,61 @@
         "cost": 0.10,
         "public_acceptance": 0.10
       },
-      "expertise_tags": ["dispatch", "112_operations", "CAD_systems", "multi_agency_coordination"],
+      "expertise_tags": [
+        "dispatch",
+        "112_operations",
+        "CAD_systems",
+        "multi_agency_coordination",
+        "emergency_communications",
+        "call_prioritization",
+        "EMD_protocols",
+        "PSAP_operations",
+        "resource_allocation",
+        "crisis_communications",
+        "inter_agency_coordination"
+      ],
       "confidence_level": 0.85,
-      "description": "EKAB Director specializing in emergency dispatch coordination and 112 emergency communication systems"
+      "description": "EKAB National Operations Director with 16 years specializing in emergency dispatch coordination and 112 emergency communication systems. Manages nationwide PSAP operations and multi-agency coordination. Led communications for major incidents including Attica wildfires and Tempi train collision with proven ability to handle high-volume emergency call surges."
     },
     {
       "agent_id": "police_onscene_01",
       "name": "Brigadier Nikos Konstantinou",
-      "role": "On-Scene Police Commander - Hellenic Police",
-      "expertise": "tactical_law_enforcement",
+      "role": "On-Scene Police Commander - Hellenic Police Special Operations Division",
+      "expertise": "tactical_law_enforcement_operations",
       "experience_years": 22,
+      "education": "M.Sc. in Security and Crisis Management, University of Leicester, UK (2010); B.Sc. in Law Enforcement, Hellenic Police Academy (2002); Tactical Operations Command Course, Hellenic Police Advanced Training Center (2008); Counter-Terrorism Operations Certificate, FBI National Academy, USA (2015)",
+      "certifications": [
+        "Tactical Field Commander - Hellenic Police Special Operations",
+        "Incident Command System (ICS) Field Commander Level 4",
+        "Crisis Negotiation Team Leader",
+        "Active Shooter Response Commander",
+        "Crowd Control and Public Order Management Specialist",
+        "SWAT Team Operations Certified",
+        "Hazardous Materials Law Enforcement Operations",
+        "Search and Rescue Coordination Certification"
+      ],
+      "specializations": [
+        "tactical_field_operations",
+        "scene_security_and_perimeter_control",
+        "crowd_control_public_order",
+        "threat_assessment_neutralization",
+        "evacuation_enforcement",
+        "crime_scene_preservation_disaster",
+        "traffic_control_emergency",
+        "inter_agency_tactical_coordination"
+      ],
+      "notable_experience": [
+        "On-scene commander for 2018 Attica wildfires evacuation, coordinating forced evacuation of 15,000+ residents under life-threatening conditions",
+        "Led tactical operations for 2023 Tempi train collision scene security and evidence preservation",
+        "22 years with Hellenic Police, last 12 years in tactical field command roles",
+        "Commanded crowd control operations during Athens protests and civil unrest incidents (2008-2015)",
+        "Led multi-agency tactical response for active shooter incident in Athens (2019)",
+        "Coordinated police operations for earthquake evacuations in Athens and Crete",
+        "Managed scene security for major HAZMAT incidents including chemical spills and gas explosions",
+        "Trained 200+ police officers in tactical emergency response and ICS field operations"
+      ],
+      "decision_style": "tactical and safety-focused, rapid threat assessment and decisive action, prioritizes officer safety and public protection, clear command presence",
+      "communication_preference": "direct radio commands using law enforcement codes, structured tactical briefings, clear chain-of-command communication, emphasis on situational awareness updates",
       "risk_tolerance": 0.3,
       "weight_preferences": {
         "effectiveness": 0.30,
@@ -139,16 +469,61 @@
         "cost": 0.05,
         "public_acceptance": 0.10
       },
-      "expertise_tags": ["tactical_operations", "scene_security", "crowd_control", "threat_assessment"],
+      "expertise_tags": [
+        "tactical_operations",
+        "scene_security",
+        "crowd_control",
+        "threat_assessment",
+        "evacuation_enforcement",
+        "public_order",
+        "field_command",
+        "perimeter_control",
+        "traffic_management",
+        "crime_scene_preservation",
+        "active_shooter_response",
+        "SWAT_operations"
+      ],
       "confidence_level": 0.88,
-      "description": "On-scene Hellenic Police commander specializing in tactical field operations and incident scene control"
+      "description": "Hellenic Police field commander with 22 years specializing in tactical operations and incident scene control. Led on-scene police response for major emergencies including Attica wildfires mass evacuation and Tempi train collision. Expert in threat assessment, crowd control, and multi-agency tactical coordination under high-stress conditions."
     },
     {
       "agent_id": "police_regional_01",
       "name": "Major General Andreas Theodorou",
-      "role": "Regional Police Commander - Hellenic Police",
-      "expertise": "strategic_law_enforcement",
+      "role": "Regional Police Commander - Hellenic Police Attica Division",
+      "expertise": "strategic_law_enforcement_coordination",
       "experience_years": 28,
+      "education": "Master's in Public Administration, Panteion University (2005); Law Degree, National and Kapodistrian University of Athens (1996); Graduate Certificate in Police Leadership, Scottish Police College, UK (2008); Strategic Leadership in Policing, College of Policing, UK (2015)",
+      "certifications": [
+        "Senior Police Command - Hellenic Police Leadership Academy",
+        "Multi-Jurisdictional Incident Management",
+        "Strategic Resource Allocation and Mutual Aid Coordination",
+        "Executive Emergency Management - NIMS",
+        "Crisis Leadership and Strategic Decision Making",
+        "Regional Security Planning and Risk Assessment",
+        "Inter-Agency Cooperation and Unified Command"
+      ],
+      "specializations": [
+        "regional_law_enforcement_strategy",
+        "multi_jurisdictional_coordination",
+        "mutual_aid_resource_deployment",
+        "strategic_personnel_allocation",
+        "regional_security_planning",
+        "inter_prefectural_operations",
+        "long_duration_incident_management",
+        "unified_command_systems"
+      ],
+      "notable_experience": [
+        "Regional Police Commander for Attica Division since 2017, responsible for 4 million+ residents",
+        "Coordinated regional police response for 2018 Attica wildfires, deploying 800+ officers from across Greece",
+        "Led strategic planning for COVID-19 lockdown enforcement across Attica region (2020-2022)",
+        "28 years with Hellenic Police, progressing through patrol, investigations, operations, and command roles",
+        "Managed mutual aid coordination for major incidents requiring inter-prefectural police deployments",
+        "Developed strategic resource allocation models for optimal police coverage during emergencies",
+        "Coordinated with international law enforcement during EU Presidency security operations (2014)",
+        "Led regional security planning for Athens Marathon, major sporting events, and state visits"
+      ],
+      "decision_style": "strategic and resource-conscious, balances immediate needs with long-term sustainability, emphasizes inter-agency cooperation and unified command, consultative but decisive",
+      "communication_preference": "formal strategic briefings, written operational plans, hierarchical communication through proper channels, emphasis on documentation and accountability",
       "risk_tolerance": 0.4,
       "weight_preferences": {
         "effectiveness": 0.25,
@@ -157,16 +532,61 @@
         "cost": 0.20,
         "public_acceptance": 0.15
       },
-      "expertise_tags": ["regional_strategy", "mutual_aid", "multi_jurisdictional", "resource_allocation"],
+      "expertise_tags": [
+        "regional_strategy",
+        "mutual_aid",
+        "multi_jurisdictional",
+        "resource_allocation",
+        "strategic_deployment",
+        "unified_command",
+        "inter_agency_cooperation",
+        "long_duration_incidents",
+        "personnel_management",
+        "security_planning",
+        "law_enforcement_policy"
+      ],
       "confidence_level": 0.90,
-      "description": "Regional Hellenic Police director responsible for strategic deployment and inter-prefectural coordination"
+      "description": "Regional Hellenic Police commander with 28 years responsible for strategic deployment and inter-prefectural coordination. Commands Attica Division serving 4 million residents. Led regional response for major incidents including Attica wildfires and COVID-19 operations. Expert in multi-jurisdictional resource allocation and mutual aid coordination."
     },
     {
       "agent_id": "fire_onscene_01",
       "name": "Pyragos Ioanna Michaelidou",
-      "role": "On-Scene Fire-Brigade Commander",
-      "expertise": "tactical_firefighting",
+      "role": "On-Scene Fire Brigade Commander - Hellenic Fire Service",
+      "expertise": "tactical_firefighting_operations",
       "experience_years": 19,
+      "education": "B.Sc. in Fire Safety Engineering, University of West Attica (2005); Firefighting Academy, Hellenic Fire Service Training Center (2004); Advanced Firefighting Tactics Course, National Fire Academy, USA (2012); Technical Rescue Specialist Training, UK Fire Service College (2015)",
+      "certifications": [
+        "Fire Officer Level 3 - Incident Command",
+        "Wildland Fire Operations Specialist - NWCG",
+        "Structural Collapse Rescue Technician",
+        "Hazardous Materials Operations Level 2",
+        "Fire Behavior Analyst - NWCG",
+        "Incident Safety Officer Certified",
+        "Rope Rescue Technician Level 3",
+        "Vehicle Extrication Specialist"
+      ],
+      "specializations": [
+        "tactical_firefighting_wildland_urban",
+        "structural_fire_suppression",
+        "technical_rescue_operations",
+        "hazmat_response_firefighting",
+        "building_collapse_rescue",
+        "fire_behavior_analysis",
+        "rapid_intervention_teams",
+        "incident_safety_management"
+      ],
+      "notable_experience": [
+        "On-scene commander for 2021 Evia wildfire northern front, managing 150+ firefighters and 12 aerial assets",
+        "Led structural firefighting operations for major Athens building fires including residential and industrial complexes",
+        "19 years with Hellenic Fire Service, specialized in complex incident tactical operations",
+        "Tactical commander for 2023 Athens apartment building collapse rescue, coordinating extraction of 12 survivors",
+        "Led HAZMAT response for chemical plant fire in Aspropyrgos industrial area (2020)",
+        "Managed technical rescue operations for multiple vehicle accidents on Attiki Odos highway",
+        "Trained 300+ firefighters in tactical operations, fire behavior, and safety procedures",
+        "Coordinated with aerial firefighting assets during major wildfire incidents"
+      ],
+      "decision_style": "aggressive but calculated firefighting tactics, emphasizes crew safety and risk assessment, adapts strategy to changing fire behavior, leads from the front",
+      "communication_preference": "clear tactical radio orders, uses ICS communication standards, frequent progress reports, emphasis on safety check-ins and situational awareness",
       "risk_tolerance": 0.35,
       "weight_preferences": {
         "effectiveness": 0.30,
@@ -175,16 +595,62 @@
         "cost": 0.05,
         "public_acceptance": 0.10
       },
-      "expertise_tags": ["fire_suppression", "rescue_operations", "hazmat_response", "structural_assessment"],
+      "expertise_tags": [
+        "fire_suppression",
+        "rescue_operations",
+        "hazmat_response",
+        "structural_assessment",
+        "wildland_firefighting",
+        "urban_firefighting",
+        "technical_rescue",
+        "collapse_rescue",
+        "fire_behavior",
+        "incident_command",
+        "crew_safety",
+        "aerial_coordination"
+      ],
       "confidence_level": 0.86,
-      "description": "On-scene Hellenic Fire Service commander specializing in tactical firefighting and technical rescue operations"
+      "description": "Hellenic Fire Service on-scene commander with 19 years specializing in tactical firefighting and technical rescue operations. Led tactical operations for major incidents including Evia wildfires and Athens building collapse rescue. Expert in fire behavior analysis, structural operations, and coordinating ground-aerial firefighting efforts."
     },
     {
       "agent_id": "fire_regional_01",
       "name": "Taxiarchos Vasilis Stavropoulos",
-      "role": "Regional Fire-Brigade Commander",
-      "expertise": "strategic_fire_service",
+      "role": "Regional Fire Brigade Commander - Hellenic Fire Service Central Greece Region",
+      "expertise": "strategic_fire_service_operations",
       "experience_years": 26,
+      "education": "Master's in Fire Safety Engineering, University of Edinburgh, UK (2008); B.Sc. in Civil Engineering, National Technical University of Athens (1998); Fire Service Leadership Academy, Hellenic Fire Service (2010); Executive Fire Officer Program, National Fire Academy, USA (2016)",
+      "certifications": [
+        "Chief Fire Officer - Hellenic Fire Service",
+        "Incident Command System Level 5 - Complex Incidents",
+        "Multi-Agency Coordination System (MACS) Certified",
+        "Strategic Wildfire Management - National Wildfire Coordinating Group",
+        "Long Duration Incident Management",
+        "Fire Service Resource Management Specialist",
+        "Mutual Aid Coordination Certified",
+        "Emergency Operations Center (EOC) Director"
+      ],
+      "specializations": [
+        "regional_fire_operations_strategy",
+        "multi_jurisdictional_fire_coordination",
+        "mutual_aid_deployment",
+        "long_duration_incident_management",
+        "personnel_resource_management",
+        "wildfire_campaign_strategy",
+        "inter_regional_coordination",
+        "fire_service_logistics"
+      ],
+      "notable_experience": [
+        "Regional Fire Commander for Central Greece since 2016, responsible for fire service operations across 6 prefectures",
+        "Coordinated regional response for 2021 Evia wildfires, deploying 500+ firefighters and managing multi-week campaign",
+        "Led strategic planning for 2018 Attica wildfires, coordinating mutual aid from across Greece and EU nations",
+        "26 years with Hellenic Fire Service, progressing from firefighter to regional command",
+        "Managed personnel deployment for extended wildfire seasons requiring 24/7 operations over weeks",
+        "Coordinated with EU Civil Protection Mechanism for international firefighting assistance",
+        "Developed strategic wildfire pre-positioning plans for high-risk seasons",
+        "Led regional fire service modernization including fleet upgrades and training programs"
+      ],
+      "decision_style": "strategic and sustainability-focused, balances aggressive firefighting with crew fatigue management, emphasizes long-term resource planning, collaborative decision-making",
+      "communication_preference": "strategic operational planning documents, formal briefings with stakeholders, uses incident action plans and resource status systems, emphasizes inter-agency coordination",
       "risk_tolerance": 0.4,
       "weight_preferences": {
         "effectiveness": 0.25,
@@ -193,16 +659,61 @@
         "cost": 0.20,
         "public_acceptance": 0.15
       },
-      "expertise_tags": ["regional_fire_operations", "mutual_aid", "long_duration_incidents", "personnel_management"],
+      "expertise_tags": [
+        "regional_fire_operations",
+        "mutual_aid",
+        "long_duration_incidents",
+        "personnel_management",
+        "strategic_deployment",
+        "wildfire_campaigns",
+        "inter_regional_coordination",
+        "resource_optimization",
+        "fire_service_logistics",
+        "EU_coordination",
+        "incident_action_planning"
+      ],
       "confidence_level": 0.88,
-      "description": "Regional Hellenic Fire Service commander responsible for strategic deployment and inter-regional fire coordination"
+      "description": "Regional Hellenic Fire Service commander with 26 years responsible for strategic deployment and inter-regional fire coordination across Central Greece. Led regional response for major wildfire campaigns including Evia and Attica fires. Expert in long-duration incident management, mutual aid coordination, and international firefighting assistance integration."
     },
     {
       "agent_id": "medical_infrastructure_01",
       "name": "Dr. Anna Mitropoulou",
-      "role": "Medical Infrastructure Director",
-      "expertise": "healthcare_system_capacity",
+      "role": "Medical Infrastructure Director - Hellenic National Health Operations Center",
+      "expertise": "healthcare_system_capacity_planning",
       "experience_years": 24,
+      "education": "M.D., Medical School, National and Kapodistrian University of Athens (2000); M.P.H. in Health Policy and Management, Harvard School of Public Health, USA (2008); Fellowship in Hospital Emergency Preparedness, Johns Hopkins University (2009-2010); Executive Certificate in Healthcare Leadership, INSEAD (2015)",
+      "certifications": [
+        "Board Certified in Public Health and Preventive Medicine",
+        "Hospital Emergency Incident Command System (HEICS) Certified",
+        "Disaster Healthcare System Resilience Specialist - WHO",
+        "Healthcare Surge Capacity Planning Expert",
+        "Medical Supply Chain Management Certified",
+        "Mass Casualty Incident Hospital Coordination",
+        "Healthcare Facility Emergency Manager",
+        "Patient Distribution and Medical Evacuation Coordinator"
+      ],
+      "specializations": [
+        "hospital_system_capacity_planning",
+        "emergency_medical_surge_operations",
+        "patient_distribution_coordination",
+        "medical_supply_chain_management",
+        "healthcare_facility_preparedness",
+        "mass_casualty_hospital_response",
+        "medical_evacuation_systems",
+        "healthcare_resource_optimization"
+      ],
+      "notable_experience": [
+        "Director of National Health Operations Center since 2018, coordinating emergency medical capacity nationwide",
+        "Managed hospital surge operations for COVID-19 pandemic (2020-2022), coordinating capacity across 150+ hospitals",
+        "Led patient distribution for 2023 Tempi train collision, coordinating admission of 85 casualties across 12 hospitals within 6 hours",
+        "Coordinated hospital preparedness for 2018 Attica wildfires, managing burn patient distribution and ICU capacity",
+        "24 years in healthcare administration and emergency medical systems planning",
+        "Developed national hospital surge capacity protocols currently used by Greek NHS",
+        "Managed medical supply chain during PPE shortages in COVID-19 pandemic",
+        "Coordinated with European Health Emergency Preparedness and Response Authority (HERA) for cross-border medical assistance"
+      ],
+      "decision_style": "data-driven capacity management, emphasizes system resilience and resource optimization, balances immediate surge needs with sustained operations, collaborative with hospital administrators",
+      "communication_preference": "structured capacity reports with real-time dashboards, uses healthcare information systems, emphasizes bed availability and resource status, clear coordination with hospital leadership",
       "risk_tolerance": 0.3,
       "weight_preferences": {
         "effectiveness": 0.30,
@@ -211,16 +722,62 @@
         "cost": 0.15,
         "public_acceptance": 0.05
       },
-      "expertise_tags": ["hospital_capacity", "surge_operations", "patient_distribution", "medical_supply_chain"],
+      "expertise_tags": [
+        "hospital_capacity",
+        "surge_operations",
+        "patient_distribution",
+        "medical_supply_chain",
+        "healthcare_preparedness",
+        "mass_casualty",
+        "medical_evacuation",
+        "resource_optimization",
+        "healthcare_systems",
+        "pandemic_response",
+        "bed_management",
+        "ICU_coordination"
+      ],
       "confidence_level": 0.87,
-      "description": "Health services director specializing in hospital system capacity planning and emergency medical surge operations"
+      "description": "Health services director with 24 years specializing in hospital system capacity planning and emergency medical surge operations. Leads National Health Operations Center coordinating emergency medical capacity nationwide. Managed hospital response for major incidents including COVID-19 pandemic and Tempi train collision with expertise in patient distribution and healthcare resource optimization."
     },
     {
       "agent_id": "coastguard_onscene_01",
       "name": "Plotarchos Christos Lambropoulos",
-      "role": "On-Scene Coast Guard Commander",
-      "expertise": "maritime_rescue",
+      "role": "On-Scene Coast Guard Commander - Hellenic Coast Guard Search and Rescue",
+      "expertise": "maritime_search_and_rescue",
       "experience_years": 18,
+      "education": "B.Sc. in Maritime Studies, Hellenic Naval Academy (2006); Advanced Search and Rescue Coordinator Course, International Maritime Organization (2012); Coastal Emergency Management Certificate, Texas A&M University, USA (2015); Maritime Incident Command Specialist Training, UK Maritime and Coastguard Agency (2018)",
+      "certifications": [
+        "Search and Rescue Mission Coordinator (SMC) - IMO Certified",
+        "On-Scene Coordinator (OSC) - IAMSAR Certified",
+        "Maritime Incident Command System Certified",
+        "Coastal Evacuation Specialist",
+        "Sea State and Weather Assessment for SAR",
+        "Helicopter Rescue Operations Coordinator",
+        "Marine Pollution Response Certified",
+        "Survival Craft and Rescue Boat Operator"
+      ],
+      "specializations": [
+        "maritime_search_and_rescue_operations",
+        "coastal_emergency_evacuation",
+        "sea_state_risk_assessment",
+        "helicopter_SAR_coordination",
+        "vessel_in_distress_response",
+        "person_overboard_recovery",
+        "maritime_mass_casualty",
+        "coastal_flood_rescue"
+      ],
+      "notable_experience": [
+        "On-scene commander for maritime evacuations during 2018 Attica wildfires, coordinating coastal evacuation of 2,500+ residents by sea",
+        "Led SAR operations for migrant boat rescues in Aegean Sea (2015-2020), coordinating over 300 rescue missions",
+        "18 years with Hellenic Coast Guard, specialized in search and rescue operations",
+        "Coordinated multi-vessel SAR operation for capsized ferry incident saving 150+ passengers (2019)",
+        "Led coastal flood rescue operations during severe storms in Cyclades islands",
+        "Managed helicopter SAR coordination for medical evacuations from islands",
+        "Responded to maritime HAZMAT incidents including oil spills and chemical cargo emergencies",
+        "Trained coast guard crews in advanced SAR techniques and maritime emergency response"
+      ],
+      "decision_style": "rapid assessment of maritime conditions and rescue feasibility, prioritizes survivor safety and rescuer safety, adapts tactics to weather and sea state, decisive under maritime emergencies",
+      "communication_preference": "maritime radio protocols (VHF/MF), uses IAMSAR communication standards, coordinates with multiple vessels and aircraft, emphasis on position reports and weather updates",
       "risk_tolerance": 0.35,
       "weight_preferences": {
         "effectiveness": 0.30,
@@ -229,16 +786,62 @@
         "cost": 0.05,
         "public_acceptance": 0.10
       },
-      "expertise_tags": ["maritime_rescue", "coastal_evacuation", "sea_state_assessment", "SAR_operations"],
+      "expertise_tags": [
+        "maritime_rescue",
+        "coastal_evacuation",
+        "sea_state_assessment",
+        "SAR_operations",
+        "helicopter_coordination",
+        "vessel_emergencies",
+        "person_overboard",
+        "mass_maritime_casualty",
+        "coastal_floods",
+        "Aegean_operations",
+        "multi_vessel_coordination"
+      ],
       "confidence_level": 0.84,
-      "description": "Hellenic Coast Guard operations commander specializing in maritime search and rescue and coastal emergency operations"
+      "description": "Hellenic Coast Guard operations commander with 18 years specializing in maritime search and rescue and coastal emergency operations. Led coastal evacuations during Attica wildfires and over 300 migrant rescue missions in Aegean Sea. Expert in sea state assessment, helicopter SAR coordination, and multi-vessel rescue operations under challenging maritime conditions."
     },
     {
       "agent_id": "coastguard_national_01",
       "name": "Rear Admiral Dimitra Vlachaki",
-      "role": "National Coast Guard Director",
-      "expertise": "national_maritime_strategy",
+      "role": "National Coast Guard Director - Chief of Hellenic Coast Guard",
+      "expertise": "national_maritime_security_strategy",
       "experience_years": 30,
+      "education": "Master's in National Security Strategy, Naval War College, USA (2005); B.Sc. in Naval Sciences, Hellenic Naval Academy (1994); Advanced Command and Staff Course, NATO Defense College, Rome (2010); Executive Maritime Policy Certificate, World Maritime University, Sweden (2015)",
+      "certifications": [
+        "Flag Officer Command - Hellenic Coast Guard",
+        "National Maritime Policy and Strategy Specialist",
+        "International Maritime Security Coordination",
+        "Multi-Regional SAR Coordination - IMO Certified",
+        "Port State Control Senior Officer",
+        "Maritime Crisis Management Executive",
+        "EU Maritime Security Strategy Implementation",
+        "NATO Maritime Operations Certified"
+      ],
+      "specializations": [
+        "national_maritime_security_policy",
+        "inter_regional_SAR_coordination",
+        "strategic_maritime_asset_deployment",
+        "port_security_and_safety",
+        "international_maritime_cooperation",
+        "maritime_border_security",
+        "national_maritime_emergency_response",
+        "maritime_infrastructure_protection"
+      ],
+      "notable_experience": [
+        "Chief of Hellenic Coast Guard since 2019, responsible for all maritime security and SAR operations in Greek waters",
+        "Coordinated national coast guard response for 2018 Attica wildfires coastal evacuations across Attica and Evia",
+        "30 years in Hellenic Coast Guard, progressing through operational commands to national leadership",
+        "Led strategic planning for Aegean migrant crisis response (2015-2020), coordinating SAR assets across Greek islands",
+        "Coordinated with EU Frontex and NATO for integrated maritime security operations",
+        "Developed national maritime emergency response doctrine integrating coast guard, navy, and port authorities",
+        "Led Greece's participation in Mediterranean SAR cooperation with Turkey, Italy, and Malta",
+        "Managed strategic deployment of coast guard assets across Aegean, Ionian, and Mediterranean zones",
+        "Coordinated international assistance during major maritime incidents requiring cross-border cooperation"
+      ],
+      "decision_style": "strategic and policy-focused, balances national security with humanitarian obligations, emphasizes international cooperation and maritime law, long-term planning perspective",
+      "communication_preference": "formal strategic planning documents, diplomatic communication with international partners, hierarchical command structure, emphasis on maritime policy and legal frameworks",
       "risk_tolerance": 0.4,
       "weight_preferences": {
         "effectiveness": 0.25,
@@ -247,9 +850,21 @@
         "cost": 0.20,
         "public_acceptance": 0.15
       },
-      "expertise_tags": ["national_maritime_policy", "inter_regional_coordination", "port_security", "strategic_assets"],
+      "expertise_tags": [
+        "national_maritime_policy",
+        "inter_regional_coordination",
+        "port_security",
+        "strategic_assets",
+        "international_cooperation",
+        "maritime_security",
+        "SAR_coordination",
+        "border_security",
+        "EU_maritime_operations",
+        "NATO_coordination",
+        "maritime_emergency_policy"
+      ],
       "confidence_level": 0.92,
-      "description": "Chief of Hellenic Coast Guard responsible for national maritime security policy and inter-regional SAR coordination"
+      "description": "Chief of Hellenic Coast Guard with 30 years responsible for national maritime security policy and inter-regional SAR coordination. Leads all coast guard operations across Greek waters including Aegean, Ionian, and Mediterranean zones. Coordinated national maritime response for major incidents including Attica wildfires and migrant crisis. Expert in international maritime cooperation and strategic maritime asset deployment."
     }
   ]
 }

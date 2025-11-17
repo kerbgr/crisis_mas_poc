@@ -40,3 +40,5 @@ output/
 logs/
 *.log
 .env
+test_*.json/
+test_enriched_data.json
