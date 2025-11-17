@@ -15,9 +15,9 @@
   "available_actions": [
     {
       "id": "action_immediate_evacuation",
-      "name": "Immediate Village Evacuation",
-      "description": "Conduct urgent evacuation of all threatened villages using available buses, private vehicles, and boats for coastal areas",
-      "required_resources": ["evacuation_buses", "police_escorts", "coastal_boats", "evacuation_centers"],
+      "name": "Immediate Full-Scale Evacuation",
+      "description": "Conduct urgent mandatory evacuation of all threatened villages (6 villages, ~8,000 residents) using available buses, private vehicles, and boats for coastal areas. Prioritize elderly, disabled, and families with children. Establish evacuation routes with police escorts and traffic control. Set up 3 evacuation centers with medical support, food, and shelter. Enforce evacuation orders and document refusals. Estimated to save maximum lives but leaves properties undefended.",
+      "required_resources": ["evacuation_buses_50_units", "police_escorts_200_officers", "coastal_boats_20_vessels", "evacuation_centers_3_facilities", "EKAB_ambulances_15_units", "traffic_control_equipment", "public_address_systems"],
       "estimated_duration": "3-5 hours",
       "risk_level": 0.35,
       "criteria_scores": {
@@ -26,44 +26,71 @@
         "speed": 0.75,
         "cost": 0.45,
         "public_acceptance": 0.70
-      }
+      },
+      "advantages": ["Maximum life safety", "Clear legal liability protection", "Proven evacuation protocols"],
+      "disadvantages": ["Properties left undefended", "Resistance from elderly residents", "Traffic congestion risks", "Evacuation center capacity strain"],
+      "best_conditions": ["Fire spreading rapidly", "Limited firefighting resources", "High civilian casualty risk"]
+    },
+    {
+      "id": "action_phased_evacuation",
+      "name": "Phased Evacuation with Infrastructure Protection",
+      "description": "Implement staged evacuation prioritizing immediate-risk villages (2 villages, 2,500 residents first) while deploying structure protection teams to defend critical infrastructure and remaining villages. Phase 1: Evacuate villages within 2km of fire front. Phase 2: Protect hospitals, schools, water pumping stations with structure protection. Phase 3: Evacuate next tier if fire advances. Allows resource optimization and selective property defense while maintaining safety focus.",
+      "required_resources": ["evacuation_buses_30_units", "structure_protection_teams_8_crews", "sprinkler_systems_portable", "fire_resistant_wrapping", "police_coordination", "incident_command_post"],
+      "estimated_duration": "6-10 hours",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.82,
+        "safety": 0.85,
+        "speed": 0.65,
+        "cost": 0.55,
+        "public_acceptance": 0.78
+      },
+      "advantages": ["Optimizes limited resources", "Protects critical infrastructure", "Reduces total evacuees", "Better public acceptance"],
+      "disadvantages": ["Phasing complexity", "Delayed full evacuation", "Infrastructure teams at risk", "Requires precise fire behavior prediction"],
+      "best_conditions": ["Predictable fire behavior", "Adequate structure protection capability", "Critical infrastructure present"]
     },
     {
       "id": "action_aerial_firefighting",
-      "name": "Aerial Firefighting Campaign",
-      "description": "Deploy Canadair CL-415 and Chinook helicopters for intensive water drops on fire fronts and create firebreaks",
-      "required_resources": ["canadair_aircraft", "chinook_helicopters", "fire_retardant", "aerial_coordination"],
-      "estimated_duration": "6-12 hours",
-      "risk_level": 0.5,
+      "name": "Intensive Aerial Firefighting Campaign",
+      "description": "Deploy maximum available aerial assets: 8 Canadair CL-415 amphibious aircraft, 6 Chinook helicopters, 4 medium helicopters with water buckets for intensive water and fire retardant drops on active fire fronts. Coordinate with ground spotters and meteorologist for optimal drop zones. Create aerial firebreaks using retardant lines ahead of fire. Operate from dawn to dusk with refueling rotations. High effectiveness but weather-dependent and extremely costly.",
+      "required_resources": ["canadair_cl415_8_aircraft", "chinook_helicopters_6_units", "medium_helicopters_4_units", "fire_retardant_200000_liters", "aerial_coordination_center", "ground_spotter_teams", "refueling_infrastructure"],
+      "estimated_duration": "6-12 hours continuous operations",
+      "risk_level": 0.50,
       "criteria_scores": {
         "effectiveness": 0.75,
         "safety": 0.70,
         "speed": 0.85,
         "cost": 0.30,
         "public_acceptance": 0.85
-      }
+      },
+      "advantages": ["High public visibility", "Can access difficult terrain", "Rapid deployment", "Proven effectiveness on multiple fronts"],
+      "disadvantages": ["Weather dependent (winds >40km/h limit operations)", "Extremely expensive (~€50,000/hour)", "Limited night operations", "Requires ground support"],
+      "best_conditions": ["Favorable weather window", "Multiple active fronts", "Adequate funding authorization", "Daylight hours"]
     },
     {
       "id": "action_ground_firefighting",
       "name": "Ground Firefighting with Firebreaks",
-      "description": "Deploy ground fire crews to create firebreaks and directly combat flames using fire trucks and hand tools",
-      "required_resources": ["fire_crews", "fire_trucks", "bulldozers", "water_tankers"],
-      "estimated_duration": "12-24 hours",
-      "risk_level": 0.7,
+      "description": "Deploy 250 ground firefighters organized in 25 crews to create strategic firebreaks using bulldozers and hand tools, and directly combat flames using fire trucks and hand-line techniques. Establish firebreaks along roads, ridgelines, and natural barriers. Use foam for structure protection. Deploy lookouts and maintain LCES (Lookouts, Communications, Escape routes, Safety zones) protocol. Sustained ground operations with crew rotation for 24-48 hours.",
+      "required_resources": ["fire_crews_250_personnel", "fire_trucks_40_units", "bulldozers_12_units", "water_tankers_20_units", "hand_tools_chainsaws_equipment", "communications_radios", "safety_shelters"],
+      "estimated_duration": "12-24 hours initial, 48-72 hours sustained",
+      "risk_level": 0.70,
       "criteria_scores": {
         "effectiveness": 0.60,
         "safety": 0.55,
         "speed": 0.50,
         "cost": 0.60,
         "public_acceptance": 0.75
-      }
+      },
+      "advantages": ["Not weather dependent", "24-hour operations possible", "Creates lasting firebreaks", "Cost-effective per hour"],
+      "disadvantages": ["High crew risk in mountainous terrain", "Slow progress on multiple fronts", "Limited effectiveness in extreme fire behavior", "Crew fatigue over extended operations"],
+      "best_conditions": ["Moderate fire behavior", "Good access roads", "Adequate crew availability", "Defined natural firebreak locations"]
     },
     {
       "id": "action_controlled_backburn",
-      "name": "Controlled Backburning Operations",
-      "description": "Create controlled burns ahead of the main fire front to remove fuel and slow fire spread",
-      "required_resources": ["experienced_fire_crews", "meteorological_support", "safety_equipment"],
-      "estimated_duration": "8-16 hours",
+      "name": "Strategic Controlled Backburning Operations",
+      "description": "Execute strategic firing operations to create burned buffer zones between fire front and villages. Identify control lines (roads, rivers, bulldozed firebreaks), ignite from downwind side to create low-intensity backing fire that removes fuel. Use drone thermal imaging to monitor burn intensity. Requires weather window: RH >25%, winds 5-15 mph, consistent direction. Deploy qualified Firing Boss and experienced crews with drip torches. High-risk but potentially very effective if conditions allow.",
+      "required_resources": ["experienced_fire_crews_qualified_firing_boss", "meteorological_support_onsite", "thermal_imaging_drones", "drip_torches_ignition_equipment", "safety_equipment_shelters", "control_line_preparation"],
+      "estimated_duration": "8-16 hours preparation and execution",
       "risk_level": 0.65,
       "criteria_scores": {
         "effectiveness": 0.70,
@@ -71,22 +98,136 @@
         "speed": 0.65,
         "cost": 0.55,
         "public_acceptance": 0.50
-      }
+      },
+      "advantages": ["Removes fuel before main fire arrives", "Can protect large areas", "Proven tactical technique", "Cost-effective if successful"],
+      "disadvantages": ["Requires specific weather conditions", "Risk of backfire escape", "Public fear of 'more fire'", "Smoke impacts", "Needs highly experienced crews"],
+      "best_conditions": ["Favorable weather window", "Well-defined control lines", "Experienced firing crews available", "Adequate preparation time"]
     },
     {
       "id": "action_combined_assault",
-      "name": "Combined Air-Ground Assault with Evacuation",
-      "description": "Simultaneous aerial and ground firefighting operations while evacuating threatened populations and protecting critical infrastructure",
-      "required_resources": ["all_available_firefighting_resources", "evacuation_support", "coordination_center"],
-      "estimated_duration": "12-24 hours",
-      "risk_level": 0.4,
+      "name": "Combined Air-Ground Assault with Simultaneous Evacuation",
+      "description": "Comprehensive coordinated response: simultaneously execute aerial firefighting (Canadair + helicopters), ground firebreak construction, structure protection, and phased evacuation. Establish unified incident command coordinating all agencies. Deploy all available resources in integrated operation plan. Aerial assets suppress main fronts while ground crews establish firebreaks and structure protection teams defend critical buildings. Evacuate highest-risk areas while operations proceed. Maximum resource commitment for maximum effectiveness.",
+      "required_resources": ["all_available_firefighting_resources", "unified_command_center", "evacuation_support_full", "coordination_center", "multi_agency_liaison_officers", "communications_infrastructure", "logistics_support_base"],
+      "estimated_duration": "12-24 hours intensive operations",
+      "risk_level": 0.40,
       "criteria_scores": {
         "effectiveness": 0.88,
         "safety": 0.80,
         "speed": 0.70,
         "cost": 0.25,
         "public_acceptance": 0.85
-      }
+      },
+      "advantages": ["Maximum effectiveness", "Addresses all priorities simultaneously", "Best chance of success", "Strong public confidence"],
+      "disadvantages": ["Extremely expensive", "Complex coordination required", "Depletes all resources (no reserves)", "Requires perfect multi-agency coordination"],
+      "best_conditions": ["Sufficient resources available", "Clear command structure", "All agencies coordinated", "Authorization for maximum expenditure"]
+    },
+    {
+      "id": "action_coastal_maritime_evacuation",
+      "name": "Large-Scale Coastal Maritime Evacuation",
+      "description": "Leverage Greece's maritime capabilities for mass coastal evacuation. Deploy Hellenic Coast Guard vessels, ferries, fishing boats, and private vessels to evacuate 4,000+ coastal residents by sea from beaches and small ports. Coordinate with port authorities to establish evacuation points at Mantoudi, Pefki, and Limni. Transport to Chalkida and Athens ports. Parallel land evacuation for inland villages. Maritime evacuation bypasses congested mountain roads and can handle large volumes quickly if sea conditions allow.",
+      "required_resources": ["coast_guard_vessels_15_ships", "ferry_boats_6_vessels", "fishing_boats_volunteers_50_vessels", "port_facilities", "maritime_coordination_center", "EKAB_medical_teams_at_ports", "land_transport_from_receiving_ports"],
+      "estimated_duration": "4-8 hours for coastal evacuation",
+      "risk_level": 0.40,
+      "criteria_scores": {
+        "effectiveness": 0.80,
+        "safety": 0.78,
+        "speed": 0.82,
+        "cost": 0.60,
+        "public_acceptance": 0.72
+      },
+      "advantages": ["Bypasses road congestion", "Large capacity", "Greek maritime expertise", "Scenic evacuation less stressful"],
+      "disadvantages": ["Weather/sea state dependent", "Only works for coastal population", "Requires maritime coordination", "Night operations difficult", "Inland villages still need land evacuation"],
+      "best_conditions": ["Coastal villages threatened", "Calm sea conditions", "Coast Guard availability", "Road access compromised"]
+    },
+    {
+      "id": "action_community_defense_perimeter",
+      "name": "Community-Based Defense Perimeter with Volunteer Support",
+      "description": "Engage local community volunteers (100-150 trained residents) alongside professional firefighters to establish defense perimeter around each village. Distribute portable pumps, hoses, and foam systems to residents who stay. Professional fire crews provide leadership and coordination. Create wet perimeters around buildings, clear vegetation, establish sprinkler systems. Residents defend their properties under fire service supervision. Empowers community but requires training and increases civilian risk.",
+      "required_resources": ["portable_pump_systems_50_units", "foam_application_equipment", "volunteer_coordination_teams", "fire_service_supervisors_20_personnel", "protective_equipment_for_volunteers", "water_source_access", "communications_radios"],
+      "estimated_duration": "6-12 hours setup and defense",
+      "risk_level": 0.75,
+      "criteria_scores": {
+        "effectiveness": 0.55,
+        "safety": 0.45,
+        "speed": 0.60,
+        "cost": 0.75,
+        "public_acceptance": 0.65
+      },
+      "advantages": ["Low cost", "Community empowerment", "Local knowledge utilized", "Property preservation", "Addresses refusal to evacuate"],
+      "disadvantages": ["High civilian risk", "Liability concerns", "Unpredictable volunteer capability", "Can hinder professional operations", "Safety protocol violations likely"],
+      "best_conditions": ["Strong refusal to evacuate", "Community with fire training", "Moderate fire threat", "Professional supervision available"]
+    },
+    {
+      "id": "action_strategic_retreat_firebreak",
+      "name": "Strategic Retreat and Defensive Firebreak Establishment",
+      "description": "Pull back firefighting forces from advancing fire fronts and establish strong defensive firebreaks at strategic chokepoints 5-10km from villages. Use geographic features (rivers, roads, mountain ridges) to create defensible lines. Sacrifice burned area to ensure crew safety and create high-probability defense lines. Concentrate all bulldozers and crews on 2-3 major firebreak lines rather than fighting active fronts. Allows regrouping and ensures firefighter safety while accepting property loss in sacrifice zones.",
+      "required_resources": ["bulldozers_15_units", "fire_crews_150_personnel", "water_tankers_for_firebreak_defense", "geographic_analysis_and_planning", "incident_meteorologist", "communication_systems"],
+      "estimated_duration": "10-16 hours firebreak construction",
+      "risk_level": 0.35,
+      "criteria_scores": {
+        "effectiveness": 0.72,
+        "safety": 0.90,
+        "speed": 0.55,
+        "cost": 0.65,
+        "public_acceptance": 0.40
+      },
+      "advantages": ["Maximum firefighter safety", "Concentrates forces", "High-probability defensive lines", "Reduces crew fatigue"],
+      "disadvantages": ["Surrenders territory", "Political backlash", "Properties lost that might have been saved", "Requires accepting criticism"],
+      "best_conditions": ["Extreme fire behavior", "Firefighter safety threatened", "Clear geographic defensive features", "Long-duration incident expected"]
+    },
+    {
+      "id": "action_international_mutual_aid",
+      "name": "EU Civil Protection Mechanism Activation - International Assistance",
+      "description": "Activate EU Civil Protection Mechanism to request international firefighting assistance. Request aerial assets (Canadair, helicopters) from Italy, France, Croatia, and ground crews from across EU. Typically provides 10-20 additional aircraft and 200-300 personnel within 24-48 hours. Coordinate deployment through European Emergency Response Coordination Centre (ERCC). Provides massive resource surge but takes time to deploy. Greece has reciprocal agreements and experience with EU assistance (used in 2018 Attica fires, 2021 Evia fires).",
+      "required_resources": ["EU_civil_protection_activation", "liaison_officers_for_foreign_teams", "logistics_support_for_international_crews", "translation_services", "accommodation_and_feeding", "air_traffic_coordination", "unified_command_integration"],
+      "estimated_duration": "24-48 hours for arrival, then 7-14 days operations",
+      "risk_level": 0.30,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.75,
+        "speed": 0.40,
+        "cost": 0.70,
+        "public_acceptance": 0.88
+      },
+      "advantages": ["Massive resource surge", "International solidarity visibility", "Proven mechanism", "Cost-sharing with EU", "Relieves Greek resource strain"],
+      "disadvantages": ["24-48 hour delay", "Coordination complexity", "Language barriers", "Different operational procedures", "Political optics of 'needing help'"],
+      "best_conditions": ["Long-duration incident expected", "Greek resources depleted", "Multiple simultaneous fires", "International media attention"]
+    },
+    {
+      "id": "action_shelter_in_place",
+      "name": "Shelter-in-Place with Structure Hardening",
+      "description": "For villages where evacuation is impossible or refused (elderly residents, blocked roads), implement shelter-in-place protocol. Prepare buildings for fire impact: close all windows/shutters, fill bathtubs/sinks with water, move flammable materials away from buildings, seal vents, wet down roofs and walls. Establish safe rooms (brick/stone buildings with metal roofs). Deploy fire crews to each sheltering village for structure defense. Provide respirators for smoke. Last resort option when evacuation fails but better than unprotected exposure.",
+      "required_resources": ["structure_hardening_equipment", "water_supply_mobile_tanks", "respirators_and_protective_equipment", "fire_crew_protection_teams_assigned_per_village", "medical_standby_teams", "communications_for_each_location"],
+      "estimated_duration": "2-4 hours preparation, duration of fire passage",
+      "risk_level": 0.85,
+      "criteria_scores": {
+        "effectiveness": 0.50,
+        "safety": 0.40,
+        "speed": 0.70,
+        "cost": 0.55,
+        "public_acceptance": 0.35
+      },
+      "advantages": ["Addresses evacuation refusal", "Preserves property", "Some residents prefer to defend homes", "Avoids forced evacuation conflict"],
+      "disadvantages": ["Very high civilian risk", "Firefighter risk defending occupied structures", "Smoke inhalation danger", "Legal liability exposure", "Unpredictable outcomes"],
+      "best_conditions": ["Evacuation refused/impossible", "Strong stone buildings present", "Fire crews available for structure defense", "Last resort only"]
+    },
+    {
+      "id": "action_night_ops_reduction",
+      "name": "Daylight Operations Focus with Night Safety Stand-Down",
+      "description": "Reduce or eliminate night firefighting operations for crew safety, focusing intensive operations during daylight hours (6am-8pm). Use night period for crew rest, equipment maintenance, strategic planning, and firebreak preparation in safe zones. Resume aggressive aerial and ground operations at dawn. Accept slower overall progress but dramatically reduces firefighter injuries and fatalities. Australian and US fire services increasingly adopt this approach for extreme fire behavior conditions where night operations are exceptionally dangerous.",
+      "required_resources": ["crew_rotation_planning", "night_shift_maintenance_teams", "planning_section_overnight", "defensive_position_preparation", "dawn_readiness_procedures"],
+      "estimated_duration": "14-16 hours operations per day, 8-10 hours stand-down",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.62,
+        "safety": 0.85,
+        "speed": 0.45,
+        "cost": 0.70,
+        "public_acceptance": 0.55
+      },
+      "advantages": ["Dramatically reduced firefighter injuries", "Crew rest and effectiveness", "Equipment maintenance time", "Better planning quality", "Proven safety improvement"],
+      "disadvantages": ["Slower fire containment", "Fire can advance unchecked at night", "Public perception of 'giving up'", "Property losses during night hours"],
+      "best_conditions": ["Extreme fire behavior", "High injury rate", "Long-duration incident (multi-day)", "Crew fatigue evident", "Nighttime visibility poor"]
     }
   ],
   "constraints": {
