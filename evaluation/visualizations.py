@@ -700,43 +700,226 @@ class SystemVisualizer:
         self,
         metrics: Dict[str, Any],
         save_path: str,
-        title: str = "Multi-Agent vs Single-Agent Performance"
+        title: str = "Multi-Agent vs Individual Agents Performance"
     ) -> str:
         """
-        Plot decision quality comparison bar chart.
+        Plot decision quality comparison chart.
 
-        Compares multi-agent system performance against single-agent baseline.
+        NEW: Compares multi-agent consensus against EACH individual agent.
+        LEGACY: Falls back to single-agent baseline if individual comparisons unavailable.
 
         Args:
-            metrics: Dictionary with 'baseline_comparison' containing comparison data
+            metrics: Dictionary with 'individual_comparisons' (NEW) or 'baseline_comparison' (LEGACY)
             save_path: Filename to save the plot
             title: Plot title
 
         Returns:
             Full path to saved plot
 
-        Example:
+        Example (NEW format):
             >>> metrics = {
-            ...     'baseline_comparison': {
-            ...         'decision_quality': {
-            ...             'multi_agent': 0.84,
-            ...             'single_agent': 0.72,
-            ...             'improvement': 0.12
-            ...         },
-            ...         'confidence': {
-            ...             'multi_agent': 0.82,
-            ...             'single_agent': 0.70,
-            ...             'improvement': 0.12
-            ...         }
+            ...     'individual_comparisons': {
+            ...         'multi_agent_quality': 0.774,
+            ...         'individual_agents': [
+            ...             {'agent_name': 'Agent A', 'decision_quality': {'weighted_score': 0.685}, ...},
+            ...             {'agent_name': 'Agent B', 'decision_quality': {'weighted_score': 0.620}, ...}
+            ...         ],
+            ...         'statistics': {'avg_quality': 0.521, 'min_quality': 0.350, 'max_quality': 0.685}
             ...     }
             ... }
-            >>> viz.plot_decision_comparison(metrics, "comparison.png")
         """
         logger.info(f"Plotting decision comparison to {save_path}")
 
-        if 'baseline_comparison' not in metrics:
-            logger.warning("No baseline comparison data to plot")
+        # Try NEW comprehensive comparison first
+        if 'individual_comparisons' in metrics:
+            return self._plot_comprehensive_comparison(metrics, save_path, title)
+
+        # Fall back to LEGACY single-agent baseline
+        elif 'baseline_comparison' in metrics:
+            return self._plot_legacy_baseline_comparison(metrics, save_path, title)
+
+        else:
+            logger.warning("No comparison data available to plot")
             return ""
+
+    def _plot_comprehensive_comparison(
+        self,
+        metrics: Dict[str, Any],
+        save_path: str,
+        title: str
+    ) -> str:
+        """
+        Plot comprehensive multi-agent vs individual agents comparison.
+
+        Shows:
+        - Multi-agent consensus bar (highlighted)
+        - All individual agent bars (color-coded by agreement)
+        - Average individual quality line
+        - Min/max range indicators
+        """
+        comp = metrics['individual_comparisons']
+        stats = comp['statistics']
+
+        ma_quality = comp['multi_agent_quality']
+        avg_quality = stats['avg_quality']
+        min_quality = stats['min_quality']
+        max_quality = stats['max_quality']
+
+        # Get individual agent data
+        individual_agents = comp['individual_agents']
+
+        # Sort by quality (descending)
+        sorted_agents = sorted(
+            individual_agents,
+            key=lambda x: x['decision_quality']['weighted_score'],
+            reverse=True
+        )
+
+        # Extract data
+        agent_names = [ag['agent_name'] for ag in sorted_agents]
+        agent_qualities = [ag['decision_quality']['weighted_score'] for ag in sorted_agents]
+        agent_agrees = [ag.get('agrees_with_consensus', False) for ag in sorted_agents]
+
+        # Create figure with more height for many agents
+        n_agents = len(agent_names)
+        fig_height = max(8, n_agents * 0.4)  # Dynamic height based on agent count
+        fig, ax = plt.subplots(figsize=(12, fig_height))
+
+        # Create horizontal bar chart
+        y_pos = np.arange(n_agents + 1)  # +1 for multi-agent bar
+
+        # Color individual agents by agreement
+        colors = [self.colors[2] if agrees else self.colors[3] for agrees in agent_agrees]
+
+        # Plot individual agent bars
+        bars = ax.barh(
+            y_pos[1:],  # Skip first position for multi-agent
+            agent_qualities,
+            color=colors,
+            edgecolor='black',
+            linewidth=1.0,
+            alpha=0.7
+        )
+
+        # Plot multi-agent consensus bar (highlighted)
+        ma_bar = ax.barh(
+            y_pos[0],
+            ma_quality,
+            color=self.colors[0],
+            edgecolor='black',
+            linewidth=2.5,
+            alpha=1.0,
+            label='Multi-Agent Consensus'
+        )
+
+        # Add value labels on bars
+        for i, (bar, quality) in enumerate(zip(bars, agent_qualities)):
+            agree_marker = "✓" if agent_agrees[i] else "✗"
+            ax.text(
+                quality + 0.01,
+                bar.get_y() + bar.get_height() / 2,
+                f'{quality:.3f} {agree_marker}',
+                va='center',
+                fontsize=9,
+                weight='bold'
+            )
+
+        # Add multi-agent label
+        ax.text(
+            ma_quality + 0.01,
+            ma_bar[0].get_y() + ma_bar[0].get_height() / 2,
+            f'{ma_quality:.3f}',
+            va='center',
+            fontsize=11,
+            weight='bold',
+            color='darkblue'
+        )
+
+        # Add average line
+        ax.axvline(
+            avg_quality,
+            color='orange',
+            linestyle='--',
+            linewidth=2,
+            label=f'Average Individual: {avg_quality:.3f}',
+            alpha=0.7
+        )
+
+        # Add min/max range shading
+        ax.axvspan(
+            min_quality,
+            max_quality,
+            alpha=0.1,
+            color='gray',
+            label=f'Individual Range: {min_quality:.3f}-{max_quality:.3f}'
+        )
+
+        # Set labels
+        all_labels = ['Multi-Agent\nConsensus'] + agent_names
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(all_labels, fontsize=10)
+
+        # Customize plot
+        ax.set_xlabel('Decision Quality Score', fontsize=12, weight='bold')
+        ax.set_title(title, fontsize=14, weight='bold', pad=20)
+        ax.set_xlim(0, 1.0)
+        ax.grid(axis='x', alpha=0.3, linestyle=':')
+
+        # Add improvement annotation
+        improvement_pct = ((ma_quality - avg_quality) / avg_quality) * 100
+        improvement_text = f'Multi-Agent Improvement: {improvement_pct:+.1f}%'
+        ax.text(
+            0.98, 0.02,
+            improvement_text,
+            transform=ax.transAxes,
+            ha='right',
+            va='bottom',
+            fontsize=11,
+            weight='bold',
+            bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8)
+        )
+
+        # Add agreement stats
+        agreement_rate = stats['agreement_rate_percent']
+        num_agree = stats['num_agents_agree']
+        total = stats['total_agents']
+        agreement_text = f'Agreement: {num_agree}/{total} ({agreement_rate:.1f}%)'
+        ax.text(
+            0.02, 0.98,
+            agreement_text,
+            transform=ax.transAxes,
+            ha='left',
+            va='top',
+            fontsize=11,
+            weight='bold',
+            bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8)
+        )
+
+        # Legend
+        ax.legend(loc='lower right', frameon=True, shadow=True, fontsize=10)
+
+        plt.tight_layout()
+
+        # Save figure
+        full_path = self.output_dir / save_path
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        logger.info(f"Comprehensive comparison plot saved to {full_path}")
+        return str(full_path)
+
+    def _plot_legacy_baseline_comparison(
+        self,
+        metrics: Dict[str, Any],
+        save_path: str,
+        title: str
+    ) -> str:
+        """
+        Plot legacy single-agent baseline comparison (for backward compatibility).
+
+        Simple bar chart comparing multi-agent vs single-agent baseline.
+        """
+        logger.info("Using legacy baseline comparison format")
 
         comparison = metrics['baseline_comparison']
 
@@ -777,7 +960,7 @@ class SystemVisualizer:
             x + width/2,
             single_agent_scores,
             width,
-            label='Single-Agent',
+            label='Single-Agent Baseline',
             color=self.colors[1],
             edgecolor='black',
             linewidth=1.5
@@ -818,7 +1001,7 @@ class SystemVisualizer:
         # Customize plot
         ax.set_xlabel('Performance Metric', fontsize=12, weight='bold')
         ax.set_ylabel('Score', fontsize=12, weight='bold')
-        ax.set_title(title, fontsize=14, weight='bold', pad=20)
+        ax.set_title(title + ' (Legacy)', fontsize=14, weight='bold', pad=20)
         ax.set_xticks(x)
         ax.set_xticklabels(metric_names)
         ax.legend(loc='upper left', frameon=True, shadow=True, fontsize=11)
@@ -832,7 +1015,7 @@ class SystemVisualizer:
         plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
 
-        logger.info(f"Decision comparison plot saved to {full_path}")
+        logger.info(f"Legacy comparison plot saved to {full_path}")
         return str(full_path)
 
     def plot_agent_network(
