@@ -26,12 +26,13 @@ Department of Military Sciences - School of Production Engineering and Managemen
 1. [Project Overview](#project-overview)
 2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Architecture](#architecture)
-5. [Results](#results)
-6. [Limitations](#limitations)
-7. [Future Work](#future-work)
-8. [References](#references)
-9. [Citation](#citation)
+4. [Web Tools](#web-tools)
+5. [Architecture](#architecture)
+6. [Results](#results)
+7. [Limitations](#limitations)
+8. [Future Work](#future-work)
+9. [References](#references)
+10. [Citation](#citation)
 
 ---
 ## Project Overview
@@ -230,7 +231,7 @@ This will:
 5. Save results to `results/results.json`
 6. Generate visualizations (if enabled)
 
-**Note:** Use `--agents all` to load all 11 expert agents (see Expert Roles section below)
+**Note:** Use `--agents all` to load all 13 expert agents (see Expert Roles section below)
 
 ### Command-Line Options
 
@@ -239,7 +240,7 @@ python main.py [OPTIONS]
 
 Options:
   --scenario PATH              Scenario JSON file (default: scenarios/flood_scenario.json)
-  --agents AGENT_IDS           Specific agent IDs to load (space-separated), or "all" for all 11 experts
+  --agents AGENT_IDS           Specific agent IDs to load (space-separated), or "all" for all 13 experts
                                Default: agent_meteorologist logistics_expert_01 medical_expert_01
                                Available: agent_meteorologist, medical_expert_01, logistics_expert_01,
                                          psap_commander_01, police_onscene_01, police_regional_01,
@@ -324,7 +325,7 @@ Requires 80% agreement between agents (stricter consensus).
 python main.py --agents all
 ```
 
-This loads the full emergency response command structure with all 11 expert roles.
+This loads the full emergency response command structure with all 13 expert roles.
 
 #### Example 7: Run with Specific Agent Subset
 
@@ -352,7 +353,7 @@ python main.py --scenario flood_scenario --expert-selection auto --verbose
 **How it works:** The system analyzes scenario metadata (crisis type, severity, affected domains, scope) and automatically selects the most relevant experts. For example, a coastal flood with high severity will auto-select: meteorologist, logistics, medical, coast guard (both levels), police (tactical + strategic), fire/rescue, PSAP commander, and medical infrastructure.
 
 **Benefits:**
-- No need to manually choose from 11 experts
+- No need to manually choose from 13 experts
 - Consistent expert team selection
 - Prevents over/under-engagement
 - Transparent reasoning (use --verbose)
@@ -453,7 +454,7 @@ python main.py --scenario scenarios/ammonia_leak_elefsina.json --expert-selectio
 
 ### Expert Roles
 
-The Crisis MAS system includes **11 expert roles** organized in a comprehensive emergency response command structure. The system is designed with backward compatibility - by default it uses 3 core experts, but can scale to the full 11-agent team.
+The Crisis MAS system includes **13 expert roles** organized in a comprehensive emergency response command structure. The system is designed with backward compatibility - by default it uses 3 core experts, but can scale to the full 13-agent team.
 
 #### Default Agents (Backward Compatibility)
 
@@ -463,7 +464,7 @@ When run without the `--agents` flag, the system loads **3 core expert agents**:
 2. **Logistics Coordinator** (`logistics_expert_01`) - Supply chain and resource allocation
 3. **Medical Expert** (`medical_expert_01`) - Emergency medicine and public health
 
-#### Full Emergency Response Command Structure (11 Agents)
+#### Full Emergency Response Command Structure (13 Agents)
 
 Use `--agents all` to activate the complete multi-agency command structure:
 
@@ -823,7 +824,7 @@ Initializing 3 expert agents (default)...
 ✓ logistics_expert (confidence: 0.80)
 ✓ medical_expert (confidence: 0.90)
 
-Note: Use --agents all to load all 11 expert agents
+Note: Use --agents all to load all 13 expert agents
 
 Evaluating 3 alternative actions...
 
@@ -904,6 +905,172 @@ Visualizations saved to: results/visualizations/
 - `alternative_comparison.png` - Radar chart comparing alternatives
 - `consensus_evolution.png` - Line plot of consensus building
 - `decision_confidence.png` - Confidence distribution
+
+---
+
+## Web Tools
+
+The Crisis MAS system includes a comprehensive web-based interface for managing expert profiles, incident handling protocols, and crisis scenarios. The web tools provide a user-friendly way to create and edit data without directly manipulating JSON files.
+
+### Overview
+
+**Location:** `web_tools/` directory
+
+**Features:**
+- Expert profile management (14 agents: 13 experts + 1 coordinator)
+- Incident handling protocol editor (Q&A pairs for LLM training)
+- Crisis scenario builder with OpenStreetMap integration
+- Configurable data source paths
+- Import/export functionality
+
+### Starting the Web Interface
+
+```bash
+cd web_tools
+python app.py
+```
+
+The web interface will be available at `http://localhost:5000`
+
+### Web Tools Components
+
+#### 1. Expert Profiles (`/experts`)
+
+**Purpose:** Manage the 14 agent profiles used by the multi-agent system
+
+**Features:**
+- View all 13 expert agents + 1 coordinator
+- Add/Edit/Delete expert profiles
+- Configure expertise, experience, risk tolerance, weight preferences
+- Support for both nested (agent_profiles.json) and flat JSON formats
+
+**Data Source:** `agents/agent_profiles.json` (default, configurable in Settings)
+
+**Expert Agents Include:**
+- Meteorologist, Medical Expert, Logistics Coordinator
+- Public Safety Officer, Environmental Scientist
+- PSAP Commander, Police (On-Scene & Regional)
+- Fire-Brigade (On-Scene & Regional)
+- Medical Infrastructure Director
+- Coast Guard (On-Scene & National)
+
+#### 2. Incident Handling Protocols (`/protocols`)
+
+**Purpose:** Create Q&A pairs for LLM training data
+
+**What They Are:**
+- Question & Answer pairs representing expert knowledge
+- Used to train LLM agents on emergency response procedures
+- Categorized by emergency type (firefighting, disaster, medical, etc.)
+
+**Features:**
+- Create/Edit/Delete protocol Q&A pairs
+- Categorize by emergency type
+- Associate with expert profiles
+- Multi-language support
+
+**Data Source:** `web_tools/data/scenarios.json` (configurable in Settings)
+
+**Training Methodology:** See [LLM Training Documentation](LLM%20Training/)
+
+#### 3. Crisis Scenarios (`/crisis-scenarios`)
+
+**Purpose:** Build crisis scenarios for multi-agent simulations
+
+**What They Are:**
+- Crisis situations with multiple response alternatives
+- Used by the multi-agent system for decision-making tests
+- Include location, severity, available actions, and expert selection metadata
+
+**Features:**
+- Scenario browser with OpenStreetMap visualization
+- Advanced scenario builder with template library
+- Action builder with criteria scoring (effectiveness, safety, speed, cost, public acceptance)
+- **AI-Powered Action Suggestion:** Leverages incident handling protocols to suggest response actions
+- Expert selection metadata for automatic agent selection
+- Import/Export scenarios
+- Validation against core framework structure
+
+**Data Source:** `scenarios/` directory (configurable in Settings)
+
+**Integration with Protocols:**
+The scenario builder includes AI-powered action suggestion that analyzes incident handling protocols to recommend response actions:
+1. Select crisis type (e.g., wildfire, flood)
+2. Click "AI Suggest from Protocols"
+3. System analyzes relevant protocols and extracts actionable steps
+4. Displays suggested actions with estimated criteria scores
+5. Select desired actions to add to your scenario
+
+#### 4. Settings (`/settings`)
+
+**Purpose:** Configure data source file paths
+
+**Configurable Paths:**
+- **Expert Profiles File:** Path to agent_profiles.json (default: `agents/agent_profiles.json`)
+- **Protocols File:** Path to incident handling protocols (default: `web_tools/data/scenarios.json`)
+- **Scenarios Directory:** Path to crisis scenarios folder (default: `scenarios/`)
+
+**Features:**
+- Real-time statistics for each data source (count, format, categories)
+- Quick-select buttons for common paths
+- Path validation and error checking
+- Persistent configuration in `web_tools/data/config.json`
+
+### Web Tools Architecture
+
+```
+web_tools/
+├── app.py                          # Flask application
+├── protocol_integration.py         # Protocol-to-scenario integration
+├── templates/                      # HTML templates
+│   ├── index.html                  # Dashboard
+│   ├── experts.html                # Expert list
+│   ├── expert_form.html            # Expert editor
+│   ├── scenarios.html              # Protocols list
+│   ├── scenario_form.html          # Protocol editor
+│   ├── crisis_scenarios.html       # Crisis scenario browser
+│   ├── crisis_scenario_view.html   # Scenario viewer with map
+│   ├── crisis_scenario_form_enhanced.html  # Advanced builder
+│   └── settings.html               # Configuration
+├── static/
+│   ├── js/
+│   │   └── crisis_scenario_builder.js  # Interactive builder logic
+│   └── css/
+│       └── style.css               # Custom styles
+└── data/
+    ├── scenarios.json              # Incident protocols (LLM training)
+    ├── experts.json                # Legacy expert profiles
+    └── config.json                 # User configuration
+```
+
+### Use Cases
+
+**For Scenario Creation:**
+1. Create new crisis scenarios using the web builder
+2. Use AI suggestions to generate response actions from protocol knowledge
+3. Add location data with interactive map
+4. Validate structure before saving
+
+**For LLM Training:**
+1. Create incident handling protocols (Q&A pairs)
+2. Associate with expert profiles
+3. Export for training data preparation
+
+**For Expert Configuration:**
+1. Add new expert agents to the system
+2. Adjust risk tolerance and weight preferences
+3. Configure expertise tags for automatic selection
+
+**For Data Management:**
+1. Switch between different data sources
+2. Import/export data for backup or sharing
+3. View statistics and validate data integrity
+
+### Web Tools Documentation
+
+For detailed documentation see:
+- `web_tools/README.md` - Complete web tools guide
+- `web_tools/FEATURES.md` - Advanced features documentation
 
 ---
 
@@ -1492,7 +1659,7 @@ where $G = 0$ indicates perfect equality and $G = 1$ indicates maximum inequalit
 2. Logistics Expert (confidence: 0.80)
 3. Medical Expert (confidence: 0.90)
 
-**Note:** Results below use the default 3-agent configuration. With `--agents all`, the system engages all 11 experts including tactical and strategic command authorities.
+**Note:** Results below use the default 3-agent configuration. With `--agents all`, the system engages all 13 experts including tactical and strategic command authorities.
 
 ### Comparative Results: ER vs. GAT
 
@@ -1532,13 +1699,13 @@ where $G = 0$ indicates perfect equality and $G = 1$ indicates maximum inequalit
 - Processing Time: 14.2s (+1.8s vs ER)
 - API Calls: 3
 
-**Note:** With all 11 agents engaged, processing time scales to ~35-45 seconds (11 parallel API calls), but provides comprehensive multi-agency perspective.
+**Note:** With all 13 agents engaged, processing time scales to ~40-50 seconds (13 parallel API calls), but provides comprehensive multi-agency perspective.
 
 **Interpretation:** GAT dynamically weights the Public Safety Expert higher due to domain relevance, resulting in slightly higher confidence and consensus. The environmental expert's influence is appropriately reduced for immediate crisis response.
 
 ### Performance Metrics
 
-> **⚠️ Important Note:** As of commit `09bec4c` (2025-01-09), the evaluation methodology has been fixed to properly calculate Decision Quality Score from criteria satisfaction. Previous versions incorrectly used confidence values, making single vs. multi-agent comparisons invalid. See [`evaluation/EVALUATION_METHODOLOGY.md`](evaluation/EVALUATION_METHODOLOGY.md) for details.
+> **⚠️ Important Note:** As of commit `8bb88bd` (November 2025), the comparison methodology has been significantly improved to evaluate multi-agent consensus against EACH individual agent rather than just one baseline. This provides comprehensive analysis of collaborative decision-making value. Previous versions only compared against a single arbitrary agent. See [`evaluation/EVALUATION_METHODOLOGY.md`](evaluation/EVALUATION_METHODOLOGY.md) for details.
 
 #### Decision Quality Metrics
 
@@ -1553,9 +1720,14 @@ where $G = 0$ indicates perfect equality and $G = 1$ indicates maximum inequalit
     "cost": 0.45,
     "public_acceptance": 0.78
   },
-  "improvement_over_single_agent": {
-    "score": 0.123,
-    "percentage": 17.0
+  "improvement_over_individuals": {
+    "avg_individual_quality": 0.521,
+    "multi_agent_quality": 0.774,
+    "improvement_percentage": 48.6,
+    "quality_range": {"min": 0.350, "max": 0.685},
+    "agents_agreeing": 5,
+    "total_agents": 11,
+    "agreement_rate": 45.5
   }
 }
 ```
@@ -1563,7 +1735,9 @@ where $G = 0$ indicates perfect equality and $G = 1$ indicates maximum inequalit
 **Interpretation:**
 - **Quality (0.847):** Calculated from criteria scores - shows strong satisfaction of safety (0.95) and effectiveness (0.90), with trade-off on cost (0.45)
 - **Confidence (0.823):** Separate metric indicating high certainty in the decision based on agent consensus
-- **Improvement (17%):** Valid comparison showing multi-agent outperforms single-agent by considering diverse expert perspectives
+- **Multi-Agent Advantage (48.6%):** Comprehensive comparison showing multi-agent consensus significantly outperforms average individual agent decisions
+- **Agreement Analysis:** Shows 5 out of 11 agents agreed with consensus, demonstrating value of synthesizing diverse perspectives
+- **Quality Range:** Individual agents ranged from 0.350 to 0.685, showing multi-agent (0.774) exceeds even the best individual
 
 #### Consensus Metrics
 
@@ -1669,11 +1843,11 @@ Clear clustering shows 3-agent coalition for evacuation, 1 dissenter for barrier
 
 1. **Multi-Agent Advantage:** 17% decision quality improvement over single-agent baseline
 2. **GAT vs ER:** GAT shows +2.8% consensus, +1.5% confidence through dynamic expert weighting
-3. **Scalability:** Successfully expanded from 4 to 11 expert roles (v0.8) with tactical/strategic hierarchy
+3. **Scalability:** Successfully expanded from 4 to 13 expert roles (v0.8) with tactical/strategic hierarchy
 4. **Explainability:** Attention weights provide interpretable expert influence measures
 5. **Efficiency:**
    - 3-agent (default): 10-15s decision time, ~$0.012 per scenario
-   - 11-agent (full): 35-45s decision time, ~$0.044 per scenario
+   - 13-agent (full): 35-45s decision time, ~$0.044 per scenario
 6. **Robustness:** 92% consensus achieved in test scenarios (n=25 simulations)
 7. **Command Structure:** Realistic two-tier hierarchy (tactical/strategic) enables multi-jurisdictional crisis modeling
 
@@ -1767,7 +1941,7 @@ Clear clustering shows 3-agent coalition for evacuation, 1 dissenter for barrier
 
 #### 6. Expert Diversity (Expanded in v0.8)
 
-**Current (v0.8):** 11 expert types organized in emergency response command structure:
+**Current (v0.8):** 13 expert types organized in emergency response command structure:
 - Core: Meteorologist, Logistics, Medical Director
 - Emergency Communications: PSAP Commander
 - Law Enforcement: Tactical and Strategic Police Commanders
@@ -1783,7 +1957,7 @@ Clear clustering shows 3-agent coalition for evacuation, 1 dissenter for barrier
 - Psychological/social experts (community impact, trauma response)
 - Civil engineering experts (infrastructure assessment)
 
-**Impact:** The 11-agent system provides comprehensive operational command perspective, but may still miss economic, legal, and social dimensions in complex multi-faceted crises.
+**Impact:** The 13-agent system provides comprehensive operational command perspective, but may still miss economic, legal, and social dimensions in complex multi-faceted crises.
 
 #### 7. Simplified Scenario Representation
 
@@ -1849,7 +2023,7 @@ Clear clustering shows 3-agent coalition for evacuation, 1 dissenter for barrier
 
 #### 1. Expand Agent Diversity (COMPLETED in v0.8 ✅ + Future Additions)
 
-**Completed (v0.8):** Expanded from 4 to 11 expert types
+**Completed (v0.8):** Expanded from 4 to 13 expert types
 - ✅ Added emergency response command structure (8 new roles)
 - ✅ Implemented tactical/strategic hierarchy
 - ✅ Created 11 domain-specific prompt templates (~5,000 chars each)
@@ -2144,7 +2318,7 @@ crisis_mas_poc/
 │   ├── base_agent.py               # Abstract base agent class
 │   ├── expert_agent.py             # Domain expert agents (11 role mappings)
 │   ├── coordinator_agent.py        # Coordination and consensus
-│   └── agent_profiles.json         # Agent configurations (11 experts)
+│   └── agent_profiles.json         # Agent configurations (13 experts)
 │
 ├── scenarios/                       # Crisis scenarios
 │   ├── __init__.py
@@ -2164,7 +2338,7 @@ crisis_mas_poc/
 │   ├── claude_client.py            # Anthropic Claude API wrapper (default)
 │   ├── openai_client.py            # OpenAI GPT-4/GPT-3.5 API wrapper
 │   ├── lmstudio_client.py          # LM Studio local models wrapper
-│   └── prompt_templates.py         # Domain-specific prompts (11 expert roles)
+│   └── prompt_templates.py         # Domain-specific prompts (13 expert roles)
 │
 ├── evaluation/                      # Metrics and visualization
 │   ├── __init__.py

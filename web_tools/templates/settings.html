@@ -43,7 +43,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container mt-5">
+    <div class="container mt-5 mb-5">
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -61,91 +61,237 @@
             <h1><i class="bi bi-gear-fill text-primary"></i> Application Settings</h1>
         </div>
 
-        <!-- Expert Profiles Configuration -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-people-fill"></i> Expert Profiles Data Source</h5>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <strong><i class="bi bi-info-circle"></i> About Expert Profiles:</strong><br>
-                    The web tools can load expert profiles from different JSON files. The default location is
-                    <code>agents/agent_profiles.json</code> which contains all 14 agent profiles used by the core framework.
-                    You can change this path to point to a different expert profiles file.
-                </div>
+        <div class="alert alert-info">
+            <strong><i class="bi bi-info-circle"></i> About Data Sources:</strong><br>
+            Configure the file paths for all data sources used by the Crisis MAS web tools.
+            Changes are saved to <code>web_tools/data/config.json</code> and persist across restarts.
+        </div>
 
-                <!-- Current Status -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <h6 class="card-title"><i class="bi bi-file-earmark-text"></i> Current File</h6>
-                                <p class="mb-1"><code>{{ expert_stats.file_path }}</code></p>
-                                {% if expert_stats.exists %}
-                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> File Exists</span>
-                                {% else %}
-                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> File Not Found</span>
-                                {% endif %}
+        <!-- Configuration Form -->
+        <form method="POST">
+
+            <!-- 1. Expert Profiles Configuration -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-people-fill"></i> Expert Profiles Data Source</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Current Status -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="bi bi-file-earmark-text"></i> Current File</h6>
+                                    <p class="mb-1"><code class="text-break">{{ expert_stats.file_path }}</code></p>
+                                    {% if expert_stats.exists %}
+                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> File Exists</span>
+                                    {% else %}
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> File Not Found</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="bi bi-bar-chart"></i> Statistics</h6>
+                                    <p class="mb-1"><strong>Format:</strong> {{ expert_stats.format }}</p>
+                                    <p class="mb-1"><strong>Count:</strong>
+                                        <span class="badge bg-primary">{{ expert_stats.count }} experts</span>
+                                    </p>
+                                    {% if expert_stats.error %}
+                                        <p class="text-danger mb-0"><small>Error: {{ expert_stats.error }}</small></p>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <h6 class="card-title"><i class="bi bi-bar-chart"></i> Expert Statistics</h6>
-                                <p class="mb-1"><strong>Format:</strong> {{ expert_stats.format }}</p>
-                                <p class="mb-1"><strong>Count:</strong>
-                                    <span class="badge bg-primary">{{ expert_stats.count }} experts</span>
-                                </p>
-                                {% if expert_stats.error %}
-                                    <p class="text-danger mb-0"><small>Error: {{ expert_stats.error }}</small></p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Change File Path Form -->
-                <form method="POST">
+                    <!-- Change File Path -->
                     <div class="mb-3">
                         <label for="experts_file" class="form-label">
                             <i class="bi bi-folder2-open"></i> Expert Profiles File Path
                         </label>
                         <input type="text" class="form-control" id="experts_file" name="experts_file"
                                value="{{ config.experts_file }}"
-                               placeholder="/path/to/experts.json"
-                               required>
+                               placeholder="agents/agent_profiles.json">
                         <div class="form-text">
-                            Enter the absolute or relative path to the expert profiles JSON file.
+                            Path to expert profiles JSON file (nested format with "agents" array or flat array).
                         </div>
                     </div>
 
                     <!-- Quick Select Options -->
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label"><i class="bi bi-lightning-fill"></i> Quick Select:</label>
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-sm btn-outline-primary"
-                                    onclick="document.getElementById('experts_file').value = '{{ config.experts_file.replace('agents/agent_profiles.json', 'agents/agent_profiles.json') }}'">
-                                Agent Profiles (Default)
+                                    onclick="document.getElementById('experts_file').value = 'agents/agent_profiles.json'">
+                                Agent Profiles (14 experts)
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary"
                                     onclick="document.getElementById('experts_file').value = 'web_tools/data/experts.json'">
-                                Legacy Experts
+                                Legacy Experts (3 experts)
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
 
+            <!-- 2. Incident Protocols Configuration -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-book-fill"></i> Incident Handling Protocols (LLM Training Data)</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Current Status -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="bi bi-file-earmark-text"></i> Current File</h6>
+                                    <p class="mb-1"><code class="text-break">{{ protocols_stats.file_path }}</code></p>
+                                    {% if protocols_stats.exists %}
+                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> File Exists</span>
+                                    {% else %}
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> File Not Found</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="bi bi-bar-chart"></i> Statistics</h6>
+                                    <p class="mb-1"><strong>Count:</strong>
+                                        <span class="badge bg-success">{{ protocols_stats.count }} protocols</span>
+                                    </p>
+                                    {% if protocols_stats.categories %}
+                                        <p class="mb-1"><strong>Categories:</strong>
+                                            {% for cat in protocols_stats.categories %}
+                                                <span class="badge bg-info">{{ cat }}</span>
+                                            {% endfor %}
+                                        </p>
+                                    {% endif %}
+                                    {% if protocols_stats.error %}
+                                        <p class="text-danger mb-0"><small>Error: {{ protocols_stats.error }}</small></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change File Path -->
+                    <div class="mb-3">
+                        <label for="protocols_file" class="form-label">
+                            <i class="bi bi-folder2-open"></i> Protocols File Path
+                        </label>
+                        <input type="text" class="form-control" id="protocols_file" name="protocols_file"
+                               value="{{ config.protocols_file }}"
+                               placeholder="web_tools/data/scenarios.json">
+                        <div class="form-text">
+                            Path to incident handling protocols JSON file (Q&A pairs for LLM training).
+                        </div>
+                    </div>
+
+                    <!-- Quick Select Options -->
+                    <div class="mb-2">
+                        <label class="form-label"><i class="bi bi-lightning-fill"></i> Quick Select:</label>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-success"
+                                    onclick="document.getElementById('protocols_file').value = 'web_tools/data/scenarios.json'">
+                                Default Protocols
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Crisis Scenarios Configuration -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-map-fill"></i> Crisis Scenarios Directory (Multi-Agent Simulations)</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Current Status -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="bi bi-folder2"></i> Current Directory</h6>
+                                    <p class="mb-1"><code class="text-break">{{ scenarios_stats.dir_path }}</code></p>
+                                    {% if scenarios_stats.exists %}
+                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> Directory Exists</span>
+                                    {% else %}
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Directory Not Found</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="bi bi-bar-chart"></i> Statistics</h6>
+                                    <p class="mb-1"><strong>Count:</strong>
+                                        <span class="badge bg-warning">{{ scenarios_stats.count }} scenarios</span>
+                                    </p>
+                                    {% if scenarios_stats.types %}
+                                        <p class="mb-1"><strong>Types:</strong>
+                                            {% for type in scenarios_stats.types %}
+                                                <span class="badge bg-secondary">{{ type }}</span>
+                                            {% endfor %}
+                                        </p>
+                                    {% endif %}
+                                    {% if scenarios_stats.error %}
+                                        <p class="text-danger mb-0"><small>Error: {{ scenarios_stats.error }}</small></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Directory Path -->
+                    <div class="mb-3">
+                        <label for="scenarios_dir" class="form-label">
+                            <i class="bi bi-folder2-open"></i> Scenarios Directory Path
+                        </label>
+                        <input type="text" class="form-control" id="scenarios_dir" name="scenarios_dir"
+                               value="{{ config.scenarios_dir }}"
+                               placeholder="scenarios">
+                        <div class="form-text">
+                            Path to directory containing crisis scenario JSON files for multi-agent simulations.
+                        </div>
+                    </div>
+
+                    <!-- Quick Select Options -->
+                    <div class="mb-2">
+                        <label class="form-label"><i class="bi bi-lightning-fill"></i> Quick Select:</label>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-warning"
+                                    onclick="document.getElementById('scenarios_dir').value = 'scenarios'">
+                                Default Scenarios
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Save Settings
+                            <i class="bi bi-save"></i> Save All Settings
                         </button>
                         <a href="/" class="btn btn-secondary">
                             <i class="bi bi-x-circle"></i> Cancel
                         </a>
+                        <button type="reset" class="btn btn-outline-secondary ms-auto">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset Form
+                        </button>
                     </div>
-                </form>
+                </div>
             </div>
-        </div>
+        </form>
 
         <!-- File Format Help -->
         <div class="card shadow mb-4">
@@ -153,34 +299,64 @@
                 <h5 class="mb-0"><i class="bi bi-question-circle"></i> Supported File Formats</h5>
             </div>
             <div class="card-body">
-                <h6>1. Nested Format (agent_profiles.json)</h6>
-                <pre><code>{
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6><i class="bi bi-people"></i> Expert Profiles</h6>
+                        <p class="small"><strong>Nested Format:</strong></p>
+                        <pre class="small"><code>{
   "agents": [
     {
       "agent_id": "medical_expert_01",
-      "name": "Dr. Dimitris Nikolaou",
+      "name": "Dr. Name",
       "role": "Medical Expert",
-      "expertise": "emergency_medicine",
-      "experience_years": 20,
       ...
     }
   ]
 }</code></pre>
-
-                <h6 class="mt-3">2. Flat Array Format (legacy experts.json)</h6>
-                <pre><code>[
+                        <p class="small"><strong>Flat Format:</strong></p>
+                        <pre class="small"><code>[
   {
     "id": "expert_001",
-    "name": "Dimitrios Papadopoulos",
-    "role": "Senior Firefighter",
-    "experience_years": 15,
+    "name": "Name",
+    "role": "Role",
     ...
   }
 ]</code></pre>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="bi bi-book"></i> Incident Protocols</h6>
+                        <p class="small"><strong>Q&A Format:</strong></p>
+                        <pre class="small"><code>[
+  {
+    "id": "protocol_001",
+    "question": "How to...",
+    "answer": "Step 1...",
+    "category": "firefighting",
+    "expert_id": "expert_001",
+    ...
+  }
+]</code></pre>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="bi bi-map"></i> Crisis Scenarios</h6>
+                        <p class="small"><strong>Scenario Format:</strong></p>
+                        <pre class="small"><code>{
+  "id": "fire_001",
+  "type": "wildfire",
+  "name": "Fire Emergency",
+  "description": "...",
+  "available_actions": [...],
+  "expert_selection": {...}
+}</code></pre>
+                        <p class="small text-muted">Each scenario is a separate .json file in the directory.</p>
+                    </div>
+                </div>
 
-                <p class="mb-0 mt-3">
+                <hr class="my-3">
+                <p class="mb-0 text-center">
                     <i class="bi bi-info-circle text-info"></i>
-                    Both formats are automatically detected and supported by the web tools.
+                    All formats are automatically detected and supported by the web tools.
+                    Paths can be absolute or relative to the project root.
                 </p>
             </div>
         </div>

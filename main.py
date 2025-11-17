@@ -223,8 +223,10 @@ def initialize_expert_agents(
     Args:
         llm_client: LLM client to use for all agents
         agent_ids: Optional list of specific agent IDs to load.
-                   Supported agent IDs include:
+                   Supported agent IDs include (13 expert agents total):
                    - Original 3: agent_meteorologist, logistics_expert_01, medical_expert_01
+                   - Civil Protection: public_safety_expert_01
+                   - Environmental: environmental_expert_01
                    - Emergency Response: psap_commander_01
                    - Police: police_onscene_01, police_regional_01
                    - Fire: fire_onscene_01, fire_regional_01
@@ -245,12 +247,14 @@ def initialize_expert_agents(
             "medical_expert_01"
         ]
 
-    # If user passes 'all', load all 11 expert agents
+    # If user passes 'all', load all 13 expert agents
     if agent_ids == ['all']:
         agent_ids = [
             "agent_meteorologist",
-            "logistics_expert_01",
             "medical_expert_01",
+            "logistics_expert_01",
+            "public_safety_expert_01",
+            "environmental_expert_01",
             "psap_commander_01",
             "police_onscene_01",
             "police_regional_01",
@@ -260,7 +264,7 @@ def initialize_expert_agents(
             "coastguard_onscene_01",
             "coastguard_national_01"
         ]
-        logger.info("Loading all 11 expert agents...")
+        logger.info("Loading all 13 expert agents...")
 
     agents = []
     for agent_id in agent_ids:
@@ -523,12 +527,110 @@ def run_single_agent_baseline(
     return baseline_decision
 
 
+def run_individual_agent_comparisons(
+    expert_agents: List[ExpertAgent],
+    scenario: Dict[str, Any],
+    alternatives: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """
+    Evaluate EACH agent individually for comparison with multi-agent consensus.
+
+    This provides comprehensive analysis showing how each expert's individual
+    judgment compares to the collaborative consensus decision.
+
+    Args:
+        expert_agents: List of all expert agents
+        scenario: Crisis scenario
+        alternatives: Response alternatives
+
+    Returns:
+        List of individual agent decisions, each containing:
+            - agent_id, agent_name, agent_role, expertise
+            - recommended_alternative
+            - confidence
+            - belief_distribution
+            - decision_quality_score
+            - reasoning
+    """
+    logger = logging.getLogger(__name__)
+    import time
+
+    logger.info("")
+    logger.info("="*80)
+    logger.info("EVALUATING EACH AGENT INDIVIDUALLY (for comparison)")
+    logger.info("="*80)
+
+    individual_decisions = []
+
+    for i, agent in enumerate(expert_agents, 1):
+        logger.info(f"\n[{i}/{len(expert_agents)}] Evaluating: {agent.name} ({agent.role})")
+
+        start_time = time.time()
+
+        try:
+            # Get individual agent assessment
+            assessment = agent.evaluate_scenario(scenario, alternatives)
+
+            # Extract belief distribution and find top alternative
+            belief_distribution = assessment.get('belief_distribution', {})
+
+            if belief_distribution:
+                top_alternative = max(belief_distribution.items(), key=lambda x: x[1])
+                recommended_alternative = top_alternative[0]
+                top_score = top_alternative[1]
+            else:
+                recommended_alternative = None
+                top_score = 0.0
+
+            decision_time = time.time() - start_time
+
+            # Build decision structure
+            decision = {
+                'agent_id': assessment.get('agent_id'),
+                'agent_name': assessment.get('agent_name'),
+                'agent_role': assessment.get('agent_role'),
+                'expertise': agent.expertise,
+                'recommended_alternative': recommended_alternative,
+                'confidence': assessment.get('confidence', 0.0),
+                'belief_distribution': belief_distribution,
+                'final_scores': belief_distribution,
+                'reasoning': assessment.get('reasoning', ''),
+                'key_concerns': assessment.get('key_concerns', []),
+                'criteria_scores': assessment.get('criteria_scores', {}),
+                'decision_time_seconds': decision_time,
+                'timestamp': assessment.get('timestamp')
+            }
+
+            individual_decisions.append(decision)
+
+            logger.info(f"  → Recommended: {recommended_alternative} (confidence: {decision.get('confidence', 0):.1%})")
+
+        except Exception as e:
+            logger.error(f"  → Failed: {str(e)}")
+            # Add error decision
+            individual_decisions.append({
+                'agent_id': agent.agent_id,
+                'agent_name': agent.name,
+                'agent_role': agent.role,
+                'expertise': agent.expertise,
+                'recommended_alternative': None,
+                'confidence': 0.0,
+                'error': str(e)
+            })
+
+    logger.info(f"\nCompleted individual evaluations for {len(individual_decisions)} agents")
+    logger.info("")
+
+    return individual_decisions
+
+
 # ============================================================================
 # Evaluation and Metrics
 # ============================================================================
 
 def evaluate_decision(
     decision: Dict[str, Any],
+    individual_decisions: Optional[List[Dict[str, Any]]] = None,
     baseline_assessment: Optional[Dict[str, Any]] = None,
     ground_truth: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
@@ -537,7 +639,8 @@ def evaluate_decision(
 
     Args:
         decision: Multi-agent decision
-        baseline_assessment: Single-agent baseline assessment
+        individual_decisions: List of individual agent decisions for comparison (NEW - preferred)
+        baseline_assessment: Single-agent baseline assessment (LEGACY - for backward compatibility)
         ground_truth: Optional ground truth for validation
 
     Returns:
@@ -586,8 +689,101 @@ def evaluate_decision(
         logger.warning("No assessment data available for expert balance calculation")
         metrics['expert_contribution_balance'] = {'balance_score': 0.0, 'gini_coefficient': 1.0}
 
-    # 5. Compare to baseline if available
-    if baseline_assessment:
+    # 5. Compare to individual agents if available (NEW - comprehensive comparison)
+    if individual_decisions:
+        logger.info("")
+        logger.info("Comparing multi-agent consensus with EACH individual agent...")
+
+        individual_metrics_list = []
+        multi_agent_quality = metrics['decision_quality']['weighted_score']
+        multi_agent_confidence = metrics['confidence']['decision_confidence']
+        multi_agent_recommendation = decision.get('recommended_alternative')
+
+        # Calculate metrics for each individual agent
+        for ind_decision in individual_decisions:
+            if 'error' in ind_decision:
+                continue  # Skip failed evaluations
+
+            ind_metrics = {
+                'agent_id': ind_decision.get('agent_id'),
+                'agent_name': ind_decision.get('agent_name'),
+                'agent_role': ind_decision.get('agent_role'),
+                'expertise': ind_decision.get('expertise'),
+                'recommended_alternative': ind_decision.get('recommended_alternative'),
+                'confidence': ind_decision.get('confidence', 0.0),
+                'decision_quality': evaluator.calculate_decision_quality(
+                    ind_decision, ground_truth=ground_truth
+                ),
+                'agrees_with_consensus': ind_decision.get('recommended_alternative') == multi_agent_recommendation
+            }
+
+            individual_metrics_list.append(ind_metrics)
+
+        # Calculate statistics across all individual agents
+        qualities = [m['decision_quality']['weighted_score'] for m in individual_metrics_list]
+        confidences = [m['confidence'] for m in individual_metrics_list]
+        agreements = sum(1 for m in individual_metrics_list if m['agrees_with_consensus'])
+
+        avg_individual_quality = sum(qualities) / len(qualities) if qualities else 0.0
+        min_individual_quality = min(qualities) if qualities else 0.0
+        max_individual_quality = max(qualities) if qualities else 0.0
+
+        avg_individual_confidence = sum(confidences) / len(confidences) if confidences else 0.0
+        agreement_rate = (agreements / len(individual_metrics_list)) * 100 if individual_metrics_list else 0.0
+
+        # Store comprehensive comparison
+        metrics['individual_comparisons'] = {
+            'multi_agent_quality': multi_agent_quality,
+            'multi_agent_confidence': multi_agent_confidence,
+            'multi_agent_recommendation': multi_agent_recommendation,
+            'individual_agents': individual_metrics_list,
+            'statistics': {
+                'avg_quality': avg_individual_quality,
+                'min_quality': min_individual_quality,
+                'max_quality': max_individual_quality,
+                'avg_confidence': avg_individual_confidence,
+                'agreement_rate_percent': agreement_rate,
+                'num_agents_agree': agreements,
+                'total_agents': len(individual_metrics_list)
+            }
+        }
+
+        # Log comprehensive comparison
+        logger.info("")
+        logger.info("="*80)
+        logger.info("MULTI-AGENT vs INDIVIDUAL AGENTS COMPARISON")
+        logger.info("="*80)
+
+        logger.info("\nDecision Quality:")
+        logger.info(f"  Multi-agent consensus: {multi_agent_quality:.3f}")
+        logger.info(f"  Individual agents:")
+        logger.info(f"    Average:  {avg_individual_quality:.3f}")
+        logger.info(f"    Range:    {min_individual_quality:.3f} - {max_individual_quality:.3f}")
+        logger.info(f"  Improvement over average: {((multi_agent_quality - avg_individual_quality) / max(avg_individual_quality, 0.001)) * 100:+.1f}%")
+
+        logger.info("\nConfidence Levels:")
+        logger.info(f"  Multi-agent consensus: {multi_agent_confidence:.3f}")
+        logger.info(f"  Individual agents (avg): {avg_individual_confidence:.3f}")
+
+        logger.info("\nConsensus Agreement:")
+        logger.info(f"  Agents agreeing with consensus: {agreements}/{len(individual_metrics_list)} ({agreement_rate:.1f}%)")
+        logger.info(f"  Multi-agent recommendation: {multi_agent_recommendation}")
+
+        # Show individual agent recommendations
+        logger.info("\nIndividual Agent Decisions:")
+        for ind_metrics in sorted(individual_metrics_list, key=lambda x: x['decision_quality']['weighted_score'], reverse=True):
+            agree_marker = "✓" if ind_metrics['agrees_with_consensus'] else "✗"
+            logger.info(
+                f"  [{agree_marker}] {ind_metrics['agent_name']}: "
+                f"{ind_metrics['recommended_alternative']} "
+                f"(quality: {ind_metrics['decision_quality']['weighted_score']:.3f}, "
+                f"confidence: {ind_metrics['confidence']:.2f})"
+            )
+
+        logger.info("")
+
+    # 5b. Compare to baseline if available (LEGACY - for backward compatibility)
+    elif baseline_assessment:
         logger.info("")
         logger.info("Comparing with single-agent baseline...")
 
@@ -832,7 +1028,24 @@ def print_summary(
     logger.info(f"  Consensus Level: {metrics['consensus']['consensus_level']:.3f}")
     logger.info(f"  Expert Balance: {metrics['expert_contribution_balance']['balance_score']:.3f}")
 
-    if 'baseline_comparison' in metrics and 'baseline_metrics' in metrics:
+    if 'individual_comparisons' in metrics:
+        logger.info("")
+        logger.info("MULTI-AGENT vs INDIVIDUAL AGENTS COMPARISON")
+
+        comp = metrics['individual_comparisons']
+        stats = comp['statistics']
+
+        ma_quality = comp['multi_agent_quality']
+        avg_quality = stats['avg_quality']
+        quality_improvement = ((ma_quality - avg_quality) / max(avg_quality, 0.001)) * 100
+
+        logger.info(f"  Quality:     {avg_quality:.3f} (avg individual) → {ma_quality:.3f} (multi) [{quality_improvement:+.1f}%]")
+        logger.info(f"               Range: {stats['min_quality']:.3f} - {stats['max_quality']:.3f}")
+        logger.info(f"  Confidence:  {stats['avg_confidence']:.3f} (avg individual) → {comp['multi_agent_confidence']:.3f} (multi)")
+        logger.info(f"  Agreement:   {stats['num_agents_agree']}/{stats['total_agents']} agents ({stats['agreement_rate_percent']:.1f}%)")
+
+    elif 'baseline_comparison' in metrics and 'baseline_metrics' in metrics:
+        # Legacy single-agent baseline comparison
         logger.info("")
         logger.info("BASELINE COMPARISON")
 
@@ -1053,14 +1266,13 @@ For more information, see README.md
 
         decision = run_decision_process(coordinator, scenario, alternatives)
 
-        # Run baseline comparison if requested
-        baseline_assessment = None
+        # Run individual agent comparisons if requested (NEW - comprehensive)
+        individual_decisions = None
         if not args.no_baseline:
-            baseline_assessment = run_single_agent_baseline(
+            individual_decisions = run_individual_agent_comparisons(
                 expert_agents,
                 scenario,
-                alternatives,
-                agent_type=args.baseline_agent
+                alternatives
             )
 
         # ===== 4. EVALUATE =====
@@ -1068,7 +1280,7 @@ For more information, see README.md
 
         metrics = evaluate_decision(
             decision,
-            baseline_assessment=baseline_assessment
+            individual_decisions=individual_decisions
         )
 
         # ===== 5. OUTPUT =====
