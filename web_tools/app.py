@@ -44,6 +44,7 @@ def load_config():
             return json.load(f)
     return {
         'experts_file': str(AGENTS_PROFILES_FILE),
+        'protocols_file': str(PROTOCOLS_FILE),
         'scenarios_dir': str(CRISIS_SCENARIOS_DIR)
     }
 
@@ -56,6 +57,10 @@ def save_config(config):
 config = load_config()
 if 'experts_file' in config:
     EXPERTS_FILE = Path(config['experts_file'])
+if 'protocols_file' in config:
+    PROTOCOLS_FILE = Path(config['protocols_file'])
+if 'scenarios_dir' in config:
+    CRISIS_SCENARIOS_DIR = Path(config['scenarios_dir'])
 
 
 # ============================================================================
@@ -618,28 +623,59 @@ def api_extract_actions():
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     """View and update application settings."""
-    global EXPERTS_FILE, config
+    global EXPERTS_FILE, PROTOCOLS_FILE, CRISIS_SCENARIOS_DIR, config
 
     if request.method == 'POST':
+        errors = []
+        updated = False
+
         # Update experts file path
         new_experts_path = request.form.get('experts_file', '').strip()
-
         if new_experts_path:
             experts_path = Path(new_experts_path)
-
-            # Validate path exists
             if not experts_path.exists():
-                flash(f'❌ File not found: {new_experts_path}', 'error')
+                errors.append(f'Experts file not found: {new_experts_path}')
             else:
-                # Update configuration
                 config['experts_file'] = new_experts_path
-                save_config(config)
-
-                # Update global variable
                 EXPERTS_FILE = experts_path
+                updated = True
 
-                flash('✅ Settings saved successfully!', 'success')
-                return redirect(url_for('settings'))
+        # Update protocols file path
+        new_protocols_path = request.form.get('protocols_file', '').strip()
+        if new_protocols_path:
+            protocols_path = Path(new_protocols_path)
+            if not protocols_path.exists():
+                errors.append(f'Protocols file not found: {new_protocols_path}')
+            else:
+                config['protocols_file'] = new_protocols_path
+                PROTOCOLS_FILE = protocols_path
+                updated = True
+
+        # Update scenarios directory path
+        new_scenarios_dir = request.form.get('scenarios_dir', '').strip()
+        if new_scenarios_dir:
+            scenarios_path = Path(new_scenarios_dir)
+            if not scenarios_path.exists():
+                errors.append(f'Scenarios directory not found: {new_scenarios_dir}')
+            elif not scenarios_path.is_dir():
+                errors.append(f'Path is not a directory: {new_scenarios_dir}')
+            else:
+                config['scenarios_dir'] = new_scenarios_dir
+                CRISIS_SCENARIOS_DIR = scenarios_path
+                updated = True
+
+        # Show appropriate messages
+        if errors:
+            for error in errors:
+                flash(f'❌ {error}', 'error')
+
+        if updated:
+            save_config(config)
+            flash('✅ Settings saved successfully!', 'success')
+            return redirect(url_for('settings'))
+
+        if not errors and not updated:
+            flash('⚠️ No changes detected', 'warning')
 
     # Load current configuration
     current_config = load_config()
@@ -665,9 +701,51 @@ def settings():
         except Exception as e:
             expert_stats['error'] = str(e)
 
+    # Get protocols file stats
+    protocols_stats = {
+        'file_path': str(PROTOCOLS_FILE),
+        'exists': PROTOCOLS_FILE.exists(),
+        'count': 0,
+        'categories': []
+    }
+
+    if PROTOCOLS_FILE.exists():
+        try:
+            protocols = load_protocols()
+            protocols_stats['count'] = len(protocols)
+            categories = set()
+            for protocol in protocols:
+                if 'category' in protocol:
+                    categories.add(protocol['category'])
+            protocols_stats['categories'] = sorted(list(categories))
+        except Exception as e:
+            protocols_stats['error'] = str(e)
+
+    # Get scenarios directory stats
+    scenarios_stats = {
+        'dir_path': str(CRISIS_SCENARIOS_DIR),
+        'exists': CRISIS_SCENARIOS_DIR.exists(),
+        'count': 0,
+        'types': []
+    }
+
+    if CRISIS_SCENARIOS_DIR.exists():
+        try:
+            scenarios = load_crisis_scenarios()
+            scenarios_stats['count'] = len(scenarios)
+            types = set()
+            for scenario in scenarios:
+                if 'type' in scenario:
+                    types.add(scenario['type'])
+            scenarios_stats['types'] = sorted(list(types))
+        except Exception as e:
+            scenarios_stats['error'] = str(e)
+
     return render_template('settings.html',
                           config=current_config,
-                          expert_stats=expert_stats)
+                          expert_stats=expert_stats,
+                          protocols_stats=protocols_stats,
+                          scenarios_stats=scenarios_stats)
 
 
 # ============================================================================
