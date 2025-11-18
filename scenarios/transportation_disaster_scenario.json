@@ -1,0 +1,151 @@
+{
+  "id": "transportation_disaster_001",
+  "type": "mass_casualty",
+  "name": "High-Speed Train Derailment - Tempe",
+  "description": "A high-speed passenger train traveling from Athens to Thessaloniki has derailed near Tempe at 120 km/h after colliding with a freight train on the same track. Multiple carriages have overturned and caught fire. The train was carrying approximately 350 passengers. Initial reports indicate significant casualties with many people trapped in wreckage. Access is difficult due to remote location and ongoing fire. This is a mass casualty incident requiring extensive rescue operations.",
+  "severity": 0.90,
+  "affected_population": 350,
+  "location": {
+    "region": "Tempe, Thessaly, Greece",
+    "coordinates": {"lat": 39.8160, "lon": 22.5656}
+  },
+  "tags": ["transportation", "train_accident", "mass_casualty", "fire", "rescue"],
+  "casualties": 57,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_immediate_rescue",
+      "name": "Immediate Search and Rescue Operations",
+      "description": "Deploy all available rescue teams, focus on extracting trapped passengers, establish triage areas, prioritize life-saving interventions",
+      "required_resources": ["rescue_teams", "heavy_equipment", "medical_personnel", "helicopters", "cutting_equipment"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.60,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.70,
+        "speed": 0.80,
+        "cost": 0.45,
+        "public_acceptance": 0.95
+      }
+    },
+    {
+      "id": "action_fire_suppression_first",
+      "name": "Priority Fire Suppression Before Rescue",
+      "description": "Suppress fires in derailed carriages first to enable safer rescue operations, prevent further casualties from fire spread",
+      "required_resources": ["fire_teams", "fire_suppression_equipment", "water_supply", "foam_systems"],
+      "estimated_duration": "2-4 hours",
+      "risk_level": 0.70,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.80,
+        "speed": 0.70,
+        "cost": 0.60,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_mass_casualty_triage",
+      "name": "Establish Mass Casualty Triage System",
+      "description": "Set up field hospital and triage system, categorize victims by severity, organize medical evacuation by helicopter and ambulance to regional hospitals",
+      "required_resources": ["medical_teams", "triage_equipment", "field_hospital", "helicopters", "ambulances", "hospitals"],
+      "estimated_duration": "3-6 hours",
+      "risk_level": 0.50,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.85,
+        "speed": 0.75,
+        "cost": 0.50,
+        "public_acceptance": 0.90
+      }
+    },
+    {
+      "id": "action_regional_mobilization",
+      "name": "Regional Resource Mobilization",
+      "description": "Request assistance from neighboring regions, mobilize national emergency response, coordinate multi-agency effort, establish unified command",
+      "required_resources": ["regional_coordination", "national_resources", "military_support", "volunteer_teams"],
+      "estimated_duration": "4-8 hours",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.88,
+        "safety": 0.80,
+        "speed": 0.65,
+        "cost": 0.40,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_integrated_mass_casualty_response",
+      "name": "Integrated Mass Casualty Transportation Response",
+      "description": "Comprehensive approach: simultaneous fire suppression and rescue where safe, mass casualty triage system, regional resource mobilization, family assistance center, investigation team deployment",
+      "required_resources": ["full_national_emergency_response", "multi_agency_coordination", "regional_medical_surge", "international_assistance"],
+      "estimated_duration": "12-48 hours",
+      "risk_level": 0.40,
+      "criteria_scores": {
+        "effectiveness": 0.95,
+        "safety": 0.85,
+        "speed": 0.75,
+        "cost": 0.30,
+        "public_acceptance": 0.92
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["remote_location", "limited_local_resources", "hospital_capacity", "helicopter_availability"],
+    "weather_conditions": "night_time_operation",
+    "accessibility": "difficult_terrain_limited_road_access",
+    "additional_concerns": [
+      "Ongoing fire in multiple carriages",
+      "Structural instability of wreckage",
+      "Many passengers trapped and injured",
+      "Remote location complicates logistics",
+      "Limited local hospital capacity",
+      "Family notification and assistance needed",
+      "Railway investigation required",
+      "Potential for secondary collapse"
+    ]
+  },
+  "real_time_factors": {
+    "passengers_on_train": 350,
+    "casualties_confirmed": 57,
+    "casualties_estimated": "80-120",
+    "trapped_passengers": "approximately_100",
+    "fire_status": "active_in_3_carriages",
+    "rescue_access": "limited_difficult",
+    "nearest_hospital": "25km_limited_capacity"
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "critical",
+    "recommended_expert_domains": ["search_rescue", "medical", "fire_rescue", "emergency_management", "logistics"]
+  },
+  "expert_selection": {
+    "crisis_type": "mass_casualty",
+    "crisis_subtypes": ["transportation", "fire", "rescue", "mass_casualty"],
+    "severity": 0.90,
+    "geographic_scope": "regional",
+    "geographic_location": "rural",
+    "affected_populations": 350,
+    "duration_estimated_hours": 48,
+    "affected_domains": [
+      "search_rescue",
+      "fire_rescue",
+      "medical_health",
+      "emergency_communications",
+      "law_enforcement"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    },
+    "infrastructure_systems": [
+      "hospitals",
+      "transportation",
+      "communications",
+      "emergency_services"
+    ]
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "id": "terrorism_001",
+  "type": "terrorist",
+  "name": "Athens Metro Terrorist Attack",
+  "description": "A coordinated terrorist attack has occurred at Syntagma Metro Station in central Athens during rush hour. Multiple explosive devices have detonated, causing significant casualties and structural damage. Reports indicate possible secondary devices and active shooter situation. Emergency services are responding while ensuring the safety of first responders from potential additional threats.",
+  "severity": 0.95,
+  "affected_population": 8000,
+  "location": {
+    "region": "Athens, Attica, Greece",
+    "coordinates": {"lat": 37.9755, "lon": 23.7348}
+  },
+  "tags": ["terrorism", "mass_casualty", "urban", "security", "active_threat"],
+  "casualties": 45,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_secure_perimeter",
+      "name": "Establish Security Perimeter and Threat Assessment",
+      "description": "Immediately secure the area with law enforcement, evacuate surrounding buildings, and conduct comprehensive threat assessment for secondary devices",
+      "required_resources": ["tactical_police", "bomb_disposal", "security_forces", "detection_equipment"],
+      "estimated_duration": "2-3 hours",
+      "risk_level": 0.7,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.75,
+        "speed": 0.60,
+        "cost": 0.65,
+        "public_acceptance": 0.80
+      }
+    },
+    {
+      "id": "action_mass_evacuation",
+      "name": "Immediate Mass Evacuation",
+      "description": "Conduct rapid evacuation of all metro stations and surrounding area while maintaining security protocols",
+      "required_resources": ["police", "security_personnel", "transportation", "communication_systems"],
+      "estimated_duration": "1-2 hours",
+      "risk_level": 0.65,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.80,
+        "speed": 0.90,
+        "cost": 0.55,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_tactical_response",
+      "name": "Tactical Response and Active Threat Neutralization",
+      "description": "Deploy specialized tactical units to neutralize active threats, secure the scene, and enable medical response",
+      "required_resources": ["special_forces", "tactical_units", "intelligence", "command_center"],
+      "estimated_duration": "3-6 hours",
+      "risk_level": 0.85,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.65,
+        "speed": 0.55,
+        "cost": 0.50,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_medical_priority",
+      "name": "Prioritized Medical Response with Security Escort",
+      "description": "Focus on immediate triage and medical evacuation of casualties under tactical security escort",
+      "required_resources": ["medical_teams", "ambulances", "hospitals", "security_escort", "helicopters"],
+      "estimated_duration": "4-8 hours",
+      "risk_level": 0.75,
+      "criteria_scores": {
+        "effectiveness": 0.88,
+        "safety": 0.70,
+        "speed": 0.75,
+        "cost": 0.45,
+        "public_acceptance": 0.95
+      }
+    },
+    {
+      "id": "action_integrated_response",
+      "name": "Integrated Security and Medical Response",
+      "description": "Coordinated approach: tactical threat neutralization, perimeter security, mass casualty medical response, and systematic evacuation",
+      "required_resources": ["full_tactical_response", "medical_surge", "multi_agency_coordination"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.60,
+      "criteria_scores": {
+        "effectiveness": 0.92,
+        "safety": 0.78,
+        "speed": 0.65,
+        "cost": 0.35,
+        "public_acceptance": 0.88
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["specialized_tactical_units", "bomb_disposal_teams", "mass_casualty_capacity"],
+    "weather_conditions": "clear",
+    "accessibility": "restricted_due_to_security",
+    "additional_concerns": [
+      "Potential for secondary devices",
+      "Active shooter situation unconfirmed",
+      "Mass panic in surrounding areas",
+      "Hospital surge capacity exceeded",
+      "Need for national security coordination",
+      "Media and public information management"
+    ]
+  },
+  "real_time_factors": {
+    "active_threat_status": "possible",
+    "secondary_devices": "not_confirmed",
+    "casualties_confirmed": 45,
+    "casualties_estimated": "80-120",
+    "missing_persons": 23,
+    "structural_stability": "compromised_in_blast_zone",
+    "public_panic_level": "extreme"
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "critical",
+    "recommended_expert_domains": ["security", "medical", "law_enforcement", "tactical", "public_safety"]
+  },
+  "expert_selection": {
+    "crisis_type": "terrorist",
+    "crisis_subtypes": ["mass_casualty", "active_threat", "urban", "structural_damage", "public_order"],
+    "severity": 0.95,
+    "geographic_scope": "regional",
+    "geographic_location": "urban",
+    "affected_populations": 8000,
+    "duration_estimated_hours": 24,
+    "affected_domains": [
+      "security",
+      "law_enforcement",
+      "medical_health",
+      "fire_rescue",
+      "emergency_communications",
+      "public_order",
+      "search_rescue"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    },
+    "infrastructure_systems": [
+      "hospitals",
+      "transportation",
+      "communications",
+      "emergency_services"
+    ]
+  }
+}

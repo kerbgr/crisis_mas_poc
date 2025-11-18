@@ -1,0 +1,151 @@
+{
+  "id": "tsunami_001",
+  "type": "tsunami",
+  "name": "Aegean Sea Tsunami Emergency - Santorini Event",
+  "description": "A major underwater volcanic eruption and seismic event near Santorini has generated a tsunami. Wave heights of 8-15 meters are predicted to impact coastal areas of Crete, the Cyclades islands, and potentially the Greek mainland within 20-45 minutes. Coastal populations across multiple islands and mainland areas require immediate evacuation to high ground. Tourist season means significantly elevated population in affected areas.",
+  "severity": 0.88,
+  "affected_population": 75000,
+  "location": {
+    "region": "Cyclades Islands and Southern Aegean, Greece",
+    "coordinates": {"lat": 36.4074, "lon": 25.3963}
+  },
+  "tags": ["tsunami", "coastal", "evacuation", "natural_disaster", "multi_jurisdictional"],
+  "casualties": 0,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_immediate_vertical_evacuation",
+      "name": "Immediate Vertical Evacuation - Move to High Ground",
+      "description": "Emergency broadcast for all coastal populations to immediately move to elevation above 20 meters, abandon vehicles, move inland and upward",
+      "required_resources": ["emergency_broadcast_systems", "sirens", "mobile_alerts", "personnel_to_guide"],
+      "estimated_duration": "20-40 minutes",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.85,
+        "speed": 0.95,
+        "cost": 0.80,
+        "public_acceptance": 0.80
+      }
+    },
+    {
+      "id": "action_maritime_evacuation",
+      "name": "Emergency Maritime Evacuation",
+      "description": "Use available vessels to evacuate low-lying coastal areas and islands with no high ground, coordinate with coast guard and navy",
+      "required_resources": ["ships", "boats", "coast_guard", "navy", "coordination"],
+      "estimated_duration": "1-3 hours",
+      "risk_level": 0.75,
+      "criteria_scores": {
+        "effectiveness": 0.65,
+        "safety": 0.60,
+        "speed": 0.50,
+        "cost": 0.45,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_selective_island_evacuation",
+      "name": "Prioritized Island and Coastal Zone Evacuation",
+      "description": "Focus on evacuating islands and coastal areas with highest wave impact predictions and lowest elevation options",
+      "required_resources": ["helicopters", "ferries", "emergency_transport", "risk_assessment_data"],
+      "estimated_duration": "2-4 hours",
+      "risk_level": 0.60,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.70,
+        "speed": 0.65,
+        "cost": 0.55,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_shelter_reinforcement",
+      "name": "Emergency Shelter in Reinforced Structures",
+      "description": "Direct populations to designated tsunami-resistant structures in coastal areas, prioritize high-rise buildings and reinforced facilities",
+      "required_resources": ["designated_shelters", "emergency_services", "structural_assessments"],
+      "estimated_duration": "15-30 minutes",
+      "risk_level": 0.65,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.75,
+        "speed": 0.90,
+        "cost": 0.75,
+        "public_acceptance": 0.65
+      }
+    },
+    {
+      "id": "action_comprehensive_tsunami_response",
+      "name": "Comprehensive Multi-Zone Tsunami Response",
+      "description": "Integrated approach: immediate vertical evacuation alerts, maritime evacuation for vulnerable islands, designated shelter activation, emergency services pre-positioning, continuous wave monitoring",
+      "required_resources": ["full_coastal_emergency_response", "multi_agency_maritime_coordination", "regional_resources"],
+      "estimated_duration": "1-6 hours",
+      "risk_level": 0.40,
+      "criteria_scores": {
+        "effectiveness": 0.92,
+        "safety": 0.88,
+        "speed": 0.78,
+        "cost": 0.40,
+        "public_acceptance": 0.85
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["extremely_limited_time", "geographic_dispersion", "island_accessibility", "tourist_population_unfamiliarity"],
+    "weather_conditions": "clear_but_seismic_activity_continuing",
+    "accessibility": "islands_separated_limited_evacuation_routes",
+    "additional_concerns": [
+      "Multiple waves expected over 3-6 hours",
+      "Tourist population unfamiliar with area",
+      "Language barriers with international tourists",
+      "Limited high ground on some islands",
+      "Port and harbor infrastructure at risk",
+      "Aftershocks may trigger additional waves",
+      "Communication infrastructure vulnerable"
+    ]
+  },
+  "real_time_factors": {
+    "time_to_first_wave": "20-45_minutes",
+    "predicted_wave_heights": "8-15_meters",
+    "number_of_waves_expected": "3-7_over_6_hours",
+    "seismic_activity": "continuing",
+    "affected_coastline": "500km_plus",
+    "tourist_season": "high_season_elevated_population"
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "critical",
+    "recommended_expert_domains": ["maritime", "coastal", "emergency_management", "meteorology", "public_safety"]
+  },
+  "expert_selection": {
+    "crisis_type": "tsunami",
+    "crisis_subtypes": ["coastal", "maritime", "evacuation", "multi_jurisdictional"],
+    "severity": 0.88,
+    "geographic_scope": "regional",
+    "geographic_location": "coastal",
+    "affected_populations": 75000,
+    "duration_estimated_hours": 8,
+    "affected_domains": [
+      "maritime_coastal",
+      "weather_environment",
+      "emergency_communications",
+      "law_enforcement",
+      "fire_rescue",
+      "medical_health"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    },
+    "infrastructure_systems": [
+      "ports",
+      "communications",
+      "emergency_services",
+      "transportation",
+      "hospitals"
+    ]
+  }
+}

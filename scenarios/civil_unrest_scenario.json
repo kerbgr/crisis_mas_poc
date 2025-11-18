@@ -1,0 +1,150 @@
+{
+  "id": "civil_unrest_001",
+  "type": "civil_unrest",
+  "name": "Mass Protest Escalation - Athens City Center",
+  "description": "A large-scale peaceful protest in Syntagma Square has escalated into widespread civil unrest across central Athens. Over 50,000 protesters have clashed with police. Violence has spread to surrounding streets with reports of property damage, arson, and looting. Multiple injuries reported among protesters, police, and bystanders. Transportation is disrupted, businesses damaged, and there are concerns about further escalation. Emergency services are struggling to access affected areas.",
+  "severity": 0.70,
+  "affected_population": 100000,
+  "location": {
+    "region": "Athens City Center, Attica, Greece",
+    "coordinates": {"lat": 37.9755, "lon": 23.7348}
+  },
+  "tags": ["civil_unrest", "protest", "public_order", "urban", "crowd_control"],
+  "casualties": 12,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_de_escalation_dialogue",
+      "name": "De-escalation Through Dialogue and Concessions",
+      "description": "Engage protest leaders in immediate dialogue, make public concessions, withdraw riot police from confrontational positions, allow peaceful assembly",
+      "required_resources": ["negotiators", "government_officials", "communication_channels", "media_coordination"],
+      "estimated_duration": "2-6 hours",
+      "risk_level": 0.60,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.75,
+        "speed": 0.60,
+        "cost": 0.80,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_crowd_dispersal",
+      "name": "Controlled Crowd Dispersal Operations",
+      "description": "Deploy riot control units to systematically disperse crowds using non-lethal methods, establish security perimeters, restore order",
+      "required_resources": ["riot_police", "crowd_control_equipment", "tactical_units", "coordination"],
+      "estimated_duration": "3-8 hours",
+      "risk_level": 0.75,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.55,
+        "speed": 0.70,
+        "cost": 0.60,
+        "public_acceptance": 0.40
+      }
+    },
+    {
+      "id": "action_containment_strategy",
+      "name": "Containment and Area Isolation",
+      "description": "Establish containment perimeters, prevent spread to other areas, allow protest in designated zones, protect critical infrastructure",
+      "required_resources": ["police_forces", "barriers", "coordination_center", "traffic_control"],
+      "estimated_duration": "4-12 hours",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.65,
+        "safety": 0.70,
+        "speed": 0.65,
+        "cost": 0.70,
+        "public_acceptance": 0.60
+      }
+    },
+    {
+      "id": "action_emergency_services_priority",
+      "name": "Priority Emergency Services and Medical Response",
+      "description": "Focus on establishing safe corridors for emergency services, medical treatment for injured, fire suppression, protecting civilians while minimizing confrontation",
+      "required_resources": ["emergency_services", "medical_teams", "safe_corridors", "police_escort"],
+      "estimated_duration": "2-4 hours",
+      "risk_level": 0.50,
+      "criteria_scores": {
+        "effectiveness": 0.80,
+        "safety": 0.85,
+        "speed": 0.80,
+        "cost": 0.75,
+        "public_acceptance": 0.90
+      }
+    },
+    {
+      "id": "action_comprehensive_public_order",
+      "name": "Comprehensive Public Order Management",
+      "description": "Multi-faceted approach: immediate dialogue and de-escalation attempts, emergency service corridors, strategic containment, proportional enforcement, media communication strategy",
+      "required_resources": ["multi_agency_coordination", "negotiation_teams", "police_forces", "emergency_services", "communication_strategy"],
+      "estimated_duration": "6-24 hours",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.78,
+        "speed": 0.60,
+        "cost": 0.65,
+        "public_acceptance": 0.75
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["police_fatigue", "medical_capacity", "political_constraints_on_force_use"],
+    "weather_conditions": "clear",
+    "accessibility": "major_roads_blocked_by_protesters",
+    "additional_concerns": [
+      "Risk of further escalation if force used",
+      "International media attention",
+      "Protest may spread to other cities",
+      "Property damage and looting ongoing",
+      "Public transportation shut down",
+      "Businesses in area unable to operate",
+      "Political sensitivity of response"
+    ]
+  },
+  "real_time_factors": {
+    "protest_size": "50000_plus_growing",
+    "violence_level": "moderate_escalating",
+    "areas_affected": "expanding_beyond_central_athens",
+    "injuries_reported": 12,
+    "arrests_made": 45,
+    "property_damage": "significant_multiple_buildings",
+    "protest_organization": "partially_organized_partially_spontaneous"
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "high",
+    "recommended_expert_domains": ["law_enforcement", "public_order", "negotiation", "medical", "public_safety"]
+  },
+  "expert_selection": {
+    "crisis_type": "civil_unrest",
+    "crisis_subtypes": ["protest", "crowd_control", "public_order", "urban"],
+    "severity": 0.70,
+    "geographic_scope": "regional",
+    "geographic_location": "urban",
+    "affected_populations": 100000,
+    "duration_estimated_hours": 24,
+    "affected_domains": [
+      "law_enforcement",
+      "public_order",
+      "medical_health",
+      "emergency_communications",
+      "fire_rescue"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": false
+    },
+    "infrastructure_systems": [
+      "transportation",
+      "communications",
+      "hospitals",
+      "emergency_services"
+    ]
+  }
+}

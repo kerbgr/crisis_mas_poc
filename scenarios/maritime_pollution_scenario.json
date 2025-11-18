@@ -1,0 +1,148 @@
+{
+  "id": "maritime_pollution_001",
+  "type": "oil_spill",
+  "name": "Major Oil Tanker Spill - Saronic Gulf",
+  "description": "A large oil tanker has collided with another vessel in the Saronic Gulf near Piraeus Port, resulting in a major oil spill. Approximately 50,000 tons of crude oil have been released into the sea. The spill is spreading toward coastal areas including popular beaches, the port of Piraeus, and environmentally sensitive areas. Wind and currents are pushing the oil slick toward Athens metropolitan coastline. Marine wildlife is at severe risk. Tourism and fishing industries face major impact.",
+  "severity": 0.75,
+  "affected_population": 200000,
+  "location": {
+    "region": "Saronic Gulf, Attica, Greece",
+    "coordinates": {"lat": 37.9375, "lon": 23.5643}
+  },
+  "tags": ["oil_spill", "maritime", "environmental", "coastal", "pollution"],
+  "casualties": 5,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_containment_booms",
+      "name": "Deploy Containment Booms and Barriers",
+      "description": "Deploy oil containment booms around the spill and near sensitive coastal areas, establish barriers to protect ports, beaches, and marine reserves",
+      "required_resources": ["containment_booms", "vessels", "coast_guard", "environmental_teams"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.50,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.85,
+        "speed": 0.70,
+        "cost": 0.55,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_dispersion_chemicals",
+      "name": "Chemical Dispersant Application",
+      "description": "Apply chemical dispersants from aircraft and vessels to break up oil slick, reduce coastal impact, allow natural degradation",
+      "required_resources": ["dispersant_chemicals", "aircraft", "specialized_vessels", "environmental_assessment"],
+      "estimated_duration": "12-24 hours",
+      "risk_level": 0.65,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.65,
+        "speed": 0.75,
+        "cost": 0.50,
+        "public_acceptance": 0.60
+      }
+    },
+    {
+      "id": "action_mechanical_recovery",
+      "name": "Mechanical Oil Recovery Operations",
+      "description": "Deploy skimmers and recovery vessels to mechanically remove oil from water surface, transfer to storage for proper disposal",
+      "required_resources": ["skimmer_vessels", "storage_capacity", "specialized_equipment", "trained_crews"],
+      "estimated_duration": "24-72 hours",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.80,
+        "safety": 0.80,
+        "speed": 0.50,
+        "cost": 0.40,
+        "public_acceptance": 0.90
+      }
+    },
+    {
+      "id": "action_coastal_protection_priority",
+      "name": "Priority Coastal and Marine Protection",
+      "description": "Focus resources on protecting most sensitive areas: marine reserves, fish farms, tourist beaches, drinking water intakes, deploy booms and recovery teams strategically",
+      "required_resources": ["environmental_experts", "priority_mapping", "containment_resources", "cleanup_crews"],
+      "estimated_duration": "8-48 hours",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.85,
+        "speed": 0.65,
+        "cost": 0.60,
+        "public_acceptance": 0.88
+      }
+    },
+    {
+      "id": "action_integrated_spill_response",
+      "name": "Integrated Oil Spill Response",
+      "description": "Comprehensive approach: containment booms deployment, mechanical recovery operations, selective dispersant use in open water, coastal protection priority zones, wildlife rescue, beach cleanup preparation",
+      "required_resources": ["full_maritime_pollution_response", "international_assistance", "multi_agency_coordination", "environmental_specialists"],
+      "estimated_duration": "72+ hours",
+      "risk_level": 0.40,
+      "criteria_scores": {
+        "effectiveness": 0.88,
+        "safety": 0.82,
+        "speed": 0.60,
+        "cost": 0.35,
+        "public_acceptance": 0.85
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["specialized_equipment", "trained_personnel", "storage_capacity", "weather_dependent"],
+    "weather_conditions": "moderate_winds_pushing_toward_coast",
+    "accessibility": "maritime_operations_weather_dependent",
+    "additional_concerns": [
+      "Oil spreading rapidly toward coast",
+      "Tourist season - beaches affected",
+      "Major port operations disrupted",
+      "Fishing industry severely impacted",
+      "Marine wildlife at risk",
+      "Long-term environmental damage",
+      "Economic impact on tourism",
+      "Drinking water intake protection needed"
+    ]
+  },
+  "real_time_factors": {
+    "oil_volume_spilled": "50000_tons",
+    "spill_spreading_rate": "rapid_wind_driven",
+    "distance_to_coast": "15km_approaching",
+    "estimated_coastal_impact": "12-24_hours",
+    "weather_forecast": "winds_continuing_toward_coast",
+    "sensitive_areas_at_risk": "multiple_beaches_ports_marine_reserves"
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "high",
+    "recommended_expert_domains": ["maritime", "environmental", "coast_guard", "hazmat", "emergency_management"]
+  },
+  "expert_selection": {
+    "crisis_type": "oil_spill",
+    "crisis_subtypes": ["maritime", "environmental", "coastal"],
+    "severity": 0.75,
+    "geographic_scope": "regional",
+    "geographic_location": "maritime",
+    "affected_populations": 200000,
+    "duration_estimated_hours": 168,
+    "affected_domains": [
+      "maritime_coastal",
+      "weather_environment",
+      "hazmat",
+      "emergency_communications"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    },
+    "infrastructure_systems": [
+      "ports",
+      "water",
+      "communications"
+    ]
+  }
+}

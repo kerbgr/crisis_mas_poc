@@ -1,0 +1,152 @@
+{
+  "id": "dam_failure_001",
+  "type": "flood",
+  "name": "Marathon Dam Structural Failure Emergency",
+  "description": "The Marathon Dam, which supplies water to Athens, is showing critical structural failure after days of heavy rainfall. Engineers report imminent risk of catastrophic breach. The dam holds 41 million cubic meters of water, and failure would flood the Marathon valley and communities downstream including Nea Makri, Rafina, and parts of eastern Athens. Immediate evacuation of 50,000+ people is required.",
+  "severity": 0.92,
+  "affected_population": 50000,
+  "location": {
+    "region": "Marathon, Attica, Greece",
+    "coordinates": {"lat": 38.1547, "lon": 23.8894}
+  },
+  "tags": ["dam_failure", "flood", "evacuation", "infrastructure", "catastrophic"],
+  "casualties": 0,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_immediate_mass_evacuation",
+      "name": "Immediate Mass Evacuation - All Downstream Areas",
+      "description": "Execute emergency evacuation of all downstream communities within predicted flood zone (50km), prioritize low-lying areas",
+      "required_resources": ["mass_transportation", "emergency_shelters", "personnel", "communication_systems", "coordination_center"],
+      "estimated_duration": "3-6 hours",
+      "risk_level": 0.40,
+      "criteria_scores": {
+        "effectiveness": 0.95,
+        "safety": 0.90,
+        "speed": 0.70,
+        "cost": 0.35,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_controlled_release",
+      "name": "Controlled Water Release and Reinforcement",
+      "description": "Attempt controlled release of water to reduce pressure while reinforcing critical structural points, buy time for evacuation",
+      "required_resources": ["engineering_teams", "heavy_equipment", "materials", "technical_specialists"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.75,
+      "criteria_scores": {
+        "effectiveness": 0.65,
+        "safety": 0.60,
+        "speed": 0.50,
+        "cost": 0.55,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_vertical_evacuation",
+      "name": "Vertical Evacuation to High Ground",
+      "description": "Direct populations to move to upper floors and high ground locations, establish emergency shelters on elevated terrain",
+      "required_resources": ["emergency_services", "communication", "high_ground_locations", "supplies"],
+      "estimated_duration": "2-4 hours",
+      "risk_level": 0.65,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.75,
+        "speed": 0.90,
+        "cost": 0.70,
+        "public_acceptance": 0.60
+      }
+    },
+    {
+      "id": "action_prioritized_evacuation",
+      "name": "Risk-Based Prioritized Evacuation",
+      "description": "Evacuate highest-risk zones first (immediate downstream), followed by secondary zones, establish flood barriers for infrastructure protection",
+      "required_resources": ["evacuation_teams", "risk_assessment", "transportation", "engineering_support"],
+      "estimated_duration": "4-8 hours",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.80,
+        "speed": 0.75,
+        "cost": 0.50,
+        "public_acceptance": 0.80
+      }
+    },
+    {
+      "id": "action_comprehensive_dam_emergency",
+      "name": "Comprehensive Dam Emergency Response",
+      "description": "Multi-phase approach: immediate high-risk evacuation, controlled release attempts, vertical evacuation for distant zones, continuous structural monitoring, emergency services pre-positioning",
+      "required_resources": ["full_emergency_response", "engineering_specialists", "multi_agency_coordination", "regional_resources"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.38,
+      "criteria_scores": {
+        "effectiveness": 0.92,
+        "safety": 0.88,
+        "speed": 0.68,
+        "cost": 0.30,
+        "public_acceptance": 0.85
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["limited_evacuation_time", "transportation_capacity", "shelter_availability", "engineering_resources"],
+    "weather_conditions": "heavy_rain_continuing",
+    "accessibility": "some_roads_already_flooding",
+    "additional_concerns": [
+      "Dam could fail within 2-6 hours",
+      "Rainfall continuing - increasing pressure",
+      "Limited engineering options for stabilization",
+      "Major highways in flood path",
+      "Multiple hospitals in affected area",
+      "Night-time evacuation challenges",
+      "Communication infrastructure at risk"
+    ]
+  },
+  "real_time_factors": {
+    "dam_structural_integrity": "critical_15_percent",
+    "water_level": "95_percent_capacity",
+    "rainfall_rate": "continuing_moderate",
+    "time_to_potential_failure": "2-6_hours",
+    "evacuation_progress": "just_initiated",
+    "downstream_warning_time": "30_minutes_to_2_hours_depending_on_location"
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "critical",
+    "recommended_expert_domains": ["engineering", "emergency_management", "logistics", "public_safety", "environmental"]
+  },
+  "expert_selection": {
+    "crisis_type": "flood",
+    "crisis_subtypes": ["infrastructure_failure", "evacuation", "catastrophic", "time_critical"],
+    "severity": 0.92,
+    "geographic_scope": "regional",
+    "geographic_location": "inland",
+    "affected_populations": 50000,
+    "duration_estimated_hours": 12,
+    "affected_domains": [
+      "weather_environment",
+      "emergency_communications",
+      "law_enforcement",
+      "fire_rescue",
+      "medical_health",
+      "search_rescue"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    },
+    "infrastructure_systems": [
+      "transportation",
+      "communications",
+      "hospitals",
+      "emergency_services",
+      "water",
+      "power"
+    ]
+  }
+}

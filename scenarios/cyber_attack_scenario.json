@@ -1,0 +1,151 @@
+{
+  "id": "cyber_attack_001",
+  "type": "security",
+  "name": "Critical Infrastructure Cyber Attack",
+  "description": "A sophisticated coordinated cyber attack has targeted Greece's critical infrastructure systems. The national power grid control systems, emergency services dispatch (112), hospital networks, and banking systems are experiencing widespread disruptions. Ransomware has encrypted essential data across multiple sectors. Traffic control systems in Athens are offline. There are indications of a nation-state actor. Emergency services are operating with degraded capabilities while essential services are failing.",
+  "severity": 0.82,
+  "affected_population": 500000,
+  "location": {
+    "region": "National - Primary impact Athens and major cities, Greece",
+    "coordinates": {"lat": 37.9838, "lon": 23.7275}
+  },
+  "tags": ["cyber_attack", "infrastructure", "security", "national_emergency", "ransomware"],
+  "casualties": 3,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_system_isolation",
+      "name": "Immediate System Isolation and Containment",
+      "description": "Isolate affected systems from networks, shut down compromised infrastructure, prevent spread, activate backup systems where available",
+      "required_resources": ["cyber_security_teams", "IT_specialists", "backup_systems", "coordination"],
+      "estimated_duration": "2-4 hours",
+      "risk_level": 0.60,
+      "criteria_scores": {
+        "effectiveness": 0.80,
+        "safety": 0.75,
+        "speed": 0.85,
+        "cost": 0.70,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_manual_operations",
+      "name": "Switch to Manual Emergency Operations",
+      "description": "Activate manual protocols for emergency services, power grid, traffic control; deploy personnel for manual operations while systems are restored",
+      "required_resources": ["trained_personnel", "manual_procedures", "communication_systems", "emergency_generators"],
+      "estimated_duration": "1-3 hours",
+      "risk_level": 0.70,
+      "criteria_scores": {
+        "effectiveness": 0.65,
+        "safety": 0.70,
+        "speed": 0.90,
+        "cost": 0.60,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_forensics_restoration",
+      "name": "Priority Forensics and System Restoration",
+      "description": "Deploy cyber forensics teams to assess damage, identify attack vectors, begin systematic restoration of critical systems starting with emergency services",
+      "required_resources": ["cyber_forensics", "security_specialists", "restoration_teams", "backup_data"],
+      "estimated_duration": "12-48 hours",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.80,
+        "speed": 0.40,
+        "cost": 0.45,
+        "public_acceptance": 0.80
+      }
+    },
+    {
+      "id": "action_public_communication",
+      "name": "Emergency Public Communication Campaign",
+      "description": "Launch immediate public awareness campaign about service disruptions, provide alternative emergency contact methods, prevent public panic",
+      "required_resources": ["media_teams", "communication_channels", "backup_emergency_hotlines"],
+      "estimated_duration": "1-2 hours",
+      "risk_level": 0.40,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.85,
+        "speed": 0.95,
+        "cost": 0.85,
+        "public_acceptance": 0.90
+      }
+    },
+    {
+      "id": "action_comprehensive_cyber_response",
+      "name": "Comprehensive National Cyber Emergency Response",
+      "description": "Integrated approach: immediate system isolation, manual emergency operations activation, priority restoration of life-safety systems, forensic investigation, international coordination, public communication",
+      "required_resources": ["national_cyber_response_team", "multi_sector_coordination", "international_support", "emergency_operations_center"],
+      "estimated_duration": "24-96 hours",
+      "risk_level": 0.50,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.82,
+        "speed": 0.55,
+        "cost": 0.35,
+        "public_acceptance": 0.85
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["specialized_cyber_expertise", "backup_system_capacity", "manual_operation_personnel"],
+    "weather_conditions": "not_applicable",
+    "accessibility": "digital_systems_compromised",
+    "additional_concerns": [
+      "Extent of compromise unknown",
+      "Potential for data theft in addition to disruption",
+      "Nation-state attribution complicates response",
+      "Restoration may take days or weeks",
+      "Public panic about essential services",
+      "Banking system offline affecting economy",
+      "Hospital systems compromised affecting patient care",
+      "Potential for physical safety incidents due to traffic system failures"
+    ]
+  },
+  "real_time_factors": {
+    "attack_vector": "sophisticated_multi_vector",
+    "systems_affected": "power_grid_emergency_services_hospitals_banking_traffic",
+    "attack_ongoing": "yes_spreading",
+    "attribution": "suspected_nation_state",
+    "data_loss": "significant_encrypted",
+    "ransom_demand": "yes_cryptocurrency",
+    "casualties_from_service_disruption": 3
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "critical",
+    "recommended_expert_domains": ["cyber_security", "emergency_management", "infrastructure", "communications", "national_security"]
+  },
+  "expert_selection": {
+    "crisis_type": "security",
+    "crisis_subtypes": ["cyber", "infrastructure", "national_emergency"],
+    "severity": 0.82,
+    "geographic_scope": "national",
+    "geographic_location": "urban",
+    "affected_populations": 500000,
+    "duration_estimated_hours": 96,
+    "affected_domains": [
+      "security",
+      "emergency_communications",
+      "healthcare",
+      "law_enforcement"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    },
+    "infrastructure_systems": [
+      "power",
+      "communications",
+      "hospitals",
+      "emergency_services",
+      "transportation"
+    ]
+  }
+}

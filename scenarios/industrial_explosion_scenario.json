@@ -1,0 +1,152 @@
+{
+  "id": "industrial_explosion_001",
+  "type": "explosion",
+  "name": "Petrochemical Refinery Explosion - Aspropyrgos",
+  "description": "A massive explosion has occurred at the Motor Oil refinery complex in Aspropyrgos, west of Athens. Multiple storage tanks are on fire with risk of secondary explosions. Toxic smoke plume is spreading toward residential areas. Initial blast caused significant casualties among workers and nearby residents. Hazardous materials are involved including petroleum products and chemicals. Immediate evacuation and hazmat response required.",
+  "severity": 0.85,
+  "affected_population": 30000,
+  "location": {
+    "region": "Aspropyrgos, West Attica, Greece",
+    "coordinates": {"lat": 38.0611, "lon": 23.5908}
+  },
+  "tags": ["explosion", "industrial", "fire", "hazmat", "mass_casualty", "environmental"],
+  "casualties": 35,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_immediate_evacuation_downwind",
+      "name": "Immediate Evacuation of Downwind Areas",
+      "description": "Evacuate all populations downwind of smoke plume within 5km radius, establish shelter-in-place for 5-10km zone",
+      "required_resources": ["evacuation_transport", "emergency_personnel", "communication_systems", "shelters"],
+      "estimated_duration": "3-6 hours",
+      "risk_level": 0.50,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.80,
+        "speed": 0.70,
+        "cost": 0.45,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_fire_suppression_priority",
+      "name": "Priority Fire Suppression and Containment",
+      "description": "Deploy specialized industrial firefighting teams, foam suppression systems, prevent spread to additional tanks",
+      "required_resources": ["industrial_fire_teams", "foam_systems", "specialized_equipment", "hazmat_teams"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.80,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.60,
+        "speed": 0.55,
+        "cost": 0.50,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_mass_casualty_response",
+      "name": "Mass Casualty Medical Response",
+      "description": "Establish field hospitals, triage stations, treat burn victims and chemical exposure cases, evacuate critical patients to specialized facilities",
+      "required_resources": ["medical_teams", "ambulances", "burn_centers", "decontamination_equipment", "hospitals"],
+      "estimated_duration": "4-8 hours",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.75,
+        "speed": 0.80,
+        "cost": 0.40,
+        "public_acceptance": 0.95
+      }
+    },
+    {
+      "id": "action_hazmat_containment",
+      "name": "Hazmat Containment and Environmental Protection",
+      "description": "Deploy hazmat teams, contain chemical spills, prevent groundwater contamination, monitor air quality, establish exclusion zones",
+      "required_resources": ["hazmat_specialists", "containment_equipment", "monitoring_systems", "environmental_teams"],
+      "estimated_duration": "8-24 hours",
+      "risk_level": 0.65,
+      "criteria_scores": {
+        "effectiveness": 0.80,
+        "safety": 0.70,
+        "speed": 0.60,
+        "cost": 0.55,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_integrated_industrial_response",
+      "name": "Integrated Industrial Disaster Response",
+      "description": "Comprehensive approach: immediate downwind evacuation, mass casualty medical response, specialized fire suppression, hazmat containment, continuous risk monitoring for secondary explosions",
+      "required_resources": ["full_industrial_emergency_response", "specialized_teams", "multi_agency_coordination", "regional_medical_surge"],
+      "estimated_duration": "12-48 hours",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.93,
+        "safety": 0.78,
+        "speed": 0.65,
+        "cost": 0.30,
+        "public_acceptance": 0.88
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["specialized_industrial_firefighting", "burn_treatment_capacity", "hazmat_expertise", "decontamination_facilities"],
+    "weather_conditions": "moderate_winds_toward_residential_areas",
+    "accessibility": "restricted_due_to_fire_and_explosion_risk",
+    "additional_concerns": [
+      "Risk of secondary explosions from adjacent tanks",
+      "Toxic chemical exposure affecting first responders",
+      "Groundwater contamination from runoff",
+      "Air quality deterioration in Athens metro area",
+      "Limited burn treatment capacity",
+      "Potential for prolonged fire (days)",
+      "Environmental damage to nearby bay"
+    ]
+  },
+  "real_time_factors": {
+    "fire_status": "multiple_tanks_burning_uncontrolled",
+    "explosion_risk": "high_secondary_explosions_likely",
+    "smoke_plume_direction": "northeast_toward_athens",
+    "casualties_confirmed": 35,
+    "casualties_estimated": "80-150",
+    "missing_workers": 18,
+    "air_quality": "hazardous_within_3km"
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "critical",
+    "recommended_expert_domains": ["hazmat", "fire_rescue", "medical", "industrial_safety", "environmental"]
+  },
+  "expert_selection": {
+    "crisis_type": "explosion",
+    "crisis_subtypes": ["industrial", "fire", "hazmat", "mass_casualty", "environmental"],
+    "severity": 0.85,
+    "geographic_scope": "regional",
+    "geographic_location": "industrial",
+    "affected_populations": 30000,
+    "duration_estimated_hours": 48,
+    "affected_domains": [
+      "fire_rescue",
+      "hazmat",
+      "medical_health",
+      "weather_environment",
+      "emergency_communications",
+      "law_enforcement"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    },
+    "infrastructure_systems": [
+      "hospitals",
+      "emergency_services",
+      "communications",
+      "water",
+      "transportation"
+    ]
+  }
+}

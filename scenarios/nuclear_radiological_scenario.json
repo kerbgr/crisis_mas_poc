@@ -1,0 +1,151 @@
+{
+  "id": "nuclear_001",
+  "type": "hazmat",
+  "name": "Nuclear Facility Radiological Release",
+  "description": "A significant radiological incident has occurred at the research nuclear facility near Demokritos, Athens. A containment breach has released radioactive materials following a cooling system failure. Radiation levels are elevated in a 5km radius. Immediate evacuation and decontamination procedures are required. Wind patterns suggest potential spread toward populated areas.",
+  "severity": 0.90,
+  "affected_population": 25000,
+  "location": {
+    "region": "Agia Paraskevi, Athens, Greece",
+    "coordinates": {"lat": 37.9950, "lon": 23.8180}
+  },
+  "tags": ["nuclear", "radiological", "hazmat", "evacuation", "environmental"],
+  "casualties": 8,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_immediate_evacuation",
+      "name": "Immediate Mass Evacuation - 10km Zone",
+      "description": "Evacuate all residents within 10km radius immediately, establish shelter-in-place for 10-30km zone, distribute iodine tablets",
+      "required_resources": ["evacuation_transport", "shelters", "medical_supplies", "radiation_detection", "personnel"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.50,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.85,
+        "speed": 0.65,
+        "cost": 0.30,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_shelter_in_place",
+      "name": "Shelter-in-Place with Radiation Monitoring",
+      "description": "Instruct population to shelter indoors, seal windows, monitor radiation levels continuously, prepare for potential evacuation",
+      "required_resources": ["communication_systems", "radiation_monitors", "emergency_supplies"],
+      "estimated_duration": "24-48 hours",
+      "risk_level": 0.70,
+      "criteria_scores": {
+        "effectiveness": 0.60,
+        "safety": 0.65,
+        "speed": 0.95,
+        "cost": 0.75,
+        "public_acceptance": 0.50
+      }
+    },
+    {
+      "id": "action_containment_priority",
+      "name": "Priority Containment and Source Control",
+      "description": "Deploy specialist teams to contain the source, establish radiation barriers, prevent further release while evacuating immediate area",
+      "required_resources": ["nuclear_specialists", "hazmat_teams", "protective_equipment", "engineering_equipment"],
+      "estimated_duration": "12-24 hours",
+      "risk_level": 0.80,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.60,
+        "speed": 0.50,
+        "cost": 0.45,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_decontamination_zones",
+      "name": "Establish Decontamination Zones and Medical Screening",
+      "description": "Set up multiple decontamination stations, screen evacuees for radiation exposure, provide medical treatment for contaminated individuals",
+      "required_resources": ["decon_equipment", "medical_teams", "monitoring_equipment", "treatment_facilities"],
+      "estimated_duration": "8-16 hours",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.80,
+        "speed": 0.70,
+        "cost": 0.50,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_comprehensive_response",
+      "name": "Comprehensive Nuclear Emergency Response",
+      "description": "Integrated approach: immediate 5km evacuation, containment operations, decontamination zones, shelter-in-place for outer zones, continuous monitoring",
+      "required_resources": ["full_nuclear_emergency_response", "international_support", "multi_agency_coordination"],
+      "estimated_duration": "24-72 hours",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.95,
+        "safety": 0.82,
+        "speed": 0.60,
+        "cost": 0.25,
+        "public_acceptance": 0.78
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["nuclear_specialists", "radiation_equipment", "decontamination_capacity", "specialized_medical_care"],
+    "weather_conditions": "moderate_winds_variable_direction",
+    "accessibility": "restricted_radiation_zones",
+    "additional_concerns": [
+      "Radiation plume direction uncertain",
+      "Limited radiation treatment facilities",
+      "Public panic and misinformation",
+      "Long-term contamination effects",
+      "Water supply contamination risk",
+      "Agricultural impact",
+      "International notification required"
+    ]
+  },
+  "real_time_factors": {
+    "radiation_levels": "elevated_and_fluctuating",
+    "wind_direction": "variable_northeast",
+    "containment_status": "partial_breach",
+    "affected_area_radius": "5km_confirmed_expanding",
+    "exposed_population_estimated": 1200,
+    "decontamination_capacity": "limited"
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "critical",
+    "recommended_expert_domains": ["hazmat", "medical", "environmental", "emergency_management", "public_health"]
+  },
+  "expert_selection": {
+    "crisis_type": "hazmat",
+    "crisis_subtypes": ["nuclear", "evacuation", "environmental", "medical_emergency"],
+    "severity": 0.90,
+    "geographic_scope": "regional",
+    "geographic_location": "urban",
+    "affected_populations": 25000,
+    "duration_estimated_hours": 72,
+    "affected_domains": [
+      "hazmat",
+      "medical_health",
+      "weather_environment",
+      "emergency_communications",
+      "public_order",
+      "law_enforcement"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true
+    },
+    "infrastructure_systems": [
+      "hospitals",
+      "transportation",
+      "communications",
+      "water",
+      "emergency_services"
+    ]
+  }
+}

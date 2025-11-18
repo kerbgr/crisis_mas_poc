@@ -1,0 +1,150 @@
+{
+  "id": "infrastructure_collapse_001",
+  "type": "building_collapse",
+  "name": "Major Apartment Building Collapse - Thessaloniki",
+  "description": "A 7-story residential apartment building in central Thessaloniki has suffered catastrophic structural collapse. The building housed approximately 80 residents across 35 apartments. Early morning collapse has trapped most residents inside. Initial reports indicate multiple casualties with many people trapped in rubble. Structural engineers report high risk of progressive collapse. Adjacent buildings have been evacuated due to structural concerns. This is an urban search and rescue emergency requiring specialized teams and equipment.",
+  "severity": 0.88,
+  "affected_population": 80,
+  "location": {
+    "region": "Thessaloniki, Central Macedonia, Greece",
+    "coordinates": {"lat": 40.6401, "lon": 22.9444}
+  },
+  "tags": ["building_collapse", "urban_search_rescue", "structural_failure", "mass_casualty", "urban"],
+  "casualties": 28,
+  "infrastructure_damage": true,
+  "available_actions": [
+    {
+      "id": "action_immediate_surface_rescue",
+      "name": "Immediate Surface Victim Rescue",
+      "description": "Focus on rescuing victims on or near the surface of debris, establish safe working zones, prevent secondary collapse during rescue",
+      "required_resources": ["search_rescue_teams", "canine_units", "light_equipment", "medical_teams"],
+      "estimated_duration": "4-8 hours",
+      "risk_level": 0.60,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.70,
+        "speed": 0.85,
+        "cost": 0.65,
+        "public_acceptance": 0.90
+      }
+    },
+    {
+      "id": "action_systematic_debris_removal",
+      "name": "Systematic Debris Removal and Deep Rescue",
+      "description": "Deploy heavy equipment for systematic debris removal, create access points for deep rescue, shore up unstable sections",
+      "required_resources": ["heavy_equipment", "structural_engineers", "specialized_rescue_teams", "shoring_materials"],
+      "estimated_duration": "24-72 hours",
+      "risk_level": 0.70,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.65,
+        "speed": 0.50,
+        "cost": 0.45,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_void_space_search",
+      "name": "Priority Void Space Search and Rescue",
+      "description": "Use specialized sensors, cameras, and canine units to locate survivors in void spaces, execute precision rescues in viable voids",
+      "required_resources": ["technical_search_teams", "detection_equipment", "canine_units", "medical_specialists", "precision_tools"],
+      "estimated_duration": "12-48 hours",
+      "risk_level": 0.65,
+      "criteria_scores": {
+        "effectiveness": 0.88,
+        "safety": 0.75,
+        "speed": 0.65,
+        "cost": 0.50,
+        "public_acceptance": 0.92
+      }
+    },
+    {
+      "id": "action_structural_stabilization",
+      "name": "Emergency Structural Stabilization",
+      "description": "Priority stabilization of remaining structure and adjacent buildings, prevent progressive collapse, create safe rescue environment",
+      "required_resources": ["structural_engineers", "heavy_shoring", "construction_equipment", "engineering_teams"],
+      "estimated_duration": "8-24 hours",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.85,
+        "speed": 0.60,
+        "cost": 0.55,
+        "public_acceptance": 0.80
+      }
+    },
+    {
+      "id": "action_comprehensive_usar_response",
+      "name": "Comprehensive Urban Search and Rescue Response",
+      "description": "Integrated approach: immediate surface rescue, void space search operations, systematic debris removal, structural stabilization, mass casualty medical response, family assistance center, investigation team",
+      "required_resources": ["international_usar_teams", "heavy_rescue_equipment", "structural_specialists", "medical_surge", "multi_agency_coordination"],
+      "estimated_duration": "72-168 hours",
+      "risk_level": 0.50,
+      "criteria_scores": {
+        "effectiveness": 0.92,
+        "safety": 0.80,
+        "speed": 0.70,
+        "cost": 0.30,
+        "public_acceptance": 0.95
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": ["specialized_usar_teams", "heavy_rescue_equipment", "structural_engineering_support"],
+    "weather_conditions": "clear",
+    "accessibility": "urban_area_dense_access_challenging",
+    "additional_concerns": [
+      "Risk of progressive collapse",
+      "Adjacent buildings structurally compromised",
+      "Survivors trapped in confined spaces - oxygen limited",
+      "Gas leaks from ruptured lines",
+      "Water main break complicating operations",
+      "Dense urban area limits heavy equipment access",
+      "Family members on scene creating safety issues",
+      "Media presence affecting operations"
+    ]
+  },
+  "real_time_factors": {
+    "building_occupancy": "approximately_80_residents",
+    "casualties_confirmed": 28,
+    "trapped_survivors": "estimated_20-40",
+    "time_since_collapse": "2_hours",
+    "structural_stability": "critical_secondary_collapse_risk",
+    "void_spaces_detected": "multiple_potential_survivor_locations",
+    "adjacent_building_status": "evacuated_monitoring"
+  },
+  "metadata": {
+    "created_date": "2025-11-18",
+    "author": "Crisis MAS Research Team",
+    "version": "2.0",
+    "scenario_complexity": "critical",
+    "recommended_expert_domains": ["search_rescue", "structural_engineering", "medical", "fire_rescue", "emergency_management"]
+  },
+  "expert_selection": {
+    "crisis_type": "building_collapse",
+    "crisis_subtypes": ["urban", "search_rescue", "mass_casualty", "structural"],
+    "severity": 0.88,
+    "geographic_scope": "local",
+    "geographic_location": "urban",
+    "affected_populations": 80,
+    "duration_estimated_hours": 168,
+    "affected_domains": [
+      "search_rescue",
+      "fire_rescue",
+      "medical_health",
+      "emergency_communications",
+      "law_enforcement"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": false
+    },
+    "infrastructure_systems": [
+      "hospitals",
+      "emergency_services",
+      "communications"
+    ]
+  }
+}
