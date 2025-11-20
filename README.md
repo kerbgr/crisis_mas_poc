@@ -53,7 +53,7 @@ This PoC investigates the following research questions:
 
 **RQ1: Multi-Agent Coordination**
 - *How can multiple autonomous agents with different expertise domains effectively coordinate to make time-critical crisis management decisions?*
-- Addressed through implementation of coordinator agent with consensus-building algorithms
+- Addressed through the implementation of a coordinator agent with consensus-building algorithms
 
 **RQ2: Uncertainty Handling**
 - *What mechanisms can effectively aggregate expert beliefs under high uncertainty, incomplete information, and conflicting opinions?*
@@ -63,11 +63,12 @@ This PoC investigates the following research questions:
 
 **RQ3: LLM Enhancement**
 - *Can Large Language Models enhance multi-agent decision-making by providing contextual reasoning, justification generation, and natural language understanding?*
-- Addressed through integration of Claude API for agent reasoning and explanation
+- Addressed through integration of Claude API, OpenAI's and local LLMs* for agent reasoning and explanation
+  *(Tested via OpenAI's GPT-OSS 20b using LM Studio as a local server)
 
 **RQ4: Decision Quality**
 - *How do multi-agent collaborative decisions compare to single-agent decisions in terms of quality, robustness, and stakeholder acceptance?*
-- Addressed through comparative metrics and evaluation framework
+- Addressed through comparative metrics and an evaluation framework
 
 **RQ5: Explainability**
 - *How can AI-driven crisis management systems provide transparent, auditable decision trails suitable for high-stakes domains?*
