@@ -63,7 +63,7 @@ This PoC investigates the following research questions:
 
 **RQ3: LLM Enhancement**
 - *Can Large Language Models enhance multi-agent decision-making by providing contextual reasoning, justification generation, and natural language understanding?*
-- Addressed through integration of Claude API, OpenAI's and local LLMs* for agent reasoning and explanation
+- Addressed through integration of Claude API, OpenAI's and local LLMs* for agent reasoning and explanation\n
   *(Tested via OpenAI's GPT-OSS 20b using LM Studio as a local server)
 
 **RQ4: Decision Quality**
@@ -72,7 +72,7 @@ This PoC investigates the following research questions:
 
 **RQ5: Explainability**
 - *How can AI-driven crisis management systems provide transparent, auditable decision trails suitable for high-stakes domains?*
-- Addressed through comprehensive logging, visualization, and explanation generation
+- Addressed through comprehensive logging, visualisation, and explanation generation
 
 ### Key Contributions
 
