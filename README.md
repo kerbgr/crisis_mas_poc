@@ -63,8 +63,7 @@ This PoC investigates the following research questions:
 
 **RQ3: LLM Enhancement**
 - *Can Large Language Models enhance multi-agent decision-making by providing contextual reasoning, justification generation, and natural language understanding?*
-- Addressed through integration of Claude API, OpenAI's and local LLMs* for agent reasoning and explanation\n
-  *(Tested via OpenAI's GPT-OSS 20b using LM Studio as a local server)
+- Addressed through integration of Claude API, OpenAI's and local LLMs for agent reasoning and explanation
 
 **RQ4: Decision Quality**
 - *How do multi-agent collaborative decisions compare to single-agent decisions in terms of quality, robustness, and stakeholder acceptance?*
@@ -91,9 +90,9 @@ This PoC investigates the following research questions:
 - **Python**: 3.9 or higher
 - **pip**: Package manager (usually included with Python)
 - **LLM Provider API Key** (choose one or more):
-  - **Claude (Anthropic)**: Recommended, get from https://console.anthropic.com/ - Default provider
+  - **Claude (Anthropic)**: Primary, get from https://console.anthropic.com/
   - **OpenAI**: Alternative, get from https://platform.openai.com/api-keys
-  - **LM Studio**: Local models, no API key required - Free and privacy-focused
+  - **LM Studio**: Local models, no API key required - Free and privacy-focused -Tested via OpenAI's GPT-OSS 20b
 - **Operating System**: Linux, macOS, or Windows
 
 ### Required Python Packages
@@ -351,7 +350,7 @@ python main.py --scenario flood_scenario --expert-selection auto
 python main.py --scenario flood_scenario --expert-selection auto --verbose
 ```
 
-**How it works:** The system analyzes scenario metadata (crisis type, severity, affected domains, scope) and automatically selects the most relevant experts. For example, a coastal flood with high severity will auto-select: meteorologist, logistics, medical, coast guard (both levels), police (tactical + strategic), fire/rescue, PSAP commander, and medical infrastructure.
+**How it works:** The system analyses scenario metadata (crisis type, severity, affected domains, scope) and automatically selects the most relevant experts. For example, a coastal flood with high severity will auto-select: meteorologist, logistics, medical, coast guard (both levels), police (tactical + strategic), fire/rescue, PSAP commander, and medical infrastructure.
 
 **Benefits:**
 - No need to manually choose from 13 experts
@@ -440,7 +439,7 @@ python main.py \
 - **Chemical:** 50-ton anhydrous ammonia (NH3) tank rupture - UN1005, Class 2.3 toxic gas
 - **IDLH Level:** 300 ppm (current readings: 150-300 ppm downwind)
 - **Key Challenges:** Toxic cloud dispersion, Level A HAZMAT operations, water curtain suppression, evacuation
-- **Greek Experts:** Πυροσβεστική HAZMAT teams, ΕΚΑΒ emergency medicine, ΕΛΑΣ evacuation coordination
+- **Greek Experts:** HFC HAZMAT teams, EMS emergency medicine, LEA evacuation coordination
 
 #### Example 13: Compare All Three Greek Scenarios
 
@@ -455,9 +454,9 @@ python main.py --scenario scenarios/ammonia_leak_elefsina.json --expert-selectio
 
 ### Expert Roles
 
-The Crisis MAS system includes **13 expert roles** organized in a comprehensive emergency response command structure. The system is designed with backward compatibility - by default it uses 3 core experts, but can scale to the full 13-agent team.
+The Crisis MAS system includes **13 expert roles** organised in a comprehensive emergency response command structure. The system is designed with backward compatibility - by default, it uses three core experts, but can scale to the whole 13-agent team.
 
-#### Default Agents (Backward Compatibility)
+#### Default Agents (Backwards Compatibility)
 
 When run without the `--agents` flag, the system loads **3 core expert agents**:
 
