@@ -1088,7 +1088,7 @@ The Crisis MAS consists of five core layers with integrated evaluation framework
 
 ```mermaid
 graph TB
-    subgraph UI["🖥️ USER INTERFACE LAYER"]
+    subgraph UI["🖥 USER INTERFACE LAYER"]
         Main[main.py<br/>CLI & Orchestration]
         Input[JSON I/O<br/>Scenarios & Config]
         Output[Visualization<br/>Generation]
@@ -1187,7 +1187,7 @@ graph TB
 ```
 
 **Architecture Overview:**
-- **🖥️ User Interface Layer**: Entry point, I/O handling, visualization generation
+- **🖥 User Interface Layer**: Entry point, I/O handling, visualization generation
 - **🎯 Coordination Layer**: Orchestrates multi-agent decision-making, builds consensus
 - **👥 Agent Layer**: Domain experts with LLM-enhanced reasoning and performance tracking
 - **🧠 Decision Framework Layer**: Belief aggregation (ER/GAT), multi-criteria analysis (MCDA)
@@ -1705,7 +1705,7 @@ where $G = 0$ indicates perfect equality and $G = 1$ indicates maximum inequalit
 
 ### Performance Metrics
 
-> **⚠️ Important Note:** As of commit `8bb88bd` (November 2025), the comparison methodology has been significantly improved to evaluate multi-agent consensus against EACH individual agent rather than just one baseline. This provides comprehensive analysis of collaborative decision-making value. Previous versions only compared against a single arbitrary agent. See [`evaluation/EVALUATION_METHODOLOGY.md`](evaluation/EVALUATION_METHODOLOGY.md) for details.
+> **⚠ Important Note:** As of commit `8bb88bd` (November 2025), the comparison methodology has been significantly improved to evaluate multi-agent consensus against EACH individual agent rather than just one baseline. This provides comprehensive analysis of collaborative decision-making value. Previous versions only compared against a single arbitrary agent. See [`evaluation/EVALUATION_METHODOLOGY.md`](evaluation/EVALUATION_METHODOLOGY.md) for details.
 
 #### Decision Quality Metrics
 
@@ -2502,7 +2502,7 @@ This software is licensed under a custom Academic/Commercial dual-license model:
 
 ### Commercial Use (Requires License)
 
-⚠️ **Commercial license required** for:
+⚠ **Commercial license required** for:
 - Operational deployment in emergency response systems
 - Government/municipal crisis management infrastructure
 - Integration into commercial products
@@ -2524,7 +2524,7 @@ See [LICENSE](LICENSE) file for complete terms including:
 - 📚 Academic use: Free with mandatory citation
 - 💼 Commercial use: Negotiated license required
 - 🔒 All rights reserved by copyright holder
-- ⚖️ Governed by Greek and EU law
+- ⚖ Governed by Greek and EU law
 
 **Copyright © 2025 Vasileios Kazoukas, Technical University of Crete. All Rights Reserved.**
 
