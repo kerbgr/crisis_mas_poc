@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it as below."
+type: software
+title: "Crisis Management Multi-Agent System: Graph Attention Networks and Evidential Reasoning for Emergency Response Coordination"
+version: 0.8.0
+date-released: 2025-01-15
+authors:
+  - family-names: Kazoukas
+    given-names: Vasileios
+    email: kazoukas@gmail.com
+    affiliation: Technical University of Crete - Military Academy
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+repository-code: "https://github.com/kerbgr/crisis_mas_poc"
+url: "https://github.com/kerbgr/crisis_mas_poc"
+abstract: >
+  A multi-agent system for crisis management and emergency response coordination
+  using Graph Attention Networks (GAT) and Evidential Reasoning (ER) for belief
+  aggregation across 13 specialized expert agents. The system supports Greek
+  emergency services including fire brigades, police, coast guard, medical services,
+  and environmental experts in multi-agency decision-making during natural disasters,
+  industrial accidents, and complex emergency scenarios.
+keywords:
+  - multi-agent systems
+  - crisis management
+  - emergency response
+  - graph attention networks
+  - evidential reasoning
+  - decision support systems
+  - Greek emergency services
+  - TOPSIS
+  - belief aggregation
+  - consensus building
+license: "Proprietary"
+license-url: "https://github.com/kerbgr/crisis_mas_poc/blob/Main/LICENSE"

@@ -1,0 +1,53 @@
+[
+  {
+    "id": "expert_001",
+    "name": "Dimitrios Papadopoulos",
+    "role": "Senior Firefighter",
+    "organization": "Athens Fire Department",
+    "location": "Athens, Greece",
+    "experience_years": 15,
+    "specializations": ["Wildfire Control", "Urban Fire Suppression", "Hazardous Materials"],
+    "certifications": ["Advanced Firefighting", "Wildfire Specialist", "Incident Commander"],
+    "email": "d.papadopoulos@fireservice.gr",
+    "phone": "+30 210 123 4567",
+    "languages": ["Greek", "English"],
+    "availability": "available",
+    "bio": "Dimitrios has extensive experience in wildfire management across Greece, particularly in the Athens region. He has served as incident commander in over 50 major fire incidents and specializes in coordinating aerial firefighting operations.",
+    "created_at": "2024-11-14T09:00:00",
+    "updated_at": "2024-11-14T09:00:00"
+  },
+  {
+    "id": "expert_002",
+    "name": "Maria Nikolaou",
+    "role": "Paramedic Supervisor",
+    "organization": "EKAB (National Emergency Medical Service)",
+    "location": "Thessaloniki, Greece",
+    "experience_years": 12,
+    "specializations": ["Trauma Care", "Mass Casualty Incidents", "Advanced Life Support"],
+    "certifications": ["Paramedic License", "Advanced Cardiac Life Support (ACLS)", "Pediatric Advanced Life Support (PALS)", "Tactical Combat Casualty Care"],
+    "email": "m.nikolaou@ekab.gr",
+    "phone": "+30 231 987 6543",
+    "languages": ["Greek", "English", "German"],
+    "availability": "available",
+    "bio": "Maria leads one of EKAB's busiest emergency response teams in Thessaloniki. She specializes in trauma care and has managed numerous mass casualty incidents including highway accidents and natural disasters.",
+    "created_at": "2024-11-14T09:30:00",
+    "updated_at": "2024-11-14T09:30:00"
+  },
+  {
+    "id": "expert_003",
+    "name": "Konstantinos Georgiou",
+    "role": "Police Captain",
+    "organization": "Hellenic Police - Emergency Response Unit",
+    "location": "Athens, Greece",
+    "experience_years": 18,
+    "specializations": ["Disaster Coordination", "Evacuation Planning", "Public Safety"],
+    "certifications": ["Emergency Management", "Crisis Negotiation", "Search and Rescue Coordination"],
+    "email": "k.georgiou@police.gr",
+    "phone": "+30 210 555 7890",
+    "languages": ["Greek", "English"],
+    "availability": "limited",
+    "bio": "Captain Georgiou coordinates emergency response operations for the Athens metropolitan area. He has extensive experience in earthquake response, evacuation procedures, and inter-agency coordination during major incidents.",
+    "created_at": "2024-11-14T10:00:00",
+    "updated_at": "2024-11-14T10:00:00"
+  }
+]

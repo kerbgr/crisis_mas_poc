@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit' if scenario else 'Create' }} Crisis Scenario - Crisis MAS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        #map { height: 400px; cursor: crosshair; }
+        .action-row { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .remove-btn { float: right; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shield-fill-check"></i> Crisis MAS - Web Tools
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/protocols">Incident Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/crisis-scenarios">Crisis Scenarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/experts">Experts</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>
+                        <i class="bi bi-{{ 'pencil' if scenario else 'plus-circle' }} text-danger"></i>
+                        {{ 'Edit' if scenario else 'Create New' }} Crisis Scenario
+                    </h1>
+                    <a href="/crisis-scenarios" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+
+                <!-- Form -->
+                <form id="scenarioForm">
+                    <!-- Basic Information -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="bi bi-info-circle"></i> Basic Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id" class="form-label">Scenario ID *</label>
+                                    <input type="text" class="form-control" id="id" name="id" required
+                                           value="{{ scenario.id if scenario else '' }}"
+                                           placeholder="e.g., fire_001, flood_002">
+                                    <div class="form-text">Unique identifier for this scenario</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="type" class="form-label">Crisis Type *</label>
+                                    <select class="form-select" id="type" name="type" required>
+                                        <option value="">-- Select Type --</option>
+                                        <option value="wildfire" {{ 'selected' if scenario and scenario.type == 'wildfire' else '' }}>Wildfire</option>
+                                        <option value="flood" {{ 'selected' if scenario and scenario.type == 'flood' else '' }}>Flood</option>
+                                        <option value="earthquake" {{ 'selected' if scenario and scenario.type == 'earthquake' else '' }}>Earthquake</option>
+                                        <option value="hazmat" {{ 'selected' if scenario and scenario.type == 'hazmat' else '' }}>Hazmat</option>
+                                        <option value="hurricane" {{ 'selected' if scenario and scenario.type == 'hurricane' else '' }}>Hurricane</option>
+                                        <option value="tornado" {{ 'selected' if scenario and scenario.type == 'tornado' else '' }}>Tornado</option>
+                                        <option value="tsunami" {{ 'selected' if scenario and scenario.type == 'tsunami' else '' }}>Tsunami</option>
+                                        <option value="explosion" {{ 'selected' if scenario and scenario.type == 'explosion' else '' }}>Explosion</option>
+                                        <option value="pandemic" {{ 'selected' if scenario and scenario.type == 'pandemic' else '' }}>Pandemic</option>
+                                        <option value="civil_unrest" {{ 'selected' if scenario and scenario.type == 'civil_unrest' else '' }}>Civil Unrest</option>
+                                        <option value="terrorist" {{ 'selected' if scenario and scenario.type == 'terrorist' else '' }}>Terrorist Attack</option>
+                                        <option value="mass_casualty" {{ 'selected' if scenario and scenario.type == 'mass_casualty' else '' }}>Mass Casualty</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Scenario Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required
+                                       value="{{ scenario.name if scenario else '' }}"
+                                       placeholder="e.g., Evia Forest Fire Emergency">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description *</label>
+                                <textarea class="form-control" id="description" name="description" rows="4" required
+                                          placeholder="Detailed description of the crisis situation...">{{ scenario.description if scenario else '' }}</textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="severity" class="form-label">Severity (0.0-1.0) *</label>
+                                    <input type="number" class="form-control" id="severity" name="severity" required
+                                           min="0" max="1" step="0.01"
+                                           value="{{ scenario.severity if scenario else '0.5' }}">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="affected_population" class="form-label">Affected Population</label>
+                                    <input type="number" class="form-control" id="affected_population" name="affected_population"
+                                           value="{{ scenario.affected_population if scenario else '' }}"
+                                           placeholder="e.g., 5000">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="casualties" class="form-label">Casualties</label>
+                                    <input type="number" class="form-control" id="casualties" name="casualties"
+                                           value="{{ scenario.casualties if scenario else '0' }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location & Map -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Location (Click map to set coordinates)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="location_region" class="form-label">Region/Area *</label>
+                                <input type="text" class="form-control" id="location_region" name="location_region" required
+                                       value="{{ scenario.location.region if scenario and scenario.location else '' }}"
+                                       placeholder="e.g., North Evia, Central Greece">
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="lat" class="form-label">Latitude *</label>
+                                    <input type="number" class="form-control" id="lat" name="lat" required
+                                           min="-90" max="90" step="any"
+                                           value="{{ scenario.location.coordinates.lat if scenario and scenario.location and scenario.location.coordinates else '38.0' }}"
+                                           readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="lon" class="form-label">Longitude *</label>
+                                    <input type="number" class="form-control" id="lon" name="lon" required
+                                           min="-180" max="180" step="any"
+                                           value="{{ scenario.location.coordinates.lon if scenario and scenario.location and scenario.location.coordinates else '23.7' }}"
+                                           readonly>
+                                </div>
+                            </div>
+
+                            <div id="map"></div>
+                            <div class="form-text mt-2">
+                                <i class="bi bi-hand-index"></i> Click anywhere on the map to set the crisis location
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Location -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0"><i class="bi bi-folder"></i> Save Location</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="save_location" class="form-label">Directory to Save Scenario</label>
+                                <input type="text" class="form-control" id="save_location" name="save_location"
+                                       value="/home/user/crisis_mas_poc/scenarios"
+                                       placeholder="/home/user/crisis_mas_poc/scenarios">
+                                <div class="form-text">
+                                    Default: <code>/scenarios</code> in project root. You can specify a different path.
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="filename" class="form-label">Filename</label>
+                                <input type="text" class="form-control" id="filename" name="filename"
+                                       value="{{ scenario._filename if scenario else '' }}"
+                                       placeholder="Auto-generated from ID if left blank">
+                                <div class="form-text">
+                                    Leave blank to auto-generate from scenario ID (e.g., <code>fire_001.json</code>)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between mb-5">
+                        <a href="/crisis-scenarios" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="bi bi-save"></i> Save Crisis Scenario
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Help Text -->
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> <strong>Next Steps:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Fill in basic information and set location on map</li>
+                        <li>After creating the basic scenario, you can edit the JSON file to add:
+                            <ul>
+                                <li>Available actions with criteria scores</li>
+                                <li>Expert selection metadata</li>
+                                <li>Constraints and real-time factors</li>
+                            </ul>
+                        </li>
+                        <li>Or use the JSON editor in the view page to add complex fields</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">
+                <i class="bi bi-shield-fill-check"></i> Crisis MAS - LLM Training Web Tools
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize map centered on Greece
+        const defaultLat = parseFloat(document.getElementById('lat').value);
+        const defaultLon = parseFloat(document.getElementById('lon').value);
+        const map = L.map('map').setView([defaultLat, defaultLon], 8);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Add marker
+        let marker = L.marker([defaultLat, defaultLon], { draggable: true }).addTo(map);
+
+        // Update coordinates when map is clicked
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+
+            // Update marker position
+            marker.setLatLng([lat, lon]);
+
+            // Update form fields
+            document.getElementById('lat').value = lat.toFixed(6);
+            document.getElementById('lon').value = lon.toFixed(6);
+        });
+
+        // Update coordinates when marker is dragged
+        marker.on('dragend', function(e) {
+            const position = marker.getLatLng();
+            document.getElementById('lat').value = position.lat.toFixed(6);
+            document.getElementById('lon').value = position.lng.toFixed(6);
+        });
+
+        // Form submission
+        document.getElementById('scenarioForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Build scenario object
+            const scenario = {
+                id: document.getElementById('id').value,
+                type: document.getElementById('type').value,
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                severity: parseFloat(document.getElementById('severity').value),
+                affected_population: parseInt(document.getElementById('affected_population').value) || 0,
+                casualties: parseInt(document.getElementById('casualties').value) || 0,
+                location: {
+                    region: document.getElementById('location_region').value,
+                    coordinates: {
+                        lat: parseFloat(document.getElementById('lat').value),
+                        lon: parseFloat(document.getElementById('lon').value)
+                    }
+                },
+                tags: [document.getElementById('type').value, "emergency"],
+                infrastructure_damage: true,
+                available_actions: [],
+                metadata: {
+                    created_date: new Date().toISOString().split('T')[0],
+                    author: "Crisis MAS Web Tools",
+                    version: "1.0"
+                },
+                _save_location: document.getElementById('save_location').value || undefined,
+                _filename: document.getElementById('filename').value || undefined
+            };
+
+            // Send to server
+            try {
+                const response = await fetch('/api/crisis-scenarios/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(scenario)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Scenario saved successfully to ' + result.filename);
+                    window.location.href = '/crisis-scenarios';
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error saving scenario: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ scenario.name or scenario.id }} - Crisis MAS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 400px; }
+        .action-card { margin-bottom: 1rem; }
+        .criteria-badge { margin: 0.2rem; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shield-fill-check"></i> Crisis MAS - Web Tools
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/protocols">Incident Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/crisis-scenarios">Crisis Scenarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/experts">Experts</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="bi bi-map-fill text-danger"></i> {{ scenario.name or scenario.id }}
+            </h1>
+            <div>
+                <a href="/crisis-scenarios/{{ scenario._filename }}/edit" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a href="/crisis-scenarios" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+
+        <!-- Basic Info -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Scenario Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>ID:</strong> {{ scenario.id }}</p>
+                        <p><strong>Type:</strong> <span class="badge bg-danger">{{ scenario.type }}</span></p>
+                        <p><strong>Severity:</strong>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-danger" role="progressbar"
+                                     style="width: {{ (scenario.severity * 100) | int }}%;">
+                                    {{ (scenario.severity * 100) | int }}%
+                                </div>
+                            </div>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if scenario.affected_population %}
+                            <p><strong>Affected Population:</strong> {{ "{:,}".format(scenario.affected_population) }}</p>
+                        {% endif %}
+                        {% if scenario.casualties %}
+                            <p><strong>Casualties:</strong> {{ scenario.casualties }}</p>
+                        {% endif %}
+                        <p><strong>File:</strong> <code>{{ scenario._filename }}</code></p>
+                    </div>
+                </div>
+                <hr>
+                <h6>Description:</h6>
+                <p class="text-muted">{{ scenario.description }}</p>
+            </div>
+        </div>
+
+        <!-- Map -->
+        {% if scenario.location and scenario.location.coordinates %}
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Location</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Region:</strong> {{ scenario.location.region }}</p>
+                <p><strong>Coordinates:</strong> {{ scenario.location.coordinates.lat }}, {{ scenario.location.coordinates.lon }}</p>
+                <div id="map"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Available Actions -->
+        {% if scenario.available_actions %}
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Available Response Actions</h5>
+            </div>
+            <div class="card-body">
+                {% for action in scenario.available_actions %}
+                <div class="action-card card">
+                    <div class="card-header">
+                        <strong>{{ action.name }}</strong>
+                        <span class="badge bg-warning float-end">Risk: {{ (action.risk_level * 100) | int }}%</span>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ action.description }}</p>
+                        <p class="small mb-2"><strong>Duration:</strong> {{ action.estimated_duration }}</p>
+                        {% if action.criteria_scores %}
+                        <div>
+                            <strong>Criteria Scores:</strong><br>
+                            {% for criterion, score in action.criteria_scores.items() %}
+                                <span class="badge bg-secondary criteria-badge">
+                                    {{ criterion }}: {{ (score * 100) | int }}%
+                                </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Export JSON -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-code-square"></i> JSON Data</h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3"><code>{{ scenario | tojson(indent=2) }}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">
+                <i class="bi bi-shield-fill-check"></i> Crisis MAS - LLM Training Web Tools
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        {% if scenario.location and scenario.location.coordinates %}
+        // Initialize map
+        const map = L.map('map').setView(
+            [{{ scenario.location.coordinates.lat }}, {{ scenario.location.coordinates.lon }}],
+            10
+        );
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Add marker for crisis location
+        const marker = L.marker([{{ scenario.location.coordinates.lat }}, {{ scenario.location.coordinates.lon }}])
+            .addTo(map)
+            .bindPopup('<strong>{{ scenario.name or scenario.id }}</strong><br>{{ scenario.location.region }}')
+            .openPopup();
+        {% endif %}
+    </script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+Crisis Management Multi-Agent System (Crisis MAS) - Proprietary License
+
+Copyright (c) 2025 Vasileios Kazoukas
+Technical University of Crete - Military Academy
+All Rights Reserved.
+
+================================================================================
+ACADEMIC USE LICENSE
+================================================================================
+
+Permission is hereby granted, free of charge, to academic institutions,
+researchers, and students ("Academic Users") to use, copy, and modify this
+software and associated documentation files (the "Software") for non-commercial
+academic research and educational purposes only, subject to the following
+conditions:
+
+1. MANDATORY CITATION
+
+   All academic publications, research papers, theses, dissertations,
+   conference presentations, or any scholarly work that uses, references, or
+   builds upon this Software MUST cite the original work as follows:
+
+   APA Format:
+   Kazoukas, V. (2025). Crisis Management Multi-Agent System: Graph Attention
+   Networks and Evidential Reasoning for Emergency Response Coordination
+   [Computer software]. Technical University of Crete.
+   https://github.com/kerbgr/crisis_mas_poc
+
+   BibTeX Format:
+   @software{kazoukas2025crisis,
+     author = {Kazoukas, Vasileios},
+     title = {Crisis Management Multi-Agent System: Graph Attention Networks
+              and Evidential Reasoning for Emergency Response Coordination},
+     year = {2025},
+     institution = {Technical University of Crete},
+     url = {https://github.com/kerbgr/crisis_mas_poc}
+   }
+
+   IEEE Format:
+   V. Kazoukas, "Crisis Management Multi-Agent System: Graph Attention Networks
+   and Evidential Reasoning for Emergency Response Coordination," Technical
+   University of Crete, 2025. [Online]. Available:
+   https://github.com/kerbgr/crisis_mas_poc
+
+2. ATTRIBUTION
+
+   The above copyright notice and this license notice shall be included in all
+   copies or substantial portions of the Software.
+
+3. NON-COMMERCIAL USE ONLY
+
+   Academic use is strictly limited to:
+   - Academic research and scholarly investigation
+   - Educational purposes in university courses
+   - Non-commercial evaluation and benchmarking
+   - Thesis and dissertation research
+   - Academic publications and presentations
+
+   The following uses require a Commercial License (see below):
+   - Deployment in operational emergency response systems
+   - Integration into governmental or municipal crisis management infrastructure
+   - Use by emergency services (fire, police, coast guard, medical) for
+     operational purposes
+   - Consulting services or professional training based on this Software
+   - Any use that generates revenue, operational value, or serves non-research
+     organizational purposes
+
+4. DERIVATIVE WORKS
+
+   Academic Users may create derivative works for research purposes, provided
+   that:
+   - The derivative work retains this license
+   - Both the original work and modifications are properly cited
+   - The derivative work is also limited to non-commercial academic use
+   - Any publications resulting from derivative works cite the original source
+
+5. REPORTING REQUIREMENT
+
+   Academic Users are encouraged (but not required) to notify the copyright
+   holder of publications or significant research outcomes using this Software
+   to help track academic impact and foster collaboration.
+
+================================================================================
+COMMERCIAL USE LICENSE
+================================================================================
+
+All commercial use, including but not limited to:
+
+- Deployment in operational crisis management, emergency response, or disaster
+  management systems
+- Integration into commercial software products or platforms
+- Use by government agencies, emergency services, or public safety organizations
+  for operational (non-research) purposes
+- Consulting, professional training, or service delivery based on this Software
+- Any use within for-profit organizations or that generates revenue
+- Operational deployment by municipalities, regions, or national governments
+- Integration with existing emergency dispatch, incident command, or crisis
+  coordination systems
+
+...requires a separate written Commercial License Agreement with negotiated
+terms and fees.
+
+COMMERCIAL LICENSING TERMS:
+
+Commercial licenses are provided on a case-by-case basis with terms tailored to:
+- Scope of deployment (local, regional, national, international)
+- Type of organization (government, NGO, private sector)
+- Number of concurrent users or operational sites
+- Level of customization and support required
+- Duration of use (perpetual, subscription, pilot program)
+
+To inquire about or obtain a Commercial License, contact:
+
+   Vasileios Kazoukas
+   Email: kazoukas@gmail.com
+   Institution: Technical University of Crete - Military Academy
+
+   Please include in your inquiry:
+   - Organization name and type
+   - Intended use case and scope
+   - Deployment scale and timeline
+   - Technical requirements and support needs
+
+================================================================================
+INTELLECTUAL PROPERTY RIGHTS
+================================================================================
+
+1. COPYRIGHT: The copyright holder retains all ownership rights to the Software,
+   including all source code, documentation, algorithms, and associated
+   intellectual property.
+
+2. PATENTS: The copyright holder reserves all patent rights. Any inventions,
+   methods, or processes embodied in this Software may be subject to patent
+   protection.
+
+3. TRADEMARKS: "Crisis MAS", "Crisis Management Multi-Agent System", and
+   associated logos or branding are proprietary marks. Use of these marks
+   requires explicit written permission.
+
+4. ALGORITHMS: The multi-agent coordination algorithms, Graph Attention Network
+   (GAT) aggregation methods, Evidential Reasoning (ER) implementations, and
+   TOPSIS-based decision-making frameworks are proprietary intellectual property.
+
+================================================================================
+PROHIBITED ACTIVITIES
+================================================================================
+
+Without explicit written permission, the following are strictly prohibited:
+
+- Redistribution or sublicensing of the Software for commercial purposes
+- Removal or modification of copyright notices, attribution, or license terms
+- Reverse engineering for competitive commercial purposes
+- Use in military applications beyond defensive civil protection
+- Transfer of the Software to jurisdictions with export control restrictions
+- Use in systems that may cause harm through negligence or misuse
+
+================================================================================
+WARRANTY DISCLAIMER
+================================================================================
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, RELIABILITY, OR NONINFRINGEMENT.
+
+THE COPYRIGHT HOLDER MAKES NO REPRESENTATIONS OR WARRANTIES REGARDING:
+- The suitability of the Software for any particular emergency scenario
+- The accuracy, completeness, or reliability of decisions produced by the Software
+- The Software's performance in high-stakes or life-critical situations
+- The availability, uptime, or operational continuity of the Software
+
+USERS ACKNOWLEDGE THAT:
+- Emergency response decisions carry significant consequences
+- The Software is a decision support tool, not a replacement for human judgment
+- Operational deployment requires extensive validation, testing, and oversight
+- Local regulations, protocols, and expert judgment must take precedence
+
+================================================================================
+LIABILITY LIMITATION
+================================================================================
+
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR
+OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE
+USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+THIS LIMITATION APPLIES TO:
+- Direct, indirect, incidental, or consequential damages
+- Loss of life, property damage, or economic losses resulting from Software use
+- Damages arising from erroneous recommendations or system failures
+- Claims by third parties affected by decisions made using the Software
+
+THE MAXIMUM LIABILITY OF THE COPYRIGHT HOLDER SHALL NOT EXCEED THE LICENSE
+FEES PAID (IF ANY) FOR COMMERCIAL USE.
+
+================================================================================
+GOVERNING LAW AND JURISDICTION
+================================================================================
+
+This license shall be governed by and construed in accordance with the laws of:
+- The Hellenic Republic (Greece)
+- The European Union, where applicable
+
+Any disputes arising from this license shall be subject to the exclusive
+jurisdiction of the courts of Chania, Crete, Greece.
+
+For EU-based users, EU consumer protection and data privacy regulations (GDPR)
+apply where relevant.
+
+================================================================================
+TERMINATION
+================================================================================
+
+This license is effective until terminated.
+
+AUTOMATIC TERMINATION occurs if you:
+- Fail to comply with any term of this license
+- Use the Software for commercial purposes without a Commercial License
+- Fail to provide proper academic citation
+- Engage in any prohibited activity
+
+Upon termination:
+- All rights granted under this license immediately cease
+- You must destroy all copies of the Software in your possession
+- Derivative works must cease to be distributed
+- You remain liable for any breaches that occurred during the license term
+
+SURVIVAL: Sections relating to intellectual property rights, warranties,
+liability limitations, and governing law survive termination.
+
+================================================================================
+UPDATES AND MODIFICATIONS
+================================================================================
+
+The copyright holder reserves the right to:
+- Update this license for future versions of the Software
+- Offer the Software under different licensing terms in the future
+- Discontinue academic licensing at any time with reasonable notice
+
+Existing academic users operating under previous license versions may continue
+under those terms for ongoing research projects, but new projects must comply
+with the current license.
+
+================================================================================
+CONTACT INFORMATION
+================================================================================
+
+For questions about this license, academic collaboration, or commercial
+licensing:
+
+   Vasileios Kazoukas
+   Technical University of Crete - Military Academy
+   Email: kazoukas@gmail.com
+   GitHub: https://github.com/kerbgr/crisis_mas_poc
+
+================================================================================
+ACKNOWLEDGMENT
+================================================================================
+
+By using this Software, you acknowledge that you have read, understood, and
+agree to be bound by the terms of this license.
+
+For academic use: You commit to proper citation and non-commercial use.
+For commercial use: You acknowledge that a separate license is required.
+
+================================================================================
+
+Version: 1.0
+Effective Date: December 26, 2025
+Last Updated: December 26, 2025
