@@ -214,21 +214,21 @@ Our MAS implements a five-layer architecture ensuring separation of concerns and
 Thirteen specialized Greek emergency response experts:
 
 **Core Experts (Original 3):**
-- Dr. Eleni Papadopoulou: Meteorologist (Hellenic National Meteorological Service)
-- Dr. Dimitris Nikolaou: Emergency Physician (EKAB - Hellenic National Centre for Emergency Care)
-- Katerina Georgiou: Logistics Coordinator (Civil Protection)
+- Meteorologist (Hellenic National Meteorological Service)
+- Emergency Medical Expert (EKAB - Hellenic National Centre for Emergency Care)
+- Logistics Coordinator (Civil Protection)
 
 **Extended Command Structure (10 Additional):**
-- Commander Maria Papadimitriou: PSAP (Public Safety Answering Point) Commander
-- Taxiarchos Nikos Konstantinou: Police Tactical Commander (ELAS - Hellenic Police)
+- PSAP (Public Safety Answering Point) Commander
+- Police Tactical Commander (ELAS - Hellenic Police)
 - Police Regional Commander: Strategic police oversight
-- Pyragos Ioanna Michaelidou: Fire Tactical Commander (Hellenic Fire Corps)
+- Fire Tactical Commander (Hellenic Fire Corps)
 - Fire Regional Commander: Strategic fire service oversight
 - Medical Infrastructure Director: Hospital/health system coordination
-- Plotarchos Andreas Papadakis: Coast Guard Tactical Operations
+- Coast Guard Tactical Operations
 - Coast Guard National Director: Strategic maritime oversight
-- Dr. Sofia Karagianni: Environmental Scientist
-- Dr. Georgios Athanasiou: Civil Engineer
+- Environmental Scientist
+- Civil Engineer
 
 Plus one Coordinator agent managing deliberation orchestration.
 
@@ -569,9 +569,9 @@ LLM API costs (USD) for complete decision cycle, informing budget planning for o
 ### 5.3 Experimental Configurations
 
 **Configuration 1: Core 3-Agent System**
-- Dr. Papadopoulou (Meteorologist)
-- Dr. Nikolaou (Emergency Physician)
-- Katerina Georgiou (Logistics Coordinator)
+- Meteorologist
+- Emergency Medical Expert
+- Logistics Coordinator
 - **Purpose:** Baseline performance, minimal configuration
 
 **Configuration 2: Full 13-Agent System**
@@ -687,9 +687,9 @@ Extended Comparison Bandwidth analysis across all scenarios:
 | Configuration | DQS | vs. Best Individual | Agreement Rate |
 |---------------|-----|---------------------|----------------|
 | Multi-Agent (GAT) | 0.839 | +0.067 | 76.9% |
-| Dr. Papadopoulou (Meteorologist) | 0.772 | - | - |
-| Dr. Nikolaou (Physician) | 0.681 | - | - |
-| Georgiou (Logistics) | 0.745 | - | - |
+| Meteorologist | 0.772 | - | - |
+| Medical | 0.681 | - | - |
+| Logistics | 0.745 | - | - |
 | Mean Single-Agent | 0.733 | -0.106 | 30.8% |
 
 **Evia Wildfire:**
@@ -1101,9 +1101,6 @@ We hope this research contributes to ongoing efforts building more resilient, re
 ---
 
 ## References
-
-Anthropic. (2024). *Claude 3 Model Card*. https://www.anthropic.com/claude
-
 Behzadian, M., Otaghsara, S. K., Yazdani, M., & Ignatius, J. (2012). A state-of-the-art survey of TOPSIS applications. *Expert Systems with Applications*, 39(17), 13051-13069. https://doi.org/10.1016/j.eswa.2012.05.056
 
 Comfort, L. K., Wisner, B., Cutter, S., Pulwarty, R., Hewitt, K., Oliver-Smith, A., Wiener, J., Fordham, M., Peacock, W., & Krimgold, F. (2004). Reframing disaster policy: The global evolution of vulnerable communities. *Environmental Hazards*, 5(4), 39-44. https://doi.org/10.1016/j.hazards.2004.02.001
