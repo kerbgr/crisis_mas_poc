@@ -701,7 +701,7 @@ stateDiagram-v2
         EvaluateFitness --> TournamentSelection: Multi-objective
         TournamentSelection --> Crossover: Mix parameters
         Crossover --> Mutation: Explore new configs
-        Mutation --> NextGeneration: Elitism: top 10%
+        Mutation --> NextGeneration: Elitism top 10%
         NextGeneration --> [*]
     }
 
