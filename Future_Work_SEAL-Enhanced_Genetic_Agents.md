@@ -1626,8 +1626,8 @@ crisis_mas_poc/
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0 | 2025-01-XX | Crisis MAS Team | Original genetic agents framework |
-| 2.0 | 2025-01-XX | Vasilis Kerasiotis | SEAL integration, model drift analysis, implementation roadmap |
+| 1.0 | 2026-01-XX | Vasileios Kazoukas | Original genetic agents framework |
+| 2.0 | 2025-01-XX | Vasileios Kazoukas | SEAL integration, model drift analysis, implementation roadmap |
 
 ---
 
