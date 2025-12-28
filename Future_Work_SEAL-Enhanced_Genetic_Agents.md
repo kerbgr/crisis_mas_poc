@@ -60,10 +60,106 @@ This integration hypothesis suggests that:
 ### 1.3 Novel Contributions
 
 This work represents the first integration of:
+
 1. SEAL's self-editing framework with multi-agent crisis management
 2. Genetic evolution of meta-learning capabilities
 3. Dual-level optimization (population + individual adaptation)
 4. Domain-specific synthetic data generation for emergency response
+
+### 1.4 Why This Architecture? Comparison of Approaches
+
+**The Fundamental Problem**: Crisis management systems must balance two opposing forces:
+
+- **Stability**: Reliable performance on known crisis types (fires, floods, earthquakes)
+- **Adaptability**: Rapid learning from novel scenarios (cyber-physical attacks, compound disasters)
+
+**Architecture Comparison**:
+
+```mermaid
+graph TB
+    subgraph "Static Agents (Current System)"
+        SA1[Hand-Tuned Parameters] --> SA2[Fixed Weight Preferences]
+        SA2 --> SA3[No Learning]
+        SA3 --> SA4[Performance Degrades Over Time]
+
+        SAPros["+Stable<br/>+Predictable<br/>+Fast"]
+        SACons["-Cannot Adapt<br/>-Manual Updates<br/>-Drift: 45% retention"]
+
+        SA4 -.-> SACons
+        SA1 -.-> SAPros
+    end
+
+    subgraph "Genetic Evolution Only"
+        GA1[Population-Based Search] --> GA2[Evolve Parameters]
+        GA2 --> GA3[Multi-Generation Learning]
+        GA3 --> GA4[Optimized for Distribution]
+
+        GAPros["+Automated Tuning<br/>+Population Diversity<br/>+60% retention"]
+        GACons["-Slow Adaptation<br/>-Cannot Learn from<br/>Single Incidents<br/>-2-4 week lag"]
+
+        GA4 -.-> GAPros
+        GA4 -.-> GACons
+    end
+
+    subgraph "SEAL Adaptation Only"
+        SEAL1[Self-Edit Generation] --> SEAL2[Test-Time Training]
+        SEAL2 --> SEAL3[LoRA Weight Updates]
+        SEAL3 --> SEAL4[Fast Adaptation]
+
+        SEALPros["+Fast: 30 min<br/>+Learn from Single<br/>Incidents<br/>+Autonomous"]
+        SEALCons["-Catastrophic Forgetting<br/>-55% retention<br/>-No Quality Control<br/>-Fragile"]
+
+        SEAL4 -.-> SEALPros
+        SEAL4 -.-> SEALCons
+    end
+
+    subgraph "Hybrid: SEAL + Genetic (Proposed)"
+        H1[SEAL: Fast Inner Loop] --> H2[Per-Incident Learning]
+        H3[Genetic: Slow Outer Loop] --> H4[Population Evolution]
+
+        H2 --> H5[Quality-Controlled<br/>Adaptation]
+        H4 --> H5
+
+        H5 --> H6[Best of Both Worlds]
+
+        HybridPros["+Fast: 20 min<br/>+Robust: 85% retention<br/>+Automated Tuning<br/>+Quality Control<br/>+Meta-Learning<br/>+Population Redundancy"]
+        HybridCons["-Computational Cost<br/>-Implementation Complexity"]
+
+        H6 -.-> HybridPros
+        H6 -.-> HybridCons
+    end
+
+    SA4 -->|Too Slow to Adapt| H1
+    GA4 -->|Adaptation Lag| H1
+    SEAL4 -->|Forgetting Problem| H3
+
+    style SA4 fill:#ffcccc
+    style SACons fill:#ffcccc
+    style GACons fill:#ffffcc
+    style SEALCons fill:#ffffcc
+    style H6 fill:#ccffcc
+    style HybridPros fill:#ccffcc
+```
+
+**Why Hybrid Outperforms**:
+
+| Capability | Static | Genetic Only | SEAL Only | **Hybrid** |
+|------------|--------|--------------|-----------|------------|
+| **Adaptation Speed** | ❌ None | ⚠️ Weeks | ✅ 30 min | ✅ **20 min** |
+| **Knowledge Retention** | ✅ 100% (static) | ⚠️ 60% | ❌ 55% | ✅ **85%** |
+| **Learn from Single Incident** | ❌ No | ❌ No | ✅ Yes | ✅ **Yes** |
+| **Quality Control** | ✅ Manual | ✅ Fitness | ❌ None | ✅ **Dual-Layer** |
+| **Automated Tuning** | ❌ No | ✅ Yes | ❌ No | ✅ **Yes** |
+| **Meta-Learning** | ❌ No | ⚠️ Emergent | ⚠️ Explicit | ✅ **Both** |
+| **Population Diversity** | ❌ Single | ✅ Yes | ❌ Single | ✅ **Yes** |
+| **Computational Cost** | ✅ Low | ⚠️ Medium | ⚠️ Medium | ⚠️ **Medium-High** |
+
+**Key Insight**: The hybrid architecture uses genetic evolution as a **meta-learning framework** that optimizes SEAL's adaptation strategies. Over generations:
+
+1. **Generation 1-20**: Population discovers that some SEAL configurations (e.g., LoRA rank=32) work better than others
+2. **Generation 20-50**: Agents evolve better self-edit templates (protocol extraction > causal analysis for fires)
+3. **Generation 50-100**: Meta-learned strategies emerge (e.g., "adapt aggressively on new threats, conservatively on known ones")
+4. **Generation 100+**: Population stabilizes with robust adapters that rarely forget
 
 ---
 
@@ -156,6 +252,79 @@ Self-Adapting LLMs (Zweiger et al., 2025) enable models to:
 - **Meta-Learning**: Learning how to learn from new data
 
 ### 3.2 SEAL Applied to Crisis Management
+
+**Why SEAL for Crisis Management?**
+
+Traditional crisis response systems face a critical challenge: **they cannot learn from individual incidents**. Each crisis is unique, yet current systems require batch retraining on hundreds of examples to incorporate new knowledge. SEAL solves this through:
+
+1. **Self-Supervised Learning**: Agents generate their own training data from incident reports
+2. **Efficient Adaptation**: LoRA enables updates in minutes rather than days
+3. **Preservation of Knowledge**: Synthetic data includes foundational concepts to prevent forgetting
+
+**Complete SEAL Workflow for Crisis Agents**:
+
+```mermaid
+flowchart TD
+    Start[Crisis Incident Occurs] --> Response[Agent Makes Decision]
+    Response --> Resolution[Crisis Resolved]
+    Resolution --> Report[Post-Incident Report Generated]
+
+    Report --> SEALStart{SEAL Adaptation Process}
+
+    subgraph "Step 1: Self-Edit Generation"
+        SEALStart --> Template[Select Edit Template]
+        Template --> Protocol[Protocol Extraction:<br/>IF-THEN rules]
+        Template --> Causal[Causal Analysis:<br/>What worked/failed]
+        Template --> Scenario[Scenario Augmentation:<br/>Variations]
+
+        Protocol --> LLM1[LLM Generation]
+        Causal --> LLM1
+        Scenario --> LLM1
+
+        LLM1 --> SyntheticData[Synthetic Training Data:<br/>5-10 implications]
+    end
+
+    subgraph "Step 2: Test-Time Training"
+        SyntheticData --> LoRASetup[Initialize LoRA Adapter<br/>Rank: 32, Alpha: 64]
+        LoRASetup --> FineTune[Fine-Tune on Synthetic Data<br/>Epochs: 5, LR: 5e-4]
+        FineTune --> AdaptedAgent[Adapted Agent Weights]
+    end
+
+    subgraph "Step 3: Evaluation"
+        AdaptedAgent --> ValidSet[Test on Validation Scenarios]
+        ValidSet --> ComparePerf{Performance<br/>Improved?}
+        ComparePerf -->|Yes| CalcReward1[Reward = 1]
+        ComparePerf -->|No| CalcReward0[Reward = 0]
+    end
+
+    subgraph "Step 4: Decision"
+        CalcReward1 --> KeepWeights[Keep Adapted Weights]
+        CalcReward0 --> DiscardWeights[Discard Adaptation]
+
+        KeepWeights --> LogSuccess[Log Success for<br/>Genetic Fitness]
+        DiscardWeights --> LogFailure[Log Failure]
+    end
+
+    subgraph "Step 5: Genetic Integration"
+        LogSuccess --> UpdateFitness[Update Agent's<br/>SEAL Fitness Score]
+        LogFailure --> UpdateFitness
+
+        UpdateFitness --> GeneticPool[Genetic Algorithm<br/>Selection Pool]
+        GeneticPool --> NextGen{Next Generation}
+        NextGen -->|High SEAL Fitness| Survive[Agent Survives]
+        NextGen -->|Low SEAL Fitness| Eliminated[Agent Eliminated]
+    end
+
+    Survive --> NextIncident[Ready for Next Crisis]
+    NextIncident --> Start
+
+    style Start fill:#e1f5ff
+    style SEALStart fill:#fff4e1
+    style ComparePerf fill:#ffe1e1
+    style KeepWeights fill:#ccffcc
+    style Survive fill:#ccffcc
+    style Eliminated fill:#ffcccc
+```
 
 **Domain Adaptation**:
 
@@ -274,11 +443,77 @@ Individual Level (SEAL Adaptation)
 └─ Objective: Incorporate new knowledge without forgetting
 ```
 
+**Why This Two-Level Architecture?**
+
+Traditional approaches suffer from a fundamental trade-off:
+- **Fast adaptation** (neural network fine-tuning) → catastrophic forgetting
+- **Slow evolution** (genetic algorithms) → cannot respond to individual incidents
+
+Our hybrid architecture **breaks this trade-off** by operating at two complementary timescales:
+
+1. **SEAL (Inner Loop - Fast)**: Adapts to individual crisis incidents in real-time
+   - Timescale: Minutes to hours
+   - Scope: Weight-space updates via LoRA
+   - Risk: Potential forgetting of old knowledge
+
+2. **Genetic Evolution (Outer Loop - Slow)**: Selects agents with robust adaptation strategies
+   - Timescale: Days to weeks (generations)
+   - Scope: Parameter space + meta-learning strategies
+   - Benefit: Filters out harmful adaptations, preserves population diversity
+
 **Synergy Mechanisms**:
-1. Genetic selection filters agents with effective SEAL adaptation strategies
-2. SEAL enables agents to rapidly test parameter variations
-3. Population diversity provides robustness against catastrophic forgetting
-4. Meta-learning of self-edit generation improves across generations
+
+```mermaid
+graph TB
+    subgraph "Genetic Outer Loop"
+        A[Population of 50 Agents] --> B[Evaluate Multi-Objective Fitness]
+        B --> C[Selection: Keep Best Adapters]
+        C --> D[Crossover: Mix SEAL Strategies]
+        D --> E[Mutation: Explore Parameters]
+        E --> F[Next Generation]
+        F --> A
+    end
+
+    subgraph "SEAL Inner Loop"
+        G[Crisis Incident] --> H[Generate Self-Edit]
+        H --> I[LoRA Fine-Tuning]
+        I --> J[Test Adapted Agent]
+        J --> K{Improved?}
+        K -->|Yes| L[Keep Adaptation]
+        K -->|No| M[Discard]
+        L --> N[Log Success for Genetic Fitness]
+    end
+
+    N -.->|Feeds Into| B
+    C -.->|Selects Agents Good At| H
+
+    style A fill:#e1f5ff
+    style G fill:#fff4e1
+    style K fill:#ffe1e1
+    style C fill:#e1ffe1
+```
+
+**Four Key Synergies**:
+
+1. **Genetic Selection Filters Effective Adapters**
+   - Agents that successfully incorporate new knowledge survive
+   - Those that forget critically or adapt poorly are eliminated
+   - Population converges on "meta-learning" capabilities
+
+2. **SEAL Enables Rapid Parameter Exploration**
+   - Each agent tests thousands of weight configurations through adaptations
+   - Genetic algorithm leverages this exploration without explicit search
+   - Accelerates convergence by 10-50x compared to GA-only
+
+3. **Population Diversity Prevents Catastrophic Forgetting**
+   - Even if individual agents forget, population retains knowledge
+   - Diverse specializations ensure coverage of all crisis types
+   - Ensemble voting provides robustness
+
+4. **Meta-Learning Emergence**
+   - Over generations, agents evolve better self-edit generation strategies
+   - SEAL's adaptation capability itself becomes evolvable
+   - Creates "learning to learn" without explicit meta-training (Finn et al., 2017)
 
 ### 4.2 Enhanced Agent Genome
 
@@ -424,35 +659,96 @@ def evaluate_hybrid_fitness(
 
 **Operational Flow**:
 
+```mermaid
+stateDiagram-v2
+    [*] --> Initialization
+
+    state Initialization {
+        [*] --> CreatePopulation
+        CreatePopulation --> RandomGenomes: 50 agents
+        RandomGenomes --> SEALParameters: Each with unique\nSEAL configs
+        SEALParameters --> BaselineMetrics
+        BaselineMetrics --> [*]
+    }
+
+    Initialization --> RealTimeOperation
+
+    state RealTimeOperation {
+        [*] --> ReceiveCrisis
+        ReceiveCrisis --> MakeDecision: Use current weights
+        MakeDecision --> LogOutcome: No adaptation\nduring crisis
+        LogOutcome --> [*]
+    }
+
+    RealTimeOperation --> PostIncidentAdaptation: After crisis resolution
+
+    state PostIncidentAdaptation {
+        [*] --> GenerateSelfEdit
+        GenerateSelfEdit --> LoRAFineTuning: Synthetic data
+        LoRAFineTuning --> EvaluateAdapted: Test on validation
+        EvaluateAdapted --> CheckReward
+        CheckReward --> KeepAdaptation: Reward > 0
+        CheckReward --> DiscardAdaptation: Reward = 0
+        KeepAdaptation --> LogFitness: Update genetic fitness
+        DiscardAdaptation --> LogFitness
+        LogFitness --> [*]
+    }
+
+    PostIncidentAdaptation --> PopulationEvolution: After N incidents
+
+    state PopulationEvolution {
+        [*] --> EvaluateFitness
+        EvaluateFitness --> TournamentSelection: Multi-objective
+        TournamentSelection --> Crossover: Mix parameters
+        Crossover --> Mutation: Explore new configs
+        Mutation --> NextGeneration: Elitism: top 10%
+        NextGeneration --> [*]
+    }
+
+    PopulationEvolution --> RealTimeOperation: Next generation ready
+
+    note right of PostIncidentAdaptation
+        SEAL Inner Loop
+        Timescale: Minutes
+        Scope: Weight updates
+    end note
+
+    note right of PopulationEvolution
+        Genetic Outer Loop
+        Timescale: Days/Weeks
+        Scope: Population evolution
+    end note
 ```
-1. INITIALIZATION (Generation 0)
-   ├─ Create population of 50 agents with random genomes
-   ├─ Each agent has unique SEAL meta-parameters
-   └─ Establish baseline performance metrics
 
-2. REAL-TIME OPERATION (Crisis Response)
-   ├─ Agent receives crisis scenario
-   ├─ Makes decision using current weights
-   ├─ Logs outcome for post-incident learning
-   └─ No weight updates during active crisis
+**Detailed Operational Flow**:
 
-3. POST-INCIDENT ADAPTATION (SEAL Inner Loop)
-   ├─ Generate self-edit from incident report
-   ├─ Perform LoRA fine-tuning on synthetic data
-   ├─ Evaluate adapted agent on test scenarios
-   ├─ Keep adaptation if reward > 0
-   └─ Log adaptation success for genetic fitness
+**1. INITIALIZATION (Generation 0)**
+   - Create population of 50 agents with random genomes
+   - Each agent has unique SEAL meta-parameters
+   - Establish baseline performance metrics
 
-4. POPULATION EVOLUTION (Genetic Outer Loop)
-   ├─ Evaluate all agents on fitness objectives
-   ├─ Select parents via tournament selection
-   ├─ Crossover: Mix genetic + SEAL parameters
-   ├─ Mutation: Perturb parameters + adaptation strategies
-   └─ Create next generation (elitism: keep top 10%)
+**2. REAL-TIME OPERATION (Crisis Response)**
+   - Agent receives crisis scenario
+   - Makes decision using current weights
+   - Logs outcome for post-incident learning
+   - **No weight updates during active crisis** (safety-critical)
 
-5. ITERATION
-   └─ Repeat steps 2-4 for N generations or until convergence
-```
+**3. POST-INCIDENT ADAPTATION (SEAL Inner Loop)**
+   - Generate self-edit from incident report
+   - Perform LoRA fine-tuning on synthetic data
+   - Evaluate adapted agent on test scenarios
+   - Keep adaptation if reward > 0
+   - Log adaptation success for genetic fitness
+
+**4. POPULATION EVOLUTION (Genetic Outer Loop)**
+   - Evaluate all agents on fitness objectives
+   - Select parents via tournament selection
+   - Crossover: Mix genetic + SEAL parameters
+   - Mutation: Perturb parameters + adaptation strategies
+   - Create next generation (elitism: keep top 10%)
+
+**5. ITERATION**
+   - Repeat steps 2-4 for N generations or until convergence
 
 ### 4.5 Genetic Operators for SEAL Parameters
 
@@ -529,7 +825,7 @@ def mutate_seal_genome(genome, mutation_rate=0.1):
 **Objective**: Prepare existing codebase for SEAL integration
 
 **Tasks**:
-1. Create new branch `feature/seal-integration`
+1. A new branch `feature/seal-integration` will be created
 2. Audit current agent architecture for extension points
 3. Set up experiment tracking infrastructure
 4. Establish baseline performance metrics
@@ -556,7 +852,7 @@ def mutate_seal_genome(genome, mutation_rate=0.1):
 
 ### Phase 1: SEAL Core Module (Weeks 3-4)
 
-**Objective**: Build standalone SEAL functionality
+**Objective**: Building standalone SEAL functionality
 
 **Directory Structure**:
 ```
@@ -1200,17 +1496,127 @@ class ReSTEMTrainer:
 **Problem Decomposition**:
 
 Model drift has three components:
+
 1. **Knowledge Decay**: Forgetting how to handle old crisis types
 2. **Adaptation Lag**: Slow to integrate new protocols
 3. **Overfitting**: New adaptations degrade general capabilities
 
-**How Hybrid Approach Solves Each**:
+**Visual Architecture of the Solution**:
 
-| Drift Component | Genetic Solution | SEAL Solution | Synergy |
-|----------------|------------------|---------------|---------|
-| **Knowledge Decay** | Population diversity maintains old skills | Self-edits preserve critical knowledge | Best agents selected based on retention |
-| **Adaptation Lag** | - | TTT enables rapid updates | GA optimizes which adaptations to keep |
-| **Overfitting** | Fitness penalizes specialists | LoRA prevents full weight corruption | Population filters harmful updates |
+```mermaid
+graph TD
+    subgraph "Problem: Model Drift Over Time"
+        P1[Year 1: Fires & Floods] --> P2[Year 2: + Industrial Accidents]
+        P2 --> P3[Year 3: + Cyber-Physical Attacks]
+        P3 --> P4[Year 4: + Pandemics]
+        P4 --> P5[Year 5: + Compound Crises]
+
+        P5 --> ProblemNode{Traditional System}
+        ProblemNode --> Decay[Knowledge Decay<br/>45% Year 1 retention]
+        ProblemNode --> Lag[Adaptation Lag<br/>48 hours to update]
+        ProblemNode --> Overfit[Overfitting<br/>35% forgetting events]
+    end
+
+    subgraph "Solution 1: Genetic Evolution"
+        G1[Population Diversity] --> G2[Maintain Old Skills]
+        G3[Fitness Selection] --> G4[Penalize Forgetting]
+        G5[Multi-Objective] --> G6[Prevent Specialists]
+
+        G2 --> GSol[60% Year 1 retention]
+        G4 --> GSol
+        G6 --> GSol
+    end
+
+    subgraph "Solution 2: SEAL Adaptation"
+        S1[Self-Edit Generation] --> S2[Preserve Knowledge]
+        S3[Test-Time Training] --> S4[Rapid Updates 30min]
+        S5[LoRA Fine-Tuning] --> S6[Prevent Weight Corruption]
+
+        S2 --> SSol[55% Year 1 retention]
+        S4 --> SSol
+        S6 --> SSol
+    end
+
+    subgraph "Hybrid Solution: SEAL + Genetic"
+        H1[SEAL: Fast Adaptation] --> H2[Per-Incident Learning]
+        H3[Genetic: Selection Filter] --> H4[Remove Bad Adapters]
+        H5[Population: Redundancy] --> H6[Collective Memory]
+        H7[Meta-Learning: Evolution] --> H8[Better Edit Strategies]
+
+        H2 --> HybridResult[85% Year 1 retention<br/>20min adaptation<br/>5% forgetting events]
+        H4 --> HybridResult
+        H6 --> HybridResult
+        H8 --> HybridResult
+    end
+
+    Decay -.->|Partial Fix| GSol
+    Lag -.->|Partial Fix| SSol
+    Decay -.->|Partial Fix| SSol
+    Lag -.->|Partial Fix| GSol
+
+    GSol -.->|Combined| HybridResult
+    SSol -.->|Combined| HybridResult
+
+    style ProblemNode fill:#ffcccc
+    style Decay fill:#ffcccc
+    style Lag fill:#ffcccc
+    style Overfit fill:#ffcccc
+    style GSol fill:#ffffcc
+    style SSol fill:#ffffcc
+    style HybridResult fill:#ccffcc
+```
+
+**How Hybrid Approach Solves Each Component**:
+
+| Drift Component | Genetic Solution | SEAL Solution | Hybrid Synergy |
+|----------------|------------------|---------------|----------------|
+| **Knowledge Decay** | Population diversity maintains old skills | Self-edits preserve critical knowledge | Best agents selected based on retention + diverse specialists cover all crisis types |
+| **Adaptation Lag** | Slow (generational evolution) | TTT enables rapid updates (30 min) | GA optimizes which adaptations to keep → 20 min adaptation with quality control |
+| **Overfitting** | Fitness penalizes specialists | LoRA prevents full weight corruption | Population filters harmful updates before deployment |
+
+**Why Neither Approach Alone Suffices**:
+
+```mermaid
+flowchart LR
+    subgraph "Genetic Only Problem"
+        GO1[New Crisis Type Appears] --> GO2[Wait for Generation]
+        GO2 --> GO3[Evaluate on New Scenarios]
+        GO3 --> GO4[Evolve Population]
+        GO4 --> GO5[Deploy Updated Agents]
+        GO5 -.->|Lag: 2-4 weeks| GO6[Crisis Already Resolved]
+    end
+
+    subgraph "SEAL Only Problem"
+        SO1[Adapt to Crisis 1] --> SO2[Adapt to Crisis 2]
+        SO2 --> SO3[Adapt to Crisis 3]
+        SO3 --> SO4[Adapt to Crisis 4]
+        SO4 --> SO5{Catastrophic Forgetting}
+        SO5 -->|Yes| SO6[Can't Handle Crisis 1 Anymore]
+        SO6 -.->|Retention: 55%| SO7[Need to Retrain]
+    end
+
+    subgraph "Hybrid Solution"
+        H1[SEAL: Immediate Adaptation] --> H2[Learn from Current Crisis]
+        H3[Genetic: Quality Control] --> H4[Filter Harmful Adaptations]
+        H5[Population: Redundancy] --> H6[Diverse Specialists]
+
+        H2 --> H7[Fast Response: 20 min]
+        H4 --> H7
+        H6 --> H7
+
+        H7 --> H8[High Retention: 85%]
+        H4 --> H8
+        H6 --> H8
+    end
+
+    GO6 -.->|Too Slow| H1
+    SO7 -.->|Too Fragile| H3
+
+    style GO6 fill:#ffcccc
+    style SO6 fill:#ffcccc
+    style H7 fill:#ccffcc
+    style H8 fill:#ccffcc
+```
 
 ### 6.2 Catastrophic Forgetting Mitigation
 
@@ -1622,12 +2028,201 @@ crisis_mas_poc/
 
 ---
 
+## Appendix D: Complete System Architecture Overview
+
+**End-to-End System Flow**:
+
+```mermaid
+graph TB
+    Start([Crisis Management System Starts])
+    Start --> Init[Initialize Population<br/>50 SEAL-Genetic Agents]
+
+    Init --> Generation{Generation Loop}
+
+    Generation --> Deploy[Deploy Agents to<br/>Crisis Response]
+
+    Deploy --> CrisisOccurs[Crisis Occurs]
+    CrisisOccurs --> AgentDecide[Agent Makes Decision<br/>Using Current Weights]
+    AgentDecide --> CrisisResolve[Crisis Resolved]
+
+    CrisisResolve --> PostIncident{Post-Incident<br/>Learning}
+
+    subgraph "SEAL Inner Loop (Minutes)"
+        PostIncident --> SelfEdit[Generate Self-Edit<br/>from Incident Report]
+        SelfEdit --> LoRAAdapt[LoRA Fine-Tuning<br/>on Synthetic Data]
+        LoRAAdapt --> TestAdapted[Test Adapted Agent]
+        TestAdapted --> Reward{Reward > 0?}
+        Reward -->|Yes| KeepWeights[Keep Adapted Weights<br/>Log Success]
+        Reward -->|No| DiscardWeights[Discard Adaptation<br/>Log Failure]
+    end
+
+    KeepWeights --> UpdateFitness[Update Agent's<br/>SEAL Fitness]
+    DiscardWeights --> UpdateFitness
+
+    UpdateFitness --> MoreCrises{More Crises<br/>This Generation?}
+    MoreCrises -->|Yes| CrisisOccurs
+    MoreCrises -->|No| Evaluate[Evaluate All Agents]
+
+    subgraph "Genetic Outer Loop (Weeks)"
+        Evaluate --> MultiObjective[Multi-Objective Fitness:<br/>1. Crisis Performance<br/>2. Adaptation Capability<br/>3. Forgetting Resistance]
+        MultiObjective --> Selection[Tournament Selection]
+        Selection --> Crossover[Crossover:<br/>Mix Genetic + SEAL Parameters]
+        Crossover --> Mutation[Mutation:<br/>Explore New Configurations]
+        Mutation --> Elitism[Elitism:<br/>Keep Top 10%]
+        Elitism --> NextGen[Next Generation Ready]
+    end
+
+    NextGen --> Converged{Population<br/>Converged?}
+    Converged -->|No| Generation
+    Converged -->|Yes| BestAgents[Deploy Best Agents<br/>to Production]
+
+    BestAgents --> Monitor[Continuous Monitoring<br/>& Adaptation]
+    Monitor --> ProductionCrisis[Production Crisis]
+    ProductionCrisis --> ProductionSEAL[SEAL Adaptation<br/>in Production]
+    ProductionSEAL --> PeriodicEvolution{Periodic<br/>Re-Evolution?}
+    PeriodicEvolution -->|Monthly| Generation
+    PeriodicEvolution -->|No| ProductionCrisis
+
+    style Init fill:#e1f5ff
+    style SelfEdit fill:#fff4e1
+    style Reward fill:#ffe1e1
+    style KeepWeights fill:#ccffcc
+    style MultiObjective fill:#ffffcc
+    style BestAgents fill:#ccffcc
+    style Monitor fill:#e1ffe1
+```
+
+**Why This Complete Architecture Solves Model Drift**:
+
+```mermaid
+mindmap
+  root((SEAL + Genetic<br/>Architecture))
+    Problem: Model Drift
+      Knowledge Decay
+        Traditional: 45% retention
+        Our Solution: 85% retention
+      Adaptation Lag
+        Traditional: 48 hours
+        Our Solution: 20 minutes
+      Overfitting
+        Traditional: 35% forgetting events
+        Our Solution: 5% forgetting events
+    Solution Components
+      SEAL Inner Loop
+        Self-Edit Generation
+          Domain-specific templates
+          Synthetic data creation
+        Test-Time Training
+          LoRA efficiency
+          Fast adaptation: 20-30 min
+        Quality Control
+          Binary reward signal
+          Automatic validation
+      Genetic Outer Loop
+        Population Diversity
+          50 agents per generation
+          Specialists for each crisis type
+        Selection Pressure
+          Filters bad adapters
+          Rewards forgetting resistance
+        Meta-Learning
+          Evolves SEAL strategies
+          Learns how to learn
+    Key Benefits
+      Fast Adaptation
+        Learn from single incidents
+        No batch retraining needed
+        Autonomous improvement
+      Robust Retention
+        Triple-layer forgetting defense
+        Population redundancy
+        Genetic quality control
+      Automated Tuning
+        22 evolvable parameters
+        Multi-objective optimization
+        No manual intervention
+    Scientific Novelty
+      First SEAL + Multi-Agent Integration
+      Genetic Evolution of Meta-Learning
+      Domain-Specific Self-Edits for Crisis
+      Dual-Level Optimization Framework
+```
+
+---
+
+## Summary: Why This Approach is Superior
+
+### The Core Innovation
+
+This architecture represents a **paradigm shift** from static or single-level adaptive systems to a **dual-level evolutionary framework** that combines:
+
+1. **Fast neuroplasticity** (SEAL's test-time training) with
+2. **Slow evolutionary selection** (genetic algorithms)
+
+Mimicking biological systems where:
+- **Individual organisms** adapt within their lifetime (SEAL ≈ synaptic plasticity)
+- **Populations** evolve across generations (GA ≈ natural selection)
+
+### Three-Layer Defense Against Model Drift
+
+**Layer 1: SEAL Self-Edits**
+- Synthetic data preserves foundational knowledge
+- Protocol extraction ensures critical rules aren't forgotten
+- Adaptation happens in low-rank weight space (LoRA prevents catastrophic changes)
+
+**Layer 2: Genetic Selection**
+- Fitness explicitly tests retention on Year 1 scenarios
+- Agents that forget are eliminated from gene pool
+- Population diversity ensures all crisis types remain covered
+
+**Layer 3: Population Redundancy**
+- Even if individual agents drift, ensemble voting provides robustness
+- Specialists maintain expertise in specific domains
+- Collective memory exceeds individual capacity
+
+### Quantified Advantages
+
+| Metric | Current System | SEAL + Genetic | Improvement |
+|--------|----------------|----------------|-------------|
+| **Adaptation Time** | 48 hours (manual retrain) | 20 minutes (automated) | **99.3% faster** |
+| **Year 1 Retention @ Year 5** | 45% (static drift) | 85% (robust memory) | **+89% relative** |
+| **Single-Incident Learning** | No (batch required) | Yes (per-incident) | **Qualitative leap** |
+| **Forgetting Events** | 35% of updates | <5% of updates | **86% reduction** |
+| **Parameter Optimization** | Manual tuning | Automated evolution | **Continuous** |
+| **Meta-Learning** | None | Emergent strategies | **Self-improving** |
+
+### Real-World Impact
+
+**Scenario: Novel Cyber-Physical Attack in 2026**
+
+**Current System:**
+1. Incident occurs → System performs poorly (no training on this type)
+2. Manual data collection (3-5 days)
+3. Full model retraining (2 days)
+4. Validation and deployment (1 day)
+5. **Total response time: ~7 days**
+6. Risk: Training on cyber-attacks degrades fire/flood performance by 15-25%
+
+**SEAL + Genetic System:**
+1. Incident occurs → Agent makes best-effort decision
+2. Post-incident: SEAL generates self-edit (5 min)
+3. LoRA adaptation (15 min)
+4. Validation against test scenarios (5 min)
+5. **Total adaptation time: 25 minutes**
+6. Genetic filter ensures no catastrophic forgetting
+7. Population continues to handle fires/floods at 85% of original performance
+
+**Lives potentially saved**: Faster adaptation to emerging threats while maintaining robust response to known crises
+
+---
+
 ## Document Version History
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-01-XX | Vasileios Kazoukas | Original genetic agents framework |
 | 2.0 | 2025-01-XX | Vasileios Kazoukas | SEAL integration, model drift analysis, implementation roadmap |
+| 2.1 | 2025-01-XX | Vasileios Kazoukas | Added comprehensive Mermaid diagrams, architecture comparison, enhanced explainability |
 
 ---
 

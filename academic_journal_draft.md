@@ -29,7 +29,7 @@ Crisis situations-natural disasters, industrial accidents, pandemics, and other 
 
 Recent advances in artificial intelligence, particularly Large Language Models (LLMs) and neural attention mechanisms, offer unprecedented opportunities to augment human decision-making capabilities. However, the integration of these modern techniques with established uncertainty quantification methods remains underexplored. Classical approaches like Evidential Reasoning based on Dempster-Shafer theory (Shafer, 1976) provide mathematically rigorous frameworks for belief aggregation but lack the adaptive, context-aware capabilities of modern deep learning architectures.
 
-The Greek emergency response landscape provides a compelling testbed for multi-agent crisis management systems. Recent catastrophic events-including the 2021 Evia forest fires that burned over 12,000 hectares, the 2023 Karditsa floods affecting 15,000 residents in Thessaly, and industrial HAZMAT incidents like the Elefsina ammonia leak-demonstrate the critical need for coordinated, intelligent decision support that can synthesize expertise across meteorology, emergency medicine, fire response, environmental science, and logistics.
+The Greek emergency response landscape provides a compelling testbed for multi-agent crisis management systems. Recent catastrophic events-including the 2021 Evia forest fires, the 2023 Karditsa floods affecting 15,000 residents in Thessaly, and industrial HAZMAT incidents like the Elefsina ammonia leak-demonstrate the critical need for coordinated, intelligent decision support that can synthesize expertise across meteorology, emergency medicine, fire response, environmental science, and logistics.
 
 ### 1.2 Research Gap
 
@@ -94,7 +94,7 @@ We implement TOPSIS alongside Weighted Sum Method (WSM) and Simple Additive Weig
 
 ### 2.4 Graph Attention Networks
 
-Veličković et al. (2018) introduced Graph Attention Networks (GAT) as a neural architecture computing node representations through weighted attention over neighbors. Unlike fixed graph convolutions, attention mechanisms dynamically adjust neighbor importance based on learned features-critical for crisis scenarios where expert relevance fluctuates with situation evolution.
+Velickovic et al. (2018) introduced Graph Attention Networks (GAT) as a neural architecture computing node representations through weighted attention over neighbors. Unlike fixed graph convolutions, attention mechanisms dynamically adjust neighbor importance based on learned features-critical for crisis scenarios where expert relevance fluctuates with situation evolution.
 
 Zhang et al. (2020) provide comprehensive survey of deep learning on graphs, categorizing approaches by application domain. For expert networks, attention weights naturally interpret as influence measures, providing explainability often lacking in neural systems. Multi-head attention (our implementation uses 4 heads) increases robustness by learning multiple complementary attention patterns.
 
