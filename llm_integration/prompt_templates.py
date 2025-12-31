@@ -504,6 +504,38 @@ class PromptTemplates:
         """Initialize prompt templates."""
         pass
 
+    def _generate_example_json(self, alternatives: List[Dict[str, Any]]) -> str:
+        """
+        Generate example JSON response format with actual alternative IDs.
+
+        Args:
+            alternatives: List of alternative action dictionaries with 'id' field
+
+        Returns:
+            Formatted JSON example string using real alternative IDs
+        """
+        # Build alternative_rankings dict with actual IDs
+        rankings_lines = []
+        for alt in alternatives:
+            alt_id = alt.get('id', 'unknown')
+            rankings_lines.append(f'        "{alt_id}": 0.0')
+
+        rankings_json = ',\n'.join(rankings_lines)
+
+        example_json = f"""{{
+    "alternative_rankings": {{
+{rankings_json}
+    }},
+    "reasoning": "Your professional analysis explaining your rankings. Be specific about key factors and implications. 2-3 compelling sentences.",
+    "confidence": 0.0,
+    "key_concerns": [
+        "Most critical concern from your expert perspective",
+        "Secondary risk factor or challenge",
+        "Additional safety or operational consideration"
+    ]
+}}"""
+        return example_json
+
     def generate_meteorologist_prompt(
         self,
         scenario: Dict[str, Any],
@@ -548,6 +580,7 @@ class PromptTemplates:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are a SENIOR METEOROLOGIST providing a critical expert assessment for an active crisis response decision.
 
@@ -602,23 +635,9 @@ Time is critical. Decision-makers need your expert meteorological judgment NOW.
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert meteorological assessment as a JSON object:
+Provide your expert meteorological assessment as a JSON object using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your professional meteorological analysis explaining your rankings. Be specific about weather threats, timing, and safety implications. 2-3 compelling sentences.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Most critical weather-related concern",
-        "Secondary meteorological risk factor",
-        "Additional safety or timing consideration"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -680,6 +699,7 @@ Provide your expert meteorological assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are an OPERATIONS DIRECTOR providing a critical resource and logistics assessment for an active crisis response.
 
@@ -734,23 +754,9 @@ The team needs your operational reality check. Which options are executable and 
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert operational assessment as a JSON object:
+Provide your expert operational assessment as a JSON object: using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your operational reality check in 2-3 sentences. Address feasibility, resource constraints, and execution risks. Be direct about what's achievable vs. aspirational.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Primary operational bottleneck or constraint",
-        "Critical logistical challenge",
-        "Resource availability or coordination risk"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -799,6 +805,7 @@ Provide your expert operational assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are a SENIOR MEDICAL DIRECTOR providing a critical health impact assessment for an active crisis response.
 
@@ -854,23 +861,9 @@ Lives are at stake. The team needs your medical expertise to evaluate which resp
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert medical assessment as a JSON object:
+Provide your expert medical assessment as a JSON object: using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your medical judgment in 2-3 sentences. Focus on health outcomes, patient safety, and vulnerable populations. Be clear about mortality/morbidity implications.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Most critical patient safety or health risk",
-        "Secondary health concern or vulnerable population issue",
-        "Medical access or capacity challenge"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -920,6 +913,7 @@ Provide your expert medical assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are a PSAP COMMANDER-SUPERVISOR providing a critical emergency communications and dispatch assessment for an active crisis response.
 
@@ -975,23 +969,9 @@ Your communications expertise is critical. The team needs your assessment of whi
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert PSAP/dispatch assessment as a JSON object:
+Provide your expert PSAP/dispatch assessment as a JSON object: using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your dispatch coordination perspective in 2-3 sentences. Address communication effectiveness, dispatch accuracy, system capacity, and multi-agency coordination challenges.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Primary dispatch or communication challenge",
-        "System capacity or coordination bottleneck",
-        "Caller safety or information management concern"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -1041,6 +1021,7 @@ Provide your expert PSAP/dispatch assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are an ON-SCENE POLICE COMMANDER providing a critical tactical field assessment for an active crisis response.
 
@@ -1097,23 +1078,9 @@ You are eyes-on-scene. The team needs your tactical ground truth about what's ac
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert tactical field assessment as a JSON object:
+Provide your expert tactical field assessment as a JSON object: using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your tactical field perspective in 2-3 sentences. Address immediate threats, officer/civilian safety, scene control feasibility, and ground-truth operational constraints.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Primary tactical threat or safety concern",
-        "Scene control or perimeter management challenge",
-        "Officer safety or force deployment risk"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -1163,6 +1130,7 @@ Provide your expert tactical field assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are a REGIONAL POLICE COMMANDER providing a critical strategic law enforcement assessment for an active crisis response.
 
@@ -1219,23 +1187,9 @@ Your strategic perspective is essential. The team needs to understand regional i
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert regional law enforcement assessment as a JSON object:
+Provide your expert regional law enforcement assessment as a JSON object using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your strategic police perspective in 2-3 sentences. Address regional stability, resource sustainability, multi-jurisdictional coordination, and strategic reserve management.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Primary regional stability or resource concern",
-        "Multi-jurisdictional coordination challenge",
-        "Strategic reserve or escalation management risk"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -1285,6 +1239,7 @@ Provide your expert regional law enforcement assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are an ON-SCENE FIRE-BRIGADE COMMANDER providing a critical tactical fire/rescue assessment for an active crisis response.
 
@@ -1341,23 +1296,9 @@ You are the technical authority on-scene. The team needs your ground-truth asses
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert tactical fire/rescue assessment as a JSON object:
+Provide your expert tactical fire/rescue assessment as a JSON object: using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your tactical fire/rescue perspective in 2-3 sentences. Address life safety, fire containment, structural risks, and tactical feasibility with current resources.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Primary life safety or rescue concern",
-        "Fire behavior or suppression challenge",
-        "Structural integrity or firefighter safety risk"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -1407,6 +1348,7 @@ Provide your expert tactical fire/rescue assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are a REGIONAL FIRE-BRIGADE COMMANDER providing a critical strategic fire service assessment for an active crisis response.
 
@@ -1463,23 +1405,9 @@ Your strategic fire service perspective is critical. The team needs to understan
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert regional fire service assessment as a JSON object:
+Provide your expert regional fire service assessment as a JSON object using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your strategic fire service perspective in 2-3 sentences. Address regional coverage impact, mutual aid sustainability, personnel fatigue, and long-duration operational capability.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Primary regional fire coverage or mutual aid concern",
-        "Personnel fatigue or equipment sustainability issue",
-        "Long-duration logistics or regional fire risk"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -1529,6 +1457,7 @@ Provide your expert regional fire service assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are a LOCAL MEDICAL INFRASTRUCTURE DIRECTOR providing a critical healthcare system capacity assessment for an active crisis response.
 
@@ -1585,23 +1514,9 @@ Your healthcare system expertise is essential. The team needs your assessment of
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert medical infrastructure assessment as a JSON object:
+Provide your expert medical infrastructure assessment as a JSON object using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your healthcare system perspective in 2-3 sentences. Address hospital capacity, staff/equipment availability, patient distribution feasibility, and surge capability limits.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Primary hospital capacity or surge limitation",
-        "Critical staff, equipment, or supply shortage",
-        "Patient distribution or inter-hospital coordination challenge"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -1651,6 +1566,7 @@ Provide your expert medical infrastructure assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are an ON-SCENE COAST GUARD COMMANDER providing a critical maritime rescue and coastal response assessment for an active crisis.
 
@@ -1708,23 +1624,9 @@ You are the maritime specialist on-scene. The team needs your expert assessment 
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert maritime rescue assessment as a JSON object:
+Provide your expert maritime rescue assessment as a JSON object using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your maritime rescue perspective in 2-3 sentences. Address sea state safety, rescue asset deployment effectiveness, evacuation feasibility, and water survival considerations.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Primary maritime safety or sea state concern",
-        "Rescue asset deployment or operational challenge",
-        "Evacuation methodology or hypothermia risk"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
@@ -1774,6 +1676,7 @@ Provide your expert maritime rescue assessment as a JSON object:
         scenario_context = self.format_scenario_context(scenario)
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
+        example_json = self._generate_example_json(alternatives)
 
         prompt = f"""You are a NATIONAL COAST GUARD DIRECTOR providing a critical national maritime strategy assessment for an active crisis response.
 
@@ -1831,23 +1734,9 @@ Your national maritime perspective is essential. The team needs to understand st
 📋 REQUIRED RESPONSE FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide your expert national maritime strategy assessment as a JSON object:
+Provide your expert national maritime strategy assessment as a JSON object using the exact alternative IDs shown above:
 
-{{
-    "alternative_rankings": {{
-        "A1": 0.0,
-        "A2": 0.0,
-        "A3": 0.0,
-        "A4": 0.0
-    }},
-    "reasoning": "Your national maritime strategy perspective in 2-3 sentences. Address national asset allocation, inter-regional coordination, port/infrastructure impacts, and strategic maritime security implications.",
-    "confidence": 0.0,
-    "key_concerns": [
-        "Primary national maritime security or asset concern",
-        "Inter-regional coordination or strategic readiness challenge",
-        "Port operations or critical infrastructure impact"
-    ]
-}}
+{example_json}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ RESPONSE GUIDELINES
