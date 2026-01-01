@@ -74,17 +74,17 @@ The multi-agent system includes authentic Greek emergency response experts:
 **Decision Quality Score (DQS)** now properly evaluates criteria satisfaction:
 
 $$\text{DQS} = \begin{cases}
-\frac{1}{|C|} \sum_{c \in C} s_c(a^{*}) & \text{if criteria scores available} \\
-\text{MCDA}(a^{*}) & \text{if multi-agent with MCDA} \\
-f(a^{*}) & \text{if only final scores available}
+\frac{1}{|C|} \sum_{c \in C} s_c(a^{\ast}) & \text{if criteria scores available} \\
+\text{MCDA}(a^{\ast}) & \text{if multi-agent with MCDA} \\
+f(a^{\ast}) & \text{if only final scores available}
 \end{cases}$$
 
 Where:
-- $a^{*}$ = recommended alternative
+- $a^{\ast}$ = recommended alternative
 - $C$ = set of decision criteria
-- $s_c(a^{*})$ = score of alternative $a^{*}$ on criterion $c$
-- $\text{MCDA}(a^{*})$ = MCDA score for alternative $a^{*}$
-- $f(a^{*})$ = final combined score for alternative $a^{*}$
+- $s_c(a^{\ast})$ = score of alternative $a^{\ast}$ on criterion $c$
+- $\text{MCDA}(a^{\ast})$ = MCDA score for alternative $a^{\ast}$
+- $f(a^{\ast})$ = final combined score for alternative $a^{\ast}$
 
 **Confidence** is now properly separated from quality:
 
@@ -126,7 +126,7 @@ DQS = (0.90 + 0.50 + 0.95) / 3 = 0.783
 ```
 
 Formula:
-$$\text{DQS}_{\text{SA}} = \frac{1}{|C|} \sum_{c \in C} s_c(a^{*})$$
+$$\text{DQS}_{\text{SA}} = \frac{1}{|C|} \sum_{c \in C} s_c(a^{\ast})$$
 
 #### Multi-Agent DQS
 
@@ -144,7 +144,7 @@ DQS = mcda_scores['alt1'] = 0.720
 ```
 
 Formula:
-$$\text{DQS}_{\text{MA}} = \text{MCDA}(a^{*})$$
+$$\text{DQS}_{\text{MA}} = \text{MCDA}(a^{\ast})$$
 
 Where MCDA is calculated using TOPSIS method (see below).
 
@@ -152,7 +152,7 @@ Where MCDA is calculated using TOPSIS method (see below).
 
 If criteria weights $w_c$ are provided:
 
-$$\text{DQS}_{\text{weighted}} = \frac{\sum_{c \in C} w_c \cdot s_c(a^{*})}{\sum_{c \in C} w_c}$$
+$$\text{DQS}_{\text{weighted}} = \frac{\sum_{c \in C} w_c \cdot s_c(a^{\ast})}{\sum_{c \in C} w_c}$$
 
 **Output Format:**
 
@@ -319,7 +319,7 @@ Where:
 
 **Diversity Score:**
 
-$$\text{Diversity} = \frac{|\{a^{*}_1, a^{*}_2, \ldots, a^{*}_n\}|}{n}$$
+$$\text{Diversity} = \frac{|\{a^{\ast}_1, a^{\ast}_2, \ldots, a^{\ast}_n\}|}{n}$$
 
 Number of unique top preferences divided by total agents.
 
@@ -412,11 +412,11 @@ Where:
 
 **Agreement Analysis:**
 
-$$\text{Agreement Rate} = \frac{\sum_{i=1}^{N} \mathbb{1}(a^{*}_i = a^{*}_{\text{MA}})}{N} \times 100\%$$
+$$\text{Agreement Rate} = \frac{\sum_{i=1}^{N} \mathbb{1}(a^{\ast}_i = a^{\ast}_{\text{MA}})}{N} \times 100\%$$
 
 Where:
-- $a^{*}_i$ = Recommended alternative by agent $i$
-- $a^{*}_{\text{MA}}$ = Multi-agent consensus recommendation
+- $a^{\ast}_i$ = Recommended alternative by agent $i$
+- $a^{\ast}_{\text{MA}}$ = Multi-agent consensus recommendation
 - $\mathbb{1}(\cdot)$ = Indicator function (1 if true, 0 otherwise)
 
 **Example Output:**
@@ -503,7 +503,7 @@ When ground truth is available:
 **Ground Truth Match:**
 
 $$\text{Match} = \begin{cases}
-1 & \text{if } a^{*} = a_{\text{correct}} \\
+1 & \text{if } a^{\ast} = a_{\text{correct}} \\
 0 & \text{otherwise}
 \end{cases}$$
 
