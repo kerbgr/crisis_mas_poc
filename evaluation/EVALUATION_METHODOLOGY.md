@@ -5,8 +5,8 @@
 This document describes the comprehensive evaluation framework for comparing multi-agent system (MAS) performance against individual agent decisions. The framework evaluates the **Greek Emergency Response Multi-Agent System** featuring **13 expert agents** responding to realistic Greek crisis scenarios.
 
 **Key Improvements:**
-- **Commit `09bec4c` (2025-01-09):** Fixed critical bugs in decision quality calculation that made comparisons invalid
-- **Commit `8bb88bd` (2025-11-17):** Enhanced comparison methodology to evaluate multi-agent consensus against EACH individual agent rather than one arbitrary baseline, providing comprehensive analysis of collaborative value
+- **Commit `09bec4c`:** Fixed critical bugs in decision quality calculation that made comparisons invalid
+- **Commit `8bb88bd`:** Enhanced comparison methodology to evaluate multi-agent consensus against EACH individual agent rather than one arbitrary baseline, providing comprehensive analysis of collaborative value
 
 ### Greek Crisis Scenarios
 
