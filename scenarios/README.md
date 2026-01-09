@@ -4,6 +4,23 @@
 
 This folder contains crisis scenario definitions and decision criteria used by the multi-agent system for decision-making evaluation. Scenarios are defined in JSON format and provide the test cases for evaluating the system's crisis response capabilities.
 
+### Important Disclaimer: Scenario Design and Ethical Boundaries
+
+**The scenarios in this repository are synthetic, research-oriented scenarios inspired by real historical crisis events, but they are NOT retrospective evaluations of actual emergency response operations.**
+
+**Critical Points:**
+
+- **Inspired by Historical Events**: Scenarios draw from publicly documented crises (Thessaly floods, Evia forest fires, industrial incidents) to ensure realistic modeling
+- **Not Real Case Testing**: This PoC does **NOT** test against actual historical crisis decisions due to:
+  - Lack of institutional approvals and access to classified emergency response data
+  - Absence of complete operational context, real-time intelligence, and stakeholder perspectives
+  - Ethical considerations regarding the use of sensitive tragedy data
+- **No Retrospective Claims**: We make **NO** claims about the quality or correctness of actual decisions made during historical crises
+- **Research Purpose**: Scenarios serve exclusively as realistic test cases for evaluating multi-agent decision-making frameworks
+- **Respect for Sensitivity**: This approach respects the sensitivity of actual emergency operations and privacy of affected communities
+
+By using synthetic scenarios informed by reality, we balance the need for realistic crisis modeling with ethical research practices.
+
 ### Purpose
 
 **Why This Folder Exists:**

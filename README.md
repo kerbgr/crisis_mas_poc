@@ -47,6 +47,35 @@ The implementation combines classical decision theory with modern Large Language
 - Building consensus through structured negotiation
 - Providing explainable, traceable decision recommendations
 
+### Scenario Design and Ethical Considerations
+
+**Important Notice:** The crisis scenarios used in this PoC are **synthetic scenarios inspired by real historical crisis events** but are **not retrospective evaluations of actual emergency response operations**.
+
+**Key Points:**
+
+1. **Inspired by Reality, Not Testing Reality**:
+   - Scenarios draw inspiration from publicly documented historical crises (e.g., floods in Thessaly Greece, forest fires in Evia, industrial incidents)
+   - Parameters such as geographical locations, population sizes, and response alternatives reflect realistic crisis characteristics
+   - Design informed by publicly available information about emergency response protocols and procedures
+
+2. **No Retrospective Testing**:
+   - This system is **NOT being validated against actual historical crisis decisions**
+   - We do not have institutional approval to access classified emergency response data
+   - We lack complete operational context, real-time intelligence, and stakeholder perspectives from historical incidents
+   - We make no claims about the quality or correctness of actual decisions made during past crises
+
+3. **Research Purpose Only**:
+   - Scenarios serve as realistic test cases for evaluating multi-agent decision-making frameworks
+   - The goal is to demonstrate the technical feasibility of MAS approaches to crisis management
+   - Results demonstrate system capabilities, not critiques of past emergency response operations
+
+4. **Ethical Boundaries**:
+   - Respects the sensitivity of actual emergency operations and privacy of affected communities
+   - Avoids inappropriate use of real tragedy data without proper authorization
+   - Maintains focus on methodological advancement rather than historical analysis
+
+This approach allows us to leverage domain knowledge and realistic crisis characteristics while maintaining ethical standards and respecting the complexity of real-world emergency response decision-making.
+
 ### Research Questions Addressed
 
 This PoC investigates the following research questions:

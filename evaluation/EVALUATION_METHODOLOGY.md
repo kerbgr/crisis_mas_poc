@@ -10,6 +10,16 @@ This document describes the comprehensive evaluation framework for comparing mul
 
 ### Greek Crisis Scenarios
 
+**Important Note on Scenario Design:**
+
+The scenarios used for evaluation are **synthetic, research-oriented scenarios inspired by real historical crisis events**, but they are **NOT retrospective evaluations of actual emergency response operations**. These scenarios:
+
+- Draw inspiration from publicly documented Greek crises to ensure realistic modeling
+- Are designed exclusively for research purposes to evaluate multi-agent system capabilities
+- Do **NOT** represent testing against actual historical crisis decisions
+- Make **NO** claims about the quality or correctness of actual decisions made during past crises
+- Respect ethical boundaries regarding the use of sensitive crisis data without proper institutional approvals
+
 The system is evaluated on three realistic Greek crisis scenarios:
 
 1. **Karditsa Flood Emergency** (severity 0.8)

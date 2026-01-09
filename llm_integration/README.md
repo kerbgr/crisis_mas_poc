@@ -42,6 +42,157 @@ Crisis management requires combining diverse expert perspectives into coherent d
 3. Leverage state-of-the-art reasoning while abstracting provider complexity
 4. Switch providers based on cost, quality, privacy, or availability requirements
 
+## Theoretical Foundations: LLMs in Decision Support
+
+### Large Language Models: Core Principles
+
+**Definition**: Large Language Models are neural networks trained on vast text corpora to predict next tokens in sequences. Through scale (billions to trillions of parameters) and training data diversity, LLMs exhibit **emergent capabilities**—abilities not explicitly programmed but arising from pattern recognition across domains (Brown et al., 2020).
+
+**Key Mechanisms**:
+
+1. **Transformer Architecture** (Vaswani et al., 2017):
+   - **Self-Attention**: Computes relationships between all tokens in a sequence
+   - **Positional Encoding**: Maintains word order information
+   - **Feed-Forward Layers**: Non-linear transformations for complex pattern learning
+   - **Multi-Head Attention**: Parallel attention computations capture different semantic relationships
+
+2. **Embeddings**: Words/tokens mapped to high-dimensional vectors (e.g., 4096 dimensions)
+   - Semantic similarity → Vector proximity in embedding space
+   - Example: "flood" and "inundation" have near-identical vector representations
+   - Crisis-relevant concepts cluster together enabling contextual reasoning
+
+3. **Contextual Understanding**: LLMs process entire input context (up to 200K tokens for Claude)
+   - Full scenario description, historical data, constraints considered simultaneously
+   - Enables nuanced reasoning beyond simple keyword matching
+
+### Chain-of-Thought (CoT) Prompting
+
+**Theoretical Basis** (Wei et al., 2022): Explicit intermediate reasoning steps dramatically improve LLM performance on complex tasks. Instead of direct input→output mapping, CoT uses input→reasoning→output flow.
+
+**Why CoT Matters for Crisis Management**:
+- **Explainability**: Decision trails auditable by human supervisors
+- **Accuracy**: Step-by-step decomposition reduces logical errors
+- **Trust**: Transparent reasoning builds confidence in AI recommendations
+- **Debugging**: Identify where reasoning diverges from expert expectations
+
+**CoT Implementation Pattern**:
+```
+System: You are an emergency management expert. Think step-by-step.
+User: Scenario: [crisis details]. Analyze each response alternative systematically:
+1. Assess effectiveness of each action
+2. Evaluate safety implications
+3. Consider resource availability
+4. Account for time constraints
+5. Then provide final recommendation with confidence score.
+```
+
+**Example CoT Output**:
+```
+Reasoning: "First, analyzing effectiveness...
+Alternative A addresses root cause directly but requires 6 hours.
+Alternative B is faster (2 hours) but only treats symptoms.
+Given time-critical nature (population at immediate risk), speed outweighs thoroughness.
+Safety: Both alternatives have acceptable risk profiles...
+Resources: Alternative B requires fewer specialized teams...
+Conclusion: Alternative B recommended (confidence: 0.78)"
+```
+
+### Prompt Engineering for Crisis Scenarios
+
+**Definition**: Systematic design of input prompts to elicit desired LLM behaviors. Critical for crisis management where precision and reliability are non-negotiable (Otal & Canbaz, 2024; Chen et al., 2024).
+
+**Key Principles**:
+
+1. **Role Specification**: Define agent expertise explicitly
+   ```
+   "You are a meteorologist with 15 years experience in disaster forecasting..."
+   ```
+
+2. **Structured Output Requirements**: Demand specific format
+   ```
+   "Return assessment as JSON with keys: recommended_alternative, belief_distribution, confidence, reasoning"
+   ```
+
+3. **Contextual Constraints**: Embed domain knowledge
+   ```
+   "Follow HAZMAT response protocols. Priority: life safety > property > environment"
+   ```
+
+4. **Few-Shot Examples**: Provide sample input-output pairs (improves consistency)
+
+5. **Multi-Round Dialogue**: Allow agents to refine assessments iteratively (Li et al., 2024)
+
+**Crisis-Specific Prompt Components** (implemented in `prompt_templates.py`):
+- **Agent Identity**: Name, role, expertise domain, experience level
+- **Scenario Context**: Full crisis description with severity, location, affected population
+- **Action Alternatives**: Complete set of response options with details
+- **Decision Criteria**: Effectiveness, safety, speed, cost, public acceptance
+- **Output Format**: JSON schema for structured belief distributions
+- **Safety Constraints**: Ethical guidelines and regulatory requirements
+
+### Model Selection Considerations
+
+From Chapter 2 research, three model categories serve different crisis management needs:
+
+#### 1. **Frontier Models** (GPT-4, Claude Opus 4.5)
+- **Strengths**: Superior reasoning, nuanced analysis, complex scenario understanding
+- **Use Case**: Strategic decision-making, novel crisis types, ethical dilemmas
+- **Limitations**: High cost ($10-30 per 1M tokens), cloud dependency, latency (3-5s)
+
+#### 2. **Balanced Models** (Claude Sonnet, GPT-4o)
+- **Strengths**: Excellent quality-to-cost ratio, fast response (1-2s)
+- **Use Case**: **Primary choice for this system** - routine expert assessments
+- **Limitations**: Cloud dependency, moderate cost ($3-5 per 1M tokens)
+
+#### 3. **Small Language Models (SLMs)** (7B-20B parameters: Llama, Qwen, Phi)
+- **Strengths**: **Local execution (LM Studio)**, no internet, private, low cost
+- **Use Case**: Offline operations, sensitive data, resource-constrained environments
+- **Limitations**: Reduced reasoning quality, requires domain-specific fine-tuning
+
+**Deployment Strategy**:
+- **Research/Development**: Claude Sonnet (best quality demonstration)
+- **Production (future)**: Fine-tuned SLM on crisis data, hosted on government infrastructure
+- **Hybrid**: Cloud models for complex decisions, local models for routine assessments
+
+### Privacy, Security, and Data Sovereignty
+
+**GDPR Compliance** (EU General Data Protection Regulation):
+- Cloud API calls = potential cross-border data transfers
+- Crisis data often contains PII (personal identifiable information)
+- **Solution**: Local LLM deployment via LM Studio eliminates external transmission
+
+**Security Requirements**:
+1. **Data Encryption**: In-transit (TLS) and at-rest encryption
+2. **Access Control**: Role-based permissions for LLM API keys
+3. **Audit Trails**: Log all LLM interactions for accountability
+4. **Anonymization**: Remove PII before sending to cloud LLMs (when unavoidable)
+
+**On-Premise Deployment** (recommended for production):
+- Host SLM (e.g., Llama-3.2 20B) on government-controlled servers
+- Fine-tune on Greek emergency response protocols and historical data
+- Ensures data sovereignty and 24/7 availability without internet dependency
+
+### Continual Learning and Model Drift
+
+**Problem**: Crisis patterns evolve (climate change, new threats). Static models degrade over time—**model drift** (IBM, 2024).
+
+**Solution Framework** (detailed in Chapter 2, Section 2.7):
+1. **Experience Replay**: Store successful/failed decisions for periodic retraining
+2. **Test-Time Training (TTT)**: Adapt model parameters dynamically during inference
+3. **SEAL Framework** (Self-Evolving Adaptive Learning): Automatic synthetic data generation from new incidents
+4. **Reliability Tracking**: Monitor agent accuracy; retrain when performance drops
+
+**Implementation Status**: Current system logs decisions for future continual learning pipeline (planned future enhancement).
+
+### References
+
+- **Brown, T. et al. (2020).** Language Models are Few-Shot Learners. NeurIPS. [GPT-3 emergence]
+- **Vaswani, A. et al. (2017).** Attention is All You Need. NeurIPS. [Transformer architecture]
+- **Wei, J. et al. (2022).** Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. [CoT]
+- **Li, Y. et al. (2024).** From LLMs to LLM-based Agents for Software Engineering. [Agent architectures]
+- **Otal, B. & Canbaz, M.A. (2024).** Prompt Engineering in Large Language Models. [Crisis applications]
+- **Chen, H. et al. (2024).** LLM-based Multi-Agent Systems for Emergency Response. [Emergency contexts]
+
 ## Architecture
 
 ```mermaid

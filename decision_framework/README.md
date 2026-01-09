@@ -374,58 +374,224 @@ Evaluation Metrics
 
 ---
 
-## Mathematical Foundations
+## Mathematical Foundations and Theoretical Background
 
-### Evidential Reasoning
+This section provides the mathematical and theoretical underpinnings of the decision aggregation methods, drawn from established research in uncertainty reasoning, neural attention mechanisms, and multi-criteria decision analysis.
 
-**Weighted Average:**
-```
-combined_belief(A_i) = Σ(w_j × belief_j(A_i)) / Σ(w_j)
-```
+### Dempster-Shafer Theory and Evidential Reasoning
 
-**Confidence (Entropy-Based):**
-```
-confidence = 1 - (entropy / max_entropy)
-entropy = -Σ(p_i × log₂(p_i))
-```
+**Theoretical Foundation:**
 
-### Graph Attention Network
+The Dempster-Shafer (DS) theory, introduced by Glenn Shafer (1976) building on Arthur Dempster's work, provides a rigorous mathematical framework for reasoning under uncertainty that extends classical probability theory. Unlike Bayesian approaches that require complete probability distributions, DS theory allows belief assignment to sets of hypotheses (power set 2^Θ), explicitly representing ignorance.
 
-**Attention Coefficient:**
+**Frame of Discernment (Θ):**
+The set of all mutually exclusive and exhaustive hypotheses:
 ```
-α_ij = softmax_j(LeakyReLU(a^T [W h_i || W h_j]))
+Θ = {H₁, H₂, ..., Hₙ}
 ```
 
-**Agent Features:** 9-dimensional vector:
-1. Confidence score
-2. Belief certainty (inverse entropy)
-3. Expertise relevance
-4. Risk tolerance
-5. Severity awareness
-6. Top choice strength
-7. Thoroughness
-8. Reasoning quality
-9. Historical reliability
-
-### MCDA Engine
-
-**Weighted Sum:**
+**Basic Belief Assignment (bba):**
+A function m: 2^Θ → [0,1] that assigns belief mass to subsets of Θ:
 ```
-score(A) = Σ [w_i × normalized(v_i)]
+m(∅) = 0
+Σ_{A⊆Θ} m(A) = 1
 ```
 
-**Normalization:**
-- Benefit: `(v - min) / (max - min)`
-- Cost: `(max - v) / (max - min)`
-
-### Consensus Model
-
-**Cosine Similarity:**
+**Belief and Plausibility Functions:**
 ```
-similarity = (A · B) / (||A|| × ||B||)
+Bel(A) = Σ_{B⊆A} m(B)         # Lower bound: direct support
+Pl(A) = Σ_{B∩A≠∅} m(B)         # Upper bound: possible support
 ```
 
-**Consensus Level:** Average pairwise similarity
+The interval [Bel(A), Pl(A)] represents the uncertainty range for hypothesis A.
+
+**Dempster's Combination Rule:**
+For combining beliefs from two independent sources with belief functions m₁ and m₂:
+```
+m₁⊕₂(A) = (1/(1-K)) × Σ_{B∩C=A} m₁(B)·m₂(C)
+```
+Where K is the conflict measure:
+```
+K = Σ_{B∩C=∅} m₁(B)·m₂(C)
+```
+
+**Evidential Reasoning Rule (Yang & Xu, 2013):**
+Extends DS theory with weighted and reliability-adjusted combination:
+```
+m_{i,j}(A) = [wᵢrᵢmᵢ(A)[1+wⱼrⱼmⱼ(Θ)] + wⱼrⱼmⱼ(A)[1+wᵢrᵢmᵢ(Θ)]] / K_ER
+```
+Where:
+- wᵢ ∈ [0,1]: relative importance (weight) of source i
+- rᵢ ∈ [0,1]: reliability of source i
+- K_ER: normalization factor ensuring Σm(A) = 1
+
+**Implementation in This System:**
+
+Our simplified ER implementation uses weighted averaging for computational efficiency in real-time crisis response:
+
+```
+combined_belief(A_i) = Σⱼ(wⱼ × rⱼ × beliefⱼ(A_i)) / Σⱼ(wⱼ × rⱼ)
+```
+
+Where:
+- A_i: Alternative i (e.g., "Immediate Evacuation")
+- wⱼ: Static weight of agent j based on expertise relevance
+- rⱼ: Dynamic reliability of agent j from historical performance
+- beliefⱼ(A_i): Agent j's belief in alternative i
+
+**Confidence Quantification (Entropy-Based):**
+```
+confidence = 1 - (H / H_max)
+H = -Σᵢ pᵢ × log₂(pᵢ)         # Shannon entropy
+H_max = log₂(N)                 # Maximum entropy for N alternatives
+```
+
+Lower entropy indicates concentrated belief (high confidence), while higher entropy indicates distributed belief (low confidence).
+
+### Graph Attention Networks (GAT)
+
+**Theoretical Foundation:**
+
+Graph Attention Networks (Veličković et al., 2018) extend convolutional neural networks to graph-structured data using attention mechanisms. Unlike fixed Graph Convolutional Networks (Kipf & Welling, 2017), GATs compute dynamic node importance through learned attention coefficients.
+
+**Attention Mechanism:**
+
+For each node pair (i,j) in the agent network:
+
+1. **Feature Transformation:**
+```
+h'ᵢ = W·hᵢ
+```
+Where W ∈ ℝ^(F'×F) is a learnable weight matrix transforming F-dimensional features to F'-dimensional space.
+
+2. **Attention Coefficient Computation:**
+```
+eᵢⱼ = a(W·hᵢ, W·hⱼ)
+   = LeakyReLU(a^T [W·hᵢ || W·hⱼ])
+```
+Where:
+- a ∈ ℝ^(2F'): learnable attention weights
+- ||: concatenation operator
+- LeakyReLU(x) = max(0.01x, x): non-linearity preventing dead neurons
+
+3. **Normalization (Softmax):**
+```
+αᵢⱼ = softmaxⱼ(eᵢⱼ) = exp(eᵢⱼ) / Σₖ∈𝒩ᵢ exp(eᵢₖ)
+```
+
+4. **Multi-Head Attention (K heads):**
+```
+h'ᵢ = σ(1/K × Σₖ₌₁^K Σⱼ∈𝒩ᵢ αᵢⱼ^k W^k hⱼ)
+```
+Where σ is a non-linear activation (typically ELU or sigmoid).
+
+**Agent Feature Extraction (9-dimensional vector):**
+
+Following Zhou et al. (2025) on large-scale emergency group decision-making, our system extracts:
+
+1. **Confidence Level**: LLM-reported confidence score [0,1]
+2. **Belief Certainty**: 1 - (entropy/max_entropy) measuring decisiveness
+3. **Domain Expertise Relevance**: Scenario-to-agent expertise matching [0,1]
+4. **Risk Tolerance**: Agent's propensity for high-risk alternatives
+5. **Severity Awareness**: Normalized scenario severity recognition
+6. **Top Choice Strength**: Belief mass on highest-ranked alternative
+7. **Assessment Thoroughness**: Reasoning detail and depth measure
+8. **Reasoning Quality**: Logical consistency and justification strength
+9. **Historical Reliability**: Performance tracking from past scenarios
+
+**Aggregated Belief Computation:**
+```
+combined_belief(Aᵢ) = Σⱼ αᵢⱼ × beliefⱼ(Aᵢ)
+```
+Where αᵢⱼ are the learned attention weights representing agent j's influence on the final decision.
+
+### Multi-Criteria Decision Analysis (MCDA)
+
+**Theoretical Foundation:**
+
+MCDA methods (Hwang & Yoon, 1981; Behzadian et al., 2012) provide structured approaches for evaluating alternatives across competing criteria. Our implementation uses TOPSIS (Technique for Order Preference by Similarity to Ideal Solution) for its geometric interpretability and computational efficiency.
+
+**TOPSIS Algorithm:**
+
+1. **Decision Matrix Construction:**
+```
+D = [xᵢⱼ]ₘₓₙ
+```
+Where xᵢⱼ is the score of alternative i on criterion j.
+
+2. **Vector Normalization:**
+```
+rᵢⱼ = xᵢⱼ / √(Σₖ₌₁^m xₖⱼ²)
+```
+
+3. **Weighted Normalized Matrix:**
+```
+vᵢⱼ = wⱼ × rᵢⱼ
+```
+Where wⱼ is the importance weight of criterion j (Σwⱼ = 1).
+
+4. **Ideal Solutions:**
+```
+A⁺ = {v₁⁺, v₂⁺, ..., vₙ⁺}  # Best on each criterion
+A⁻ = {v₁⁻, v₂⁻, ..., vₙ⁻}  # Worst on each criterion
+```
+
+5. **Euclidean Distance:**
+```
+Sᵢ⁺ = √(Σⱼ₌₁^n (vᵢⱼ - vⱼ⁺)²)  # Distance from ideal
+Sᵢ⁻ = √(Σⱼ₌₁^n (vᵢⱼ - vⱼ⁻)²)  # Distance from anti-ideal
+```
+
+6. **Relative Closeness (Final Score):**
+```
+Cᵢ = Sᵢ⁻ / (Sᵢ⁺ + Sᵢ⁻) ∈ [0,1]
+```
+Higher Cᵢ indicates better overall performance.
+
+**Criterion Types:**
+- **Benefit Criteria**: Higher values preferred (effectiveness, safety, speed)
+- **Cost Criteria**: Lower values preferred (financial cost, resource consumption)
+
+### Consensus Detection Model
+
+**Theoretical Foundation:**
+
+Consensus measurement in multi-agent systems requires quantifying agreement across belief distributions (Carneiro et al., 2020).
+
+**Cosine Similarity Between Agents:**
+```
+similarity(i,j) = (bᵢ · bⱼ) / (||bᵢ|| × ||bⱼ||)
+                = Σₖ bᵢ(Aₖ)·bⱼ(Aₖ) / √(Σₖbᵢ²(Aₖ)) × √(Σₖbⱼ²(Aₖ))
+```
+Where bᵢ(Aₖ) is agent i's belief in alternative k.
+
+**Consensus Level (Group Agreement):**
+```
+consensus = (2/(N(N-1))) × ΣᵢΣⱼ₍ⱼ>ᵢ₎ similarity(i,j)
+```
+Average over all agent pairs.
+
+**Conflict Detection:**
+When consensus < threshold (typically 0.75), conflicts are identified and severity classified:
+- **High Severity**: Agents recommend contradictory actions (consensus < 0.5)
+- **Moderate**: Partial disagreement on rankings (0.5 ≤ consensus < 0.75)
+- **Low**: Minor preference variations (consensus ≥ 0.75)
+
+### Computational Complexity Analysis
+
+| Method | Time Complexity | Space Complexity | Typical Runtime |
+|--------|-----------------|------------------|-----------------|
+| ER Aggregation | O(N × M) | O(N × M) | < 1ms |
+| GAT Aggregation | O(N² × H × F + N × M) | O(N² + N × F) | 1-5ms |
+| MCDA (TOPSIS) | O(M × C) | O(M × C) | < 1ms |
+| Consensus | O(N² × M) | O(N × M) | < 1ms |
+
+Where:
+- N = number of agents (typically 3-13)
+- M = number of alternatives (typically 3-10)
+- C = number of criteria (typically 5-8)
+- H = attention heads (typically 4)
+- F = feature dimensions (9)
 
 ---
 

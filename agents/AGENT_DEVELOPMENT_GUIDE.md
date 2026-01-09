@@ -123,6 +123,155 @@ The template (`agent_template.py`) provides a complete, documented starting poin
 
 ---
 
+## Theoretical Foundations: Multi-Agent Systems
+
+Before developing custom agents, it's essential to understand the theoretical principles underlying Multi-Agent Systems (MAS) and their application to crisis management.
+
+### What is a Multi-Agent System?
+
+**Definition (Wooldridge, 2009):** A Multi-Agent System is a distributed computational system where multiple autonomous agents interact to solve problems beyond individual capabilities. Each agent is an encapsulated computational entity that:
+- **Perceives** its environment through sensors (scenario data input)
+- **Acts** autonomously based on internal reasoning (decision-making)
+- **Interacts** with other agents to achieve collective goals (coordination)
+
+### Agent Architectures
+
+According to Wooldridge (2009) and Ferber (1999), agent architectures can be classified into three main categories:
+
+#### 1. Reactive Agents
+- **Mechanism**: Direct stimulus-response mappings (condition-action rules)
+- **Advantages**: Fast response, simple implementation
+- **Limitations**: No memory, no planning, purely reflexive
+- **Crisis Management Fit**: Unsuitable for complex decision-making requiring contextual reasoning
+
+#### 2. Deliberative (Cognitive) Agents
+- **Mechanism**: Symbolic reasoning using internal world models
+- **Common Framework**: BDI (Belief-Desire-Intention) architecture
+  - **Beliefs**: Agent's knowledge about the world (scenario understanding)
+  - **Desires**: Goals the agent wants to achieve (safe evacuation, minimize casualties)
+  - **Intentions**: Committed plans of action (recommended alternative)
+- **Advantages**: Can plan, reason about consequences, handle novel situations
+- **Limitations**: Computationally expensive, slower response
+- **Crisis Management Fit**: Excellent for strategic decision-making
+
+#### 3. Hybrid Agents
+- **Mechanism**: Layered architecture combining reactive and deliberative components
+- **Structure**: Lower reactive layers for immediate response, upper deliberative layers for planning
+- **Advantages**: Balance between speed and reasoning capability
+- **Crisis Management Fit**: Ideal for time-critical scenarios requiring both rapid action and strategic planning
+
+**Our Implementation**: This system uses **LLM-enhanced cognitive agents**—a novel extension of deliberative architecture where Large Language Models provide the reasoning engine instead of traditional symbolic logic.
+
+### Key Agent Properties for Crisis Management
+
+Based on Wooldridge (2009) and adapted for emergency response:
+
+1. **Autonomy**: Agents make independent assessments without external control
+   - Implementation: Each agent evaluates scenarios using domain-specific expertise
+   - Benefit: Diverse perspectives, resilience to single-point failures
+
+2. **Social Ability**: Agents communicate and coordinate with other agents
+   - Implementation: Belief sharing through coordinator agent
+   - Benefit: Collective intelligence emerges from agent interaction
+
+3. **Reactivity**: Agents respond to environmental changes
+   - Implementation: Real-time scenario evaluation and belief updating
+   - Benefit: Adaptive to evolving crisis conditions
+
+4. **Proactiveness**: Agents take initiative to achieve goals
+   - Implementation: Alternative generation and risk assessment
+   - Benefit: Active problem-solving rather than passive response
+
+### Agent Coordination Mechanisms
+
+Multi-agent coordination is critical for crisis management. The system implements a **hierarchical coordinator-expert architecture**:
+
+**Coordinator Agent**:
+- Orchestrates expert agent deliberation
+- Aggregates beliefs using Evidential Reasoning or GAT
+- Resolves conflicts and builds consensus
+- Generates unified recommendations
+
+**Expert Agents**:
+- Provide domain-specific assessments
+- Assign beliefs to action alternatives
+- Report confidence and reasoning
+- Maintain historical reliability scores
+
+**Coordination Flow**:
+```
+Scenario → Coordinator → Parallel Expert Evaluation → Belief Aggregation → Consensus Building → Final Decision
+```
+
+This architecture balances **agent autonomy** (independent expert reasoning) with **collective intelligence** (aggregated decision-making).
+
+### Agent Weighting and Reliability
+
+Following Yang & Xu (2013) on Evidential Reasoning, each agent has two critical parameters:
+
+1. **Weight (w_i)**: Static importance based on expertise relevance
+   - Determined by agent profile's domain expertise match to scenario type
+   - Example: Meteorologist has high weight for flood scenarios
+   - Range: [0, 1], typically 0.3-0.9 for relevant experts
+
+2. **Reliability (r_i)**: Dynamic trustworthiness based on historical performance
+   - Computed from past prediction accuracy and consistency
+   - Updated after each scenario with temporal decay factor (γ = 0.95)
+   - Range: [0, 1], starts at default (0.8), adjusts with experience
+
+**Combined Influence**: Agent influence = w_i × r_i × belief distribution
+
+This dynamic weighting mechanism ensures that:
+- Relevant experts have greater influence (high weight)
+- Consistently accurate agents are trusted more (high reliability)
+- Poor performers gradually lose influence (reliability decay)
+- System adapts to changing agent performance over time
+
+### LLM-Enhanced Cognitive Architecture
+
+Our implementation extends classical cognitive agents with Large Language Models:
+
+**Traditional BDI Agent**:
+```
+Beliefs (symbolic) → Reasoning Engine (logic) → Intentions (plan) → Actions
+```
+
+**LLM-Enhanced Agent**:
+```
+Scenario (natural language) → LLM (contextual reasoning) → Structured Assessment → Belief Distribution
+```
+
+**Key Advantages**:
+- **Natural Language Understanding**: Parse complex scenario descriptions
+- **Contextual Reasoning**: Consider subtle factors beyond rule-based systems
+- **Explanation Generation**: Produce human-readable justifications
+- **Adaptability**: Handle novel scenarios without pre-programmed rules
+
+**Implementation via Chain-of-Thought (Wei et al., 2022)**:
+1. LLM receives structured prompt with scenario and action alternatives
+2. LLM generates reasoning steps explicitly before decision
+3. System extracts beliefs and confidence from LLM response
+4. Reasoning trail is logged for explainability
+
+**Example CoT Flow**:
+```
+Input: Flood scenario, 5 evacuation alternatives
+LLM reasoning: "Given 15,000 affected population and rising water levels...
+               Immediate evacuation has high safety but high cost...
+               Shelter-in-place risks prolonged exposure...
+               Therefore, prioritize immediate evacuation for high-risk areas..."
+Output: Beliefs: {Immediate: 0.7, Shelter: 0.2, Hybrid: 0.1}, Confidence: 0.85
+```
+
+### References for Agent Development
+
+- **Wooldridge, M. (2009).** An Introduction to MultiAgent Systems. Wiley. [Foundational MAS theory]
+- **Ferber, J. (1999).** Multi-Agent Systems: An Introduction to Distributed Artificial Intelligence. Addison-Wesley. [Agent architectures]
+- **Yang, J.B. & Xu, D.L. (2013).** Evidential reasoning rule for evidence combination. [Belief aggregation]
+- **Wei, J. et al. (2022).** Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. [LLM reasoning]
+
+---
+
 ## Step-by-Step Development
 
 ### Step 1: Define Agent Purpose
