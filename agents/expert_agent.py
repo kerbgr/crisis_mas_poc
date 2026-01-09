@@ -473,106 +473,108 @@ KEY CONCERNS
         expertise_lower = self.expertise.lower()
         role_lower = self.role.lower()
 
-        # Determine which template to use based on role/expertise keywords
-        # Check for specific role types (most specific first)
+        # Determine which template to use based on agent_id (UK Gold-Silver-Bronze structure)
+        # Direct agent_id mapping ensures correct command-level prompt selection
 
-        # 1. Meteorologist
-        if 'meteorolog' in expertise_lower or 'meteorolog' in role_lower or 'weather' in expertise_lower:
-            prompt = self.prompt_templates.generate_meteorologist_prompt(
+        agent_id_lower = self.agent_id.lower()
+
+        # UK Command Hierarchy Agent Routing
+        if agent_id_lower == "meteorology_silver_advisory":
+            prompt = self.prompt_templates.generate_meteorology_silver_advisory_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("meteorologist")
+            system_prompt = self.prompt_templates.get_system_prompt("meteorology_silver_advisory")
 
-        # 2. PSAP Commander
-        elif ('psap' in role_lower or 'emergency_communications' in expertise_lower or
-              'dispatch' in expertise_lower or 'dispatch' in role_lower):
-            prompt = self.prompt_templates.generate_psap_commander_prompt(
+        elif agent_id_lower == "medical_bronze_operational":
+            prompt = self.prompt_templates.generate_medical_bronze_operational_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("psap_commander")
+            system_prompt = self.prompt_templates.get_system_prompt("medical_bronze_operational")
 
-        # 3. On-Scene Police Commander
-        elif ('police' in role_lower and ('on-scene' in role_lower or 'onscene' in role_lower or
-              'tactical_law' in expertise_lower)):
-            prompt = self.prompt_templates.generate_police_onscene_prompt(
+        elif agent_id_lower == "logistics_silver_tactical":
+            prompt = self.prompt_templates.generate_logistics_silver_tactical_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("police_onscene")
+            system_prompt = self.prompt_templates.get_system_prompt("logistics_silver_tactical")
 
-        # 4. Regional Police Commander
-        elif ('police' in role_lower and ('regional' in role_lower or
-              'strategic_law' in expertise_lower)):
-            prompt = self.prompt_templates.generate_police_regional_prompt(
+        elif agent_id_lower == "psap_gold_strategic":
+            prompt = self.prompt_templates.generate_psap_gold_strategic_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("police_regional")
+            system_prompt = self.prompt_templates.get_system_prompt("psap_gold_strategic")
 
-        # 5. On-Scene Fire Commander
-        elif ('fire' in role_lower and ('on-scene' in role_lower or 'onscene' in role_lower or
-              'battalion' in role_lower or 'tactical_fire' in expertise_lower)):
-            prompt = self.prompt_templates.generate_fire_onscene_prompt(
+        elif agent_id_lower == "police_silver_tactical":
+            prompt = self.prompt_templates.generate_police_silver_tactical_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("fire_onscene")
+            system_prompt = self.prompt_templates.get_system_prompt("police_silver_tactical")
 
-        # 6. Regional Fire Commander
-        elif ('fire' in role_lower and ('regional' in role_lower or 'chief' in role_lower or
-              'strategic_fire' in expertise_lower)):
-            prompt = self.prompt_templates.generate_fire_regional_prompt(
+        elif agent_id_lower == "police_gold_strategic":
+            prompt = self.prompt_templates.generate_police_gold_strategic_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("fire_regional")
+            system_prompt = self.prompt_templates.get_system_prompt("police_gold_strategic")
 
-        # 7. Medical Infrastructure Director
-        elif ('infrastructure' in role_lower or 'healthcare_system' in expertise_lower or
-              'hospital_capacity' in expertise_lower):
-            prompt = self.prompt_templates.generate_medical_infrastructure_prompt(
+        elif agent_id_lower == "fire_silver_tactical":
+            prompt = self.prompt_templates.generate_fire_silver_tactical_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("medical_infrastructure")
+            system_prompt = self.prompt_templates.get_system_prompt("fire_silver_tactical")
 
-        # 8. Medical Director (original medical expert)
-        elif 'medical' in expertise_lower or 'health' in expertise_lower or 'medical' in role_lower:
-            prompt = self.prompt_templates.generate_medical_prompt(
+        elif agent_id_lower == "fire_gold_strategic":
+            prompt = self.prompt_templates.generate_fire_gold_strategic_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("medical")
+            system_prompt = self.prompt_templates.get_system_prompt("fire_gold_strategic")
 
-        # 9. On-Scene Coast Guard Commander
-        elif ('coast' in role_lower and ('on-scene' in role_lower or 'onscene' in role_lower or
-              'commander' in role_lower or 'maritime_rescue' in expertise_lower)):
-            prompt = self.prompt_templates.generate_coastguard_onscene_prompt(
+        elif agent_id_lower == "medical_gold_strategic":
+            prompt = self.prompt_templates.generate_medical_gold_strategic_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("coastguard_onscene")
+            system_prompt = self.prompt_templates.get_system_prompt("medical_gold_strategic")
 
-        # 10. National Coast Guard Director
-        elif ('coast' in role_lower and ('national' in role_lower or 'director' in role_lower or
-              'admiral' in role_lower or 'national_maritime' in expertise_lower)):
-            prompt = self.prompt_templates.generate_coastguard_national_prompt(
+        elif agent_id_lower == "coastguard_silver_tactical":
+            prompt = self.prompt_templates.generate_coastguard_silver_tactical_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("coastguard_national")
+            system_prompt = self.prompt_templates.get_system_prompt("coastguard_silver_tactical")
 
-        # 11. Operations Director (original operations/logistics)
-        elif ('operation' in role_lower or 'logistic' in role_lower or
-              'logistic' in expertise_lower or 'supply_chain' in expertise_lower or
-              'operation' in expertise_lower):
-            prompt = self.prompt_templates.generate_operations_prompt(
+        elif agent_id_lower == "coastguard_gold_strategic":
+            prompt = self.prompt_templates.generate_coastguard_gold_strategic_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("operations")
+            system_prompt = self.prompt_templates.get_system_prompt("coastguard_gold_strategic")
+
+        elif agent_id_lower == "civilprotection_gold_strategic":
+            prompt = self.prompt_templates.generate_civilprotection_gold_strategic_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("civilprotection_gold_strategic")
+
+        elif agent_id_lower == "environment_silver_advisory":
+            prompt = self.prompt_templates.generate_environment_silver_advisory_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("environment_silver_advisory")
+
+        elif agent_id_lower == "coordinator_01":
+            # Coordinator uses logistics template as default
+            logger.info(f"Coordinator agent using logistics_silver_tactical template")
+            prompt = self.prompt_templates.generate_logistics_silver_tactical_prompt(
+                scenario, alternatives, criteria
+            )
+            system_prompt = self.prompt_templates.get_system_prompt("logistics_silver_tactical")
 
         else:
-            # Default to operations if role unclear
+            # Fallback: If agent_id not recognized, log warning and use logistics template
             logger.warning(
-                f"Agent role '{self.role}' / expertise '{self.expertise}' not clearly mapped. "
-                f"Using operations template as default."
+                f"Agent ID '{self.agent_id}' not recognized in UK command hierarchy routing. "
+                f"Using logistics_silver_tactical template as fallback."
             )
-            prompt = self.prompt_templates.generate_operations_prompt(
+            prompt = self.prompt_templates.generate_logistics_silver_tactical_prompt(
                 scenario, alternatives, criteria
             )
-            system_prompt = self.prompt_templates.get_system_prompt("operations")
+            system_prompt = self.prompt_templates.get_system_prompt("logistics_silver_tactical")
 
         return prompt, system_prompt
 

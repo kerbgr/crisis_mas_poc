@@ -1,11 +1,9 @@
 {
   "agents": [
     {
-      "agent_id": "meteorology_silver_advisory",
-      "name": "Meteorology-Silver-Advisory",
-      "command_level": "SILVER",
-      "command_level_description": "Advisory role providing specialist meteorological expertise to all command levels",
-      "role": "Senior Meteorologist - Severe Weather Forecasting and Analysis (Advisory)",
+      "agent_id": "agent_meteorologist",
+      "name": "Dr. Eleni Papadopoulou",
+      "role": "Senior Meteorologist - Hellenic National Meteorological Service",
       "expertise": "severe_weather_forecasting",
       "experience_years": 15,
       "education": "Ph.D. in Atmospheric Sciences, National and Kapodistrian University of Athens (2010); M.S. in Meteorology, University of Reading, UK (2006); B.S. in Physics, Aristotle University of Thessaloniki (2004)",
@@ -54,14 +52,12 @@
         "probabilistic_forecasting"
       ],
       "confidence_level": 0.88,
-      "description": "SILVER-level advisory meteorologist providing specialist weather forecasting expertise to all command levels. 15 years specializing in severe weather prediction and climate analysis for Greece and Eastern Mediterranean. Known for accurate wildfire weather forecasting and flash flood risk assessment."
+      "description": "Senior meteorologist with 15 years specializing in severe weather prediction and climate analysis for Greece and Eastern Mediterranean. Known for accurate wildfire weather forecasting and flash flood risk assessment. Led meteorological support for major emergency responses including the 2018 Attica wildfires and 2020 Thessaly floods."
     },
     {
-      "agent_id": "medical_bronze_operational",
-      "name": "Medical-Bronze-Operational",
-      "command_level": "BRONZE",
-      "command_level_description": "Operational level - Direct hands-on pre-hospital emergency medical operations",
-      "role": "Operational Medical Commander - Pre-Hospital Emergency Medicine",
+      "agent_id": "medical_expert_01",
+      "name": "Dr. Dimitris Nikolaou",
+      "role": "Medical Expert - EKAB Emergency Physician",
       "expertise": "pre_hospital_emergency_medicine",
       "experience_years": 20,
       "education": "M.D., Medical School, University of Patras (2004); Emergency Medicine Residency, Evangelismos Hospital, Athens (2004-2008); Fellowship in Disaster Medicine, Johns Hopkins University, USA (2010-2011); M.Sc. in Public Health Emergency Preparedness, University of Athens (2015)",
@@ -118,14 +114,12 @@
         "public_health_emergency"
       ],
       "confidence_level": 0.85,
-      "description": "BRONZE-level operational medical commander responsible for direct hands-on pre-hospital emergency medicine. 20 years with EKAB specializing in field medical operations and mass casualty response. Led operational medical response for major incidents including Attica wildfires and Tempi train collision."
+      "description": "EKAB emergency physician with 20 years specializing in pre-hospital emergency medicine and mass casualty response. Led medical operations for major incidents including Attica wildfires and Tempi train collision. Internationally recognized disaster medicine specialist with field experience in Haiti and Turkey earthquake responses."
     },
     {
-      "agent_id": "logistics_silver_tactical",
-      "name": "Logistics-Silver-Tactical",
-      "command_level": "SILVER",
-      "command_level_description": "Tactical level - Emergency supply chain coordination and resource allocation",
-      "role": "Tactical Logistics Coordinator - Emergency Supply Chain and Resource Allocation",
+      "agent_id": "logistics_expert_01",
+      "name": "Katerina Georgiou",
+      "role": "Logistics Coordinator - General Secretariat for Civil Protection",
       "expertise": "emergency_supply_chain_management",
       "experience_years": 12,
       "education": "M.Sc. in Supply Chain Management, Athens University of Economics and Business (2013); B.Sc. in Industrial Engineering, National Technical University of Athens (2011); Executive Certificate in Humanitarian Logistics, INSEAD Business School (2018)",
@@ -180,14 +174,12 @@
         "humanitarian_logistics"
       ],
       "confidence_level": 0.80,
-      "description": "SILVER-level tactical logistics coordinator managing emergency supply chain operations. 12 years focused on resource allocation and distribution network optimization during crisis response. Coordinates tactical-level logistics for incident operations."
+      "description": "Civil Protection logistics coordinator with 12 years focused on emergency supply chain management and resource allocation. Managed logistics for major incidents including Attica wildfires and nationwide COVID-19 response. Expert in optimizing distribution networks and maintaining strategic emergency stockpiles across Greece."
     },
     {
-      "agent_id": "civilprotection_gold_strategic",
-      "name": "CivilProtection-Gold-Strategic",
-      "command_level": "GOLD",
-      "command_level_description": "Strategic level - National emergency response policy and multi-agency strategic coordination",
-      "role": "Strategic Civil Protection Director - National Emergency Response Coordination",
+      "agent_id": "public_safety_expert_01",
+      "name": "Major General Giorgos Antoniou",
+      "role": "Public Safety Officer - General Secretary of Civil Protection",
       "expertise": "national_emergency_response_coordination",
       "experience_years": 25,
       "education": "Master's in Security Studies, Hellenic National Defense College (2005); B.Sc. in Public Administration, Panteion University (1999); Advanced Studies in Crisis Management, Harvard Kennedy School (2012); Graduate Certificate in Emergency Management, Emergency Management Institute, USA (2008)",
@@ -245,14 +237,12 @@
         "international_cooperation"
       ],
       "confidence_level": 0.82,
-      "description": "GOLD-level strategic Civil Protection director responsible for national emergency response policy and multi-agency strategic coordination. 25 years leading national civil protection operations and coordinating major incident responses across Greece."
+      "description": "Senior Civil Protection official with 25 years specializing in national emergency response coordination and evacuation procedures. As General Secretary, leads national civil protection policy and multi-agency crisis response. Coordinated major incidents including Attica and Evia wildfires, nationwide COVID-19 operations, and multiple earthquake responses."
     },
     {
-      "agent_id": "environment_silver_advisory",
-      "name": "Environment-Silver-Advisory",
-      "command_level": "SILVER",
-      "command_level_description": "Advisory role providing specialist environmental expertise to all command levels",
-      "role": "Environmental Scientist - Ecological Impact Assessment (Advisory)",
+      "agent_id": "environmental_expert_01",
+      "name": "Dr. Sofia Karagianni",
+      "role": "Environmental Scientist - Hellenic Centre for Marine Research",
       "expertise": "environmental_impact_assessment",
       "experience_years": 18,
       "education": "Ph.D. in Environmental Sciences, Aristotle University of Thessaloniki (2007); M.Sc. in Ecology and Environmental Management, University of Crete (2003); B.Sc. in Biology, University of Ioannina (2001); Post-doctoral research in Climate Change Impacts, Max Planck Institute, Germany (2008-2009)",
@@ -310,13 +300,11 @@
         "ecological_risk"
       ],
       "confidence_level": 0.78,
-      "description": "SILVER-level advisory environmental scientist providing specialist ecological expertise to all command levels. 18 years specializing in environmental impact assessment and Mediterranean ecosystem analysis during crisis response operations."
+      "description": "Environmental scientist with 18 years specializing in ecological impact assessment and natural disaster effects in Mediterranean ecosystems. Led environmental assessments for major incidents including Attica and Evia wildfires. International expert on climate change adaptation and ecosystem restoration with over 40 peer-reviewed publications."
     },
     {
       "agent_id": "coordinator_01",
       "name": "System Coordinator",
-      "command_level": "COORDINATION",
-      "command_level_description": "Cross-level coordination - Aggregates assessments from all command levels",
       "role": "Multi-Agent Decision Coordinator",
       "expertise": "consensus_building_and_decision_aggregation",
       "experience_years": 10,
@@ -370,14 +358,12 @@
       ],
       "confidence_level": 0.90,
       "consensus_threshold": 0.7,
-      "description": "Cross-level AI coordinator responsible for aggregating assessments from GOLD, SILVER, and BRONZE command levels. Employs Dempster-Shafer evidential reasoning and multi-criteria analysis to synthesize diverse expert perspectives."
+      "description": "AI-powered coordinator agent responsible for aggregating expert opinions and building consensus using advanced decision analysis methods. Employs Dempster-Shafer evidential reasoning and multi-criteria analysis to synthesize diverse expert perspectives into coherent, high-quality decisions. Designed for transparent, systematic integration of domain expertise."
     },
     {
-      "agent_id": "psap_gold_strategic",
-      "name": "PSAP-Gold-Strategic",
-      "command_level": "GOLD",
-      "command_level_description": "Strategic level - National emergency communications and dispatch operations strategy",
-      "role": "Strategic Communications Director - National Emergency Dispatch Operations",
+      "agent_id": "psap_commander_01",
+      "name": "Commander Maria Papadimitriou",
+      "role": "PSAP Commander-Supervisor - EKAB National Operations Director",
       "expertise": "emergency_dispatch_and_communications",
       "experience_years": 16,
       "education": "M.Sc. in Emergency Management and Public Safety, University of Athens (2015); B.Sc. in Telecommunications Engineering, National Technical University of Athens (2008); Advanced Certificate in Emergency Medical Dispatch, National Academies of Emergency Dispatch, USA (2010); Executive Education in Crisis Communications, London School of Economics (2019)",
@@ -434,14 +420,12 @@
         "inter_agency_coordination"
       ],
       "confidence_level": 0.85,
-      "description": "GOLD-level strategic communications director responsible for national PSAP operations and 112 emergency dispatch strategy. 16 years managing nationwide emergency communications infrastructure and multi-agency coordination protocols."
+      "description": "EKAB National Operations Director with 16 years specializing in emergency dispatch coordination and 112 emergency communication systems. Manages nationwide PSAP operations and multi-agency coordination. Led communications for major incidents including Attica wildfires and Tempi train collision with proven ability to handle high-volume emergency call surges."
     },
     {
-      "agent_id": "police_silver_tactical",
-      "name": "Police-Silver-Tactical",
-      "command_level": "SILVER",
-      "command_level_description": "Tactical level - On-scene law enforcement operations and scene security",
-      "role": "Tactical Police Commander - On-Scene Law Enforcement and Scene Security",
+      "agent_id": "police_onscene_01",
+      "name": "Brigadier Nikos Konstantinou",
+      "role": "On-Scene Police Commander - Hellenic Police Special Operations Division",
       "expertise": "tactical_law_enforcement_operations",
       "experience_years": 22,
       "education": "M.Sc. in Security and Crisis Management, University of Leicester, UK (2010); B.Sc. in Law Enforcement, Hellenic Police Academy (2002); Tactical Operations Command Course, Hellenic Police Advanced Training Center (2008); Counter-Terrorism Operations Certificate, FBI National Academy, USA (2015)",
@@ -500,14 +484,12 @@
         "SWAT_operations"
       ],
       "confidence_level": 0.88,
-      "description": "SILVER-level tactical police commander responsible for on-scene law enforcement operations. 22 years specializing in tactical field command, scene security, and public order management during major emergency incidents."
+      "description": "Hellenic Police field commander with 22 years specializing in tactical operations and incident scene control. Led on-scene police response for major emergencies including Attica wildfires mass evacuation and Tempi train collision. Expert in threat assessment, crowd control, and multi-agency tactical coordination under high-stress conditions."
     },
     {
-      "agent_id": "police_gold_strategic",
-      "name": "Police-Gold-Strategic",
-      "command_level": "GOLD",
-      "command_level_description": "Strategic level - Regional law enforcement strategy and multi-jurisdictional coordination",
-      "role": "Strategic Police Commander - Regional Law Enforcement Operations",
+      "agent_id": "police_regional_01",
+      "name": "Major General Andreas Theodorou",
+      "role": "Regional Police Commander - Hellenic Police Attica Division",
       "expertise": "strategic_law_enforcement_coordination",
       "experience_years": 28,
       "education": "Master's in Public Administration, Panteion University (2005); Law Degree, National and Kapodistrian University of Athens (1996); Graduate Certificate in Police Leadership, Scottish Police College, UK (2008); Strategic Leadership in Policing, College of Policing, UK (2015)",
@@ -564,14 +546,12 @@
         "law_enforcement_policy"
       ],
       "confidence_level": 0.90,
-      "description": "GOLD-level strategic police commander responsible for regional law enforcement strategy and inter-prefectural coordination. 28 years commanding Attica Division, managing strategic deployment and mutual aid for major regional incidents."
+      "description": "Regional Hellenic Police commander with 28 years responsible for strategic deployment and inter-prefectural coordination. Commands Attica Division serving 4 million residents. Led regional response for major incidents including Attica wildfires and COVID-19 operations. Expert in multi-jurisdictional resource allocation and mutual aid coordination."
     },
     {
-      "agent_id": "fire_silver_tactical",
-      "name": "Fire-Silver-Tactical",
-      "command_level": "SILVER",
-      "command_level_description": "Tactical level - On-scene fire suppression and rescue operations",
-      "role": "Tactical Fire Commander - On-Scene Fire Suppression and Rescue Operations",
+      "agent_id": "fire_onscene_01",
+      "name": "Pyragos Ioanna Michaelidou",
+      "role": "On-Scene Fire Brigade Commander - Hellenic Fire Service",
       "expertise": "tactical_firefighting_operations",
       "experience_years": 19,
       "education": "B.Sc. in Fire Safety Engineering, University of West Attica (2005); Firefighting Academy, Hellenic Fire Service Training Center (2004); Advanced Firefighting Tactics Course, National Fire Academy, USA (2012); Technical Rescue Specialist Training, UK Fire Service College (2015)",
@@ -630,14 +610,12 @@
         "aerial_coordination"
       ],
       "confidence_level": 0.86,
-      "description": "SILVER-level tactical fire commander responsible for on-scene fire suppression and rescue operations. 19 years specializing in tactical firefighting, technical rescue, and incident scene command for major fire incidents."
+      "description": "Hellenic Fire Service on-scene commander with 19 years specializing in tactical firefighting and technical rescue operations. Led tactical operations for major incidents including Evia wildfires and Athens building collapse rescue. Expert in fire behavior analysis, structural operations, and coordinating ground-aerial firefighting efforts."
     },
     {
-      "agent_id": "fire_gold_strategic",
-      "name": "Fire-Gold-Strategic",
-      "command_level": "GOLD",
-      "command_level_description": "Strategic level - Regional fire service strategy and multi-jurisdictional coordination",
-      "role": "Strategic Fire Commander - Regional Fire Operations",
+      "agent_id": "fire_regional_01",
+      "name": "Taxiarchos Vasilis Stavropoulos",
+      "role": "Regional Fire Brigade Commander - Hellenic Fire Service Central Greece Region",
       "expertise": "strategic_fire_service_operations",
       "experience_years": 26,
       "education": "Master's in Fire Safety Engineering, University of Edinburgh, UK (2008); B.Sc. in Civil Engineering, National Technical University of Athens (1998); Fire Service Leadership Academy, Hellenic Fire Service (2010); Executive Fire Officer Program, National Fire Academy, USA (2016)",
@@ -695,14 +673,12 @@
         "incident_action_planning"
       ],
       "confidence_level": 0.88,
-      "description": "GOLD-level strategic fire commander responsible for regional fire service strategy and inter-jurisdictional coordination. 26 years managing regional fire operations, mutual aid deployment, and long-duration wildfire campaigns."
+      "description": "Regional Hellenic Fire Service commander with 26 years responsible for strategic deployment and inter-regional fire coordination across Central Greece. Led regional response for major wildfire campaigns including Evia and Attica fires. Expert in long-duration incident management, mutual aid coordination, and international firefighting assistance integration."
     },
     {
-      "agent_id": "medical_gold_strategic",
-      "name": "Medical-Gold-Strategic",
-      "command_level": "GOLD",
-      "command_level_description": "Strategic level - Healthcare system capacity planning and medical resource strategy",
-      "role": "Strategic Medical Director - Healthcare System Capacity Planning",
+      "agent_id": "medical_infrastructure_01",
+      "name": "Dr. Anna Mitropoulou",
+      "role": "Medical Infrastructure Director - Hellenic National Health Operations Center",
       "expertise": "healthcare_system_capacity_planning",
       "experience_years": 24,
       "education": "M.D., Medical School, National and Kapodistrian University of Athens (2000); M.P.H. in Health Policy and Management, Harvard School of Public Health, USA (2008); Fellowship in Hospital Emergency Preparedness, Johns Hopkins University (2009-2010); Executive Certificate in Healthcare Leadership, INSEAD (2015)",
@@ -761,14 +737,12 @@
         "ICU_coordination"
       ],
       "confidence_level": 0.87,
-      "description": "GOLD-level strategic medical director responsible for healthcare system capacity planning and medical resource strategy. 24 years managing national hospital surge operations and patient distribution coordination."
+      "description": "Health services director with 24 years specializing in hospital system capacity planning and emergency medical surge operations. Leads National Health Operations Center coordinating emergency medical capacity nationwide. Managed hospital response for major incidents including COVID-19 pandemic and Tempi train collision with expertise in patient distribution and healthcare resource optimization."
     },
     {
-      "agent_id": "coastguard_silver_tactical",
-      "name": "CoastGuard-Silver-Tactical",
-      "command_level": "SILVER",
-      "command_level_description": "Tactical level - On-scene maritime search and rescue operations",
-      "role": "Tactical Coast Guard Commander - On-Scene Maritime Search and Rescue",
+      "agent_id": "coastguard_onscene_01",
+      "name": "Plotarchos Christos Lambropoulos",
+      "role": "On-Scene Coast Guard Commander - Hellenic Coast Guard Search and Rescue",
       "expertise": "maritime_search_and_rescue",
       "experience_years": 18,
       "education": "B.Sc. in Maritime Studies, Hellenic Naval Academy (2006); Advanced Search and Rescue Coordinator Course, International Maritime Organization (2012); Coastal Emergency Management Certificate, Texas A&M University, USA (2015); Maritime Incident Command Specialist Training, UK Maritime and Coastguard Agency (2018)",
@@ -826,14 +800,12 @@
         "multi_vessel_coordination"
       ],
       "confidence_level": 0.84,
-      "description": "SILVER-level tactical Coast Guard commander responsible for on-scene maritime SAR operations. 18 years specializing in coastal evacuations, sea rescue coordination, and maritime emergency response."
+      "description": "Hellenic Coast Guard operations commander with 18 years specializing in maritime search and rescue and coastal emergency operations. Led coastal evacuations during Attica wildfires and over 300 migrant rescue missions in Aegean Sea. Expert in sea state assessment, helicopter SAR coordination, and multi-vessel rescue operations under challenging maritime conditions."
     },
     {
-      "agent_id": "coastguard_gold_strategic",
-      "name": "CoastGuard-Gold-Strategic",
-      "command_level": "GOLD",
-      "command_level_description": "Strategic level - National maritime security policy and inter-regional SAR coordination",
-      "role": "Strategic Coast Guard Commander - National Maritime Operations",
+      "agent_id": "coastguard_national_01",
+      "name": "Rear Admiral Dimitra Vlachaki",
+      "role": "National Coast Guard Director - Chief of Hellenic Coast Guard",
       "expertise": "national_maritime_security_strategy",
       "experience_years": 30,
       "education": "Master's in National Security Strategy, Naval War College, USA (2005); B.Sc. in Naval Sciences, Hellenic Naval Academy (1994); Advanced Command and Staff Course, NATO Defense College, Rome (2010); Executive Maritime Policy Certificate, World Maritime University, Sweden (2015)",
@@ -892,7 +864,7 @@
         "maritime_emergency_policy"
       ],
       "confidence_level": 0.92,
-      "description": "GOLD-level strategic Coast Guard commander responsible for national maritime security policy and inter-regional SAR coordination. 30 years leading national maritime operations across Greek waters including strategic asset deployment and international cooperation."
+      "description": "Chief of Hellenic Coast Guard with 30 years responsible for national maritime security policy and inter-regional SAR coordination. Leads all coast guard operations across Greek waters including Aegean, Ionian, and Mediterranean zones. Coordinated national maritime response for major incidents including Attica wildfires and migrant crisis. Expert in international maritime cooperation and strategic maritime asset deployment."
     }
   ]
 }

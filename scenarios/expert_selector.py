@@ -39,117 +39,138 @@ class ExpertSelector:
         #           'coastguard_onscene_01', 'coastguard_national_01', ...]
     """
 
-    # Minimum experts always included (core team)
+    # Minimum experts always included (core team) - UK Gold-Silver-Bronze hierarchy
     CORE_EXPERTS = {
-        'agent_meteorologist': 'Meteorologist',
-        'logistics_expert_01': 'Logistics Coordinator',
-        'medical_expert_01': 'Medical Expert'
+        'meteorology_silver_advisory': 'Meteorologist (SILVER-Advisory)',
+        'logistics_silver_tactical': 'Logistics Coordinator (SILVER-Tactical)',
+        'medical_bronze_operational': 'Medical Expert (BRONZE-Operational)'
     }
 
     # Expert selection rules: maps expert roles to selection criteria
+    # Updated for UK Gold-Silver-Bronze command hierarchy
     EXPERT_SELECTION_RULES = {
         # Core experts (almost always needed)
         'meteorologist': {
-            'agent_id': 'agent_meteorologist',
+            'agent_id': 'meteorology_silver_advisory',
             'crisis_types': ['flood', 'hurricane', 'storm', 'wildfire', 'tornado', 'earthquake', 'tsunami'],
             'domains': ['weather_environment'],
             'always_include': True,  # Always valuable for situational awareness
-            'description': 'Weather/environmental analysis for crisis planning'
+            'description': 'Weather/environmental analysis for crisis planning (SILVER-Advisory)'
         },
         'logistics': {
-            'agent_id': 'logistics_expert_01',
+            'agent_id': 'logistics_silver_tactical',
             'always_include': True,  # Resource allocation always needed
             'severity_threshold': 0.0,  # Include for all severity levels
-            'description': 'Supply chain and resource coordination'
+            'description': 'Supply chain and resource coordination (SILVER-Tactical)'
         },
-        'medical': {
-            'agent_id': 'medical_expert_01',
+        'medical_operational': {
+            'agent_id': 'medical_bronze_operational',
             'domains': ['medical_health'],
             'affected_populations_threshold': 50,  # Include if >50 people affected
             'always_include': True,  # Public health always a consideration
-            'description': 'Emergency medicine and public health response'
+            'description': 'Emergency medicine and field medical response (BRONZE-Operational)'
         },
 
         # Emergency Communications
         'psap_commander': {
-            'agent_id': 'psap_commander_01',
-            'command_structure': ['tactical'],
+            'agent_id': 'psap_gold_strategic',
+            'command_structure': ['strategic'],
             'domains': ['emergency_communications'],
             'multi_jurisdictional': True,
             'severity_threshold': 0.5,
-            'description': 'Emergency dispatch and multi-agency coordination'
+            'description': 'Emergency dispatch and multi-agency coordination (GOLD-Strategic)'
         },
 
-        # Police (tactical + strategic)
-        'police_onscene': {
-            'agent_id': 'police_onscene_01',
+        # Police (tactical SILVER + strategic GOLD)
+        'police_tactical': {
+            'agent_id': 'police_silver_tactical',
             'crisis_types': ['civil_unrest', 'terrorist', 'evacuation', 'flood', 'earthquake', 'fire'],
             'crisis_subtypes': ['evacuation', 'crowd_control', 'public_order'],
             'command_structure': ['tactical'],
             'domains': ['law_enforcement', 'public_order', 'security'],
             'severity_threshold': 0.5,
-            'description': 'Tactical law enforcement and scene security'
+            'description': 'Tactical law enforcement and scene security (SILVER-Tactical)'
         },
-        'police_regional': {
-            'agent_id': 'police_regional_01',
+        'police_strategic': {
+            'agent_id': 'police_gold_strategic',
             'geographic_scope': ['regional', 'national'],
             'command_structure': ['strategic'],
             'multi_jurisdictional': True,
             'severity_threshold': 0.6,
             'affected_populations_threshold': 5000,
-            'description': 'Strategic police coordination across jurisdictions'
+            'description': 'Strategic police coordination across jurisdictions (GOLD-Strategic)'
         },
 
-        # Fire/Rescue (tactical + strategic)
-        'fire_onscene': {
-            'agent_id': 'fire_onscene_01',
+        # Fire/Rescue (tactical SILVER + strategic GOLD)
+        'fire_tactical': {
+            'agent_id': 'fire_silver_tactical',
             'crisis_types': ['fire', 'wildfire', 'explosion', 'hazmat', 'earthquake', 'building_collapse'],
             'crisis_subtypes': ['structural_damage', 'rescue', 'hazmat'],
             'command_structure': ['tactical'],
             'domains': ['fire_rescue', 'hazmat', 'search_rescue'],
             'severity_threshold': 0.4,
-            'description': 'Tactical fire suppression and rescue operations'
+            'description': 'Tactical fire suppression and rescue operations (SILVER-Tactical)'
         },
-        'fire_regional': {
-            'agent_id': 'fire_regional_01',
+        'fire_strategic': {
+            'agent_id': 'fire_gold_strategic',
             'crisis_types': ['wildfire', 'multiple_fires', 'large_fire'],
             'geographic_scope': ['regional', 'national'],
             'command_structure': ['strategic'],
             'duration_hours_threshold': 12,  # Long-duration incidents
             'severity_threshold': 0.7,
-            'description': 'Strategic fire service deployment and mutual aid'
+            'description': 'Strategic fire service deployment and mutual aid (GOLD-Strategic)'
         },
 
-        # Medical Infrastructure
-        'medical_infrastructure': {
-            'agent_id': 'medical_infrastructure_01',
+        # Medical Infrastructure (strategic GOLD)
+        'medical_strategic': {
+            'agent_id': 'medical_gold_strategic',
             'domains': ['medical_health'],
             'infrastructure_systems': ['hospitals', 'healthcare'],
             'affected_populations_threshold': 1000,
             'severity_threshold': 0.6,
             'crisis_types': ['pandemic', 'mass_casualty', 'chemical', 'biological'],
-            'description': 'Hospital capacity and healthcare system coordination'
+            'description': 'Hospital capacity and healthcare system coordination (GOLD-Strategic)'
         },
 
-        # Coast Guard (tactical + strategic)
-        'coastguard_onscene': {
-            'agent_id': 'coastguard_onscene_01',
+        # Coast Guard (tactical SILVER + strategic GOLD)
+        'coastguard_tactical': {
+            'agent_id': 'coastguard_silver_tactical',
             'crisis_types': ['flood', 'hurricane', 'maritime', 'tsunami', 'coastal_flood', 'storm_surge'],
             'crisis_subtypes': ['coastal', 'maritime', 'offshore'],
             'command_structure': ['tactical'],
             'domains': ['maritime_coastal', 'search_rescue'],
             'geographic_location': ['coastal', 'maritime'],
-            'description': 'Maritime rescue and coastal evacuation operations'
+            'description': 'Maritime rescue and coastal evacuation operations (SILVER-Tactical)'
         },
-        'coastguard_national': {
-            'agent_id': 'coastguard_national_01',
+        'coastguard_strategic': {
+            'agent_id': 'coastguard_gold_strategic',
             'crisis_types': ['hurricane', 'tsunami', 'oil_spill', 'maritime_disaster'],
             'geographic_scope': ['national', 'regional'],
             'domains': ['maritime_coastal'],
             'command_structure': ['strategic'],
             'severity_threshold': 0.7,
             'affected_populations_threshold': 10000,
-            'description': 'Strategic maritime coordination and port security'
+            'description': 'Strategic maritime coordination and port security (GOLD-Strategic)'
+        },
+
+        # Civil Protection (strategic GOLD) - NEW
+        'civilprotection': {
+            'agent_id': 'civilprotection_gold_strategic',
+            'command_structure': ['strategic'],
+            'multi_jurisdictional': True,
+            'severity_threshold': 0.7,
+            'affected_populations_threshold': 5000,
+            'crisis_types': ['major_disaster', 'multi_hazard', 'complex_emergency'],
+            'description': 'Multi-agency strategic civil protection coordination (GOLD-Strategic)'
+        },
+
+        # Environment (advisory SILVER) - NEW
+        'environment': {
+            'agent_id': 'environment_silver_advisory',
+            'domains': ['environmental', 'ecological'],
+            'crisis_types': ['chemical_spill', 'pollution', 'ecological_disaster', 'oil_spill'],
+            'severity_threshold': 0.5,
+            'description': 'Environmental impact assessment and ecological protection (SILVER-Advisory)'
         }
     }
 
