@@ -2314,7 +2314,7 @@ Clear clustering shows 3-agent coalition for evacuation, 1 dissenter for barrier
 ### Thesis Context
 
 17. **Kazoukas, V.** (2025). *Multi-Agent Systems for Crisis Management Decision-Making Under Uncertainty* [Master's Thesis]. Technical University of Crete, School of Production Engineering and Management.
-    - **Supervisor:** [Advisor Name]
+    - **Supervisor:** Emeritus Professor Matsatsinis N., Associate Professor Papadakis N., Assistant Professor Siskos E.
     - **Program:** Operational Research & Decision Making
     - **Research Focus:** Integration of classical decision theory (ER, MCDA) with modern AI (LLMs, GAT) for crisis management
 
