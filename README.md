@@ -15,8 +15,8 @@ Department of Military Sciences - School of Production Engineering and Managemen
 
 **Author:** ***Vasileios Kazoukas***
 **Contact:** kazoukas@gmail.com, vkazoukas@tuc.gr\
-**Version:** 0.8  
-**Last Updated:** November 2025
+**Version:** 0.9  
+**Last Updated:** January 2026
 **Status:** Research Prototype
 
 ---
@@ -2486,11 +2486,11 @@ crisis_mas_poc/
 
 ### APA Format
 
-Kazoukas, V. (2025). *Crisis Management Multi-Agent System: Graph Attention Networks and Evidential Reasoning for Emergency Response Coordination* [Computer software]. Technical University of Crete. https://github.com/kerbgr/crisis_mas_poc
+Kazoukas, V. (2026). *Crisis Management Multi-Agent System: Graph Attention Networks and Evidential Reasoning for Emergency Response Coordination* [Computer software]. Technical University of Crete. https://github.com/kerbgr/crisis_mas_poc
 
 ### IEEE Format
 
-V. Kazoukas, "Crisis Management Multi-Agent System: Graph Attention Networks and Evidential Reasoning for Emergency Response Coordination," Technical University of Crete, 2025. [Online]. Available: https://github.com/kerbgr/crisis_mas_poc
+V. Kazoukas, "Crisis Management Multi-Agent System: Graph Attention Networks and Evidential Reasoning for Emergency Response Coordination," Technical University of Crete, 2026. [Online]. Available: https://github.com/kerbgr/crisis_mas_poc
 
 **Note**: See [CITATION.cff](CITATION.cff) for machine-readable citation metadata.
 
@@ -2555,10 +2555,10 @@ See [LICENSE](LICENSE) file for complete terms including:
 - 🔒 All rights reserved by copyright holder
 - ⚖ Governed by Greek and EU law
 
-**Copyright © 2025 Vasileios Kazoukas, Technical University of Crete. All Rights Reserved.**
+**Copyright © 2026 Vasileios Kazoukas. All Rights Reserved.**
 
 ---
 
-**README Version:** 1.0.0
-**Last Updated:** November 12, 2025
-**Document Status:** Complete - Suitable for Thesis Appendix
+**README Version:** 0.9
+**Last Updated:** January 09, 2026
+
