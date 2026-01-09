@@ -1654,7 +1654,7 @@ $$c_{\text{decision}} = 0.6 \times \text{Consensus} + 0.4 \times \bar{c}_{\text{
 For single-agent:
 $$c_{\text{decision}} = c_{\text{LLM}}$$
 
-where $\bar{c}_{\text{agents}}$ is the average agent confidence and $c_{\text{LLM}}$ is the LLM's self-reported confidence.
+where $\bar{c}\_{\text{agents}}$ is the average agent confidence and $c\_{\text{LLM}}$ is the LLM's self-reported confidence.
 
 **Uncertainty (Entropy):** Shannon entropy of final belief distribution:
 
