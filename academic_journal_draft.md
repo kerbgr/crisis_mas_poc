@@ -1331,8 +1331,6 @@ We hope this research contributes to ongoing efforts building more resilient, re
 
 ## References
 
-Anthropic. (2024). *Claude 3 Model Family*. Anthropic AI. https://www.anthropic.com/claude
-
 Behzadian, M., Otaghsara, S. K., Yazdani, M., & Ignatius, J. (2012). A state-of-the-art survey of TOPSIS applications. *Expert Systems with Applications*, 39(17), 13051-13069. https://doi.org/10.1016/j.eswa.2012.05.056
 
 Chen, Y., Liu, Y., Zhang, X., & Wang, H. (2024). Prompt engineering for crisis management: Structured approaches for LLM-based decision support. *Journal of Emergency Management AI*, 2(1), 45-67.
