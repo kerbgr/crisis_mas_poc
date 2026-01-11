@@ -13,7 +13,7 @@ Crisis management demands rapid, coordinated decision-making under severe uncert
 
 We developed a comprehensive framework featuring 13 specialized Greek emergency response expert agents, each enhanced with LLM-powered reasoning capabilities (Claude, GPT-4, and local models). The system implements two distinct belief aggregation mechanisms: (1) a simplified Dempster-Shafer theory-based Evidential Reasoning approach with weighted averaging, and (2) a Graph Attention Network utilizing 9-dimensional feature extraction including historical reliability tracking. Multi-Criteria Decision Analysis (MCDA) methods, specifically TOPSIS, WSM, and SAW, integrate agent beliefs to produce unified crisis response recommendations.
 
-Evaluation across three realistic Greek crisis scenarios-Karditsa flooding (2023), Evia wildfires (2021), and Elefsina ammonia HAZMAT incident-demonstrates significant advantages of multi-agent collaboration over single-expert decisions. The GAT-based aggregation achieves 92% consensus levels and shows +2.8% improvement in consensus and +1.5% in confidence compared to classical ER. Decision Quality Scores reach 84.7% with processing times of 12.4 seconds for core configurations and 35-45 seconds for full 13-agent deployments.
+Evaluation across three realistic Greek crisis scenarios inspired by historical events-Karditsa flooding, Evia wildfires, and Elefsina ammonia HAZMAT incident-demonstrates significant advantages of multi-agent collaboration over single-expert decisions. The GAT-based aggregation achieves 92% consensus levels and shows +2.8% improvement in consensus and +1.5% in confidence compared to classical ER. Decision Quality Scores reach 84.7% with processing times of 12.4 seconds for core configurations and 35-45 seconds for full 13-agent deployments.
 
 Key contributions include: (1) a novel hybrid aggregation framework comparing classical and neural approaches, (2) integration of multiple LLM providers for enhanced agent reasoning, (3) dynamic expert weighting based on historical reliability, (4) comprehensive explainability through attention visualization, and (5) an open-source research platform for crisis management AI. Results indicate that appropriately designed multi-agent systems can preserve and enhance collective intelligence while providing transparent, auditable decision trails essential for high-stakes emergency response domains.
 
@@ -29,7 +29,7 @@ Crisis situations-natural disasters, industrial accidents, pandemics, and other 
 
 Recent advances in artificial intelligence, particularly Large Language Models (LLMs) and neural attention mechanisms, offer unprecedented opportunities to augment human decision-making capabilities. However, the integration of these modern techniques with established uncertainty quantification methods remains underexplored. Classical approaches like Evidential Reasoning based on Dempster-Shafer theory (Shafer, 1976) provide mathematically rigorous frameworks for belief aggregation but lack the adaptive, context-aware capabilities of modern deep learning architectures.
 
-The Greek emergency response landscape provides a compelling testbed for multi-agent crisis management systems. Recent catastrophic events-including the 2021 Evia forest fires, the 2023 Karditsa floods affecting 15,000 residents in Thessaly, and industrial HAZMAT incidents like the Elefsina ammonia leak-demonstrate the critical need for coordinated, intelligent decision support that can synthesize expertise across meteorology, emergency medicine, fire response, environmental science, and logistics.
+The Greek emergency response landscape provides a compelling testbed for multi-agent crisis management systems. Historical catastrophic events-including Evia forest fires, Karditsa floods affecting thousands of residents in Thessaly, and industrial HAZMAT incidents like ammonia leaks-demonstrate the critical need for coordinated, intelligent decision support that can synthesize expertise across meteorology, emergency medicine, fire response, environmental science, and logistics.
 
 ### 1.2 Research Gap
 
@@ -177,7 +177,7 @@ where $\sigma$ is an activation (ELU), and averaging across heads provides stabi
 Our GAT architecture extracts $\mathbf{h}_i \in \mathbb{R}^9$ per agent, integrating cognitive, expertise, and performance dimensions:
 
 1. **Confidence Level** ($c_i \in [0,1]$): Agent's self-reported assessment certainty
-2. **Belief Certainty** ($\text{BC}_i = 1 - H_i/H_{\max}$): Inverse entropy measuring belief concentration
+2. **Belief Certainty** ($\text{BC}_i = 1 - H_i/H_{\text{max}}$): Inverse entropy measuring belief concentration
 3. **Expertise Relevance** ($\text{ER}_i \in [0,1]$): Domain alignment score with scenario type
 4. **Risk Tolerance** ($\text{RT}_i \in [0,1]$): Conservative (0) vs. aggressive (1) disposition
 5. **Severity Awareness** ($\text{SA}_i \in [0,1]$): Recognition of crisis magnitude in reasoning
@@ -235,7 +235,7 @@ Otal & Canbaz (2024) and Chen et al. (2024) emphasize prompt engineering as crit
 
 - **Role Specification:** Detailed expertise domain, institutional affiliation (e.g., "EKAB Emergency Physician with 15 years experience")
 - **Crisis Protocols:** Relevant standard operating procedures, legal frameworks (e.g., Greek Civil Protection Law 3013/2002)
-- **Historical Context:** Past similar incidents and lessons learned (e.g., 2021 Evia fires, 2018 Mati tragedy)
+- **Historical Context:** Past similar incidents and lessons learned, inspired by real emergency response experiences
 - **Output Format Constraints:** JSON schema ensuring parseable belief distributions, confidence scores, reasoning text
 - **Ethical Guardrails:** Explicit instructions prioritizing human safety, environmental protection, legal compliance
 
@@ -370,7 +370,7 @@ This addresses coordination through structured protocols rather than emergent ne
 
 **Evidential Reasoning (Classical):**
 - Weighted averaging of belief distributions: $\mathrm{combined\_belief}(\mathrm{alt}_i) = \sum_j (w_j \times b_j(i)) / \sum_j w_j$
-- Entropy-based confidence quantification: $\text{confidence} = 1 - (H / H_{\max})$
+- Entropy-based confidence quantification: $\text{confidence} = 1 - (H / H_{\text{max}})$
 - Explicit uncertainty representation through belief mass allocation
 
 **Graph Attention Networks (Neural):**
@@ -672,7 +672,7 @@ We evaluate the system on three authentic Greek emergency scenarios representing
 
 #### Scenario 1: Karditsa Flood Emergency
 
-**Context:** Following the catastrophic 2023 Storm Daniel that devastated Thessaly, we model flooding in Karditsa (39.3644°N, 21.9211°E) where the Pamisos River overflowed, inundating urban areas.
+**Context:** Inspired by catastrophic flooding events in Thessaly, we model flooding in Karditsa (39.3644°N, 21.9211°E) where the Pamisos River overflows, inundating urban areas.
 
 **Parameters:**
 - **Location:** Karditsa, Thessaly, Greece
@@ -698,7 +698,7 @@ We evaluate the system on three authentic Greek emergency scenarios representing
 
 #### Scenario 2: Evia Forest Fire Emergency
 
-**Context:** Modeling the devastating August 2021 wildfires in North Evia that burned 12,000+ hectares, destroyed homes, and required massive evacuations.
+**Context:** Inspired by devastating wildfires in North Evia that burned thousands of hectares, destroyed homes, and required massive evacuations.
 
 **Parameters:**
 - **Location:** North Evia, Central Greece (38.9231°N, 23.6578°E)
@@ -1381,7 +1381,7 @@ Zhou, L., Wu, H., & Zhang, Y. (2025). Graph attention networks for emergency gro
 
 This research was conducted as part of a Master's thesis in Operational Research and Decision Making at the Technical University of Crete, School of Production Engineering and Management, in collaboration with the Military Academy, Department of Military Sciences.
 
-Special thanks to the Hellenic emergency response community for inspiring this research through their dedicated service during the 2021 Evia wildfires, 2023 Thessaly floods, and countless other incidents protecting Greek communities.
+Special thanks to the Hellenic emergency response community for inspiring this research through their dedicated service during wildfires, floods, and countless other incidents protecting Greek communities.
 
 ## Funding
 
