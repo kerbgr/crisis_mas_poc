@@ -1216,12 +1216,12 @@ graph TB
 ```
 
 **Architecture Overview:**
-- **🖥 User Interface Layer**: Entry point, I/O handling, visualization generation
-- **🎯 Coordination Layer**: Orchestrates multi-agent decision-making, builds consensus
-- **👥 Agent Layer**: Domain experts with LLM-enhanced reasoning and performance tracking
-- **🧠 Decision Framework Layer**: Belief aggregation (ER/GAT), multi-criteria analysis (MCDA)
-- **🤖 LLM Integration Layer**: Multi-provider support (Claude, OpenAI, LM Studio)
-- **📊 Evaluation Layer**: Metrics calculation, baseline comparison, visualization (v2.0.1)
+- **User Interface Layer**: Entry point, I/O handling, visualization generation
+- **Coordination Layer**: Orchestrates multi-agent decision-making, builds consensus
+- **Agent Layer**: Domain experts with LLM-enhanced reasoning and performance tracking
+- **Decision Framework Layer**: Belief aggregation (ER/GAT), multi-criteria analysis (MCDA)
+- **LLM Integration Layer**: Multi-provider support (Claude, OpenAI, LM Studio)
+- **Evaluation Layer**: Metrics calculation, baseline comparison, visualization (v2.0.1)
 
 #### 1. Agent Layer
 
@@ -1279,7 +1279,7 @@ graph TB
   6. Top choice strength
   7. Number of concerns
   8. Reasoning quality
-  9. **Historical reliability** (from ReliabilityTracker) ⭐
+  9. **Historical reliability** (from ReliabilityTracker) 
 - Multi-head attention (4 heads) for robustness
 - Attention mechanism: $\alpha_{ij} = \text{softmax}_j(0.4 \cdot f_i^{(1)} + 0.3 \cdot f_i^{(3)} + 0.3 \cdot f_i^{(2)} + 0.2 \cdot \cos(\mathbf{f}_i, \mathbf{f}_j))$
 - **Data-driven weighting**: Agents with proven track records receive higher attention
