@@ -595,6 +595,57 @@ The expert roles are organized in a **two-tier command hierarchy**:
 
 This hierarchy enables the system to model realistic emergency response structures where tactical commanders provide on-ground intelligence while strategic commanders coordinate broader resource deployment.
 
+**Agent Hierarchy Visualization:**
+
+```mermaid
+graph TB
+    COORD[CoordinatorAgent<br/>Deliberation Orchestrator]
+
+    subgraph "Tactical Level"
+        T1[Police On-Scene<br/>Tactical Commander]
+        T2[Fire-Brigade On-Scene<br/>Tactical Commander]
+        T3[Coast Guard On-Scene<br/>Tactical Commander]
+        T4[Medical Expert<br/>Medical Assessment]
+        T5[Meteorologist<br/>Environmental Analysis]
+        T6[Logistics Coordinator<br/>Supply Chain Management]
+    end
+
+    subgraph "Strategic Level"
+        S1[Police Regional<br/>Strategic Commander]
+        S2[Fire-Brigade Regional<br/>Strategic Commander]
+        S3[Coast Guard National<br/>National Director]
+        S4[Public Safety Expert<br/>National Coordinator]
+        S5[Environmental Expert<br/>Environmental Impact]
+        S6[Medical Infrastructure Director<br/>Hospital Capacity]
+        S7[PSAP Commander<br/>112 Emergency Communications]
+    end
+
+    subgraph "Technical Infrastructure"
+        BA[BaseAgent<br/>Profile Loading, LLM Integration]
+        RT[ReliabilityTracker<br/>Historical Performance]
+        PROF[agent_profiles.json<br/>13 Expert Profiles]
+    end
+
+    COORD --> T1 & T2 & T3 & T4 & T5 & T6
+    COORD --> S1 & S2 & S3 & S4 & S5 & S6 & S7
+
+    T1 & T2 & T3 & T4 & T5 & T6 -.->|inherits| BA
+    S1 & S2 & S3 & S4 & S5 & S6 & S7 -.->|inherits| BA
+
+    BA --> RT
+    BA --> PROF
+
+    style COORD fill:#ff9999,stroke:#cc0000,stroke-width:3px
+    style BA fill:#99ccff,stroke:#0066cc,stroke-width:2px
+    style RT fill:#99ff99,stroke:#00cc00,stroke-width:2px
+```
+
+**Hierarchy Key Points:**
+- **CoordinatorAgent** (red): Orchestrates all deliberation and consensus building
+- **Tactical Level**: 6 field-level experts providing on-ground intelligence and immediate response
+- **Strategic Level**: 7 regional/national experts coordinating broader resource deployment
+- **Technical Infrastructure** (blue/green): Shared components - BaseAgent for LLM integration, ReliabilityTracker for performance history
+
 #### Smart Expert Selection (Auto-Mode)
 
 **NEW in v0.8:** The system can automatically select appropriate experts based on scenario characteristics.
@@ -1113,7 +1164,7 @@ For detailed documentation see:
 
 ### System Components
 
-The Crisis MAS consists of five core layers with integrated evaluation framework:
+The Crisis MAS consists of six core layers with integrated evaluation framework and 13 expert agents organized in a Tactical/Strategic hierarchy:
 
 ```mermaid
 graph TB
@@ -1129,12 +1180,25 @@ graph TB
         CR[Conflict<br/>Resolution]
     end
 
-    subgraph Agents["👥 AGENT LAYER"]
-        direction LR
-        EA1[Medical<br/>Expert]
-        EA2[Logistics<br/>Expert]
-        EA3[Safety<br/>Expert]
-        EA4[Environmental<br/>Expert]
+    subgraph Agents["👥 AGENT LAYER - 13 Expert Roles"]
+        direction TB
+        subgraph Tactical["Tactical Level - 6 Agents"]
+            T1[Police On-Scene]
+            T2[Fire On-Scene]
+            T3[Coast Guard On-Scene]
+            T4[Medical Expert]
+            T5[Meteorologist]
+            T6[Logistics Coordinator]
+        end
+        subgraph Strategic["Strategic Level - 7 Agents"]
+            S1[Police Regional]
+            S2[Fire Regional]
+            S3[Coast Guard National]
+            S4[Public Safety Expert]
+            S5[Environmental Expert]
+            S6[Medical Infrastructure]
+            S7[PSAP Commander]
+        end
         BA[BaseAgent<br/>Interface]
         RT[ReliabilityTracker<br/>Performance History]
     end
@@ -1169,14 +1233,15 @@ graph TB
     Main -->|Load Scenario| Input
     Input -->|Initialize| CA
 
-    CA -->|Collect Assessments| EA1 & EA2 & EA3 & EA4
-    EA1 & EA2 & EA3 & EA4 -.->|Inherit from| BA
-    EA1 & EA2 & EA3 & EA4 -->|Track Performance| RT
+    CA -->|Collect Assessments| Tactical & Strategic
+    Tactical -.->|Inherit from| BA
+    Strategic -.->|Inherit from| BA
+    Tactical & Strategic -->|Track Performance| RT
 
-    EA1 & EA2 & EA3 & EA4 -->|LLM Reasoning| Prompt
+    Tactical & Strategic -->|LLM Reasoning| Prompt
     Prompt -->|Route to| Claude & OpenAI & LMStudio
     Claude & OpenAI & LMStudio -->|Parse| Parser
-    Parser -->|Structured Response| EA1 & EA2 & EA3 & EA4
+    Parser -->|Structured Response| Tactical & Strategic
 
     CA -->|Aggregate Beliefs| ER & GAT
     ER & GAT -.->|Use Reliability| RT
@@ -1189,7 +1254,7 @@ graph TB
 
     %% Evaluation flow
     Main -->|Run Baseline| BL
-    BL -->|Single-Agent| EA1
+    BL -->|Single-Agent| T4
     BL & CA -->|Compare| ME
 
     ME -->|Calculate Metrics| ME
@@ -1206,10 +1271,14 @@ graph TB
     classDef layerDF fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
     classDef layerLLM fill:#fce4ec,stroke:#880e4f,stroke-width:2px
     classDef layerEval fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef tacticalClass fill:#bbdefb,stroke:#1565c0,stroke-width:2px
+    classDef strategicClass fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
 
     class Main,Input,Output layerUI
     class CA,CS,CR layerCoord
-    class EA1,EA2,EA3,EA4,BA,RT layerAgent
+    class BA,RT layerAgent
+    class T1,T2,T3,T4,T5,T6 tacticalClass
+    class S1,S2,S3,S4,S5,S6,S7 strategicClass
     class ER,GAT,MCDA,CM layerDF
     class Claude,OpenAI,LMStudio,Prompt,Parser layerLLM
     class ME,Viz,Val,Cfg,BL layerEval
@@ -1218,10 +1287,10 @@ graph TB
 **Architecture Overview:**
 - **User Interface Layer**: Entry point, I/O handling, visualization generation
 - **Coordination Layer**: Orchestrates multi-agent decision-making, builds consensus
-- **Agent Layer**: Domain experts with LLM-enhanced reasoning and performance tracking
+- **Agent Layer**: 13 domain experts in Tactical/Strategic hierarchy with LLM-enhanced reasoning and performance tracking
 - **Decision Framework Layer**: Belief aggregation (ER/GAT), multi-criteria analysis (MCDA)
 - **LLM Integration Layer**: Multi-provider support (Claude, OpenAI, LM Studio)
-- **Evaluation Layer**: Metrics calculation, baseline comparison, visualization (v2.0.1)
+- **Evaluation Layer**: Metrics calculation, baseline comparison, visualization
 
 #### 1. Agent Layer
 

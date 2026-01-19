@@ -1,27 +1,40 @@
 graph TB
-    subgraph UI["🖥️ USER INTERFACE LAYER"]
+    subgraph UI["USER INTERFACE LAYER"]
         Main[main.py<br/>CLI & Orchestration]
         Input[JSON I/O<br/>Scenarios & Config]
         Output[Visualization<br/>Generation]
     end
 
-    subgraph Coord["🎯 COORDINATION LAYER"]
+    subgraph Coord["COORDINATION LAYER"]
         CA[CoordinatorAgent<br/>Orchestration & Consensus]
         CS[Consensus<br/>Builder]
         CR[Conflict<br/>Resolution]
     end
 
-    subgraph Agents["👥 AGENT LAYER"]
-        direction LR
-        EA1[Medical<br/>Expert]
-        EA2[Logistics<br/>Expert]
-        EA3[Safety<br/>Expert]
-        EA4[Environmental<br/>Expert]
+    subgraph Agents["AGENT LAYER - 13 Expert Roles"]
+        direction TB
+        subgraph Tactical["Tactical Level - 6 Agents"]
+            T1[Police On-Scene]
+            T2[Fire On-Scene]
+            T3[Coast Guard On-Scene]
+            T4[Medical Expert]
+            T5[Meteorologist]
+            T6[Logistics Coordinator]
+        end
+        subgraph Strategic["Strategic Level - 7 Agents"]
+            S1[Police Regional]
+            S2[Fire Regional]
+            S3[Coast Guard National]
+            S4[Public Safety Expert]
+            S5[Environmental Expert]
+            S6[Medical Infrastructure]
+            S7[PSAP Commander]
+        end
         BA[BaseAgent<br/>Interface]
         RT[ReliabilityTracker<br/>Performance History]
     end
 
-    subgraph DF["🧠 DECISION FRAMEWORK LAYER"]
+    subgraph DF["DECISION FRAMEWORK LAYER"]
         direction TB
         ER[EvidentialReasoning<br/>Dempster-Shafer]
         GAT[GATAggregator<br/>Neural Attention]
@@ -29,7 +42,7 @@ graph TB
         CM[ConflictModel<br/>Resolution]
     end
 
-    subgraph LLM["🤖 LLM INTEGRATION LAYER"]
+    subgraph LLM["LLM INTEGRATION LAYER"]
         direction LR
         Claude[Claude API<br/>Anthropic]
         OpenAI[OpenAI API<br/>GPT-4]
@@ -38,7 +51,7 @@ graph TB
         Parser[Response<br/>Parser]
     end
 
-    subgraph Eval["📊 EVALUATION & UTILITIES LAYER"]
+    subgraph Eval["EVALUATION & UTILITIES LAYER"]
         direction TB
         ME[MetricsEvaluator<br/>DQS, CL, CS, ECB]
         Viz[SystemVisualizer<br/>Charts & Graphs]
@@ -50,14 +63,15 @@ graph TB
     Main -->|Load Scenario| Input
     Input -->|Initialize| CA
 
-    CA -->|Collect Assessments| EA1 & EA2 & EA3 & EA4
-    EA1 & EA2 & EA3 & EA4 -.->|Inherit from| BA
-    EA1 & EA2 & EA3 & EA4 -->|Track Performance| RT
+    CA -->|Collect Assessments| Tactical & Strategic
+    Tactical -.->|Inherit from| BA
+    Strategic -.->|Inherit from| BA
+    Tactical & Strategic -->|Track Performance| RT
 
-    EA1 & EA2 & EA3 & EA4 -->|LLM Reasoning| Prompt
+    Tactical & Strategic -->|LLM Reasoning| Prompt
     Prompt -->|Route to| Claude & OpenAI & LMStudio
     Claude & OpenAI & LMStudio -->|Parse| Parser
-    Parser -->|Structured Response| EA1 & EA2 & EA3 & EA4
+    Parser -->|Structured Response| Tactical & Strategic
 
     CA -->|Aggregate Beliefs| ER & GAT
     ER & GAT -.->|Use Reliability| RT
@@ -69,7 +83,7 @@ graph TB
     CA -->|Final Decision| ME
 
     Main -->|Run Baseline| BL
-    BL -->|Single-Agent| EA1
+    BL -->|Single-Agent| T4
     BL & CA -->|Compare| ME
 
     ME -->|Calculate Metrics| ME
@@ -85,10 +99,14 @@ graph TB
     classDef layerDF fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
     classDef layerLLM fill:#fce4ec,stroke:#880e4f,stroke-width:2px
     classDef layerEval fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef tacticalClass fill:#bbdefb,stroke:#1565c0,stroke-width:2px
+    classDef strategicClass fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
 
     class Main,Input,Output layerUI
     class CA,CS,CR layerCoord
-    class EA1,EA2,EA3,EA4,BA,RT layerAgent
+    class BA,RT layerAgent
+    class T1,T2,T3,T4,T5,T6 tacticalClass
+    class S1,S2,S3,S4,S5,S6,S7 strategicClass
     class ER,GAT,MCDA,CM layerDF
     class Claude,OpenAI,LMStudio,Prompt,Parser layerLLM
     class ME,Viz,Val,Cfg,BL layerEval

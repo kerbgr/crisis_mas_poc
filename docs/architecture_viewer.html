@@ -50,36 +50,49 @@
 </head>
 <body>
     <h1>Crisis Management MAS - Architecture Diagrams</h1>
-    <p><strong>System Version:</strong> 0.8 | <strong>Last Updated:</strong> November 2025</p>
+    <p><strong>System Version:</strong> 0.9 | <strong>Last Updated:</strong> January 2026</p>
 
     <h2>1. Main System Architecture</h2>
     <div class="diagram-container">
-        <p class="description">Five-layer architecture showing the complete Crisis MAS system with LLM integration, decision framework, and evaluation components.</p>
+        <p class="description">Six-layer architecture showing the complete Crisis MAS system with 13 expert agents organized in Tactical/Strategic hierarchy, LLM integration, decision framework, and evaluation components.</p>
         <div class="mermaid">
 graph TB
-    subgraph UI["🖥️ USER INTERFACE LAYER"]
+    subgraph UI["USER INTERFACE LAYER"]
         Main[main.py<br/>CLI & Orchestration]
         Input[JSON I/O<br/>Scenarios & Config]
         Output[Visualization<br/>Generation]
     end
 
-    subgraph Coord["🎯 COORDINATION LAYER"]
+    subgraph Coord["COORDINATION LAYER"]
         CA[CoordinatorAgent<br/>Orchestration & Consensus]
         CS[Consensus<br/>Builder]
         CR[Conflict<br/>Resolution]
     end
 
-    subgraph Agents["👥 AGENT LAYER"]
-        direction LR
-        EA1[Medical<br/>Expert]
-        EA2[Logistics<br/>Expert]
-        EA3[Safety<br/>Expert]
-        EA4[Environmental<br/>Expert]
+    subgraph Agents["AGENT LAYER - 13 Expert Roles"]
+        direction TB
+        subgraph Tactical["Tactical Level - 6 Agents"]
+            T1[Police On-Scene]
+            T2[Fire On-Scene]
+            T3[Coast Guard On-Scene]
+            T4[Medical Expert]
+            T5[Meteorologist]
+            T6[Logistics Coordinator]
+        end
+        subgraph Strategic["Strategic Level - 7 Agents"]
+            S1[Police Regional]
+            S2[Fire Regional]
+            S3[Coast Guard National]
+            S4[Public Safety Expert]
+            S5[Environmental Expert]
+            S6[Medical Infrastructure]
+            S7[PSAP Commander]
+        end
         BA[BaseAgent<br/>Interface]
         RT[ReliabilityTracker<br/>Performance History]
     end
 
-    subgraph DF["🧠 DECISION FRAMEWORK LAYER"]
+    subgraph DF["DECISION FRAMEWORK LAYER"]
         direction TB
         ER[EvidentialReasoning<br/>Dempster-Shafer]
         GAT[GATAggregator<br/>Neural Attention]
@@ -87,7 +100,7 @@ graph TB
         CM[ConflictModel<br/>Resolution]
     end
 
-    subgraph LLM["🤖 LLM INTEGRATION LAYER"]
+    subgraph LLM["LLM INTEGRATION LAYER"]
         direction LR
         Claude[Claude API<br/>Anthropic]
         OpenAI[OpenAI API<br/>GPT-4]
@@ -96,7 +109,7 @@ graph TB
         Parser[Response<br/>Parser]
     end
 
-    subgraph Eval["📊 EVALUATION & UTILITIES LAYER"]
+    subgraph Eval["EVALUATION & UTILITIES LAYER"]
         direction TB
         ME[MetricsEvaluator<br/>DQS, CL, CS, ECB]
         Viz[SystemVisualizer<br/>Charts & Graphs]
@@ -108,14 +121,15 @@ graph TB
     Main -->|Load Scenario| Input
     Input -->|Initialize| CA
 
-    CA -->|Collect Assessments| EA1 & EA2 & EA3 & EA4
-    EA1 & EA2 & EA3 & EA4 -.->|Inherit from| BA
-    EA1 & EA2 & EA3 & EA4 -->|Track Performance| RT
+    CA -->|Collect Assessments| Tactical & Strategic
+    Tactical -.->|Inherit from| BA
+    Strategic -.->|Inherit from| BA
+    Tactical & Strategic -->|Track Performance| RT
 
-    EA1 & EA2 & EA3 & EA4 -->|LLM Reasoning| Prompt
+    Tactical & Strategic -->|LLM Reasoning| Prompt
     Prompt -->|Route to| Claude & OpenAI & LMStudio
     Claude & OpenAI & LMStudio -->|Parse| Parser
-    Parser -->|Structured Response| EA1 & EA2 & EA3 & EA4
+    Parser -->|Structured Response| Tactical & Strategic
 
     CA -->|Aggregate Beliefs| ER & GAT
     ER & GAT -.->|Use Reliability| RT
@@ -127,7 +141,7 @@ graph TB
     CA -->|Final Decision| ME
 
     Main -->|Run Baseline| BL
-    BL -->|Single-Agent| EA1
+    BL -->|Single-Agent| T4
     BL & CA -->|Compare| ME
 
     ME -->|Calculate Metrics| ME
@@ -143,19 +157,70 @@ graph TB
     classDef layerDF fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
     classDef layerLLM fill:#fce4ec,stroke:#880e4f,stroke-width:2px
     classDef layerEval fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef tacticalClass fill:#bbdefb,stroke:#1565c0,stroke-width:2px
+    classDef strategicClass fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
 
     class Main,Input,Output layerUI
     class CA,CS,CR layerCoord
-    class EA1,EA2,EA3,EA4,BA,RT layerAgent
+    class BA,RT layerAgent
+    class T1,T2,T3,T4,T5,T6 tacticalClass
+    class S1,S2,S3,S4,S5,S6,S7 strategicClass
     class ER,GAT,MCDA,CM layerDF
     class Claude,OpenAI,LMStudio,Prompt,Parser layerLLM
     class ME,Viz,Val,Cfg,BL layerEval
         </div>
     </div>
 
-    <h2>2. Expert Selection Workflow (NEW in v0.8)</h2>
+    <h2>2. Agent Hierarchy - 13 Expert Roles</h2>
     <div class="diagram-container">
-        <p class="description">Smart expert selection system showing manual vs automatic modes, rule-based scoring, and intelligent agent selection based on scenario characteristics.</p>
+        <p class="description">Two-tier command hierarchy showing all 13 expert agents organized into Tactical (field-level) and Strategic (regional/national) levels, with shared technical infrastructure.</p>
+        <div class="mermaid">
+graph TB
+    COORD[CoordinatorAgent<br/>Deliberation Orchestrator]
+
+    subgraph Tactical["Tactical Level - Field Operations"]
+        T1[Police On-Scene<br/>Tactical Commander]
+        T2[Fire-Brigade On-Scene<br/>Tactical Commander]
+        T3[Coast Guard On-Scene<br/>Tactical Commander]
+        T4[Medical Expert<br/>Medical Assessment]
+        T5[Meteorologist<br/>Environmental Analysis]
+        T6[Logistics Coordinator<br/>Supply Chain Management]
+    end
+
+    subgraph Strategic["Strategic Level - Regional/National"]
+        S1[Police Regional<br/>Strategic Commander]
+        S2[Fire-Brigade Regional<br/>Strategic Commander]
+        S3[Coast Guard National<br/>National Director]
+        S4[Public Safety Expert<br/>National Coordinator]
+        S5[Environmental Expert<br/>Environmental Impact]
+        S6[Medical Infrastructure Director<br/>Hospital Capacity]
+        S7[PSAP Commander<br/>112 Emergency Communications]
+    end
+
+    subgraph Infra["Technical Infrastructure"]
+        BA[BaseAgent<br/>Profile Loading, LLM Integration]
+        RT[ReliabilityTracker<br/>Historical Performance]
+        PROF[agent_profiles.json<br/>13 Expert Profiles]
+    end
+
+    COORD --> T1 & T2 & T3 & T4 & T5 & T6
+    COORD --> S1 & S2 & S3 & S4 & S5 & S6 & S7
+
+    T1 & T2 & T3 & T4 & T5 & T6 -.->|inherits| BA
+    S1 & S2 & S3 & S4 & S5 & S6 & S7 -.->|inherits| BA
+
+    BA --> RT
+    BA --> PROF
+
+    style COORD fill:#ff9999,stroke:#cc0000,stroke-width:3px
+    style BA fill:#99ccff,stroke:#0066cc,stroke-width:2px
+    style RT fill:#99ff99,stroke:#00cc00,stroke-width:2px
+        </div>
+    </div>
+
+    <h2>3. Expert Selection Workflow</h2>
+    <div class="diagram-container">
+        <p class="description">Smart expert selection system showing manual vs automatic modes, rule-based scoring, and intelligent agent selection based on scenario characteristics. Supports selection from all 13 expert agents.</p>
         <div class="mermaid">
 flowchart TD
     Start([Load Scenario]) --> CheckMode{Expert Selection<br/>Mode?}
@@ -171,7 +236,7 @@ flowchart TD
 
     FallbackCore --> InitAgents
 
-    EvalExperts --> ExpertLoop{For Each of<br/>11 Experts}
+    EvalExperts --> ExpertLoop{For Each of<br/>13 Experts}
 
     ExpertLoop --> ScoreCriteria[Calculate Match Score<br/>Based on Criteria]
 
@@ -203,11 +268,11 @@ flowchart TD
     MoreExperts -->|No| EnsureMin{Selected >= 3<br/>minimum?}
 
     EnsureMin -->|No| AddCore[Add Core Experts]
-    EnsureMin -->|Yes| CheckMax{Selected <= 11<br/>maximum?}
+    EnsureMin -->|Yes| CheckMax{Selected <= 13<br/>maximum?}
 
     AddCore --> CheckMax
 
-    CheckMax -->|No| KeepTop[Keep Top 11 by Score]
+    CheckMax -->|No| KeepTop[Keep Top 13 by Score]
     CheckMax -->|Yes| ReturnList[Return Selected Agent IDs]
 
     KeepTop --> ReturnList
@@ -227,9 +292,9 @@ flowchart TD
         </div>
     </div>
 
-    <h2>3. Decision-Making Flow (Updated - 8 Steps)</h2>
+    <h2>4. Decision-Making Flow (8 Steps)</h2>
     <div class="diagram-container">
-        <p class="description">Eight-step process for multi-agent crisis decision-making including expert selection, scenario analysis, belief aggregation, and evaluation.</p>
+        <p class="description">Eight-step process for multi-agent crisis decision-making including expert selection from 13 available roles, scenario analysis, belief aggregation, and evaluation.</p>
         <div class="mermaid">
 flowchart TD
     Start([Start]) --> LoadScenario[1. Load Scenario<br/>scenarios/flood_scenario.json]
@@ -240,17 +305,15 @@ flowchart TD
     SelectExperts -->|manual| ManualExperts[Manual: Use --agents flag<br/>or default 3 core experts]
     SelectExperts -->|auto| AutoExperts[Auto: ExpertSelector<br/>analyzes scenario metadata]
 
-    ManualExperts --> InitExperts[Initialize Selected<br/>Expert Agents]
+    ManualExperts --> InitExperts[Initialize Selected<br/>Expert Agents<br/>3 to 13 experts]
     AutoExperts --> InitExperts
 
     InitExperts --> AgentAssess{3. Agent Assessment<br/>For each selected expert}
 
-    AgentAssess -->|Expert 1| Exp1[Expert Agent<br/>LLM Analysis]
-    AgentAssess -->|Expert 2| Exp2[Expert Agent<br/>LLM Analysis]
-    AgentAssess -->|Expert 3| Exp3[Expert Agent<br/>LLM Analysis]
-    AgentAssess -->|Expert N| ExpN[Expert Agent<br/>LLM Analysis]
+    AgentAssess -->|Tactical| TacAgents[Tactical Agents<br/>On-Scene Assessment]
+    AgentAssess -->|Strategic| StratAgents[Strategic Agents<br/>Regional/National View]
 
-    Exp1 & Exp2 & Exp3 & ExpN --> Collect[Collect Assessments<br/>beliefs + confidence + reasoning]
+    TacAgents & StratAgents --> Collect[Collect Assessments<br/>beliefs + confidence + reasoning]
 
     Collect --> ChooseAgg{4. Choose<br/>Aggregation Method}
 
@@ -263,14 +326,14 @@ flowchart TD
     Combined --> MCDA[5. MCDA Scoring<br/>TOPSIS/WSM]
     MCDA --> Ranked[Ranked Alternatives<br/>with scores]
 
-    Ranked --> Consensus{6. Check Consensus<br/>Similarity ≥ threshold?}
+    Ranked --> Consensus{6. Check Consensus<br/>Similarity >= threshold?}
 
     Consensus -->|No| Iterate[Provide Feedback<br/>Request Refinement]
     Iterate --> AgentAssess
 
     Consensus -->|Yes| Decision[7. Generate Decision<br/>Top alternative + explanation]
 
-    Decision --> CalcConf[Calculate Confidence<br/>0.6×consensus + 0.4×avg_conf]
+    Decision --> CalcConf[Calculate Confidence<br/>0.6 x consensus + 0.4 x avg_conf]
     CalcConf --> CalcQuality[Calculate Quality Score<br/>MCDA score for recommended]
 
     CalcQuality --> Baseline[Run Single-Agent Baseline<br/>Select best expert]
@@ -293,7 +356,7 @@ flowchart TD
 
     class LoadScenario,ParseScenario,Collect,Combined,Ranked,Decision,CalcConf,CalcQuality processClass
     class SelectExperts,ChooseAgg,Consensus decisionClass
-    class Exp1,Exp2,Exp3,ExpN,Baseline,BaselineAssess agentClass
+    class TacAgents,StratAgents,Baseline,BaselineAssess agentClass
     class ManualExperts,AutoExperts,InitExperts selectClass
     class Compare,Metrics,Visualize,SaveOutput evalClass
         </div>
@@ -301,8 +364,9 @@ flowchart TD
 
     <footer style="margin-top: 60px; padding-top: 20px; border-top: 2px solid #ccc; color: #666; text-align: center;">
         <p><strong>Crisis Management Multi-Agent System</strong></p>
-        <p>Master's Thesis - Technical University of Crete | Version 0.8</p>
-        <p>For complete documentation, see README.md and ARCHITECTURE_DIAGRAMS.md</p>
+        <p>Master's Thesis - Technical University of Crete | Version 0.9</p>
+        <p>For complete documentation, see README.md</p>
+        <p>For future research directions, see future_work_SEAL-Enhanced_Genetic_Agents.md</p>
     </footer>
 </body>
 </html>
