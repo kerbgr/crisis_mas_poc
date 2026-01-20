@@ -1264,24 +1264,15 @@ graph TB
     Val -.->|Validate| Input
     Cfg -.->|Configure| Main & CA & LLM
 
-    %% Styling
-    classDef layerUI fill:#e1f5ff,stroke:#01579b,stroke-width:2px
-    classDef layerCoord fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef layerAgent fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef layerDF fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
-    classDef layerLLM fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef layerEval fill:#fff9c4,stroke:#f57f17,stroke-width:2px
-    classDef tacticalClass fill:#bbdefb,stroke:#1565c0,stroke-width:2px
-    classDef strategicClass fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-
-    class Main,Input,Output layerUI
-    class CA,CS,CR layerCoord
-    class BA,RT layerAgent
-    class T1,T2,T3,T4,T5,T6 tacticalClass
-    class S1,S2,S3,S4,S5,S6,S7 strategicClass
-    class ER,GAT,MCDA,CM layerDF
-    class Claude,OpenAI,LMStudio,Prompt,Parser layerLLM
-    class ME,Viz,Val,Cfg,BL layerEval
+    %% Layer background colors (soft pastels)
+    style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Tactical fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    style Strategic fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
+    style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px
 ```
 
 **Architecture Overview:**

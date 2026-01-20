@@ -8,40 +8,50 @@
 
 ```mermaid
 graph TB
-    subgraph "User Interface Layer"
+    subgraph UI["User Interface Layer"]
         CLI[Command Line Interface]
         JSON_IN[JSON Input Files]
         JSON_OUT[JSON Output Results]
         VIZ[Visualization Generator]
     end
 
-    subgraph "Coordination Layer"
+    subgraph Coord["Coordination Layer"]
         COORD[CoordinatorAgent]
         ORCH[Orchestration Logic]
         CONS_BUILD[Consensus Builder]
     end
 
-    subgraph "Agent Layer"
+    subgraph Agents["Agent Layer - 13 Expert Roles"]
         BA[BaseAgent]
-        EA1[Dr. Dimitris Nikolaou<br/>Medical Expert EKAB]
-        EA2[Katerina Georgiou<br/>Logistics - Civil Protection]
-        EA3[Dr. Eleni Papadopoulou<br/>Meteorologist]
-        EA4[Dr. Sofia Karagianni<br/>Environmental Scientist]
-        EA5[Brigadier Nikos Konstantinou<br/>Police Tactical]
-        EA6[Pyragos Ioanna Michaelidou<br/>Fire Tactical]
-        EA7[Commander Maria Papadimitriou<br/>EKAB/PSAP Director]
+        subgraph Tactical["Tactical Level - 6 Agents"]
+            T1[Police On-Scene]
+            T2[Fire On-Scene]
+            T3[Coast Guard On-Scene]
+            T4[Medical Expert]
+            T5[Meteorologist]
+            T6[Logistics Coordinator]
+        end
+        subgraph Strategic["Strategic Level - 7 Agents"]
+            S1[Police Regional]
+            S2[Fire Regional]
+            S3[Coast Guard National]
+            S4[Public Safety Expert]
+            S5[Environmental Expert]
+            S6[Medical Infrastructure]
+            S7[PSAP Commander]
+        end
         RT[ReliabilityTracker]
-        PROFILES[Agent Profiles JSON<br/>13 Greek Experts]
+        PROFILES[Agent Profiles JSON<br/>13 Expert Profiles]
     end
 
-    subgraph "Decision Framework Layer"
+    subgraph DF["Decision Framework Layer"]
         ER[Evidential Reasoning]
         GAT[GAT Aggregator<br/>9D Features]
         MCDA[MCDA Engine<br/>TOPSIS]
         CONSENSUS[Consensus Model<br/>Cosine Similarity]
     end
 
-    subgraph "LLM Integration Layer"
+    subgraph LLM["LLM Integration Layer"]
         LLM_INT[LLM Interface]
         CLAUDE[Claude Client]
         OPENAI[OpenAI Client]
@@ -49,7 +59,7 @@ graph TB
         PROMPTS[Prompt Templates]
     end
 
-    subgraph "Evaluation & Utilities Layer"
+    subgraph Eval["Evaluation & Utilities Layer"]
         METRICS[Metrics Calculator]
         VIS[Visualizations]
         VALID[Validation]
@@ -59,8 +69,10 @@ graph TB
     CLI --> COORD
     JSON_IN --> COORD
     COORD --> ORCH
-    ORCH --> EA1 & EA2 & EA3 & EA4 & EA5 & EA6 & EA7
-    EA1 & EA2 & EA3 & EA4 & EA5 & EA6 & EA7 -.inherits.-> BA
+    ORCH --> T1 & T2 & T3 & T4 & T5 & T6
+    ORCH --> S1 & S2 & S3 & S4 & S5 & S6 & S7
+    T1 & T2 & T3 & T4 & T5 & T6 -.inherits.-> BA
+    S1 & S2 & S3 & S4 & S5 & S6 & S7 -.inherits.-> BA
     BA --> RT
     BA --> PROFILES
 
@@ -70,7 +82,8 @@ graph TB
     CONSENSUS --> CONS_BUILD
     CONS_BUILD --> MCDA
 
-    EA1 & EA2 & EA3 & EA4 & EA5 & EA6 & EA7 --> LLM_INT
+    T1 & T2 & T3 & T4 & T5 & T6 --> LLM_INT
+    S1 & S2 & S3 & S4 & S5 & S6 & S7 --> LLM_INT
     LLM_INT --> CLAUDE & OPENAI & LMSTUDIO
     LLM_INT --> PROMPTS
 
@@ -82,10 +95,15 @@ graph TB
     VALID -.validates.-> JSON_IN
     CONFIG -.configures.-> COORD & LLM_INT
 
-    style COORD fill:#ff9999
-    style GAT fill:#99ccff
-    style RT fill:#99ff99
-    style LLM_INT fill:#ffcc99
+    %% Layer background colors (soft pastels)
+    style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Tactical fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    style Strategic fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
+    style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px
 ```
 
 ---
@@ -96,47 +114,31 @@ graph TB
 sequenceDiagram
     participant User
     participant Coordinator
-    participant Medical as Dr. Dimitris Nikolaou<br/>(Medical - EKAB)
-    participant Logistics as Katerina Georgiou<br/>(Logistics)
-    participant Meteo as Dr. Eleni Papadopoulou<br/>(Meteorologist)
-    participant Police as Brigadier Konstantinou<br/>(Police)
-    participant Fire as Pyragos Michaelidou<br/>(Fire)
+    participant Tactical as Tactical Level<br/>(6 On-Scene Agents)
+    participant Strategic as Strategic Level<br/>(7 Regional/National Agents)
     participant GAT as GAT Aggregator
     participant MCDA as MCDA Engine
     participant Consensus
 
-    User->>Coordinator: Submit Crisis Scenario<br/>(Karditsa/Evia/Elefsina)
+    User->>Coordinator: Submit Crisis Scenario
 
-    Note over Coordinator: Distribute to Greek Experts
+    Note over Coordinator: Distribute to Expert Agents
 
-    par Parallel Agent Evaluation
-        Coordinator->>Medical: evaluate_scenario()
-        Medical->>Medical: LLM Reasoning
-        Medical->>Medical: Generate Belief Distribution
-        Medical-->>Coordinator: {belief, confidence, reasoning}
-
-        Coordinator->>Logistics: evaluate_scenario()
-        Logistics->>Logistics: LLM Reasoning
-        Logistics->>Logistics: Generate Belief Distribution
-        Logistics-->>Coordinator: {belief, confidence, reasoning}
-
-        Coordinator->>Meteo: evaluate_scenario()
-        Meteo->>Meteo: LLM Reasoning
-        Meteo->>Meteo: Generate Belief Distribution
-        Meteo-->>Coordinator: {belief, confidence, reasoning}
-
-        Coordinator->>Police: evaluate_scenario()
-        Police->>Police: LLM Reasoning
-        Police->>Police: Generate Belief Distribution
-        Police-->>Coordinator: {belief, confidence, reasoning}
-
-        Coordinator->>Fire: evaluate_scenario()
-        Fire->>Fire: LLM Reasoning
-        Fire->>Fire: Generate Belief Distribution
-        Fire-->>Coordinator: {belief, confidence, reasoning}
+    par Parallel Agent Evaluation - Tactical Level
+        Coordinator->>Tactical: evaluate_scenario()
+        Note over Tactical: Police On-Scene<br/>Fire On-Scene<br/>Coast Guard On-Scene<br/>Medical Expert<br/>Meteorologist<br/>Logistics Coordinator
+        Tactical->>Tactical: LLM Reasoning
+        Tactical->>Tactical: Generate Belief Distribution
+        Tactical-->>Coordinator: {belief, confidence, reasoning}
+    and Parallel Agent Evaluation - Strategic Level
+        Coordinator->>Strategic: evaluate_scenario()
+        Note over Strategic: Police Regional<br/>Fire Regional<br/>Coast Guard National<br/>Public Safety Expert<br/>Environmental Expert<br/>Medical Infrastructure<br/>PSAP Commander
+        Strategic->>Strategic: LLM Reasoning
+        Strategic->>Strategic: Generate Belief Distribution
+        Strategic-->>Coordinator: {belief, confidence, reasoning}
     end
 
-    Note over Coordinator: Aggregate Beliefs
+    Note over Coordinator: Aggregate Beliefs from 13 Experts
 
     Coordinator->>GAT: aggregate_beliefs_with_gat()
     GAT->>GAT: Extract 9D Features
@@ -156,7 +158,8 @@ sequenceDiagram
     else Conflict Detected
         Consensus-->>Coordinator: Conflicts Found
         Coordinator->>Coordinator: Iterative Refinement
-        Coordinator->>Medical: Refine Assessment
+        Coordinator->>Tactical: Refine Assessment
+        Coordinator->>Strategic: Refine Assessment
         Note over Coordinator: Repeat until consensus or max iterations
     end
 ```
@@ -583,23 +586,35 @@ graph TB
     end
 
     subgraph "Phase 2: Individual Assessment"
-        AG1[Dr. Dimitris Nikolaou<br/>Medical - EKAB]
-        AG2[Katerina Georgiou<br/>Logistics]
-        AG3[Dr. Eleni Papadopoulou<br/>Meteorologist]
-        AG4[Brigadier Nikos Konstantinou<br/>Police Tactical]
-        AG5[Pyragos Ioanna Michaelidou<br/>Fire Tactical]
-        AG6[Commander Maria Papadimitriou<br/>EKAB Director]
+        subgraph "Tactical Level"
+            T1[Police On-Scene]
+            T2[Fire On-Scene]
+            T3[Coast Guard On-Scene]
+            T4[Medical Expert]
+            T5[Meteorologist]
+            T6[Logistics Coordinator]
+        end
+        subgraph "Strategic Level"
+            S1[Police Regional]
+            S2[Fire Regional]
+            S3[Coast Guard National]
+            S4[Public Safety Expert]
+            S5[Environmental Expert]
+            S6[Medical Infrastructure]
+            S7[PSAP Commander]
+        end
 
         LLM1[LLM: Claude/OpenAI/<br/>LM Studio]
 
-        AG1 & AG2 & AG3 & AG4 & AG5 & AG6 --> LLM1
+        T1 & T2 & T3 & T4 & T5 & T6 --> LLM1
+        S1 & S2 & S3 & S4 & S5 & S6 & S7 --> LLM1
         LLM1 --> ASSESS[Generate Assessments:<br/>Pydantic LLMResponse<br/>belief_distribution<br/>confidence<br/>reasoning]
 
         ASSESS --> RT1[Record Assessment<br/>in ReliabilityTracker]
     end
 
     subgraph "Phase 3: Aggregation"
-        RT1 --> COLLECT[Collect All Assessments]
+        RT1 --> COLLECT[Collect All 13 Assessments]
 
         COLLECT --> GAT1[GAT Aggregation]
         GAT1 --> FEAT[Extract 9D Features<br/>incl. reliability]
@@ -639,7 +654,8 @@ graph TB
 
     USER --> COORD1
     COORD1 --> DIST
-    DIST --> AG1 & AG2 & AG3 & AG4 & AG5 & AG6
+    DIST --> T1 & T2 & T3 & T4 & T5 & T6
+    DIST --> S1 & S2 & S3 & S4 & S5 & S6 & S7
     OUTPUT --> USER
 
     style USER fill:#e1f5ff
@@ -933,8 +949,8 @@ All diagrams are in Mermaid format and will render automatically on GitHub, GitL
 
 ---
 
-**Generated:** 2025-11-12
-**System:** Crisis Management Multi-Agent System (Greek Emergency Response Edition)
-**Version:** 0.8
-**Greek Scenarios:** Karditsa Flood | Evia Forest Fire | Elefsina Ammonia Leak
-**Greek Experts:** 13 Emergency Response Professionals
+**Generated:** 2026-01-20
+**System:** Crisis Management Multi-Agent System
+**Version:** 0.9
+**Scenarios:** Karditsa Flood | Evia Forest Fire | Elefsina Ammonia Leak
+**Expert Agents:** 13 roles organized in Tactical (6) and Strategic (7) hierarchy
