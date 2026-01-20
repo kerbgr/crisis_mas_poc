@@ -6,6 +6,10 @@
 
 ## 1. Overall System Architecture
 
+The system consists of six layers. Below is the complete architecture followed by individual layer diagrams for thesis integration.
+
+### 1.1 Complete Architecture Overview
+
 ```mermaid
 graph TB
     subgraph UI["User Interface Layer"]
@@ -104,6 +108,310 @@ graph TB
     style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
     style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px
+```
+
+---
+
+### 1.2 Layer 1: User Interface Layer
+
+**Purpose:** Entry point for user interaction, scenario loading, and result visualization.
+
+```mermaid
+graph LR
+    subgraph UI["User Interface Layer"]
+        CLI[Command Line<br/>Interface]
+        JSON_IN[JSON Input<br/>Scenarios & Config]
+        JSON_OUT[JSON Output<br/>Results & Metrics]
+        VIZ[Visualization<br/>Generator]
+    end
+
+    CLI -->|"python main.py"| JSON_IN
+    JSON_IN -->|Load| SCENARIO[Crisis Scenario]
+    VIZ -->|Save| JSON_OUT
+
+    style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style CLI fill:#bbdefb,stroke:#1976d2
+    style JSON_IN fill:#bbdefb,stroke:#1976d2
+    style JSON_OUT fill:#bbdefb,stroke:#1976d2
+    style VIZ fill:#bbdefb,stroke:#1976d2
+```
+
+**Components:**
+- `main.py` - CLI entry point with argument parsing
+- `scenarios/*.json` - Crisis scenario definitions
+- `output/` - Generated visualizations and results
+
+---
+
+### 1.3 Layer 2: Coordination Layer
+
+**Purpose:** Orchestrates multi-agent deliberation, manages consensus building, and coordinates decision-making.
+
+```mermaid
+graph TB
+    subgraph Coord["Coordination Layer"]
+        COORD[CoordinatorAgent<br/>Main Orchestrator]
+        ORCH[Orchestration Logic<br/>Agent Management]
+        CONS_BUILD[Consensus Builder<br/>Agreement Detection]
+        CONFLICT[Conflict Resolution<br/>Disagreement Handling]
+    end
+
+    COORD --> ORCH
+    ORCH --> CONS_BUILD
+    CONS_BUILD --> CONFLICT
+    CONFLICT -.->|Iterate| ORCH
+
+    IN[Agent Assessments] --> COORD
+    COORD --> OUT[Final Decision]
+
+    style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style COORD fill:#ffe0b2,stroke:#f57c00
+    style ORCH fill:#ffe0b2,stroke:#f57c00
+    style CONS_BUILD fill:#ffe0b2,stroke:#f57c00
+    style CONFLICT fill:#ffe0b2,stroke:#f57c00
+```
+
+**Components:**
+- `CoordinatorAgent` - Main orchestration class
+- `ConsensusModel` - Cosine similarity-based consensus detection
+- Iterative refinement loop (max 5 iterations)
+
+---
+
+### 1.4 Layer 3: Agent Layer - 13 Expert Roles
+
+**Purpose:** Domain experts organized in Tactical/Strategic hierarchy providing LLM-enhanced assessments.
+
+```mermaid
+graph TB
+    subgraph Agents["Agent Layer - 13 Expert Roles"]
+        BA[BaseAgent<br/>Abstract Interface]
+
+        subgraph Tactical["Tactical Level - 6 On-Scene Agents"]
+            T1[Police<br/>On-Scene]
+            T2[Fire-Brigade<br/>On-Scene]
+            T3[Coast Guard<br/>On-Scene]
+            T4[Medical<br/>Expert]
+            T5[Meteorologist]
+            T6[Logistics<br/>Coordinator]
+        end
+
+        subgraph Strategic["Strategic Level - 7 Regional/National Agents"]
+            S1[Police<br/>Regional]
+            S2[Fire-Brigade<br/>Regional]
+            S3[Coast Guard<br/>National]
+            S4[Public Safety<br/>Expert]
+            S5[Environmental<br/>Expert]
+            S6[Medical<br/>Infrastructure]
+            S7[PSAP<br/>Commander]
+        end
+
+        RT[ReliabilityTracker<br/>Performance History]
+        PROFILES[agent_profiles.json<br/>13 Expert Profiles]
+    end
+
+    T1 & T2 & T3 & T4 & T5 & T6 -.->|inherits| BA
+    S1 & S2 & S3 & S4 & S5 & S6 & S7 -.->|inherits| BA
+    BA --> RT
+    BA --> PROFILES
+
+    style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Tactical fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    style Strategic fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
+    style BA fill:#ce93d8,stroke:#7b1fa2
+    style RT fill:#ce93d8,stroke:#7b1fa2
+    style PROFILES fill:#ce93d8,stroke:#7b1fa2
+```
+
+**Tactical Level (Field Operations):**
+| Agent | Role | Focus |
+|-------|------|-------|
+| Police On-Scene | Tactical Commander | Crowd control, security |
+| Fire On-Scene | Tactical Commander | Fire suppression, rescue |
+| Coast Guard On-Scene | Tactical Commander | Maritime rescue, SAR |
+| Medical Expert | Medical Assessment | Triage, health impacts |
+| Meteorologist | Environmental Analysis | Weather forecasting |
+| Logistics Coordinator | Supply Chain | Resource allocation |
+
+**Strategic Level (Regional/National):**
+| Agent | Role | Focus |
+|-------|------|-------|
+| Police Regional | Strategic Commander | Multi-jurisdictional coordination |
+| Fire Regional | Strategic Commander | Regional fire operations |
+| Coast Guard National | National Director | Maritime policy, port security |
+| Public Safety Expert | National Coordinator | Inter-agency coordination |
+| Environmental Expert | Environmental Impact | Long-term environmental effects |
+| Medical Infrastructure | Hospital Capacity | Healthcare system coordination |
+| PSAP Commander | 112 Communications | Emergency dispatch coordination |
+
+---
+
+### 1.5 Layer 4: Decision Framework Layer
+
+**Purpose:** Belief aggregation using Evidential Reasoning and Graph Attention Networks, multi-criteria decision analysis.
+
+```mermaid
+graph TB
+    subgraph DF["Decision Framework Layer"]
+        ER[Evidential Reasoning<br/>Dempster-Shafer Theory]
+        GAT[GAT Aggregator<br/>9D Feature Extraction<br/>Multi-Head Attention]
+        MCDA[MCDA Engine<br/>TOPSIS Method]
+        CONSENSUS[Consensus Model<br/>Cosine Similarity]
+    end
+
+    BELIEFS[Agent Beliefs] --> ER
+    BELIEFS --> GAT
+
+    ER --> AGG_ER[ER Aggregation]
+    GAT --> AGG_GAT[GAT Aggregation]
+
+    AGG_ER --> CONSENSUS
+    AGG_GAT --> CONSENSUS
+
+    CONSENSUS --> MCDA
+    MCDA --> RANKED[Ranked Alternatives]
+
+    style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style ER fill:#a5d6a7,stroke:#388e3c
+    style GAT fill:#a5d6a7,stroke:#388e3c
+    style MCDA fill:#a5d6a7,stroke:#388e3c
+    style CONSENSUS fill:#a5d6a7,stroke:#388e3c
+```
+
+**Components:**
+- **Evidential Reasoning (ER):** Classical Dempster-Shafer belief aggregation
+- **GAT Aggregator:** Neural attention-based aggregation with 9D features:
+  1. Confidence Score
+  2. Belief Certainty (inverse entropy)
+  3. Expertise Relevance
+  4. Risk Tolerance
+  5. Severity Awareness
+  6. Top Choice Strength
+  7. Thoroughness
+  8. Reasoning Quality
+  9. Historical Reliability
+- **MCDA Engine:** TOPSIS multi-criteria ranking
+- **Consensus Model:** Cosine similarity threshold (default: 0.7)
+
+---
+
+### 1.6 Layer 5: LLM Integration Layer
+
+**Purpose:** Multi-provider LLM support for agent reasoning with structured prompt templates.
+
+```mermaid
+graph LR
+    subgraph LLM["LLM Integration Layer"]
+        LLM_INT[LLM Interface<br/>Provider Abstraction]
+
+        subgraph Providers["Supported Providers"]
+            CLAUDE[Claude API<br/>Anthropic]
+            OPENAI[OpenAI API<br/>GPT-4]
+            LMSTUDIO[LM Studio<br/>Local Models]
+        end
+
+        PROMPTS[Prompt Templates<br/>13 Role-Specific]
+        PARSER[Response Parser<br/>Pydantic Validation]
+        RETRY[Retry Logic<br/>Exponential Backoff]
+    end
+
+    AGENT[Expert Agent] --> LLM_INT
+    LLM_INT --> PROMPTS
+    PROMPTS --> CLAUDE & OPENAI & LMSTUDIO
+    CLAUDE & OPENAI & LMSTUDIO --> RETRY
+    RETRY --> PARSER
+    PARSER --> RESPONSE[Structured Response<br/>belief_distribution<br/>confidence<br/>reasoning]
+
+    style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style CLAUDE fill:#f8bbd9,stroke:#c2185b
+    style OPENAI fill:#f8bbd9,stroke:#c2185b
+    style LMSTUDIO fill:#f8bbd9,stroke:#c2185b
+    style LLM_INT fill:#f8bbd9,stroke:#c2185b
+    style PROMPTS fill:#f8bbd9,stroke:#c2185b
+    style PARSER fill:#f8bbd9,stroke:#c2185b
+```
+
+**Components:**
+- `LLMInterface` - Provider abstraction layer
+- `ClaudeClient`, `OpenAIClient`, `LMStudioClient` - Provider implementations
+- `prompt_templates.py` - 13 role-specific prompt templates
+- Pydantic-validated `LLMResponse` model
+
+---
+
+### 1.7 Layer 6: Evaluation & Utilities Layer
+
+**Purpose:** Metrics calculation, baseline comparison, visualization generation, and configuration management.
+
+```mermaid
+graph TB
+    subgraph Eval["Evaluation & Utilities Layer"]
+        ME[MetricsEvaluator<br/>DQS, CL, CS, ECB]
+        VIS[SystemVisualizer<br/>Charts & Graphs]
+        BL[Baseline Runner<br/>Single-Agent Comparison]
+        VAL[Validator<br/>Schema Validation]
+        CFG[ConfigManager<br/>Settings & API Keys]
+    end
+
+    DECISION[MAS Decision] --> ME
+    BASELINE[Single-Agent] --> BL
+    BL --> ME
+
+    ME --> METRICS[Metrics:<br/>Decision Quality Score<br/>Consensus Level<br/>Confidence Score<br/>Expert Coverage Breadth]
+
+    METRICS --> VIS
+    VIS --> CHARTS[Output Charts:<br/>belief_distribution.png<br/>confidence_comparison.png<br/>consensus_evolution.png<br/>agent_contributions.png]
+
+    style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px
+    style ME fill:#fff59d,stroke:#f9a825
+    style VIS fill:#fff59d,stroke:#f9a825
+    style BL fill:#fff59d,stroke:#f9a825
+    style VAL fill:#fff59d,stroke:#f9a825
+    style CFG fill:#fff59d,stroke:#f9a825
+```
+
+**Metrics:**
+| Metric | Description | Range |
+|--------|-------------|-------|
+| **DQS** | Decision Quality Score | 0.0 - 1.0 |
+| **CL** | Consensus Level | 0.0 - 1.0 |
+| **CS** | Confidence Score | 0.0 - 1.0 |
+| **ECB** | Expert Coverage Breadth | 0.0 - 1.0 |
+
+**Generated Visualizations:**
+- `belief_distribution.png` - Stacked bar chart of beliefs per alternative
+- `confidence_comparison.png` - Agent confidence levels
+- `consensus_evolution.png` - Consensus building over iterations
+- `agent_contributions.png` - GAT attention weights
+
+---
+
+### 1.8 Layer Interconnections Summary
+
+```mermaid
+graph TB
+    UI[User Interface Layer<br/>CLI, JSON I/O, Visualization]
+    COORD[Coordination Layer<br/>Orchestration, Consensus]
+    AGENTS[Agent Layer<br/>13 Experts: 6 Tactical + 7 Strategic]
+    DF[Decision Framework<br/>ER, GAT, MCDA]
+    LLM[LLM Integration<br/>Claude, OpenAI, LM Studio]
+    EVAL[Evaluation Layer<br/>Metrics, Baseline, Visualization]
+
+    UI -->|1. Load Scenario| COORD
+    COORD -->|2. Distribute| AGENTS
+    AGENTS -->|3. LLM Reasoning| LLM
+    LLM -->|4. Structured Response| AGENTS
+    AGENTS -->|5. Assessments| DF
+    DF -->|6. Aggregated Decision| COORD
+    COORD -->|7. Final Decision| EVAL
+    EVAL -->|8. Results| UI
+
+    style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style COORD fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style AGENTS fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style EVAL fill:#fffde7,stroke:#f9a825,stroke-width:2px
 ```
 
 ---
