@@ -1106,7 +1106,7 @@ classDiagram
 
 ---
 
-## 11. Expert Selection System (v0.8) - 13 Greek Experts
+## 11. Expert Selection System - 13 Expert Roles
 
 ```mermaid
 flowchart TB
@@ -1119,48 +1119,63 @@ flowchart TB
 
     MANUAL --> AGENT_ARG{--agents<br/>specified?}
 
-    AGENT_ARG -->|No| DEFAULT_3[Use Default 3 Core Experts:<br/>- Dr. Eleni Papadopoulou (Meteorologist)<br/>- Katerina Georgiou (Logistics)<br/>- Dr. Dimitris Nikolaou (Medical)]
-    AGENT_ARG -->|Yes: 'all'| ALL_13[Select All 13 Greek Experts]
+    AGENT_ARG -->|No| DEFAULT_3[Use Default 3 Core Experts:<br/>Meteorologist, Logistics,<br/>Medical Expert]
+    AGENT_ARG -->|Yes: all| ALL_13[Select All 13 Experts]
     AGENT_ARG -->|Yes: specific IDs| CUSTOM[Use Specified Agent IDs]
 
     AUTO --> LOAD_SCENARIO[Load Scenario JSON]
     LOAD_SCENARIO --> CHECK_META{expert_selection<br/>metadata exists?}
 
     CHECK_META -->|No| FALLBACK[Fallback to 3 Core Experts<br/>+ Warning Log]
-    CHECK_META -->|Yes| EXTRACT_META[Extract Metadata:<br/>- crisis_type<br/>- crisis_subtypes<br/>- severity<br/>- domains<br/>- scope<br/>- command_structure<br/>- infrastructure<br/>- populations<br/>- duration]
+    CHECK_META -->|Yes| EXTRACT_META[Extract Metadata:<br/>crisis_type, severity,<br/>domains, scope, etc.]
 
     FALLBACK --> INIT_AGENTS[Initialize Expert Agents]
 
     EXTRACT_META --> CREATE_SELECTOR[Create ExpertSelector Instance]
 
-    CREATE_SELECTOR --> EVAL_LOOP[Iterate Through 13 Greek Expert Rules]
+    CREATE_SELECTOR --> EVAL_LOOP[Iterate Through 13 Expert Rules]
 
-    subgraph "13 Greek Expert Profiles"
-        EXPERT_LIST[1. Dr. Eleni Papadopoulou - Meteorologist<br/>2. Dr. Dimitris Nikolaou - Medical EKAB<br/>3. Katerina Georgiou - Logistics Civil Protection<br/>4. Maj Gen Giorgos Antoniou - Public Safety<br/>5. Dr. Sofia Karagianni - Environmental<br/>6. Commander Maria Papadimitriou - EKAB/PSAP<br/>7. Brigadier Nikos Konstantinou - Police Tactical<br/>8. Maj Gen Andreas Theodorou - Police Regional<br/>9. Pyragos Ioanna Michaelidou - Fire Tactical<br/>10. Taxiarchos Vasilis Stavropoulos - Fire Regional<br/>11. Dr. Anna Mitropoulou - Medical Infrastructure<br/>12. Plotarchos Christos Lambropoulos - Coast Guard Tactical<br/>13. Rear Admiral Dimitra Vlachaki - Coast Guard National]
+    subgraph TacticalExperts["Tactical Level - 6 Experts"]
+        TE1[Police On-Scene]
+        TE2[Fire On-Scene]
+        TE3[Coast Guard On-Scene]
+        TE4[Medical Expert]
+        TE5[Meteorologist]
+        TE6[Logistics Coordinator]
     end
 
-    subgraph "Expert Evaluation Loop"
+    subgraph StrategicExperts["Strategic Level - 7 Experts"]
+        SE1[Police Regional]
+        SE2[Fire Regional]
+        SE3[Coast Guard National]
+        SE4[Public Safety Expert]
+        SE5[Environmental Expert]
+        SE6[Medical Infrastructure]
+        SE7[PSAP Commander]
+    end
+
+    subgraph EvalLoop["Expert Evaluation Loop"]
         EVAL_LOOP --> EVAL_EXPERT[Evaluate Expert Against Rules]
 
         EVAL_EXPERT --> SCORE_CALC[Calculate Match Score]
 
-        subgraph "Scoring Criteria (Points)"
-            SCORE_CALC --> SC1[Crisis Type Match: +3]
-            SCORE_CALC --> SC2[Crisis Subtype Match: +2]
-            SCORE_CALC --> SC3[Domain Match: +2]
-            SCORE_CALC --> SC4[Severity Threshold: +1]
-            SCORE_CALC --> SC5[Geographic Scope: +2]
-            SCORE_CALC --> SC6[Geographic Location: +2]
-            SCORE_CALC --> SC7[Command Structure: +2]
-            SCORE_CALC --> SC8[Multi-jurisdictional: +1]
-            SCORE_CALC --> SC9[Infrastructure Systems: +2]
-            SCORE_CALC --> SC10[Population Threshold: +1]
-            SCORE_CALC --> SC11[Duration Threshold: +1]
+        subgraph Criteria["Scoring Criteria - Points"]
+            SCORE_CALC --> SC1[Crisis Type: +3]
+            SCORE_CALC --> SC2[Subtype: +2]
+            SCORE_CALC --> SC3[Domain: +2]
+            SCORE_CALC --> SC4[Severity: +1]
+            SCORE_CALC --> SC5[Scope: +2]
+            SCORE_CALC --> SC6[Location: +2]
+            SCORE_CALC --> SC7[Command: +2]
+            SCORE_CALC --> SC8[Multi-jurisd: +1]
+            SCORE_CALC --> SC9[Infrastructure: +2]
+            SCORE_CALC --> SC10[Population: +1]
+            SCORE_CALC --> SC11[Duration: +1]
         end
 
         SC1 & SC2 & SC3 & SC4 & SC5 & SC6 & SC7 & SC8 & SC9 & SC10 & SC11 --> TOTAL_SCORE[Sum Total Score]
 
-        TOTAL_SCORE --> CHECK_INCLUDE{Score > 0<br/>OR<br/>Core Expert?}
+        TOTAL_SCORE --> CHECK_INCLUDE{Score > 0<br/>OR Core Expert?}
 
         CHECK_INCLUDE -->|Yes| ADD_SELECTED[Add to Selected Set]
         CHECK_INCLUDE -->|No| SKIP[Skip Expert]
@@ -1175,7 +1190,7 @@ flowchart TB
     VALIDATE_COUNT[Validate Selected Count]
     VALIDATE_COUNT --> MIN_CHECK{Selected >= 3?}
 
-    MIN_CHECK -->|No| ADD_CORE[Add Core Experts to Reach Minimum]
+    MIN_CHECK -->|No| ADD_CORE[Add Core Experts]
     MIN_CHECK -->|Yes| MAX_CHECK{Selected <= 13?}
 
     ADD_CORE --> MAX_CHECK
@@ -1190,17 +1205,17 @@ flowchart TB
     CUSTOM --> INIT_AGENTS
     FINAL_LIST --> LOG_SELECTION{Verbose Mode?}
 
-    LOG_SELECTION -->|Yes| DETAILED_LOG[Log Selection Details:<br/>- Greek Agent Names<br/>- Scores<br/>- Selection Reasons<br/>- Descriptions]
-    LOG_SELECTION -->|No| BASIC_LOG[Log: Selected N Greek experts]
+    LOG_SELECTION -->|Yes| DETAILED_LOG[Log Selection Details:<br/>Agent Roles, Scores,<br/>Selection Reasons]
+    LOG_SELECTION -->|No| BASIC_LOG[Log: Selected N experts]
 
     DETAILED_LOG --> INIT_AGENTS
     BASIC_LOG --> INIT_AGENTS
 
-    INIT_AGENTS --> LOAD_PROFILES[Load Agent Profiles from<br/>agents/agent_profiles.json<br/>13 Greek Emergency Response Experts]
+    INIT_AGENTS --> LOAD_PROFILES[Load Agent Profiles from<br/>agent_profiles.json]
 
-    LOAD_PROFILES --> CREATE_AGENTS[Create ExpertAgent Instances<br/>with LLM Clients<br/>Pydantic Validation]
+    LOAD_PROFILES --> CREATE_AGENTS[Create ExpertAgent Instances<br/>with LLM Clients]
 
-    CREATE_AGENTS --> READY([Greek Experts Ready for<br/>Crisis Assessment])
+    CREATE_AGENTS --> READY([Experts Ready for<br/>Crisis Assessment])
 
     %% Styling
     classDef inputClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
@@ -1210,6 +1225,8 @@ flowchart TB
     classDef manualClass fill:#ffccbc,stroke:#e64a19,stroke-width:2px
     classDef criteriaClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px
     classDef outputClass fill:#99ff99,stroke:#1b5e20,stroke-width:2px
+    classDef tacticalClass fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    classDef strategicClass fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
 
     class START,CLI_PARSE inputClass
     class LOAD_SCENARIO,EXTRACT_META,CREATE_SELECTOR,EVAL_EXPERT,SCORE_CALC,TOTAL_SCORE,VALIDATE_COUNT,FINAL_LIST,LOG_SELECTION,LOAD_PROFILES,CREATE_AGENTS processClass
@@ -1218,18 +1235,20 @@ flowchart TB
     class MANUAL,DEFAULT_3,ALL_13,CUSTOM,FALLBACK manualClass
     class SC1,SC2,SC3,SC4,SC5,SC6,SC7,SC8,SC9,SC10,SC11 criteriaClass
     class INIT_AGENTS,READY outputClass
+    class TacticalExperts tacticalClass
+    class StrategicExperts strategicClass
 ```
 
 **Key Features:**
-- **13 Greek Emergency Response Experts** with authentic names (Greeklish)
-- **Greek Crisis Scenarios:** Karditsa Flood, Evia Fire, Elefsina HAZMAT
+- **13 Expert Roles** organized in Tactical (6) and Strategic (7) hierarchy
+- **Crisis Scenarios:** Karditsa Flood, Evia Fire, Elefsina HAZMAT
 - **Backward Compatible:** Manual mode with 3 core experts remains default
 - **Automatic Selection:** Rule-based scoring system evaluates all 13 experts
 - **Pydantic Validation:** All responses validated with Pydantic models
 - **Intelligent Scoring:** 11 different criteria with weighted point values
 - **Fallback Protection:** Missing metadata falls back to core 3 experts
 - **Validation:** Ensures minimum 3, maximum 13 experts selected
-- **Transparency:** Verbose mode shows Greek expert scoring rationale
+- **Transparency:** Verbose mode shows expert scoring rationale
 
 ---
 
