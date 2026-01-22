@@ -115,7 +115,7 @@ def test_feature_extraction():
     print("TEST 2: Feature Extraction")
     print("="*80)
 
-    layer = GraphAttentionLayer(feature_dim=8)
+    layer = GraphAttentionLayer(feature_dim=9)
 
     scenario = {
         'type': 'flood',
@@ -147,12 +147,13 @@ def test_feature_extraction():
         'Severity Awareness',
         'Top Choice Strength',
         'Number of Concerns',
-        'Reasoning Quality'
+        'Reasoning Quality',
+        'Historical Reliability'
     ]
     for i, (name, value) in enumerate(zip(feature_names, features)):
         print(f"  {i+1}. {name}: {value:.3f}")
 
-    assert len(features) == 8, f"Should have 8 features, got {len(features)}"
+    assert len(features) == 9, f"Should have 9 features, got {len(features)}"
     assert all(0 <= f <= 1.5 for f in features), "All features should be in reasonable range"
 
     print("\n✅ TEST PASSED: Feature extraction works correctly")
@@ -166,11 +167,11 @@ def test_attention_coefficients():
 
     layer = GraphAttentionLayer()
 
-    # Create features for 3 agents
+    # Create features for 3 agents (9 dimensions each)
     features = {
-        'agent_1': np.array([0.8, 0.7, 0.9, 0.5, 0.8, 0.4, 0.6, 0.7]),  # High confidence, high relevance
-        'agent_2': np.array([0.6, 0.5, 0.6, 0.5, 0.8, 0.3, 0.4, 0.5]),  # Medium
-        'agent_3': np.array([0.4, 0.3, 0.3, 0.7, 0.8, 0.2, 0.3, 0.4])   # Low confidence
+        'agent_1': np.array([0.8, 0.7, 0.9, 0.5, 0.8, 0.4, 0.6, 0.7, 0.85]),  # High confidence, high relevance
+        'agent_2': np.array([0.6, 0.5, 0.6, 0.5, 0.8, 0.3, 0.4, 0.5, 0.75]),  # Medium
+        'agent_3': np.array([0.4, 0.3, 0.3, 0.7, 0.8, 0.2, 0.3, 0.4, 0.65])   # Low confidence
     }
 
     # Fully connected graph

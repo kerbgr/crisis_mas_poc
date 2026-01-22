@@ -35,10 +35,10 @@ GAT treats the multi-agent system as a graph:
 
 Attention Mechanism:
 For each agent i, compute attention to agent j:
-    α_ij = softmax_j(LeakyReLU(a^T [W h_i || W h_j]))
+    α_ij = softmax_j(LeakyReLU(a^T [W f_i || W f_j]))
 
 Where:
-- h_i, h_j = feature vectors for agents i and j
+- f_i, f_j = feature vectors for agents i and j (9-dimensional)
 - W = weight matrix (here: hand-crafted feature weighting rules)
 - a = attention weight vector
 - || = concatenation operator
@@ -299,10 +299,10 @@ class GraphAttentionLayer:
     attend to agent j when making decisions.
 
     Attention mechanism:
-        α_ij = softmax_j(LeakyReLU(a^T [W h_i || W h_j]))
+        α_ij = softmax_j(LeakyReLU(a^T [W f_i || W f_j]))
 
     Where:
-        h_i = feature vector for agent i
+        f_i = feature vector for agent i (9-dimensional)
         W = learnable weight matrix (here: hand-crafted rules)
         a = attention weight vector
         || = concatenation
