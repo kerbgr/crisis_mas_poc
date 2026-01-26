@@ -22,9 +22,9 @@ The Decision Framework module provides the core decision-making infrastructure f
 ```
 decision_framework/
 ├── __init__.py                # Module exports and overview
-├── evidential_reasoning.py    # Simplified ER for belief aggregation
+├── evidential_reasoning.py    # Full Dempster-Shafer belief aggregation
 ├── gat_aggregator.py          # Graph attention network aggregator
-├── mcda_engine.py             # Multi-criteria decision analysis
+├── mcda_engine.py             # Full TOPSIS multi-criteria decision analysis
 └── consensus_model.py         # Consensus detection and conflict resolution
 ```
 
@@ -39,9 +39,9 @@ graph TB
     end
 
     subgraph "Decision Framework"
-        ER[Evidential Reasoning<br/>Weighted Averaging]
+        ER[Evidential Reasoning<br/>Full Dempster-Shafer]
         GAT[GAT Aggregator<br/>Attention-Based]
-        MCDA[MCDA Engine<br/>Multi-Criteria Ranking]
+        MCDA[MCDA Engine<br/>Full TOPSIS]
         CM[Consensus Model<br/>Agreement Detection]
     end
 
@@ -76,20 +76,21 @@ graph TB
 
 **File:** `evidential_reasoning.py`
 
-**Purpose:** Simplified belief aggregation using weighted averaging
+**Purpose:** Full Dempster-Shafer belief aggregation with conflict handling
 
 **Key Features:**
-- Weighted averaging of belief distributions
+- Full Dempster's combination rule: m₁₂(A) = [Σ_{B∩C=A} m₁(B) × m₂(C)] / (1 - K)
+- Conflict mass calculation: K = Σ_{B∩C=∅} m₁(B) × m₂(C)
+- High conflict handling (K > 0.7) with proportional redistribution
 - Entropy-based confidence scoring
 - Uncertainty quantification
-- Fast computation (O(N×M))
-- High interpretability
+- Backward compatible with weighted averaging (method='weighted')
 
 **When to Use:**
-- Homogeneous agents (similar expertise)
-- Time-critical decisions
-- Need simple explanations
-- Limited computational resources
+- Multiple agents with potentially conflicting views
+- Need mathematically rigorous belief fusion
+- Conflict detection and handling required
+- Academic/research applications
 
 **Example:**
 ```python
@@ -107,9 +108,15 @@ agent_weights = {
     "logistics": 0.45
 }
 
-result = er.combine_beliefs(agent_beliefs, agent_weights)
+# Full Dempster-Shafer combination (default)
+result = er.combine_beliefs(agent_beliefs, agent_weights, method='dempster')
 print(f"Combined: {result['combined_beliefs']}")
 print(f"Confidence: {result['confidence']:.3f}")
+print(f"Conflict mass: {result['conflict_mass']:.3f}")
+print(f"Conflict detected: {result['conflict_detected']}")
+
+# Legacy weighted averaging (backward compatible)
+result_legacy = er.combine_beliefs(agent_beliefs, agent_weights, method='weighted')
 ```
 
 ### 2. Graph Attention Network (GAT) Aggregator
@@ -151,19 +158,22 @@ print(f"Attention Weights: {result['attention_weights']}")
 
 **File:** `mcda_engine.py`
 
-**Purpose:** Multi-criteria decision analysis for ranking alternatives
+**Purpose:** Full TOPSIS multi-criteria decision analysis for ranking alternatives
 
 **Key Features:**
-- Weighted sum with vector normalization
+- Full TOPSIS algorithm with ideal/anti-ideal solutions
+- Vector normalization: r_ij = x_ij / √(Σ x_kj²)
+- Closeness coefficient: C_i = S_i⁻ / (S_i⁺ + S_i⁻) ∈ [0, 1]
 - Handles benefit and cost criteria
 - Sensitivity analysis
 - Weight profile comparison
-- Human-readable explanations
+- Backward compatible with weighted sum (method='weighted_sum')
 
 **When to Use:**
 - Need to rank multiple alternatives
 - Multiple competing criteria (safety, cost, speed)
 - Require transparent evaluation
+- Distance-based ranking preferred
 - Sensitivity analysis needed
 
 **Example:**
@@ -173,10 +183,15 @@ from decision_framework import MCDAEngine
 mcda = MCDAEngine("scenarios/criteria_weights.json")
 
 alternatives = scenario['available_actions']
-ranked = mcda.rank_alternatives(alternatives)
+
+# Full TOPSIS ranking (default)
+ranked = mcda.rank_alternatives(alternatives, method='topsis')
 
 winner = ranked[0]
-print(f"Winner: {winner[0]} with score {winner[1]:.3f}")
+print(f"Winner: {winner[0]} with closeness coefficient {winner[1]:.3f}")
+
+# Legacy weighted sum (backward compatible)
+ranked_legacy = mcda.rank_alternatives(alternatives, method='weighted_sum')
 
 # Sensitivity analysis
 sensitivity = mcda.sensitivity_analysis(
@@ -233,9 +248,9 @@ if result['resolution_needed']:
 
 | Method | Complexity | Interpretability | Computational Cost | Best For |
 |--------|-----------|------------------|-------------------|----------|
-| **Evidential Reasoning** | Low | High | O(N×M) - Fast | Homogeneous agents, time-critical |
+| **Evidential Reasoning (Dempster-Shafer)** | Medium | High | O(N²×M) - Fast | Conflicting agents, rigorous fusion |
 | **GAT Aggregator** | High | Medium | O(N²×H×F) - Slower | Heterogeneous expertise, complex scenarios |
-| **MCDA Engine** | Low | High | O(A×C) - Fast | Multi-criteria ranking, transparent evaluation |
+| **MCDA Engine (TOPSIS)** | Low | High | O(A×C) - Fast | Multi-criteria ranking, distance-based |
 | **Consensus Model** | Low | High | O(N²) - Fast | Conflict detection, group decisions |
 
 ### Decision Flow
@@ -427,8 +442,27 @@ Where:
 
 **Implementation in This System:**
 
-Our simplified ER implementation uses weighted averaging for computational efficiency in real-time crisis response:
+Our full Dempster-Shafer implementation uses the complete combination rule with conflict handling:
 
+```
+m₁₂(A) = [Σ_{B∩C=A} m₁(B) × m₂(C)] / (1 - K)
+
+Where conflict mass K = Σ_{B∩C=∅} m₁(B) × m₂(C)
+```
+
+For singleton hypotheses (disjoint alternatives), this simplifies to:
+```
+m₁₂(Aᵢ) = m₁(Aᵢ) × m₂(Aᵢ) / (1 - K)
+```
+
+**High Conflict Handling (K > 0.7):**
+When conflict exceeds threshold, proportional redistribution is applied:
+```
+m_adjusted(A) = m_avg(A) + K × (m_avg(A) / Σ_supported)
+```
+
+**Backward Compatibility:**
+Legacy weighted averaging is available via `method='weighted'`:
 ```
 combined_belief(A_i) = Σⱼ(wⱼ × rⱼ × beliefⱼ(A_i)) / Σⱼ(wⱼ × rⱼ)
 ```
@@ -635,12 +669,12 @@ Where:
 
 ### Choosing Aggregation Method
 
-**Use Evidential Reasoning when:**
-- Agents have similar expertise
-- Speed is critical (< 1ms required)
-- Simple explanation needed for stakeholders
-- Limited computational resources
-- Agent reliability weights are well-established
+**Use Evidential Reasoning (Dempster-Shafer) when:**
+- Agents may have conflicting views
+- Need mathematically rigorous belief fusion
+- Conflict detection and handling is important
+- Academic/research applications require full theory
+- Want explicit conflict mass reporting
 
 **Use GAT Aggregator when:**
 - Agents have diverse expertise domains
@@ -854,6 +888,8 @@ sensitivity = mcda.sensitivity_analysis(
 | 1.2 | 2023-Q3 | Added GAT Aggregator |
 | 2.0 | 2024-Q4 | Enhanced with reliability tracking integration |
 | 2.1 | 2025-01-09 | Fixed evaluation methodology, comprehensive documentation |
+| 2.2 | 2026-01-24 | Full Dempster-Shafer implementation with conflict handling (K > 0.7) |
+| 2.3 | 2026-01-24 | Full TOPSIS implementation with ideal/anti-ideal solutions |
 
 ---
 
@@ -891,6 +927,8 @@ sensitivity = mcda.sensitivity_analysis(
 - Bayesian approaches to uncertainty quantification
 - Game-theoretic conflict resolution
 - Explainable AI for decision transparency
+- Extended Dempster-Shafer with non-singleton focal elements
+- Fuzzy TOPSIS for imprecise criteria scores
 
 ---
 

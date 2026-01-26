@@ -1496,7 +1496,7 @@ flowchart TD
 
 ### Key Algorithms
 
-#### Evidential Reasoning (Simplified Dempster-Shafer Theory)
+#### Evidential Reasoning (Full Dempster-Shafer Implementation)
 
 **Input:** Agent assessments $\mathcal{A} = \{A_1, A_2, \ldots, A_n\}$ where each $A_i = \{m_i, c_i\}$ with belief mass assignment $m_i$ and confidence $c_i \in [0,1]$.
 
@@ -1506,13 +1506,9 @@ flowchart TD
 
    $$m_i(a) = \text{belief of agent } i \text{ in alternative } a$$
 
-2. **Confidence Weighting:** Apply confidence-based discount:
+2. **Sort by Reliability:** Order agents by reliability weight (descending) for stable combination:
 
-   $$m'_i(a) = c_i \cdot m_i(a)$$
-
-   $$m'_i(\Theta) = 1 - c_i + c_i \cdot m_i(\Theta)$$
-
-   where $\Theta$ represents the frame of discernment (uncertainty).
+   $$\text{agents}_{\text{sorted}} = \text{sort}(\{(i, w_i)\}, \text{by } w_i \text{ descending})$$
 
 3. **Dempster's Combination Rule:** For two agents with belief functions $m_1$ and $m_2$:
 
@@ -1520,15 +1516,21 @@ flowchart TD
 
    where the conflict coefficient $K$ is:
 
-   $$K = \sum_{x \cap y = \emptyset} m_1(x) \cdot m_2(y)$$
+   $$K = \sum_{x \cap y = \emptyset} m_1(x) \cdot m_2(y) = \sum_{i \neq j} m_1(a_i) \cdot m_2(a_j)$$
 
-4. **Iterative Combination:** Combine all $n$ agents pairwise:
+4. **High Conflict Handling (K > 0.7):** When conflict exceeds threshold, use proportional redistribution:
+
+   $$m_{\text{adjusted}}(a) = m_{\text{avg}}(a) + K \cdot \frac{m_{\text{avg}}(a)}{\sum_{a' \in \text{supported}} m_{\text{avg}}(a')}$$
+
+   where $m_{\text{avg}}(a) = \frac{m_1(a) + m_2(a)}{2}$ is the average mass.
+
+5. **Iterative Combination:** Combine all $n$ agents pairwise (most reliable first):
 
    $$m_{\text{combined}} = m_1 \oplus m_2 \oplus \cdots \oplus m_n$$
 
    where $\oplus$ denotes Dempster's combination operator.
 
-5. **Normalization:** Ensure belief distribution sums to unity:
+6. **Normalization:** Ensure belief distribution sums to unity:
 
    $$m_{\text{final}}(a) = \frac{m_{\text{combined}}(a)}{\sum_{a' \in \mathcal{A}} m_{\text{combined}}(a')}$$
 
@@ -1536,6 +1538,7 @@ flowchart TD
 - Combined belief distribution $m_{\text{final}}: \mathcal{A} \rightarrow [0,1]$
 - Uncertainty measure $U = m_{\text{final}}(\Theta)$
 - Conflict level $K \in [0,1)$
+- Conflict detection flag (true if $K > 0.7$)
 
 #### Graph Attention Network (GAT) for Multi-Agent Aggregation
 
@@ -1610,7 +1613,7 @@ $$m_{\text{final}}(a) = \frac{m_{\text{GAT}}(a)}{\sum_{a' \in \mathcal{A}} m_{\t
 - Overall confidence $c_{\text{GAT}} = \sum_{i=1}^{n} \alpha_{ii} \cdot c_i$
 - Uncertainty $U_{\text{GAT}} = -\sum_{a} m_{\text{final}}(a) \log m_{\text{final}}(a)$
 
-#### TOPSIS (Technique for Order Preference by Similarity to Ideal Solution)
+#### TOPSIS (Full Implementation with Ideal/Anti-Ideal Solutions)
 
 **Input:**
 - Set of alternatives $\mathcal{A} = \{a_1, a_2, \ldots, a_m\}$
@@ -1946,22 +1949,27 @@ Clear clustering shows 3-agent coalition for evacuation, 1 dissenter for barrier
 
 ### Algorithmic Limitations
 
-#### 1. Simplified Evidential Reasoning
+#### 1. Dempster-Shafer Evidential Reasoning
 
-**Limitation:** The ER implementation uses a simplified version of Dempster-Shafer theory.
+**Implementation:** Full Dempster-Shafer combination rule with conflict handling.
 
-**Specific Simplifications:**
+**Features Implemented:**
+- Complete Dempster's combination rule: $m_{12}(a) = \frac{1}{1-K} \sum_{x \cap y = a} m_1(x) \cdot m_2(y)$
+- Conflict mass calculation: $K = \sum_{i \neq j} m_1(a_i) \cdot m_2(a_j)$
+- High conflict handling (K > 0.7) via proportional redistribution
+- Agent sorting by reliability for stable iterative combination
+- Backward compatibility with weighted averaging (`method='weighted'`)
+
+**Remaining Simplifications:**
 - Assumes singleton focal elements (beliefs assigned to individual alternatives only)
-- Does not fully implement frame of discernment with compound hypotheses
-- Conflict handling uses renormalization rather than advanced conflict resolution strategies
+- Does not implement frame of discernment with compound hypotheses
 - Missing features: Pignistic transformation, Transferable Belief Model (TBM)
 
-**Impact:** May not capture full complexity of uncertain reasoning in scenarios with:
-- Highly conflicting expert opinions (conflict >0.5)
-- Need for "unknown" or "no decision" options
+**Impact:** May not capture full complexity in scenarios requiring:
+- Compound hypotheses (e.g., "A or B" as single belief)
 - Hierarchical belief structures
 
-**Mitigation:** GAT aggregation provides alternative that handles conflicts through attention weighting.
+**Mitigation:** GAT aggregation provides neural attention-based alternative for complex scenarios.
 
 #### 2. Static MCDA Weights
 

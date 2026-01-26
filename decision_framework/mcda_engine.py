@@ -24,30 +24,41 @@ Decision-makers need a structured way to:
 This module provides that structured, auditable decision framework.
 
 METHODOLOGICAL CLASSIFICATION:
-- **Approach**: Weighted sum with vector normalization
-- **Family**: TOPSIS-inspired (Technique for Order of Preference by Similarity to Ideal Solution)
+- **Approach**: Full TOPSIS (Technique for Order of Preference by Similarity to Ideal Solution)
+- **Family**: Distance-based MCDA methods
 - **Related Methods**: MAUT (Multi-Attribute Utility Theory), SAW (Simple Additive Weighting)
 - **Research Context**: Serves as "παρόμοιες προσεγγίσεις" (similar approaches) to
   Group UTA mentioned in thesis abstract, providing multi-criteria group decision-making
   through weighted aggregation of heterogeneous expert preferences
 
-MATHEMATICAL FOUNDATION:
-Weighted Sum with Normalization:
+MATHEMATICAL FOUNDATION (TOPSIS Algorithm):
 
-For each alternative A:
-    score(A) = Σ [w_i × normalized(v_i)]
+**Step 1: Vector Normalization**
+    r_ij = x_ij / √(Σ_{k=1}^m x_kj²)
 
-Where:
-- w_i = weight for criterion i (from criteria_weights.json)
-- v_i = raw value for criterion i
-- normalized(v_i) = (v_i - min) / (max - min) for benefit criteria
-- normalized(v_i) = (max - v_i) / (max - min) for cost criteria
+**Step 2: Weighted Normalized Matrix**
+    v_ij = w_j × r_ij
 
-Normalization ensures:
-1. All criteria on same scale (0-1)
-2. Scale independence (euros vs. hours vs. lives)
-3. Benefit criteria: higher is better → higher normalized score
-4. Cost criteria: lower is better → higher normalized score
+**Step 3: Ideal Solutions**
+    A⁺ = {v₁⁺, v₂⁺, ..., vₙ⁺}  where:
+        v_j⁺ = max_i(v_ij) for benefit criteria
+        v_j⁺ = min_i(v_ij) for cost criteria
+
+    A⁻ = {v₁⁻, v₂⁻, ..., vₙ⁻}  where:
+        v_j⁻ = min_i(v_ij) for benefit criteria
+        v_j⁻ = max_i(v_ij) for cost criteria
+
+**Step 4: Euclidean Distances**
+    S_i⁺ = √(Σ_{j=1}^n (v_ij - v_j⁺)²)  # Distance from ideal
+    S_i⁻ = √(Σ_{j=1}^n (v_ij - v_j⁻)²)  # Distance from anti-ideal
+
+**Step 5: Closeness Coefficient**
+    C_i = S_i⁻ / (S_i⁺ + S_i⁻) ∈ [0, 1]
+
+Interpretation:
+- C_i = 1: Alternative is the ideal solution
+- C_i = 0: Alternative is the anti-ideal solution
+- Higher C_i = Better alternative
 
 CRITERION TYPES:
 1. **Benefit Criteria** (maximize):
@@ -272,6 +283,7 @@ COMPARISON WITH OTHER MCDA METHODS:
 
 import json
 import logging
+import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
 from pathlib import Path
 from datetime import datetime
@@ -578,30 +590,200 @@ class MCDAEngine:
     def rank_alternatives(
         self,
         alternatives: List[Dict[str, Any]],
-        custom_weights: Optional[Dict[str, float]] = None
+        custom_weights: Optional[Dict[str, float]] = None,
+        method: str = 'topsis'
     ) -> List[Tuple[str, float, Dict[str, float]]]:
         """
-        Rank alternatives based on MCDA scoring.
+        Rank alternatives using MCDA methods.
+
+        Supports two methods:
+        - 'topsis': Full TOPSIS with ideal/anti-ideal solutions (default)
+        - 'weighted_sum': Simple weighted sum (legacy)
+
+        TOPSIS Algorithm Steps:
+        1. Vector normalization: r_ij = x_ij / √(Σ x_kj²)
+        2. Weighted matrix: v_ij = w_j × r_ij
+        3. Ideal solutions: A⁺ (best) and A⁻ (worst)
+        4. Euclidean distances: S⁺ and S⁻
+        5. Closeness coefficient: C_i = S⁻ / (S⁺ + S⁻)
 
         Args:
-            alternatives: List of alternative dictionaries with id and estimated_metrics
+            alternatives: List of alternative dictionaries with id and criteria_scores
             custom_weights: Optional custom criterion weights
+            method: 'topsis' (default) or 'weighted_sum'
 
         Returns:
-            List of tuples (alternative_id, weighted_score, normalized_scores),
+            List of tuples (alternative_id, score, criterion_scores),
             sorted by score descending
 
         Example:
-            >>> alternatives = [
-            ...     {"id": "A1", "estimated_metrics": {...}},
-            ...     {"id": "A2", "estimated_metrics": {...}}
-            ... ]
-            >>> ranked = mcda.rank_alternatives(alternatives)
-            >>> print(f"Winner: {ranked[0][0]} with score {ranked[0][1]:.3f}")
+            >>> ranked = mcda.rank_alternatives(alternatives, method='topsis')
+            >>> print(f"Winner: {ranked[0][0]} with closeness {ranked[0][1]:.3f}")
         """
         if not alternatives:
             return []
 
+        if method == 'weighted_sum':
+            return self._weighted_sum_ranking(alternatives, custom_weights)
+
+        # Default: Full TOPSIS
+        return self._topsis_ranking(alternatives, custom_weights)
+
+    def _topsis_ranking(
+        self,
+        alternatives: List[Dict[str, Any]],
+        custom_weights: Optional[Dict[str, float]] = None
+    ) -> List[Tuple[str, float, Dict[str, float]]]:
+        """
+        Rank alternatives using full TOPSIS algorithm.
+
+        TOPSIS (Technique for Order of Preference by Similarity to Ideal Solution)
+        ranks alternatives based on their geometric distance from the ideal
+        and anti-ideal solutions.
+
+        Mathematical Steps:
+        1. r_ij = x_ij / √(Σ_{k=1}^m x_kj²)  [Vector normalization]
+        2. v_ij = w_j × r_ij                  [Weighted matrix]
+        3. A⁺ = {max(v_ij)} for benefit, {min(v_ij)} for cost  [Ideal]
+        4. A⁻ = {min(v_ij)} for benefit, {max(v_ij)} for cost  [Anti-ideal]
+        5. S_i⁺ = √(Σ(v_ij - v_j⁺)²)         [Distance from ideal]
+        6. S_i⁻ = √(Σ(v_ij - v_j⁻)²)         [Distance from anti-ideal]
+        7. C_i = S_i⁻ / (S_i⁺ + S_i⁻)        [Closeness coefficient]
+
+        Args:
+            alternatives: List of alternative dictionaries
+            custom_weights: Optional custom weights
+
+        Returns:
+            Ranked list of (alt_id, closeness_coefficient, weighted_scores)
+        """
+        # Step 0: Extract alternative IDs and build decision matrix
+        alt_ids = [alt.get('id', f'alt_{i}') for i, alt in enumerate(alternatives)]
+
+        # Get criteria from first alternative's scores
+        first_alt = alternatives[0]
+        if 'criteria_scores' in first_alt:
+            criteria_ids = sorted(first_alt['criteria_scores'].keys())
+        else:
+            # Fall back to config criteria
+            criteria_ids = sorted(self.criteria_config.keys())
+
+        n_alternatives = len(alternatives)
+        n_criteria = len(criteria_ids)
+
+        if n_alternatives == 0 or n_criteria == 0:
+            return []
+
+        # Build raw decision matrix (m alternatives × n criteria)
+        matrix = np.zeros((n_alternatives, n_criteria))
+
+        for i, alt in enumerate(alternatives):
+            scores = self.score_alternative(alt, alternatives)
+            for j, crit_id in enumerate(criteria_ids):
+                matrix[i, j] = scores.get(crit_id, 0.5)  # Default 0.5 if missing
+
+        # Step 1: Vector normalization
+        # r_ij = x_ij / √(Σ_{k=1}^m x_kj²)
+        normalized = np.zeros_like(matrix)
+        for j in range(n_criteria):
+            column = matrix[:, j]
+            denominator = np.sqrt(np.sum(column ** 2))
+            if denominator > 1e-10:
+                normalized[:, j] = column / denominator
+            else:
+                normalized[:, j] = 0.0
+
+        # Step 2: Get weights and apply to normalized matrix
+        weights = self._get_criteria_weights(criteria_ids, custom_weights)
+        weights_array = np.array([weights.get(crit_id, 1.0/n_criteria)
+                                  for crit_id in criteria_ids])
+
+        # Normalize weights to sum to 1
+        weights_array = weights_array / np.sum(weights_array)
+
+        # Weighted normalized matrix: v_ij = w_j × r_ij
+        weighted = normalized * weights_array
+
+        # Step 3: Determine ideal (A⁺) and anti-ideal (A⁻) solutions
+        ideal_positive = np.zeros(n_criteria)
+        ideal_negative = np.zeros(n_criteria)
+
+        for j, crit_id in enumerate(criteria_ids):
+            column = weighted[:, j]
+
+            # Determine criterion type (benefit or cost)
+            if crit_id in self.criteria_config:
+                crit_type = self.criteria_config[crit_id].get('type', 'benefit')
+            else:
+                crit_type = 'benefit'  # Default to benefit
+
+            if crit_type == 'benefit':
+                # Benefit: max is ideal, min is anti-ideal
+                ideal_positive[j] = np.max(column)
+                ideal_negative[j] = np.min(column)
+            else:
+                # Cost: min is ideal, max is anti-ideal
+                ideal_positive[j] = np.min(column)
+                ideal_negative[j] = np.max(column)
+
+        # Step 4: Calculate Euclidean distances
+        # S_i⁺ = √(Σ_{j=1}^n (v_ij - v_j⁺)²)
+        distances_positive = np.sqrt(np.sum((weighted - ideal_positive) ** 2, axis=1))
+        # S_i⁻ = √(Σ_{j=1}^n (v_ij - v_j⁻)²)
+        distances_negative = np.sqrt(np.sum((weighted - ideal_negative) ** 2, axis=1))
+
+        # Step 5: Calculate closeness coefficient
+        # C_i = S_i⁻ / (S_i⁺ + S_i⁻)
+        closeness = distances_negative / (distances_positive + distances_negative + 1e-10)
+
+        # Step 6: Build results and rank by closeness (descending)
+        results = []
+        for i in range(n_alternatives):
+            alt_id = alt_ids[i]
+            score = float(closeness[i])
+            criterion_scores = {
+                criteria_ids[j]: float(weighted[i, j])
+                for j in range(n_criteria)
+            }
+            results.append((alt_id, score, criterion_scores))
+
+        # Sort by closeness coefficient (descending)
+        ranked = sorted(results, key=lambda x: x[1], reverse=True)
+
+        # Log to history with TOPSIS details
+        self.analysis_history.append({
+            'timestamp': datetime.now().isoformat(),
+            'num_alternatives': n_alternatives,
+            'num_criteria': n_criteria,
+            'winner': ranked[0][0] if ranked else None,
+            'winner_score': ranked[0][1] if ranked else 0.0,
+            'method': 'topsis',
+            'ideal_positive': ideal_positive.tolist(),
+            'ideal_negative': ideal_negative.tolist()
+        })
+
+        logger.info(
+            f"TOPSIS ranked {n_alternatives} alternatives. "
+            f"Winner: {ranked[0][0]} with closeness coefficient {ranked[0][1]:.3f}"
+        )
+
+        return ranked
+
+    def _weighted_sum_ranking(
+        self,
+        alternatives: List[Dict[str, Any]],
+        custom_weights: Optional[Dict[str, float]] = None
+    ) -> List[Tuple[str, float, Dict[str, float]]]:
+        """
+        Legacy weighted sum ranking for backward compatibility.
+
+        Args:
+            alternatives: List of alternative dictionaries
+            custom_weights: Optional custom weights
+
+        Returns:
+            Ranked list of (alt_id, weighted_score, normalized_scores)
+        """
         results = []
 
         for alternative in alternatives:
@@ -628,11 +810,40 @@ class MCDAEngine:
         })
 
         logger.info(
-            f"Ranked {len(alternatives)} alternatives. "
+            f"Weighted sum ranked {len(alternatives)} alternatives. "
             f"Winner: {ranked[0][0]} with score {ranked[0][1]:.3f}"
         )
 
         return ranked
+
+    def _get_criteria_weights(
+        self,
+        criteria_ids: List[str],
+        custom_weights: Optional[Dict[str, float]] = None
+    ) -> Dict[str, float]:
+        """
+        Get weights for specified criteria.
+
+        Args:
+            criteria_ids: List of criterion IDs
+            custom_weights: Optional custom weights
+
+        Returns:
+            Dictionary mapping criterion ID to weight
+        """
+        weights = {}
+        n_criteria = len(criteria_ids)
+        default_weight = 1.0 / n_criteria if n_criteria > 0 else 0.0
+
+        for crit_id in criteria_ids:
+            if custom_weights and crit_id in custom_weights:
+                weights[crit_id] = custom_weights[crit_id]
+            elif crit_id in self.criteria_config:
+                weights[crit_id] = self.criteria_config[crit_id].get('weight', default_weight)
+            else:
+                weights[crit_id] = default_weight
+
+        return weights
 
     def explain_ranking(
         self,
