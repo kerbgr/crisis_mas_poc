@@ -2,11 +2,13 @@
   "id": "hazmat_001",
   "type": "hazmat",
   "name": "Ammonia Leak Emergency - Elefsina",
-  "description": "A major ammonia leak at an industrial facility in Elefsina, near Athens, Greece. A storage tank containing 50 tons of anhydrous ammonia has ruptured, creating a toxic cloud affecting nearby residential areas and the industrial zone. Wind patterns are carrying the plume towards populated areas. Immediate hazmat response, evacuation, and containment are critical.",
+  "name_greek": "Διαρροή Αμμωνίας - Ελευσίνα",
+  "description": "A major ammonia leak at an industrial facility in Elefsina (Ελευσίνα), near Athens, Greece. A storage tank containing 50 tons of anhydrous ammonia has ruptured, creating a toxic cloud affecting nearby residential areas and the industrial zone. Wind patterns are carrying the plume towards populated areas. Immediate hazmat response, evacuation, and containment are critical.",
   "severity": 0.85,
   "affected_population": 12000,
   "location": {
     "region": "Elefsina (Eleusis), Attica, Greece",
+    "region_greek": "Ελευσίνα, Αττική, Ελλάδα",
     "coordinates": {"lat": 38.0411, "lon": 23.5461}
   },
   "tags": ["hazmat", "chemical_leak", "ammonia", "industrial_accident", "toxic_cloud", "evacuation"],
@@ -119,10 +121,12 @@
   },
   "metadata": {
     "created_date": "2025-01-15",
+    "updated_date": "2026-01-28",
     "author": "Crisis MAS Greece Scenarios",
-    "version": "1.0",
+    "version": "1.1",
     "scenario_complexity": "very_high",
-    "recommended_expert_domains": ["hazmat", "fire_rescue", "medical", "public_safety", "environmental", "meteorology"]
+    "recommended_expert_domains": ["hazmat", "fire_rescue", "medical", "public_safety", "environmental", "meteorology"],
+    "version_notes": "v1.1: Added Greek terminology (Ελευσίνα)"
   },
 
   "expert_selection": {

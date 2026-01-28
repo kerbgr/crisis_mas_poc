@@ -279,12 +279,18 @@ Options:
                                - manual: Use --agents flag to specify experts
                                - auto: Automatically select experts based on scenario metadata
   --criteria PATH              Criteria weights JSON (default: scenarios/criteria_weights.json)
-  --output PATH                Output results file (default: results/results.json)
+  --output-dir PATH            Output directory for results (default: results)
   --config PATH                Configuration JSON file
   --llm-provider PROVIDER      LLM provider: claude, openai, or lmstudio (default: claude)
   --no-llm                     Disable LLM enhancement (use rule-based reasoning)
   --no-viz                     Disable visualization generation
-  --aggregation METHOD         Aggregation method: ER or GAT (default: ER)
+  --no-baseline                Skip single-agent baseline comparison
+  --aggregation-method METHOD  Aggregation method: "er" or "gat" (default: er)
+                               - er: Evidential Reasoning (Dempster-Shafer weighted combination)
+                               - gat: Graph Attention Network (neural attention-based weighting)
+  --compare-methods            Run comparative analysis of ER vs GAT methods side-by-side
+                               Generates comparison visualizations and detailed metrics
+  --seed N                     Random seed for reproducibility (integer)
   --consensus-threshold N      Consensus threshold 0-1 (default: 0.7)
   --verbose                    Enable verbose logging
   --help                       Show help message
@@ -315,13 +321,43 @@ python main.py --llm-provider lmstudio
 # No API key required, runs completely offline
 ```
 
-#### Example 2: Run with GAT Aggregation
+#### Example 2: Aggregation Method Selection (ER vs GAT)
+
+**Using Evidential Reasoning (Default):**
 
 ```bash
-python main.py --aggregation GAT
+python main.py --aggregation-method er
+# or simply:
+python main.py
 ```
 
-This uses Graph Attention Network instead of Evidential Reasoning for belief aggregation.
+Evidential Reasoning uses Dempster-Shafer theory-based weighted combination for belief aggregation.
+
+**Using Graph Attention Network:**
+
+```bash
+python main.py --aggregation-method gat
+```
+
+GAT uses neural attention mechanisms with 9-dimensional feature extraction for dynamic agent weighting.
+
+**Run Comparative Analysis (ER vs GAT side-by-side):**
+
+```bash
+python main.py --scenario flood_scenario --compare-methods
+```
+
+This runs the scenario with BOTH methods and produces:
+
+- Side-by-side metrics comparison (DQS, consensus, confidence, processing time)
+- Comparison visualizations (`er_vs_gat_metrics.png`, `er_vs_gat_recommendations.png`, `er_vs_gat_summary.png`)
+- Detailed `comparative_analysis.json` with all metrics
+
+**Full comparative analysis with all 13 agents:**
+
+```bash
+python main.py --scenario flood_scenario --agents all --compare-methods --verbose
+```
 
 #### Example 3: Run Without LLM (Rule-Based Only)
 
@@ -418,7 +454,7 @@ python main.py \
 ```
 
 **Scenario Details:**
-- **Location:** Karditsa, Thessaly, Greece (Pamisos River overflow)
+- **Location:** Karditsa, Thessaly, Greece (Pineios River (Πηνειός) overflow)
 - **Severity:** 0.8 (High)
 - **Affected Population:** 15,000
 - **Key Challenges:** Residential flooding, agricultural damage, infrastructure threats

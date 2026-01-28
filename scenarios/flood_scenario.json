@@ -1,13 +1,20 @@
 {
   "id": "flood_001",
   "type": "flood",
-  "name": "Karditsa Flood Emergency",
-  "description": "A severe flooding event in Karditsa, Greece following heavy rainfall and overflow of the Pamisos River. Multiple neighborhoods are affected, with rising water levels threatening residential areas, agricultural lands, and critical infrastructure. Emergency services are overwhelmed, and immediate action is required to minimize casualties and property damage.",
+  "name": "Thessaly Flash Flood - Pineios River Overflow",
+  "name_greek": "Πλημμύρα Θεσσαλίας - Υπερχείλιση Πηνειού",
+  "description": "Catastrophic flash flood in Karditsa, Thessaly following Storm Daniel. The Pineios River (Πηνειός) has breached its banks after 72 hours of continuous rainfall, causing widespread flooding across the Thessalian plain. Multiple neighborhoods are affected, with rising water levels threatening residential areas, agricultural lands (45 km² affected), and critical infrastructure. Emergency services are overwhelmed, and immediate action is required to minimize casualties and property damage.",
+  "river_name": "Pineios River",
+  "river_name_greek": "Πηνειός Ποταμός",
+  "event_reference": "Storm Daniel (September 2023)",
   "severity": 0.8,
   "affected_population": 15000,
   "location": {
     "region": "Karditsa, Thessaly, Greece",
-    "coordinates": {"lat": 39.3644, "lon": 21.9211}
+    "region_greek": "Καρδίτσα, Θεσσαλία, Ελλάδα",
+    "coordinates": {"lat": 39.3644, "lon": 21.9211},
+    "affected_area_km2": 45,
+    "affected_area_description": "45 km² of agricultural plain and urban areas along the Pineios River basin"
   },
   "tags": ["flood", "natural_disaster", "urban", "emergency", "infrastructure"],
   "casualties": 5,
@@ -111,10 +118,12 @@
   },
   "metadata": {
     "created_date": "2025-01-15",
+    "updated_date": "2026-01-28",
     "author": "Crisis MAS Research Team",
-    "version": "2.0",
+    "version": "2.1",
     "scenario_complexity": "high",
-    "recommended_expert_domains": ["medical", "logistics", "public_safety", "environmental"]
+    "recommended_expert_domains": ["medical", "logistics", "public_safety", "environmental"],
+    "version_notes": "v2.1: Corrected river name from Pamisos to Pineios (Πηνειός), added Greek terminology, fixed population consistency, added area measurements"
   },
 
   "expert_selection": {
@@ -123,7 +132,7 @@
     "severity": 0.8,
     "geographic_scope": "regional",
     "geographic_location": "urban",
-    "affected_populations": 25000,
+    "affected_populations": 15000,
     "duration_estimated_hours": 12,
     "affected_domains": [
       "weather_environment",

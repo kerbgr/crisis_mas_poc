@@ -2,11 +2,14 @@
   "id": "fire_001",
   "type": "wildfire",
   "name": "Evia Forest Fire Emergency",
-  "description": "A severe forest fire in North Evia (Euboia), Greece, spreading rapidly due to strong winds and dry vegetation. Multiple villages are threatened, with flames approaching residential areas. The fire has already consumed thousands of hectares of forest. Immediate evacuation and firefighting operations are critical to save lives and properties.",
+  "name_greek": "Πυρκαγιά Βόρειας Εύβοιας",
+  "description": "A severe forest fire in North Evia (Εύβοια), Greece, spreading rapidly due to strong winds and dry vegetation. Multiple villages are threatened, with flames approaching residential areas. The fire has already consumed 12,000 hectares (120 km²) of forest. Immediate evacuation and firefighting operations are critical to save lives and properties.",
+  "event_reference": "Based on August 2021 North Evia wildfires",
   "severity": 0.9,
   "affected_population": 8000,
   "location": {
     "region": "North Evia, Central Greece",
+    "region_greek": "Βόρεια Εύβοια, Στερεά Ελλάδα",
     "coordinates": {"lat": 38.9231, "lon": 23.6578}
   },
   "tags": ["wildfire", "natural_disaster", "forest", "evacuation", "emergency"],
@@ -251,14 +254,17 @@
     "casualties_reported": 2,
     "missing_persons": 5,
     "burned_area_hectares": 12000,
+    "burned_area_km2": 120,
     "active_fire_fronts": 4
   },
   "metadata": {
     "created_date": "2025-01-15",
+    "updated_date": "2026-01-28",
     "author": "Crisis MAS Greece Scenarios",
-    "version": "1.0",
+    "version": "1.1",
     "scenario_complexity": "very_high",
-    "recommended_expert_domains": ["fire_rescue", "environmental", "logistics", "public_safety", "meteorology"]
+    "recommended_expert_domains": ["fire_rescue", "environmental", "logistics", "public_safety", "meteorology"],
+    "version_notes": "v1.1: Added Greek terminology (Εύβοια), dual area measurements (hectares/km²), event reference"
   },
 
   "expert_selection": {

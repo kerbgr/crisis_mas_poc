@@ -418,7 +418,7 @@ except ValueError as e:
 
 | Filename | Crisis Type | Severity | Location | Affected Population | Description |
 |----------|-------------|----------|----------|---------------------|-------------|
-| `flood_scenario.json` | flood | 0.8 | Karditsa, Thessaly, Greece | 15,000 | Pamisos River overflow causing residential and agricultural flooding |
+| `flood_scenario.json` | flood | 0.8 | Karditsa, Thessaly, Greece | 15,000 | Pineios River (Πηνειός) overflow causing residential and agricultural flooding |
 | `forest_fire_evia.json` | wildfire | 0.9 | North Evia island, Greece | 8,000 | Major forest fire with multiple fronts, village evacuations, aerial firefighting |
 | `ammonia_leak_elefsina.json` | hazmat | 0.85 | Elefsina, Attica, Greece | 12,000 | 50-ton anhydrous ammonia tank rupture, toxic cloud, HAZMAT Level A response |
 
@@ -429,7 +429,7 @@ except ValueError as e:
 **Scenario Context:**
 - **Location:** Karditsa city, Thessaly region, Central Greece
 - **Coordinates:** 39.3644°N, 21.9211°E
-- **Trigger:** Heavy rainfall and Pamisos River overflow
+- **Trigger:** Heavy rainfall and Pineios River (Πηνειός) overflow
 - **Severity:** 0.8 (High)
 - **Affected Population:** 15,000 residents
 - **Casualties:** 5 reported

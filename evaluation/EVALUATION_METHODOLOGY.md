@@ -25,7 +25,7 @@ The system is evaluated on three realistic Greek crisis scenarios:
 1. **Karditsa Flood Emergency** (severity 0.8)
    - Location: Karditsa, Thessaly, Greece (39.3644°N, 21.9211°E)
    - 15,000 affected population
-   - Pamisos River overflow with infrastructure damage
+   - Pineios River (Πηνειός) overflow with infrastructure damage
 
 2. **Evia Forest Fire Emergency** (severity 0.9)
    - Location: North Evia, Central Greece (38.9231°N, 23.6578°E)

@@ -672,7 +672,7 @@ We evaluate the system on three authentic Greek emergency scenarios representing
 
 #### Scenario 1: Karditsa Flood Emergency
 
-**Context:** Inspired by catastrophic flooding events in Thessaly, we model flooding in Karditsa (39.3644°N, 21.9211°E) where the Pamisos River overflows, inundating urban areas.
+**Context:** Inspired by catastrophic flooding events in Thessaly (Storm Daniel, September 2023), we model flooding in Karditsa (39.3644°N, 21.9211°E) where the Pineios River (Πηνειός) overflows, inundating urban areas.
 
 **Parameters:**
 - **Location:** Karditsa, Thessaly, Greece

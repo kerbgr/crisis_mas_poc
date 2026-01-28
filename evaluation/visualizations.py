@@ -1159,10 +1159,413 @@ class SystemVisualizer:
         logger.info(f"Agent network plot saved to {full_path}")
         return str(full_path)
 
+    def plot_method_comparison(
+        self,
+        comparative_results: Dict[str, Any],
+        save_path: str = "method_comparison.png",
+        title: str = "ER vs GAT Aggregation Method Comparison"
+    ) -> str:
+        """
+        Plot ER vs GAT method comparison with multiple metrics.
+
+        Creates a comprehensive comparison chart showing:
+        - Decision Quality Score
+        - Consensus Level
+        - Decision Confidence
+        - Processing Time
+
+        Args:
+            comparative_results: Dictionary with 'methods' containing ER and GAT results
+            save_path: Filename to save the plot
+            title: Plot title
+
+        Returns:
+            Full path to saved plot
+        """
+        logger.info(f"Plotting method comparison to {save_path}")
+
+        if 'methods' not in comparative_results:
+            logger.warning("No method comparison data available")
+            return ""
+
+        methods = comparative_results['methods']
+        if 'ER' not in methods or 'GAT' not in methods:
+            logger.warning("Missing ER or GAT results for comparison")
+            return ""
+
+        er_data = methods['ER']
+        gat_data = methods['GAT']
+
+        # Create figure with subplots
+        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+        fig.suptitle(title, fontsize=16, weight='bold', y=1.02)
+
+        # Color scheme for methods
+        er_color = '#3498db'  # Blue for ER
+        gat_color = '#e74c3c'  # Red for GAT
+
+        # --- Plot 1: Decision Quality Score ---
+        ax1 = axes[0, 0]
+        metrics = ['Decision Quality\nScore']
+        er_vals = [er_data.get('decision_quality_score', 0)]
+        gat_vals = [gat_data.get('decision_quality_score', 0)]
+
+        x = np.arange(len(metrics))
+        width = 0.35
+
+        bars1 = ax1.bar(x - width/2, er_vals, width, label='Evidential Reasoning (ER)',
+                        color=er_color, edgecolor='black', linewidth=1.5)
+        bars2 = ax1.bar(x + width/2, gat_vals, width, label='Graph Attention Network (GAT)',
+                        color=gat_color, edgecolor='black', linewidth=1.5)
+
+        ax1.set_ylabel('Score', fontsize=11, weight='bold')
+        ax1.set_title('Decision Quality Score', fontsize=12, weight='bold')
+        ax1.set_xticks(x)
+        ax1.set_xticklabels(metrics)
+        ax1.set_ylim(0, 1.0)
+        ax1.legend(loc='upper right', fontsize=9)
+        ax1.grid(axis='y', alpha=0.3, linestyle=':')
+
+        # Add value labels
+        for bar, val in zip(bars1, er_vals):
+            ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02,
+                     f'{val:.3f}', ha='center', va='bottom', fontsize=10, weight='bold')
+        for bar, val in zip(bars2, gat_vals):
+            ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02,
+                     f'{val:.3f}', ha='center', va='bottom', fontsize=10, weight='bold')
+
+        # --- Plot 2: Consensus Level ---
+        ax2 = axes[0, 1]
+        er_consensus = er_data.get('consensus_level', 0)
+        gat_consensus = gat_data.get('consensus_level', 0)
+
+        bars1 = ax2.bar(['ER'], [er_consensus], width=0.5, color=er_color,
+                        edgecolor='black', linewidth=1.5)
+        bars2 = ax2.bar(['GAT'], [gat_consensus], width=0.5, color=gat_color,
+                        edgecolor='black', linewidth=1.5)
+
+        ax2.set_ylabel('Consensus Level', fontsize=11, weight='bold')
+        ax2.set_title('Consensus Level Comparison', fontsize=12, weight='bold')
+        ax2.set_ylim(0, 1.0)
+        ax2.axhline(y=0.75, color='green', linestyle='--', linewidth=2,
+                    alpha=0.7, label='Threshold (75%)')
+        ax2.legend(loc='lower right', fontsize=9)
+        ax2.grid(axis='y', alpha=0.3, linestyle=':')
+
+        # Add value labels
+        ax2.text(0, er_consensus + 0.02, f'{er_consensus:.1%}',
+                 ha='center', va='bottom', fontsize=11, weight='bold')
+        ax2.text(1, gat_consensus + 0.02, f'{gat_consensus:.1%}',
+                 ha='center', va='bottom', fontsize=11, weight='bold')
+
+        # Delta annotation
+        delta = gat_consensus - er_consensus
+        delta_color = 'green' if delta >= 0 else 'red'
+        ax2.annotate(f'Δ = {delta:+.1%}', xy=(0.5, max(er_consensus, gat_consensus) + 0.08),
+                     ha='center', fontsize=10, weight='bold', color=delta_color)
+
+        # --- Plot 3: Decision Confidence ---
+        ax3 = axes[1, 0]
+        er_conf = er_data.get('confidence', 0)
+        gat_conf = gat_data.get('confidence', 0)
+
+        # Create pie-style confidence display
+        categories = ['Evidential Reasoning\n(ER)', 'Graph Attention\nNetwork (GAT)']
+        confidences = [er_conf, gat_conf]
+        colors = [er_color, gat_color]
+
+        bars = ax3.barh(categories, confidences, color=colors, edgecolor='black', linewidth=1.5)
+        ax3.set_xlim(0, 1.0)
+        ax3.set_xlabel('Confidence Score', fontsize=11, weight='bold')
+        ax3.set_title('Decision Confidence', fontsize=12, weight='bold')
+        ax3.grid(axis='x', alpha=0.3, linestyle=':')
+
+        # Add value labels
+        for bar, val in zip(bars, confidences):
+            ax3.text(val + 0.02, bar.get_y() + bar.get_height()/2,
+                     f'{val:.1%}', ha='left', va='center', fontsize=11, weight='bold')
+
+        # --- Plot 4: Processing Time ---
+        ax4 = axes[1, 1]
+        er_time = er_data.get('processing_time_ms', 0) / 1000  # Convert to seconds
+        gat_time = gat_data.get('processing_time_ms', 0) / 1000
+
+        bars = ax4.bar(['ER', 'GAT'], [er_time, gat_time], color=[er_color, gat_color],
+                       edgecolor='black', linewidth=1.5)
+        ax4.set_ylabel('Time (seconds)', fontsize=11, weight='bold')
+        ax4.set_title('Processing Time', fontsize=12, weight='bold')
+        ax4.grid(axis='y', alpha=0.3, linestyle=':')
+
+        # Add value labels
+        for bar, val in zip(bars, [er_time, gat_time]):
+            ax4.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
+                     f'{val:.1f}s', ha='center', va='bottom', fontsize=11, weight='bold')
+
+        # Add overhead annotation
+        overhead = gat_time - er_time
+        ax4.annotate(f'GAT overhead: {overhead:+.1f}s',
+                     xy=(0.5, max(er_time, gat_time) * 1.15),
+                     ha='center', fontsize=10, weight='bold',
+                     color='orange' if overhead > 0 else 'green')
+
+        plt.tight_layout()
+
+        # Save figure
+        full_path = self.output_dir / save_path
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        logger.info(f"Method comparison plot saved to {full_path}")
+        return str(full_path)
+
+    def plot_recommendation_comparison(
+        self,
+        comparative_results: Dict[str, Any],
+        save_path: str = "recommendation_comparison.png",
+        title: str = "ER vs GAT: Recommended Actions"
+    ) -> str:
+        """
+        Plot comparison of recommended actions between ER and GAT.
+
+        Shows which action each method recommends and whether they agree.
+
+        Args:
+            comparative_results: Dictionary with method results
+            save_path: Filename to save the plot
+            title: Plot title
+
+        Returns:
+            Full path to saved plot
+        """
+        logger.info(f"Plotting recommendation comparison to {save_path}")
+
+        if 'methods' not in comparative_results:
+            return ""
+
+        methods = comparative_results['methods']
+        comparison = comparative_results.get('comparison', {})
+
+        er_rec = methods['ER'].get('recommended_alternative', 'Unknown')
+        gat_rec = methods['GAT'].get('recommended_alternative', 'Unknown')
+        same = comparison.get('same_recommendation', er_rec == gat_rec)
+
+        # Create figure
+        fig, ax = plt.subplots(figsize=(12, 6))
+
+        # Create comparison visualization
+        er_color = '#3498db'
+        gat_color = '#e74c3c'
+        agree_color = '#27ae60' if same else '#f39c12'
+
+        # Draw method boxes
+        er_box = plt.Rectangle((0.1, 0.4), 0.35, 0.4, facecolor=er_color,
+                                edgecolor='black', linewidth=2)
+        gat_box = plt.Rectangle((0.55, 0.4), 0.35, 0.4, facecolor=gat_color,
+                                 edgecolor='black', linewidth=2)
+        ax.add_patch(er_box)
+        ax.add_patch(gat_box)
+
+        # Method labels
+        ax.text(0.275, 0.85, 'Evidential Reasoning (ER)', ha='center', va='center',
+                fontsize=14, weight='bold', color=er_color)
+        ax.text(0.725, 0.85, 'Graph Attention Network (GAT)', ha='center', va='center',
+                fontsize=14, weight='bold', color=gat_color)
+
+        # Recommendation text (clean up action IDs for display)
+        er_display = er_rec.replace('action_', '').replace('_', ' ').title()
+        gat_display = gat_rec.replace('action_', '').replace('_', ' ').title()
+
+        ax.text(0.275, 0.6, er_display, ha='center', va='center',
+                fontsize=11, weight='bold', color='white', wrap=True)
+        ax.text(0.725, 0.6, gat_display, ha='center', va='center',
+                fontsize=11, weight='bold', color='white', wrap=True)
+
+        # Agreement indicator
+        if same:
+            ax.annotate('', xy=(0.55, 0.6), xytext=(0.45, 0.6),
+                        arrowprops=dict(arrowstyle='<->', color=agree_color, lw=3))
+            ax.text(0.5, 0.2, '✓ SAME RECOMMENDATION', ha='center', va='center',
+                    fontsize=14, weight='bold', color=agree_color,
+                    bbox=dict(boxstyle='round', facecolor='white', edgecolor=agree_color, linewidth=2))
+        else:
+            ax.text(0.5, 0.2, '✗ DIFFERENT RECOMMENDATIONS', ha='center', va='center',
+                    fontsize=14, weight='bold', color=agree_color,
+                    bbox=dict(boxstyle='round', facecolor='white', edgecolor=agree_color, linewidth=2))
+
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_title(title, fontsize=16, weight='bold', pad=20)
+        ax.axis('off')
+
+        plt.tight_layout()
+
+        # Save figure
+        full_path = self.output_dir / save_path
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        logger.info(f"Recommendation comparison plot saved to {full_path}")
+        return str(full_path)
+
+    def plot_comparative_summary(
+        self,
+        comparative_results: Dict[str, Any],
+        save_path: str = "comparative_summary.png"
+    ) -> str:
+        """
+        Generate a comprehensive summary visualization of ER vs GAT comparison.
+
+        Creates a single figure combining all key comparative metrics.
+
+        Args:
+            comparative_results: Full comparative analysis results
+            save_path: Filename to save
+
+        Returns:
+            Full path to saved plot
+        """
+        logger.info(f"Plotting comparative summary to {save_path}")
+
+        if 'methods' not in comparative_results:
+            return ""
+
+        methods = comparative_results['methods']
+        comparison = comparative_results.get('comparison', {})
+        scenario = comparative_results.get('scenario', 'Unknown')
+        scenario_type = comparative_results.get('scenario_type', 'Unknown')
+
+        er = methods['ER']
+        gat = methods['GAT']
+
+        # Create figure
+        fig = plt.figure(figsize=(16, 10))
+
+        # Title with scenario info
+        fig.suptitle(f'ER vs GAT Comparative Analysis\nScenario: {scenario} ({scenario_type.upper()})',
+                     fontsize=16, weight='bold', y=0.98)
+
+        # Create grid layout
+        gs = fig.add_gridspec(3, 3, hspace=0.4, wspace=0.3)
+
+        # Colors
+        er_color = '#3498db'
+        gat_color = '#e74c3c'
+
+        # --- Subplot 1: Metrics Radar Chart ---
+        ax1 = fig.add_subplot(gs[0:2, 0:2], projection='polar')
+
+        categories = ['DQS', 'Consensus', 'Confidence']
+        er_vals = [er.get('decision_quality_score', 0),
+                   er.get('consensus_level', 0),
+                   er.get('confidence', 0)]
+        gat_vals = [gat.get('decision_quality_score', 0),
+                    gat.get('consensus_level', 0),
+                    gat.get('confidence', 0)]
+
+        angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
+        er_vals_closed = er_vals + er_vals[:1]
+        gat_vals_closed = gat_vals + gat_vals[:1]
+        angles_closed = angles + angles[:1]
+
+        ax1.plot(angles_closed, er_vals_closed, 'o-', linewidth=2, color=er_color,
+                 label='ER', markersize=8)
+        ax1.fill(angles_closed, er_vals_closed, alpha=0.25, color=er_color)
+        ax1.plot(angles_closed, gat_vals_closed, 's-', linewidth=2, color=gat_color,
+                 label='GAT', markersize=8)
+        ax1.fill(angles_closed, gat_vals_closed, alpha=0.25, color=gat_color)
+
+        ax1.set_xticks(angles)
+        ax1.set_xticklabels(categories, fontsize=11, weight='bold')
+        ax1.set_ylim(0, 1)
+        ax1.set_title('Performance Metrics', fontsize=12, weight='bold', pad=20)
+        ax1.legend(loc='upper right', bbox_to_anchor=(1.3, 1.0))
+
+        # --- Subplot 2: Recommendations ---
+        ax2 = fig.add_subplot(gs[0, 2])
+        same_rec = comparison.get('same_recommendation', False)
+
+        er_rec = er.get('recommended_alternative', '').replace('action_', '').replace('_', '\n').title()
+        gat_rec = gat.get('recommended_alternative', '').replace('action_', '').replace('_', '\n').title()
+
+        ax2.text(0.5, 0.8, 'ER Recommends:', ha='center', fontsize=10, weight='bold', color=er_color)
+        ax2.text(0.5, 0.65, er_rec, ha='center', fontsize=9, wrap=True)
+        ax2.text(0.5, 0.4, 'GAT Recommends:', ha='center', fontsize=10, weight='bold', color=gat_color)
+        ax2.text(0.5, 0.25, gat_rec, ha='center', fontsize=9, wrap=True)
+
+        status = '✓ AGREE' if same_rec else '✗ DIFFER'
+        status_color = '#27ae60' if same_rec else '#f39c12'
+        ax2.text(0.5, 0.05, status, ha='center', fontsize=12, weight='bold', color=status_color)
+
+        ax2.set_xlim(0, 1)
+        ax2.set_ylim(0, 1)
+        ax2.axis('off')
+        ax2.set_title('Recommendations', fontsize=12, weight='bold')
+
+        # --- Subplot 3: Processing Time ---
+        ax3 = fig.add_subplot(gs[1, 2])
+        er_time = er.get('processing_time_ms', 0) / 1000
+        gat_time = gat.get('processing_time_ms', 0) / 1000
+
+        bars = ax3.bar(['ER', 'GAT'], [er_time, gat_time], color=[er_color, gat_color],
+                       edgecolor='black', linewidth=1.5)
+        ax3.set_ylabel('Seconds', fontsize=10)
+        ax3.set_title('Processing Time', fontsize=12, weight='bold')
+
+        for bar, val in zip(bars, [er_time, gat_time]):
+            ax3.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
+                     f'{val:.1f}s', ha='center', fontsize=9, weight='bold')
+
+        # --- Subplot 4: Delta Summary ---
+        ax4 = fig.add_subplot(gs[2, :])
+
+        delta_labels = ['DQS Δ', 'Consensus Δ', 'Confidence Δ', 'Time Δ']
+        delta_vals = [
+            comparison.get('decision_quality_delta', 0),
+            comparison.get('consensus_delta', 0),
+            comparison.get('confidence_delta', 0),
+            comparison.get('processing_time_delta_ms', 0) / 1000
+        ]
+
+        # Color bars by direction (green = GAT better for quality metrics, blue for time)
+        colors = []
+        for i, val in enumerate(delta_vals):
+            if i < 3:  # Quality metrics
+                colors.append('#27ae60' if val >= 0 else '#e74c3c')
+            else:  # Time (lower is better)
+                colors.append('#e74c3c' if val > 0 else '#27ae60')
+
+        bars = ax4.barh(delta_labels, delta_vals, color=colors, edgecolor='black', linewidth=1.5)
+
+        # Add zero line
+        ax4.axvline(x=0, color='black', linewidth=2)
+
+        # Add value labels
+        for bar, val in zip(bars, delta_vals):
+            x_pos = val + 0.005 if val >= 0 else val - 0.005
+            ha = 'left' if val >= 0 else 'right'
+            label = f'{val:+.3f}' if abs(val) < 10 else f'{val:+.1f}s'
+            ax4.text(x_pos, bar.get_y() + bar.get_height()/2, label,
+                     ha=ha, va='center', fontsize=10, weight='bold')
+
+        ax4.set_xlabel('GAT - ER (positive = GAT higher)', fontsize=10, weight='bold')
+        ax4.set_title('Difference Analysis (GAT - ER)', fontsize=12, weight='bold')
+        ax4.grid(axis='x', alpha=0.3, linestyle=':')
+
+        plt.tight_layout()
+
+        # Save figure
+        full_path = self.output_dir / save_path
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        logger.info(f"Comparative summary plot saved to {full_path}")
+        return str(full_path)
+
     def generate_all_plots(
         self,
         results: Dict[str, Any],
-        output_subdir: Optional[str] = None
+        output_subdir: Optional[str] = None,
+        aggregation_method: Optional[str] = None
     ) -> Dict[str, str]:
         """
         Generate all visualization plots from results dictionary.
@@ -1178,6 +1581,7 @@ class SystemVisualizer:
                 - agent_profiles: For agent network
                 - trust_matrix: Optional, for agent network
             output_subdir: Optional subdirectory within output_dir
+            aggregation_method: Aggregation method used ('ER' or 'GAT') - displayed in plot titles
 
         Returns:
             Dictionary mapping plot type to saved file path
@@ -1189,7 +1593,7 @@ class SystemVisualizer:
             ...     'criteria_weights': {...},
             ...     'metrics': {...}
             ... }
-            >>> paths = viz.generate_all_plots(results, "scenario_1")
+            >>> paths = viz.generate_all_plots(results, "scenario_1", aggregation_method="GAT")
             >>> print(paths['beliefs'])
         """
         logger.info("Generating all visualization plots")
@@ -1202,12 +1606,24 @@ class SystemVisualizer:
 
         saved_paths = {}
 
+        # Build method suffix for titles
+        method_label = ""
+        if aggregation_method:
+            method_upper = aggregation_method.upper()
+            if method_upper == 'ER':
+                method_label = " [Evidential Reasoning]"
+            elif method_upper == 'GAT':
+                method_label = " [Graph Attention Network]"
+            else:
+                method_label = f" [{method_upper}]"
+
         # 1. Belief Distributions
         if 'agent_assessments' in results:
             try:
                 path = self.plot_belief_distributions(
                     results['agent_assessments'],
-                    "belief_distributions.png"
+                    "belief_distributions.png",
+                    title=f"Agent Belief Distributions{method_label}"
                 )
                 saved_paths['beliefs'] = path
             except Exception as e:
@@ -1218,7 +1634,8 @@ class SystemVisualizer:
             try:
                 path = self.plot_consensus_evolution(
                     results['consensus_history'],
-                    "consensus_evolution.png"
+                    "consensus_evolution.png",
+                    title=f"Consensus Evolution Over Iterations{method_label}"
                 )
                 saved_paths['consensus'] = path
             except Exception as e:
@@ -1229,7 +1646,8 @@ class SystemVisualizer:
             try:
                 path = self.plot_criteria_importance(
                     results['criteria_weights'],
-                    "criteria_importance.png"
+                    "criteria_importance.png",
+                    title=f"Decision Criteria Importance{method_label}"
                 )
                 saved_paths['criteria'] = path
             except Exception as e:
@@ -1240,7 +1658,8 @@ class SystemVisualizer:
             try:
                 path = self.plot_decision_comparison(
                     results['metrics'],
-                    "decision_comparison.png"
+                    "decision_comparison.png",
+                    title=f"Multi-Agent vs Individual Agents Performance{method_label}"
                 )
                 saved_paths['comparison'] = path
             except Exception as e:
@@ -1253,7 +1672,8 @@ class SystemVisualizer:
                 path = self.plot_agent_network(
                     results['agent_profiles'],
                     trust_matrix,
-                    "agent_network.png"
+                    "agent_network.png",
+                    title=f"Expert Agent Network{method_label}"
                 )
                 saved_paths['network'] = path
             except Exception as e:

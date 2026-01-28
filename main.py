@@ -307,7 +307,8 @@ def initialize_decision_framework() -> Dict[str, Any]:
 
 def initialize_coordinator(
     expert_agents: List[ExpertAgent],
-    framework: Dict[str, Any]
+    framework: Dict[str, Any],
+    aggregation_method: str = "ER"
 ) -> CoordinatorAgent:
     """
     Initialize coordinator agent.
@@ -315,6 +316,7 @@ def initialize_coordinator(
     Args:
         expert_agents: List of expert agents
         framework: Decision framework components
+        aggregation_method: Aggregation method ("ER" or "GAT")
 
     Returns:
         CoordinatorAgent instance
@@ -326,10 +328,11 @@ def initialize_coordinator(
         er_engine=framework['er_engine'],
         mcda_engine=framework['mcda_engine'],
         consensus_model=framework['consensus_model'],
-        parallel_assessment=True
+        parallel_assessment=True,
+        aggregation_method=aggregation_method.upper()
     )
 
-    logger.info(f"Initialized coordinator with {len(expert_agents)} agents")
+    logger.info(f"Initialized coordinator with {len(expert_agents)} agents (aggregation={aggregation_method.upper()})")
 
     return coordinator
 
@@ -869,7 +872,9 @@ def evaluate_decision(
 def generate_visualizations(
     decision: Dict[str, Any],
     metrics: Dict[str, Any],
-    output_dir: Path
+    output_dir: Path,
+    aggregation_method: Optional[str] = None,
+    comparative_results: Optional[Dict[str, Any]] = None
 ) -> Dict[str, str]:
     """
     Generate all visualization plots.
@@ -878,6 +883,8 @@ def generate_visualizations(
         decision: Decision results
         metrics: Evaluation metrics
         output_dir: Output directory
+        aggregation_method: Aggregation method used ('er' or 'gat') - shown in plot titles
+        comparative_results: Optional comparative analysis results for ER vs GAT comparison plots
 
     Returns:
         Dictionary mapping plot type to file path
@@ -911,12 +918,53 @@ def generate_visualizations(
         }
     }
 
-    # Generate all plots
-    saved_paths = viz.generate_all_plots(viz_data)
+    # Generate all standard plots (with aggregation method label in titles)
+    saved_paths = viz.generate_all_plots(viz_data, aggregation_method=aggregation_method)
 
-    logger.info(f"Generated {len(saved_paths)} visualizations:")
+    logger.info(f"Generated {len(saved_paths)} standard visualizations:")
     for plot_type, path in saved_paths.items():
         logger.info(f"  - {plot_type}: {path}")
+
+    # Generate comparison visualizations if comparative results are provided
+    if comparative_results:
+        logger.info("")
+        logger.info("Generating ER vs GAT comparison visualizations...")
+
+        try:
+            # Method comparison chart (metrics side-by-side)
+            path = viz.plot_method_comparison(
+                comparative_results,
+                "er_vs_gat_metrics.png"
+            )
+            if path:
+                saved_paths['method_comparison'] = path
+                logger.info(f"  - method_comparison: {path}")
+        except Exception as e:
+            logger.error(f"Failed to plot method comparison: {e}")
+
+        try:
+            # Recommendation comparison chart
+            path = viz.plot_recommendation_comparison(
+                comparative_results,
+                "er_vs_gat_recommendations.png"
+            )
+            if path:
+                saved_paths['recommendation_comparison'] = path
+                logger.info(f"  - recommendation_comparison: {path}")
+        except Exception as e:
+            logger.error(f"Failed to plot recommendation comparison: {e}")
+
+        try:
+            # Comprehensive comparative summary
+            path = viz.plot_comparative_summary(
+                comparative_results,
+                "er_vs_gat_summary.png"
+            )
+            if path:
+                saved_paths['comparative_summary'] = path
+                logger.info(f"  - comparative_summary: {path}")
+        except Exception as e:
+            logger.error(f"Failed to plot comparative summary: {e}")
 
     return saved_paths
 
@@ -1074,6 +1122,217 @@ def print_summary(
 
 
 # ============================================================================
+# Comparative Analysis
+# ============================================================================
+
+def run_comparative_analysis(
+    coordinator: CoordinatorAgent,
+    expert_agents: List[ExpertAgent],
+    framework: Dict[str, Any],
+    scenario: Dict[str, Any],
+    alternatives: List[Dict[str, Any]],
+    output_dir: Path,
+    verbose: bool = False
+) -> Dict[str, Any]:
+    """
+    Run comparative analysis of ER vs GAT aggregation methods.
+
+    This function runs the scenario with both aggregation methods and
+    produces a side-by-side comparison for transparency.
+
+    Args:
+        coordinator: Initial coordinator agent (will be re-initialized for each method)
+        expert_agents: List of expert agents
+        framework: Decision framework components
+        scenario: Crisis scenario
+        alternatives: Response alternatives
+        output_dir: Output directory for results
+        verbose: Enable verbose output
+
+    Returns:
+        Comparative analysis results dictionary
+    """
+    import time
+    logger = logging.getLogger(__name__)
+    evaluator = MetricsEvaluator()
+
+    logger.info("")
+    logger.info("="*80)
+    logger.info("COMPARATIVE ANALYSIS: ER vs GAT AGGREGATION METHODS")
+    logger.info("="*80)
+
+    results = {
+        'scenario': scenario.get('id', scenario.get('scenario_id', 'unknown')),
+        'scenario_type': scenario.get('type', scenario.get('crisis_type', 'unknown')),
+        'num_agents': len(expert_agents),
+        'methods': {}
+    }
+
+    # Run with each aggregation method
+    for method in ['ER', 'GAT']:
+        logger.info(f"\n--- Running with {method} aggregation ---")
+
+        # Create coordinator with specific aggregation method
+        method_coordinator = CoordinatorAgent(
+            expert_agents=expert_agents,
+            er_engine=framework['er_engine'],
+            mcda_engine=framework['mcda_engine'],
+            consensus_model=framework['consensus_model'],
+            parallel_assessment=True,
+            aggregation_method=method
+        )
+
+        # Time the execution
+        start_time = time.time()
+
+        # Run decision process
+        decision = method_coordinator.make_final_decision(scenario, alternatives)
+
+        processing_time = (time.time() - start_time) * 1000  # Convert to ms
+
+        # Calculate metrics
+        metrics = {}
+        metrics['decision_quality'] = evaluator.calculate_decision_quality(decision)
+
+        if 'collection_info' in decision and 'assessments' in decision['collection_info']:
+            metrics['consensus'] = evaluator.calculate_consensus_metrics(
+                decision['collection_info']['assessments']
+            )
+        else:
+            metrics['consensus'] = {'consensus_level': decision.get('consensus_level', 0.0)}
+
+        metrics['confidence'] = evaluator.calculate_confidence_metrics(decision)
+
+        # Store results
+        method_result = {
+            'recommended_alternative': decision.get('recommended_alternative'),
+            'confidence': decision.get('confidence', 0.0),
+            'consensus_level': decision.get('consensus_level', 0.0),
+            'decision_quality_score': metrics['decision_quality']['weighted_score'],
+            'processing_time_ms': processing_time,
+            'decision': decision,
+            'metrics': metrics
+        }
+
+        # Extract GAT attention weights if available
+        if method == 'GAT' and 'gat_analysis' in decision:
+            method_result['attention_weights'] = decision['gat_analysis'].get('attention_weights', {})
+            method_result['top_influential_agents'] = decision['gat_analysis'].get('top_influential_agents', [])
+
+        results['methods'][method] = method_result
+
+        logger.info(f"  Recommended: {method_result['recommended_alternative']}")
+        logger.info(f"  Confidence: {method_result['confidence']:.3f}")
+        logger.info(f"  Consensus: {method_result['consensus_level']:.3f}")
+        logger.info(f"  DQS: {method_result['decision_quality_score']:.3f}")
+        logger.info(f"  Processing time: {processing_time:.1f} ms")
+
+    # Calculate comparison metrics
+    er_result = results['methods']['ER']
+    gat_result = results['methods']['GAT']
+
+    comparison = {
+        'decision_quality_delta': gat_result['decision_quality_score'] - er_result['decision_quality_score'],
+        'consensus_delta': gat_result['consensus_level'] - er_result['consensus_level'],
+        'confidence_delta': gat_result['confidence'] - er_result['confidence'],
+        'processing_time_delta_ms': gat_result['processing_time_ms'] - er_result['processing_time_ms'],
+        'same_recommendation': er_result['recommended_alternative'] == gat_result['recommended_alternative']
+    }
+    results['comparison'] = comparison
+
+    # Print comparison summary
+    logger.info("")
+    logger.info("="*80)
+    logger.info("COMPARATIVE RESULTS SUMMARY")
+    logger.info("="*80)
+    logger.info("")
+    logger.info(f"{'Metric':<25} {'ER':>12} {'GAT':>12} {'Δ (GAT-ER)':>15}")
+    logger.info("-"*65)
+    logger.info(f"{'Decision Quality Score':<25} {er_result['decision_quality_score']:>12.3f} {gat_result['decision_quality_score']:>12.3f} {comparison['decision_quality_delta']:>+15.4f}")
+    logger.info(f"{'Consensus Level':<25} {er_result['consensus_level']:>12.3f} {gat_result['consensus_level']:>12.3f} {comparison['consensus_delta']:>+15.4f}")
+    logger.info(f"{'Confidence':<25} {er_result['confidence']:>12.3f} {gat_result['confidence']:>12.3f} {comparison['confidence_delta']:>+15.4f}")
+    logger.info(f"{'Processing Time (ms)':<25} {er_result['processing_time_ms']:>12.1f} {gat_result['processing_time_ms']:>12.1f} {comparison['processing_time_delta_ms']:>+15.1f}")
+    logger.info("-"*65)
+    logger.info(f"{'ER Recommendation:':<25} {er_result['recommended_alternative']}")
+    logger.info(f"{'GAT Recommendation:':<25} {gat_result['recommended_alternative']}")
+    logger.info(f"{'Same Recommendation:':<25} {'Yes ✓' if comparison['same_recommendation'] else 'No ✗'}")
+
+    # Show GAT attention analysis if available
+    if 'top_influential_agents' in gat_result and gat_result['top_influential_agents']:
+        logger.info("")
+        logger.info("GAT Attention Analysis - Top Influential Agents:")
+        for i, agent_info in enumerate(gat_result['top_influential_agents'][:5], 1):
+            if isinstance(agent_info, dict):
+                logger.info(f"  {i}. {agent_info.get('agent_id', 'unknown')}: {agent_info.get('attention_weight', 0.0):.4f}")
+            else:
+                logger.info(f"  {i}. {agent_info}")
+
+    logger.info("")
+    logger.info("="*80)
+
+    # Save comparative results
+    comparison_file = output_dir / "comparative_analysis.json"
+    with open(comparison_file, 'w') as f:
+        # Prepare serializable version (remove non-serializable parts)
+        serializable_results = {
+            'scenario': results['scenario'],
+            'scenario_type': results['scenario_type'],
+            'num_agents': results['num_agents'],
+            'comparison': results['comparison'],
+            'methods': {
+                method: {
+                    'recommended_alternative': data['recommended_alternative'],
+                    'confidence': data['confidence'],
+                    'consensus_level': data['consensus_level'],
+                    'decision_quality_score': data['decision_quality_score'],
+                    'processing_time_ms': data['processing_time_ms']
+                }
+                for method, data in results['methods'].items()
+            }
+        }
+        if 'attention_weights' in gat_result:
+            serializable_results['methods']['GAT']['attention_weights'] = gat_result.get('attention_weights', {})
+        if 'top_influential_agents' in gat_result:
+            serializable_results['methods']['GAT']['top_influential_agents'] = gat_result.get('top_influential_agents', [])
+
+        json.dump(serializable_results, f, indent=2, default=str)
+
+    logger.info(f"Comparative analysis saved to: {comparison_file}")
+
+    # Save full results for each method in their respective subdirectories
+    for method in ['ER', 'GAT']:
+        method_data = results['methods'][method]
+
+        # Create method-specific subdirectory
+        method_dir = output_dir / method.lower()
+        method_dir.mkdir(exist_ok=True, parents=True)
+        method_file = method_dir / "results.json"
+
+        full_results = {
+            'timestamp': datetime.now().isoformat(),
+            'scenario': results['scenario'],
+            'scenario_type': results['scenario_type'],
+            'aggregation_method': method,
+            'decision': method_data['decision'],
+            'metrics': method_data['metrics']
+        }
+
+        # Add GAT-specific analysis if available
+        if method == 'GAT':
+            if 'attention_weights' in method_data:
+                full_results['gat_attention_weights'] = method_data['attention_weights']
+            if 'top_influential_agents' in method_data:
+                full_results['gat_top_influential_agents'] = method_data['top_influential_agents']
+
+        with open(method_file, 'w') as f:
+            json.dump(full_results, f, indent=2, default=str)
+
+        logger.info(f"{method} full results saved to: {method_file}")
+
+    return results
+
+
+# ============================================================================
 # Main Function
 # ============================================================================
 
@@ -1115,6 +1374,12 @@ Examples:
 
   # Run with auto-selection and verbose mode to see selection reasoning
   python main.py --scenario flood_scenario --expert-selection auto --verbose
+
+  # Run comparative analysis of ER vs GAT aggregation methods
+  python main.py --scenario flood_scenario --compare-methods
+
+  # Run comparative analysis with all 13 agents
+  python main.py --scenario flood_scenario --agents all --compare-methods
 
 For more information, see README.md
         """
@@ -1197,6 +1462,28 @@ For more information, see README.md
         help='Skip visualization generation'
     )
 
+    parser.add_argument(
+        '--aggregation-method',
+        type=str,
+        default='er',
+        choices=['er', 'gat'],
+        help='Aggregation method: "er" (Evidential Reasoning) or "gat" (Graph Attention Network). Default: er'
+    )
+
+    parser.add_argument(
+        '--seed',
+        type=int,
+        default=None,
+        help='Random seed for reproducibility'
+    )
+
+    parser.add_argument(
+        '--compare-methods',
+        action='store_true',
+        help='Run comparative analysis of ER vs GAT aggregation methods. '
+             'This runs the scenario with both methods and produces a side-by-side comparison.'
+    )
+
     args = parser.parse_args()
 
     # Setup output directory
@@ -1258,13 +1545,57 @@ For more information, see README.md
         if not expert_agents:
             raise ValueError("No expert agents initialized")
 
+        # Set random seed if specified (for reproducibility)
+        if args.seed is not None:
+            import random
+            import numpy as np
+            random.seed(args.seed)
+            np.random.seed(args.seed)
+            logger.info(f"Random seed set to: {args.seed}")
+
         framework = initialize_decision_framework()
-        coordinator = initialize_coordinator(expert_agents, framework)
+        coordinator = initialize_coordinator(
+            expert_agents,
+            framework,
+            aggregation_method=args.aggregation_method
+        )
 
         # ===== 3. RUN DECISION PROCESS =====
-        logger.info("Step 4/6: Running Decision Process")
+        # Initialize comparative_results (set if --compare-methods is used)
+        comparative_results = None
+        # Track which aggregation method is used for visualizations
+        selected_method = args.aggregation_method
 
-        decision = run_decision_process(coordinator, scenario, alternatives)
+        # Check if comparative analysis is requested
+        if args.compare_methods:
+            logger.info("Step 4/6: Running Comparative Analysis (ER vs GAT)")
+
+            comparative_results = run_comparative_analysis(
+                coordinator=coordinator,
+                expert_agents=expert_agents,
+                framework=framework,
+                scenario=scenario,
+                alternatives=alternatives,
+                output_dir=output_dir,
+                verbose=args.verbose
+            )
+
+            # Use the better-performing method's decision for subsequent evaluation
+            er_dqs = comparative_results['methods']['ER']['decision_quality_score']
+            gat_dqs = comparative_results['methods']['GAT']['decision_quality_score']
+
+            if gat_dqs >= er_dqs:
+                decision = comparative_results['methods']['GAT']['decision']
+                selected_method = 'gat'
+                logger.info("Using GAT decision for evaluation (equal or better DQS)")
+            else:
+                decision = comparative_results['methods']['ER']['decision']
+                selected_method = 'er'
+                logger.info("Using ER decision for evaluation (better DQS)")
+
+        else:
+            logger.info("Step 4/6: Running Decision Process")
+            decision = run_decision_process(coordinator, scenario, alternatives)
 
         # Run individual agent comparisons if requested (NEW - comprehensive)
         individual_decisions = None
@@ -1291,7 +1622,43 @@ For more information, see README.md
 
         # Generate visualizations
         if not args.no_viz:
-            generate_visualizations(decision, metrics, output_dir)
+            if args.compare_methods and comparative_results:
+                # Generate separate visualizations for each method in subdirectories
+                for method in ['ER', 'GAT']:
+                    method_lower = method.lower()
+                    method_dir = output_dir / method_lower
+                    method_dir.mkdir(exist_ok=True, parents=True)
+
+                    method_decision = comparative_results['methods'][method]['decision']
+                    method_metrics = comparative_results['methods'][method]['metrics']
+
+                    logger.info(f"Generating {method} visualizations in {method_dir}")
+                    generate_visualizations(
+                        method_decision,
+                        method_metrics,
+                        method_dir,
+                        aggregation_method=method_lower,
+                        comparative_results=None  # No comparison plots in subdirs
+                    )
+
+                # Generate comparison visualizations in main output directory
+                logger.info("Generating comparison visualizations in main output directory")
+                generate_visualizations(
+                    decision,
+                    metrics,
+                    output_dir,
+                    aggregation_method=selected_method,
+                    comparative_results=comparative_results
+                )
+            else:
+                # Standard single-method visualization
+                generate_visualizations(
+                    decision,
+                    metrics,
+                    output_dir,
+                    aggregation_method=selected_method,
+                    comparative_results=comparative_results
+                )
 
         # Generate and save report
         report = generate_summary_report(decision, metrics)
