@@ -628,12 +628,26 @@ class LMStudioClient:
             >>> print(type(result))
             <class 'models.data_models.LLMResponse'>
         """
-        # Helper function to clean JSON (remove trailing commas)
+        # Helper function to clean JSON (remove trailing commas and invisible chars)
         def clean_json(json_str: str) -> str:
-            """Remove trailing commas before closing brackets/braces."""
+            """Remove trailing commas, BOM, and other problematic characters."""
+            # Remove BOM and other invisible characters at the start
+            json_str = json_str.lstrip('\ufeff\ufffe\u0000\u200b\u200c\u200d\u2060')
+            # Strip whitespace
+            json_str = json_str.strip()
+            # Remove malformed patterns like ]," } or ],"} (stray quotes after array/before brace)
+            json_str = re.sub(r'(\])\s*,\s*"\s*(\})', r'\1\2', json_str)
+            # Remove orphan quotes before closing braces: ," } -> }
+            json_str = re.sub(r',\s*"\s*(\})', r'\1', json_str)
             # Remove trailing commas before } or ]
             json_str = re.sub(r',\s*(\}|\])', r'\1', json_str)
             return json_str
+
+        # Preprocess response text to remove invisible characters
+        response_text = response_text.strip()
+        # Remove BOM if present
+        if response_text.startswith('\ufeff'):
+            response_text = response_text[1:]
 
         # First, parse the JSON using multiple strategies
         parsed_data = None

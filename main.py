@@ -874,7 +874,8 @@ def generate_visualizations(
     metrics: Dict[str, Any],
     output_dir: Path,
     aggregation_method: Optional[str] = None,
-    comparative_results: Optional[Dict[str, Any]] = None
+    comparative_results: Optional[Dict[str, Any]] = None,
+    comparison_only: bool = False
 ) -> Dict[str, str]:
     """
     Generate all visualization plots.
@@ -885,6 +886,7 @@ def generate_visualizations(
         output_dir: Output directory
         aggregation_method: Aggregation method used ('er' or 'gat') - shown in plot titles
         comparative_results: Optional comparative analysis results for ER vs GAT comparison plots
+        comparison_only: If True, only generate comparison plots (skip standard plots)
 
     Returns:
         Dictionary mapping plot type to file path
@@ -897,33 +899,36 @@ def generate_visualizations(
     logger.info("="*80)
 
     viz = SystemVisualizer(output_dir=str(output_dir), dpi=300)
+    saved_paths = {}
 
-    # Prepare visualization data
-    viz_data = {
-        'agent_assessments': decision['collection_info']['assessments'],
-        'consensus_history': [decision['consensus_level']],  # Single point for now
-        'criteria_weights': {
-            'Safety': 0.35,
-            'Cost': 0.25,
-            'Response Time': 0.20,
-            'Effectiveness': 0.20
-        },
-        'metrics': metrics,
-        'agent_profiles': {
-            agent_id: {
-                'name': assessment.get('agent_name', agent_id),
-                'expertise': assessment.get('expertise', 'General')
+    # Generate standard plots only if not comparison_only mode
+    if not comparison_only:
+        # Prepare visualization data
+        viz_data = {
+            'agent_assessments': decision['collection_info']['assessments'],
+            'consensus_history': [decision['consensus_level']],  # Single point for now
+            'criteria_weights': {
+                'Safety': 0.35,
+                'Cost': 0.25,
+                'Response Time': 0.20,
+                'Effectiveness': 0.20
+            },
+            'metrics': metrics,
+            'agent_profiles': {
+                agent_id: {
+                    'name': assessment.get('agent_name', agent_id),
+                    'expertise': assessment.get('expertise', 'General')
+                }
+                for agent_id, assessment in decision['collection_info']['assessments'].items()
             }
-            for agent_id, assessment in decision['collection_info']['assessments'].items()
         }
-    }
 
-    # Generate all standard plots (with aggregation method label in titles)
-    saved_paths = viz.generate_all_plots(viz_data, aggregation_method=aggregation_method)
+        # Generate all standard plots (with aggregation method label in titles)
+        saved_paths = viz.generate_all_plots(viz_data, aggregation_method=aggregation_method)
 
-    logger.info(f"Generated {len(saved_paths)} standard visualizations:")
-    for plot_type, path in saved_paths.items():
-        logger.info(f"  - {plot_type}: {path}")
+        logger.info(f"Generated {len(saved_paths)} standard visualizations:")
+        for plot_type, path in saved_paths.items():
+            logger.info(f"  - {plot_type}: {path}")
 
     # Generate comparison visualizations if comparative results are provided
     if comparative_results:
@@ -1486,8 +1491,28 @@ For more information, see README.md
 
     args = parser.parse_args()
 
-    # Setup output directory
-    output_dir = Path(args.output_dir)
+    # Extract scenario name for directory structure
+    scenario_name = Path(args.scenario).stem
+
+    # Setup output directory with structure: results/scenario_name/run_X
+    base_output_dir = Path(args.output_dir)
+    scenario_output_dir = base_output_dir / scenario_name
+
+    # Find next run number
+    scenario_output_dir.mkdir(exist_ok=True, parents=True)
+    existing_runs = [d for d in scenario_output_dir.iterdir() if d.is_dir() and d.name.startswith('run_')]
+    if existing_runs:
+        run_numbers = []
+        for d in existing_runs:
+            try:
+                run_numbers.append(int(d.name.split('_')[1]))
+            except (IndexError, ValueError):
+                pass
+        next_run = max(run_numbers) + 1 if run_numbers else 1
+    else:
+        next_run = 1
+
+    output_dir = scenario_output_dir / f"run_{next_run}"
     output_dir.mkdir(exist_ok=True, parents=True)
 
     # Setup logging
@@ -1497,6 +1522,7 @@ For more information, see README.md
     try:
         # ===== 1. SETUP =====
         logger.info("Step 1/6: Environment Setup")
+        logger.info(f"Output directory: {output_dir}")
         api_keys = load_environment()
 
         logger.info("Step 2/6: Loading Configuration")
@@ -1641,14 +1667,15 @@ For more information, see README.md
                         comparative_results=None  # No comparison plots in subdirs
                     )
 
-                # Generate comparison visualizations in main output directory
+                # Generate comparison visualizations only in main output directory
                 logger.info("Generating comparison visualizations in main output directory")
                 generate_visualizations(
                     decision,
                     metrics,
                     output_dir,
                     aggregation_method=selected_method,
-                    comparative_results=comparative_results
+                    comparative_results=comparative_results,
+                    comparison_only=True
                 )
             else:
                 # Standard single-method visualization

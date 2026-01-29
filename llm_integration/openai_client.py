@@ -618,6 +618,24 @@ class OpenAIClient:
             >>> print(type(result))
             <class 'models.data_models.LLMResponse'>
         """
+        # Helper function to clean JSON
+        def clean_json(json_str: str) -> str:
+            """Remove trailing commas, BOM, and other problematic characters."""
+            json_str = json_str.lstrip('\ufeff\ufffe\u0000\u200b\u200c\u200d\u2060')
+            json_str = json_str.strip()
+            # Remove malformed patterns like ]," } (stray quotes after array/before brace)
+            json_str = re.sub(r'(\])\s*,\s*"\s*(\})', r'\1\2', json_str)
+            # Remove orphan quotes before closing braces: ," } -> }
+            json_str = re.sub(r',\s*"\s*(\})', r'\1', json_str)
+            # Remove trailing commas before } or ]
+            json_str = re.sub(r',\s*(\}|\])', r'\1', json_str)
+            return json_str
+
+        # Preprocess response text to remove invisible characters
+        response_text = response_text.strip()
+        if response_text.startswith('\ufeff'):
+            response_text = response_text[1:]
+
         # First, parse the JSON using multiple strategies
         parsed_data = None
 
@@ -626,6 +644,14 @@ class OpenAIClient:
             parsed_data = json.loads(response_text)
         except json.JSONDecodeError:
             pass
+
+        # Strategy 1b: Try after cleaning
+        if parsed_data is None:
+            try:
+                cleaned = clean_json(response_text)
+                parsed_data = json.loads(cleaned)
+            except json.JSONDecodeError:
+                pass
 
         # Strategy 2: Extract from ```json...``` blocks
         if parsed_data is None:
