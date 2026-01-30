@@ -629,7 +629,7 @@ KEY CONCERNS
             response = self.llm_client.generate_assessment(
                 prompt=prompt,
                 system_prompt=system_prompt,
-                max_tokens=2000,
+                max_tokens=4096,
                 temperature=0.7
             )
             return response

@@ -35,7 +35,6 @@ wheels/
 Thumbs.db
 
 # Project specific
-results/
 output/
 logs/
 *.log

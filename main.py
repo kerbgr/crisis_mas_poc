@@ -165,8 +165,35 @@ def load_alternatives(alternatives_path: str) -> List[Dict[str, Any]]:
 # Component Initialization
 # ============================================================================
 
+def prompt_llm_provider() -> str:
+    """
+    Interactively ask the user which LLM provider to use.
+
+    Returns:
+        Provider string: 'lmstudio', 'claude', or 'openai'
+    """
+    print("\n" + "=" * 50)
+    print("Select LLM Provider:")
+    print("  1. LM Studio  (local, default)")
+    print("  2. Claude API  (Anthropic)")
+    print("  3. OpenAI API")
+    print("=" * 50)
+
+    choice = input("Enter choice [1]: ").strip()
+
+    provider_map = {"1": "lmstudio", "2": "claude", "3": "openai", "": "lmstudio"}
+    provider = provider_map.get(choice)
+
+    if provider is None:
+        print(f"Invalid choice '{choice}'. Defaulting to LM Studio.")
+        provider = "lmstudio"
+
+    print(f"Selected provider: {provider}\n")
+    return provider
+
+
 def initialize_llm_client(
-    provider: str = "claude",
+    provider: str = "lmstudio",
     api_keys: Optional[Dict[str, str]] = None
 ):
     """
@@ -1414,9 +1441,9 @@ For more information, see README.md
     parser.add_argument(
         '--llm-provider',
         type=str,
-        default='claude',
+        default='lmstudio',
         choices=['claude', 'openai', 'lmstudio'],
-        help='LLM provider to use (default: claude)'
+        help='LLM provider to use (default: lmstudio). Overridden by interactive prompt.'
     )
 
     parser.add_argument(
@@ -1550,7 +1577,9 @@ For more information, see README.md
         # ===== 2. INITIALIZE COMPONENTS =====
         logger.info("Step 3/6: Initializing Components")
 
-        llm_client = initialize_llm_client(args.llm_provider, api_keys)
+        # Ask user which LLM provider to use (interactive prompt)
+        llm_provider = prompt_llm_provider()
+        llm_client = initialize_llm_client(llm_provider, api_keys)
 
         # Determine which agents to use based on expert selection mode
         selected_agent_ids = args.agents

@@ -548,6 +548,14 @@ class LMStudioClient:
                 f"tokens: {input_tokens} in / {output_tokens} out)"
             )
 
+            # Warn if response was truncated due to max_tokens
+            finish_reason = response.choices[0].finish_reason if response.choices else None
+            if finish_reason == "length":
+                logger.warning(
+                    f"Response truncated (hit max_tokens={max_tokens}). "
+                    f"JSON may be incomplete. Consider increasing max_tokens."
+                )
+
             # Parse JSON response
             parsed_response = self.parse_json_response(response_text)
 
@@ -698,6 +706,29 @@ class LMStudioClient:
                     parsed_data = json.loads(cleaned)
                 except json.JSONDecodeError:
                     pass
+
+        # Strategy 5: Repair truncated JSON by closing open braces/brackets
+        if parsed_data is None:
+            # Find the start of JSON
+            json_start = re.search(r'[\{\[]', response_text)
+            if json_start:
+                fragment = response_text[json_start.start():]
+                # Count unclosed braces and brackets
+                open_braces = fragment.count('{') - fragment.count('}')
+                open_brackets = fragment.count('[') - fragment.count(']')
+                if open_braces > 0 or open_brackets > 0:
+                    # Trim trailing incomplete key-value pairs (after last comma)
+                    repaired = re.sub(r',\s*"[^"]*"?\s*:?\s*"?[^"{}[\]]*$', '', fragment)
+                    # Re-count after trim
+                    open_braces = repaired.count('{') - repaired.count('}')
+                    open_brackets = repaired.count('[') - repaired.count(']')
+                    repaired += ']' * max(0, open_brackets) + '}' * max(0, open_braces)
+                    try:
+                        cleaned = clean_json(repaired)
+                        parsed_data = json.loads(cleaned)
+                        logger.warning("Parsed truncated JSON using brace-repair strategy")
+                    except json.JSONDecodeError:
+                        pass
 
         # If all strategies fail, raise error
         if parsed_data is None:
