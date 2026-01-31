@@ -424,13 +424,14 @@ sequenceDiagram
     participant Coordinator
     participant SilverBronze as Silver/Bronze Level<br/>(7 Tactical/Operational/Advisory)
     participant Gold as Gold Level<br/>(6 Strategic Agents)
-    participant GAT as GAT Aggregator
-    participant MCDA as MCDA Engine
+    participant ER as ER Engine<br/>(Dempster-Shafer)
+    participant GAT as GAT Aggregator<br/>(9D Attention)
+    participant MCDA as MCDA Engine<br/>(TOPSIS)
     participant Consensus
 
     User->>Coordinator: Submit Crisis Scenario
 
-    Note over Coordinator: Distribute to Expert Agents (ThreadPoolExecutor)
+    Note over Coordinator: Step 1/6: Distribute to Expert Agents (ThreadPoolExecutor)
 
     par Parallel Agent Evaluation - Silver/Bronze Level
         Coordinator->>SilverBronze: evaluate_scenario()
@@ -446,30 +447,56 @@ sequenceDiagram
         Gold-->>Coordinator: {belief, confidence, reasoning}
     end
 
-    Note over Coordinator: Aggregate Beliefs from 13 Experts
+    Note over Coordinator: Step 2/6: Aggregate Beliefs (--aggregation-method flag)
 
-    Coordinator->>GAT: aggregate_beliefs_with_gat()
-    GAT->>GAT: Extract 9D Features
-    GAT->>GAT: Compute Attention Weights
-    GAT->>GAT: Aggregate Beliefs
-    GAT-->>Coordinator: Aggregated Distribution + Weights
+    alt aggregation_method = ER (default)
+        Coordinator->>ER: combine_beliefs(agent_beliefs, weights)
+        ER->>ER: Normalize Weights
+        ER->>ER: Dempster-Shafer Combination Rule
+        ER->>ER: Entropy-based Confidence
+        ER-->>Coordinator: Aggregated Beliefs + Confidence
+    else aggregation_method = GAT
+        Coordinator->>GAT: aggregate_beliefs_with_gat()
+        GAT->>GAT: Extract 9D Features per Agent
+        GAT->>GAT: Build Adjacency Matrix
+        GAT->>GAT: Multi-Head Attention (H=4)
+        GAT->>GAT: Weighted Belief Aggregation
+        GAT-->>Coordinator: Aggregated Beliefs + Attention Weights
+    end
+
+    Note over Coordinator: Step 3/6: MCDA Scoring (independent from ER/GAT)
 
     Coordinator->>MCDA: rank_alternatives()
-    MCDA-->>Coordinator: MCDA Scores
+    MCDA->>MCDA: TOPSIS Normalization
+    MCDA->>MCDA: Ideal/Anti-Ideal Solutions
+    MCDA->>MCDA: Closeness Coefficients
+    MCDA-->>Coordinator: MCDA Scores per Alternative
 
-    Coordinator->>Consensus: analyze_consensus()
-    Consensus->>Consensus: Calculate Cosine Similarity
+    Note over Coordinator: Step 4/6: Consensus Check (on original assessments)
+
+    Coordinator->>Consensus: check_consensus(agent_assessments)
+    Consensus->>Consensus: Pairwise Cosine Similarity
+    Consensus->>Consensus: Average All Pairs
     Consensus->>Consensus: Detect Conflicts
     Consensus-->>Coordinator: Consensus Level + Conflicts
 
-    alt Conflict Detected
+    Note over Coordinator: Step 5/6: Conflict Resolution (if needed)
+
+    alt Consensus Not Reached
         Coordinator->>Coordinator: resolve_conflicts()
-        Note over Coordinator: Advisory resolution suggestions<br/>(weighted_aggregation / compromise / escalation)
+        Note over Coordinator: Strategies by severity:<br/>Low (<0.3): Weighted Voting<br/>Moderate (0.3-0.6): Find Compromise<br/>High (>=0.6): Escalation Advisory
     end
 
-    Note over Coordinator: Combine: 60% GAT/ER Beliefs + 40% MCDA Scores
-    Coordinator-->>User: Final Decision + Explanation
+    Note over Coordinator: Step 6/6: Combine & Decide
+
+    Note over Coordinator: final_score = 0.6 * ER/GAT beliefs + 0.4 * MCDA scores<br/>confidence = 0.6 * consensus_level + 0.4 * avg_agent_confidence
+    Coordinator-->>User: Final Decision + Explanation + Metrics
 ```
+
+> **Note:** ER and GAT are **mutually exclusive** aggregation methods selected via the
+> `--aggregation-method` CLI flag (default: `er`). Use `--compare-methods` to run both
+> independently and produce a side-by-side comparison. MCDA scoring is **independent**
+> from belief aggregation -- both contribute to the final decision with a 60/40 weighting.
 
 ---
 
