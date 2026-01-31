@@ -422,28 +422,28 @@ graph TB
 sequenceDiagram
     participant User
     participant Coordinator
-    participant Tactical as Tactical Level<br/>(6 On-Scene Agents)
-    participant Strategic as Strategic Level<br/>(7 Regional/National Agents)
+    participant SilverBronze as Silver/Bronze Level<br/>(7 Tactical/Operational/Advisory)
+    participant Gold as Gold Level<br/>(6 Strategic Agents)
     participant GAT as GAT Aggregator
     participant MCDA as MCDA Engine
     participant Consensus
 
     User->>Coordinator: Submit Crisis Scenario
 
-    Note over Coordinator: Distribute to Expert Agents
+    Note over Coordinator: Distribute to Expert Agents (ThreadPoolExecutor)
 
-    par Parallel Agent Evaluation - Tactical Level
-        Coordinator->>Tactical: evaluate_scenario()
-        Note over Tactical: Police On-Scene<br/>Fire On-Scene<br/>Coast Guard On-Scene<br/>Medical Expert<br/>Meteorologist<br/>Logistics Coordinator
-        Tactical->>Tactical: LLM Reasoning
-        Tactical->>Tactical: Generate Belief Distribution
-        Tactical-->>Coordinator: {belief, confidence, reasoning}
-    and Parallel Agent Evaluation - Strategic Level
-        Coordinator->>Strategic: evaluate_scenario()
-        Note over Strategic: Police Regional<br/>Fire Regional<br/>Coast Guard National<br/>Public Safety Expert<br/>Environmental Expert<br/>Medical Infrastructure<br/>PSAP Commander
-        Strategic->>Strategic: LLM Reasoning
-        Strategic->>Strategic: Generate Belief Distribution
-        Strategic-->>Coordinator: {belief, confidence, reasoning}
+    par Parallel Agent Evaluation - Silver/Bronze Level
+        Coordinator->>SilverBronze: evaluate_scenario()
+        Note over SilverBronze: Police Tactical (SILVER)<br/>Fire Tactical (SILVER)<br/>Coast Guard Tactical (SILVER)<br/>Logistics Tactical (SILVER)<br/>Medical Operational (BRONZE)<br/>Meteorology Advisory (SILVER)<br/>Environment Advisory (SILVER)
+        SilverBronze->>SilverBronze: LLM Reasoning
+        SilverBronze->>SilverBronze: Generate Belief Distribution
+        SilverBronze-->>Coordinator: {belief, confidence, reasoning}
+    and Parallel Agent Evaluation - Gold Level
+        Coordinator->>Gold: evaluate_scenario()
+        Note over Gold: Civil Protection Strategic<br/>PSAP Strategic<br/>Police Strategic<br/>Fire Strategic<br/>Medical Strategic<br/>Coast Guard Strategic
+        Gold->>Gold: LLM Reasoning
+        Gold->>Gold: Generate Belief Distribution
+        Gold-->>Coordinator: {belief, confidence, reasoning}
     end
 
     Note over Coordinator: Aggregate Beliefs from 13 Experts
@@ -454,22 +454,21 @@ sequenceDiagram
     GAT->>GAT: Aggregate Beliefs
     GAT-->>Coordinator: Aggregated Distribution + Weights
 
-    Coordinator->>Consensus: analyze_consensus()
-    Consensus->>Consensus: Calculate Similarity
-    Consensus->>Consensus: Detect Conflicts
+    Coordinator->>MCDA: rank_alternatives()
+    MCDA-->>Coordinator: MCDA Scores
 
-    alt Consensus Reached
-        Consensus-->>Coordinator: Consensus Achieved
-        Coordinator->>MCDA: rank_alternatives()
-        MCDA-->>Coordinator: Ranked Alternatives
-        Coordinator-->>User: Final Decision + Explanation
-    else Conflict Detected
-        Consensus-->>Coordinator: Conflicts Found
-        Coordinator->>Coordinator: Iterative Refinement
-        Coordinator->>Tactical: Refine Assessment
-        Coordinator->>Strategic: Refine Assessment
-        Note over Coordinator: Repeat until consensus or max iterations
+    Coordinator->>Consensus: analyze_consensus()
+    Consensus->>Consensus: Calculate Cosine Similarity
+    Consensus->>Consensus: Detect Conflicts
+    Consensus-->>Coordinator: Consensus Level + Conflicts
+
+    alt Conflict Detected
+        Coordinator->>Coordinator: resolve_conflicts()
+        Note over Coordinator: Advisory resolution suggestions<br/>(weighted_aggregation / compromise / escalation)
     end
+
+    Note over Coordinator: Combine: 60% GAT/ER Beliefs + 40% MCDA Scores
+    Coordinator-->>User: Final Decision + Explanation
 ```
 
 ---
@@ -481,33 +480,33 @@ graph TB
     USER[User Selects Scenario]
 
     subgraph "Greek Crisis Scenarios"
-        KARDITSA[Karditsa Flood<br/>Severity: 0.8<br/>15,000 affected]
+        THESSALY[Thessaly Flash Flood<br/>Severity: 0.8<br/>15,000 affected<br/>Karditsa, Pineios River]
         EVIA[Evia Forest Fire<br/>Severity: 0.9<br/>8,000 affected<br/>12,000 ha burned]
-        ELEFSINA[Elefsina Ammonia Leak<br/>Severity: 0.85<br/>12,000 affected<br/>HAZMAT Level A]
+        ELEFSINA[Elefsina Ammonia Leak<br/>Severity: 0.85<br/>12,000 affected<br/>~500 kg/hr leak rate]
     end
 
     subgraph "Auto Expert Selection"
         SELECTOR[ExpertSelector]
-        SCORE[Score 13 Greek Experts]
+        SCORE[Score 13 Greek Experts<br/>3 Core always included]
 
         subgraph "Selected Experts by Scenario"
-            FLOOD_EXPERTS[Flood: Meteo, Logistics,<br/>Medical, Police, Fire,<br/>Coast Guard, PSAP]
-            FIRE_EXPERTS[Fire: Fire Tactical/Regional,<br/>Meteo, Coast Guard,<br/>Police, Medical, PSAP]
-            HAZMAT_EXPERTS[HAZMAT: Fire HAZMAT,<br/>Medical, Police, Meteo,<br/>Environmental, PSAP]
+            FLOOD_EXPERTS[Flood: Meteo, Logistics,<br/>Medical, Police Tactical,<br/>Coast Guard Tactical,<br/>PSAP, Civil Protection]
+            FIRE_EXPERTS[Fire: Fire Tactical/Strategic,<br/>Meteo, Logistics, Medical,<br/>Police Tactical, Environment,<br/>Coast Guard Tactical]
+            HAZMAT_EXPERTS[HAZMAT: Fire Tactical,<br/>Medical, Logistics, Meteo,<br/>Environment, Police Tactical,<br/>PSAP, Medical Strategic]
         end
     end
 
     subgraph "Response Actions"
-        FLOOD_ACTIONS[Flood: Evacuation,<br/>Barriers, Rescue,<br/>Shelter-in-Place, Hybrid]
-        FIRE_ACTIONS[Fire: Aerial Campaign,<br/>Ground Firefighting,<br/>Evacuation, Backburn,<br/>Combined Assault]
-        HAZMAT_ACTIONS[HAZMAT: Evacuation,<br/>Containment, Water Curtain,<br/>Shelter-in-Place, Integrated]
+        FLOOD_ACTIONS[Flood 5 actions: Evacuation,<br/>Barriers, Rescue Operations,<br/>Shelter-in-Place, Hybrid]
+        FIRE_ACTIONS[Fire 12 actions: Evacuation,<br/>Aerial Firefighting, Ground Firefighting,<br/>Backburn, Combined Assault,<br/>Maritime Evacuation, Community Defense,<br/>Strategic Retreat, Int'l Aid, + more]
+        HAZMAT_ACTIONS[HAZMAT 5 actions: Downwind Evacuation,<br/>HAZMAT Containment, Water Curtain,<br/>Shelter-in-Place, Integrated Response]
     end
 
-    USER --> KARDITSA
+    USER --> THESSALY
     USER --> EVIA
     USER --> ELEFSINA
 
-    KARDITSA --> SELECTOR
+    THESSALY --> SELECTOR
     EVIA --> SELECTOR
     ELEFSINA --> SELECTOR
 
@@ -525,7 +524,7 @@ graph TB
     FIRE_ACTIONS --> DECISION
     HAZMAT_ACTIONS --> DECISION
 
-    style KARDITSA fill:#bbdefb
+    style THESSALY fill:#bbdefb
     style EVIA fill:#ffccbc
     style ELEFSINA fill:#fff9c4
     style DECISION fill:#99ff99
