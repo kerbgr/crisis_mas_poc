@@ -300,6 +300,8 @@ def initialize_expert_agents(
                 agent_id=agent_id,
                 llm_client=llm_client
             )
+            if agent.load_reliability_data():
+                logger.info(f"Loaded historical reliability for {agent_id}")
             agents.append(agent)
             logger.info(f"Initialized agent: {agent.name} ({agent.role})")
         except Exception as e:
@@ -1361,6 +1363,13 @@ def run_comparative_analysis(
 
         logger.info(f"{method} full results saved to: {method_file}")
 
+    # Persist reliability data after comparative runs
+    for agent in expert_agents:
+        try:
+            agent.save_reliability_data()
+        except Exception as e:
+            logger.warning(f"Failed to save reliability for {agent.agent_id}: {e}")
+
     return results
 
 
@@ -1674,6 +1683,13 @@ For more information, see README.md
 
         # Save results
         save_results(decision, metrics, output_dir)
+
+        # Persist reliability data for all agents
+        for agent in expert_agents:
+            try:
+                agent.save_reliability_data()
+            except Exception as e:
+                logger.warning(f"Failed to save reliability for {agent.agent_id}: {e}")
 
         # Generate visualizations
         if not args.no_viz:

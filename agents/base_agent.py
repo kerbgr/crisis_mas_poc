@@ -158,7 +158,9 @@ class BaseAgent(ABC):
         self.reliability_tracker = ReliabilityTracker(
             agent_id=agent_id,
             window_size=10,
-            decay_factor=0.95
+            decay_factor=0.95,
+            expertise=self.expertise,
+            expertise_tags=self.expertise_tags
         )
 
         # Validate weight preferences
@@ -407,6 +409,46 @@ class BaseAgent(ABC):
             Dictionary with performance statistics
         """
         return self.reliability_tracker.get_performance_summary()
+
+    def load_reliability_data(self, directory: str = "results/reliability") -> bool:
+        """
+        Load persisted reliability data if available.
+
+        Args:
+            directory: Directory containing per-agent reliability JSON files.
+
+        Returns:
+            True if data was loaded, False if no file exists (uses defaults).
+        """
+        from pathlib import Path
+        filepath = Path(directory) / f"{self.agent_id}_reliability.json"
+        if filepath.exists():
+            try:
+                self.reliability_tracker = ReliabilityTracker.load_from_file(str(filepath))
+                return True
+            except Exception as e:
+                logger.warning(
+                    f"Failed to load reliability data for {self.agent_id}: {e}. "
+                    f"Starting fresh."
+                )
+        return False
+
+    def save_reliability_data(self, directory: str = "results/reliability") -> str:
+        """
+        Persist reliability data to JSON file.
+
+        Args:
+            directory: Directory to save per-agent reliability JSON files.
+
+        Returns:
+            Path to saved file.
+        """
+        from pathlib import Path
+        dir_path = Path(directory)
+        dir_path.mkdir(parents=True, exist_ok=True)
+        filepath = dir_path / f"{self.agent_id}_reliability.json"
+        self.reliability_tracker.save_to_file(str(filepath))
+        return str(filepath)
 
     @abstractmethod
     def evaluate_scenario(self, scenario: Dict[str, Any]) -> Dict[str, Any]:

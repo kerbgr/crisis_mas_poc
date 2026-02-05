@@ -604,71 +604,220 @@ flowchart TB
 
 ---
 
-## 4. Historical Reliability Tracking Workflow
+## 4. ReliabilityTracker - Full Lifecycle
+
+### 4.1 Runtime Integration Flow
+
+Shows how the ReliabilityTracker is wired into the live decision pipeline across all four integration files.
 
 ```mermaid
-stateDiagram-v2
-    [*] --> AssessmentMade: Agent makes prediction
+flowchart TB
+    subgraph INIT["Startup (main.py)"]
+        LOAD_JSON[Load results/reliability/<br/>agent_id_reliability.json]
+        CHECK{File<br/>exists?}
+        RESTORE[ReliabilityTracker.load_from_file<br/>Restore history + recompute metrics]
+        FRESH[Start fresh<br/>Default reliability = 0.8]
 
-    AssessmentMade --> Recorded: record_assessment(id, type, prediction, confidence)
+        LOAD_JSON --> CHECK
+        CHECK -->|Yes| RESTORE
+        CHECK -->|No| FRESH
+    end
 
-    state Recorded {
-        [*] --> StoredInHistory
-        StoredInHistory --> AddedToRecentWindow
-        AddedToRecentWindow --> [*]
+    subgraph COLLECT["Assessment Collection (coordinator_agent.py)"]
+        EVAL[ExpertAgent.evaluate_scenario<br/>via LLM]
+        RECORD[_record_agent_assessment<br/>Extract belief_distribution + confidence]
+        STASH[Stash assessment_id<br/>in assessment.metadata]
+
+        EVAL --> RECORD
+        RECORD --> STASH
+    end
+
+    subgraph DECIDE["Decision Making (coordinator_agent.py)"]
+        AGG_ER[ER Path: agent_weights<br/>from reliability scores]
+        AGG_GAT[GAT Path: inject<br/>reliability_score per assessment]
+        FINAL[make_final_decision<br/>recommended_alternative]
+
+        AGG_ER --> FINAL
+        AGG_GAT --> FINAL
+    end
+
+    subgraph VALIDATE["Consensus-Based Validation (coordinator_agent.py)"]
+        LOOP[For each agent assessment]
+        LOOKUP[Retrieve _reliability_assessment_id<br/>from metadata]
+        UPDATE[agent.update_assessment_outcome<br/>actual = recommended_alternative]
+        CALC[_calculate_accuracy<br/>3-component scoring]
+        METRICS_UPD[_update_reliability_metrics<br/>Temporal decay + domain scores]
+
+        LOOP --> LOOKUP --> UPDATE --> CALC --> METRICS_UPD
+    end
+
+    subgraph WEIGHTS["Dynamic Weight Update (coordinator_agent.py)"]
+        QUERY[Query each agent:<br/>get_reliability_score<br/>scenario_type]
+        HAS_DATA{Any agent<br/>has data?}
+        NORMALIZE[Normalize to sum = 1.0<br/>Update self.agent_weights]
+        KEEP[Keep equal weights<br/>Backward compatible]
+
+        QUERY --> HAS_DATA
+        HAS_DATA -->|Yes| NORMALIZE
+        HAS_DATA -->|No| KEEP
+    end
+
+    subgraph PERSIST["Persistence (main.py)"]
+        SAVE[agent.save_reliability_data<br/>results/reliability/agent_id.json]
+        JSON_OUT[JSON includes:<br/>expertise, expertise_tags,<br/>metrics, assessment_history]
+
+        SAVE --> JSON_OUT
+    end
+
+    INIT --> COLLECT
+    COLLECT --> DECIDE
+    DECIDE --> VALIDATE
+    VALIDATE --> WEIGHTS
+    WEIGHTS --> PERSIST
+    PERSIST -.->|Next run| INIT
+
+    style INIT fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style COLLECT fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style DECIDE fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style VALIDATE fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style WEIGHTS fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style PERSIST fill:#fffde7,stroke:#f9a825,stroke-width:2px
+```
+
+### 4.2 Accuracy Calculation Detail
+
+Each agent's prediction is scored against the consensus decision using a three-component formula.
+
+```mermaid
+flowchart TB
+    INPUT[Agent Prediction +<br/>Consensus Outcome] --> EXTRACT
+
+    subgraph EXTRACT["Extract Inputs"]
+        E1[belief_distribution<br/>from prediction]
+        E2[selected_alternative<br/>from consensus]
+        E3[confidence<br/>from prediction]
+    end
+
+    EXTRACT --> PROB
+    EXTRACT --> RANK
+    EXTRACT --> MARGIN
+
+    subgraph SCORING["Three-Component Accuracy"]
+        PROB["<b>Probability Score (40%)</b><br/>P = belief assigned to actual outcome<br/>Range 0.0 - 1.0"]
+        RANK["<b>Rank Accuracy (30%)</b><br/>1.0 if top choice matches actual<br/>0.0 otherwise"]
+
+        subgraph MARGIN["<b>Margin Score (30%)</b>"]
+            direction TB
+            M_CHECK{Top choice<br/>correct?}
+            M_YES["0.5 + 0.5 x confidence<br/>High conf correct = 0.95<br/>Low conf correct = 0.65"]
+            M_NO["0.5 - 0.5 x confidence<br/>High conf wrong = 0.05<br/>Low conf wrong = 0.35"]
+            M_CHECK -->|Yes| M_YES
+            M_CHECK -->|No| M_NO
+        end
+
+        PROB --> COMBINE
+        RANK --> COMBINE
+        M_YES --> COMBINE
+        M_NO --> COMBINE
+    end
+
+    COMBINE["accuracy = 0.4 x P + 0.3 x rank + 0.3 x margin<br/>clip to 0.0 - 1.0"] --> OUTPUT[accuracy_score]
+
+    style PROB fill:#bbdefb,stroke:#1976d2
+    style RANK fill:#c8e6c9,stroke:#388e3c
+    style MARGIN fill:#fff9c4,stroke:#f9a825
+    style COMBINE fill:#e1bee7,stroke:#7b1fa2
+    style OUTPUT fill:#99ff99
+```
+
+### 4.3 Dual-Path Weight Injection
+
+Reliability scores feed into **both** aggregation paths through different mechanisms.
+
+```mermaid
+flowchart LR
+    RT[ReliabilityTracker<br/>per agent]
+
+    subgraph ER_PATH["ER Path"]
+        direction TB
+        WEIGHTS[_update_weights_from_reliability]
+        NORM[Normalize: w_i / sum_w]
+        AW[self.agent_weights]
+        DS[Dempster-Shafer<br/>combine_beliefs<br/>using agent_weights]
+
+        WEIGHTS --> NORM --> AW --> DS
+    end
+
+    subgraph GAT_PATH["GAT Path"]
+        direction TB
+        INJECT[Inject reliability_score<br/>into assessment dict]
+        F9[Feature 9 of 9:<br/>Historical Reliability]
+        ATT[Multi-Head Attention<br/>computes data-driven weights]
+
+        INJECT --> F9 --> ATT
+    end
+
+    RT -->|get_reliability_score<br/>scenario_type| ER_PATH
+    RT -->|get_reliability_score| GAT_PATH
+
+    style ER_PATH fill:#ffcccc,stroke:#c62828,stroke-width:2px
+    style GAT_PATH fill:#ccddff,stroke:#1565c0,stroke-width:2px
+    style RT fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+```
+
+### 4.4 Persistence Schema
+
+Each agent's reliability data is stored as a self-contained JSON file in `results/reliability/`.
+
+```mermaid
+classDiagram
+    class ReliabilityJSON {
+        agent_id: str
+        expertise: str
+        expertise_tags: List~str~
+        metrics: ReliabilityMetrics
+        assessment_history: List~AssessmentRecord~
+        window_size: int = 10
+        decay_factor: float = 0.95
+        min_assessments: int = 3
     }
 
-    Recorded --> WaitingForOutcome: Stored in assessment_history
-
-    WaitingForOutcome --> OutcomeReceived: Actual outcome occurs
-
-    OutcomeReceived --> CalculateAccuracy: update_assessment_outcome(id, outcome)
-
-    state CalculateAccuracy {
-        [*] --> ProbabilityScore: Belief for actual outcome (40%)
-        [*] --> RankAccuracy: Was top choice correct? (30%)
-        [*] --> MarginScore: Confidence appropriateness (30%)
-
-        ProbabilityScore --> CombineScores
-        RankAccuracy --> CombineScores
-        MarginScore --> CombineScores
-
-        CombineScores --> FinalAccuracy: accuracy ∈ [0,1]
-        FinalAccuracy --> [*]
+    class ReliabilityMetrics {
+        overall_reliability: float
+        recent_reliability: float
+        consistency_score: float
+        domain_reliability: Dict~str,float~
+        total_assessments: int
+        accurate_assessments: int
+        accuracy_rate: float
+        last_updated: datetime
     }
 
-    CalculateAccuracy --> UpdateMetrics
-
-    state UpdateMetrics {
-        [*] --> OverallReliability: Lifetime with temporal decay<br/>γ^(T-t)
-        [*] --> RecentReliability: Sliding window (last 10)
-        [*] --> ConsistencyScore: Inverse variance
-        [*] --> DomainReliability: Per crisis type
-
-        OverallReliability --> [*]
-        RecentReliability --> [*]
-        ConsistencyScore --> [*]
-        DomainReliability --> [*]
+    class AssessmentRecord {
+        assessment_id: str
+        scenario_type: str
+        timestamp: datetime
+        confidence: float
+        predicted: PredictionData
+        actual: OutcomeData
+        accuracy_score: float
+        evaluated: bool
+        evaluation_timestamp: datetime
     }
 
-    UpdateMetrics --> UpdateConfidence: Update agent confidence_level
+    class PredictionData {
+        belief_distribution: Dict~str,float~
+        confidence: float
+    }
 
-    UpdateConfidence --> UsedInGAT: Feature 9 in next aggregation
+    class OutcomeData {
+        selected_alternative: str
+    }
 
-    UsedInGAT --> [*]
-
-    note right of CalculateAccuracy
-        Three-component accuracy:
-        • Probability: belief[actual]
-        • Rank: correct top choice?
-        • Margin: confidence match?
-    end note
-
-    note right of UsedInGAT
-        Agents with high reliability
-        receive higher attention weights
-        in future aggregations
-    end note
+    ReliabilityJSON *-- ReliabilityMetrics
+    ReliabilityJSON *-- AssessmentRecord
+    AssessmentRecord *-- PredictionData
+    AssessmentRecord *-- OutcomeData
 ```
 
 ---
@@ -812,47 +961,65 @@ graph TB
 
 ---
 
-## 7. Reliability Score Calculation Flow
+## 7. Reliability Score Calculation Flow (Domain-Aware)
 
 ```mermaid
 flowchart TB
-    START[Historical Assessments] --> FILTER{Filter by Mode}
+    START[get_reliability_score<br/>scenario_type, mode] --> HAS_TYPE{scenario_type<br/>provided?}
 
-    FILTER -->|overall| ALL[All Evaluated Assessments]
-    FILTER -->|recent| WINDOW[Last 10 Assessments]
-    FILTER -->|consistent| VARIANCE[Calculate Variance]
-    FILTER -->|domain| DOMAIN[Filter by Crisis Type]
+    HAS_TYPE -->|Yes| DOMAIN_CHECK{Domain data<br/>exists?}
+    HAS_TYPE -->|No| MODE_FILTER{Filter by mode}
+
+    DOMAIN_CHECK -->|Yes| DOMAIN_SCORE[Return domain-specific score<br/>domain_reliability: wildfire = 0.68]
+    DOMAIN_CHECK -->|No| NEUTRAL[Return 0.8 neutral default<br/>Prevents cross-domain bias]
+
+    MODE_FILTER -->|overall| ALL[All Evaluated Assessments]
+    MODE_FILTER -->|recent| WINDOW[Last 10 Assessments]
+    MODE_FILTER -->|consistent| VARIANCE[Calculate Variance]
 
     ALL --> TEMPORAL[Apply Temporal Decay]
 
     subgraph "Temporal Decay Weighting"
-        TEMPORAL --> CALC_DECAY[wt = γ^T-t<br/>γ = 0.95]
-        CALC_DECAY --> WEIGHT_ACC[weighted_accuracy_sum]
-        CALC_DECAY --> WEIGHT_TOTAL[weight_total]
-        WEIGHT_ACC --> DIVIDE[reliability = sum / total]
+        TEMPORAL --> CALC_DECAY[w_t = 0.95 ^ age_days]
+        CALC_DECAY --> CONF_W[confidence_weight = 0.5 + 0.5 x confidence]
+        CONF_W --> COMBINED[combined = temporal x confidence]
+        COMBINED --> DIVIDE[reliability = weighted_sum / weight_total]
     end
 
     WINDOW --> MEAN[Mean of Recent Scores]
 
-    VARIANCE --> CALC_VAR[var = σ²]
+    VARIANCE --> CALC_VAR[var = sigma squared]
     CALC_VAR --> CONSISTENCY[consistency = 1 / 1+var]
-
-    DOMAIN --> GROUP[Group by Crisis Type]
-    GROUP --> DOMAIN_MEAN[Mean per Type]
 
     DIVIDE --> OUTPUT[Overall Reliability Score]
     MEAN --> OUTPUT2[Recent Reliability Score]
     CONSISTENCY --> OUTPUT3[Consistency Score]
-    DOMAIN_MEAN --> OUTPUT4[Domain Reliability Map]
 
-    OUTPUT --> USE[Use in GAT Feature 9]
+    subgraph "Cross-Domain Bias Protection"
+        direction LR
+        EX1[Fire expert on wildfire:<br/>Returns 0.68 real score]
+        EX2[Fire expert on flood:<br/>Returns 0.80 neutral]
+        EX3[Medical expert on flood:<br/>Returns 0.80 neutral]
+        EX4[Medical expert on wildfire:<br/>Returns 0.07 real score]
+    end
+
+    DOMAIN_SCORE --> USE[Feed into ER weights<br/>and GAT Feature 9]
+    NEUTRAL --> USE
+    OUTPUT --> USE
     OUTPUT2 --> USE
     OUTPUT3 --> USE
-    OUTPUT4 --> USE
 
+    style NEUTRAL fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style DOMAIN_SCORE fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
     style TEMPORAL fill:#ffcc99
     style USE fill:#99ff99
 ```
+
+> **Cross-domain bias protection:** When a scenario type is requested but no domain data
+> exists for that agent, the system returns 0.8 (neutral) instead of falling back to
+> `overall_reliability`. This prevents wildfire performance from unfairly penalizing
+> medical experts in a flood scenario. As domain-specific data accumulates across
+> scenario types, each agent builds independent reliability scores per domain.
 
 ---
 
@@ -978,12 +1145,15 @@ graph TB
         METRICS1 --> OUTPUT[Final Output:<br/>Decision + Reasoning +<br/>Metrics + Visualizations]
     end
 
-    subgraph "Phase 6: Learning"
-        OUTPUT --> WAIT[Wait for Actual Outcome]
-        WAIT --> ACTUAL[Actual Outcome Received]
-        ACTUAL --> UPDATE[Update Reliability:<br/>update_assessment_outcome]
-        UPDATE --> RT2[ReliabilityTracker<br/>updates metrics]
-        RT2 -.future assessments.-> FEAT
+    subgraph "Phase 6: Reliability Learning Loop"
+        OUTPUT --> CONSENSUS_OUT[Consensus decision =<br/>recommended_alternative]
+        CONSENSUS_OUT --> LOOP_AGENTS[For each agent:<br/>retrieve assessment_id]
+        LOOP_AGENTS --> UPDATE[update_assessment_outcome<br/>actual = consensus decision]
+        UPDATE --> ACCURACY[_calculate_accuracy<br/>3-component scoring]
+        ACCURACY --> DOMAIN_UPD[Update domain_reliability<br/>per scenario_type]
+        DOMAIN_UPD --> DYN_W[_update_weights_from_reliability<br/>Normalize scores to agent_weights]
+        DYN_W --> SAVE_JSON[Save to results/reliability/<br/>agent_id_reliability.json]
+        SAVE_JSON -.next run loads.-> FEAT
     end
 
     USER --> COORD1
@@ -1009,13 +1179,17 @@ classDiagram
         +agent_id: str
         +name: str
         +expertise: str
+        +expertise_tags: List~str~
         +confidence_level: float
         +reliability_tracker: ReliabilityTracker
         +evaluate_scenario()
         +propose_action()
-        +get_reliability_score()
-        +record_assessment()
-        +update_assessment_outcome()
+        +get_reliability_score(scenario_type, mode)
+        +record_assessment(id, type, prediction, confidence)
+        +update_assessment_outcome(id, outcome, accuracy)
+        +load_reliability_data(directory) bool
+        +save_reliability_data(directory) str
+        +get_performance_summary()
     }
 
     class ExpertAgent {
@@ -1027,31 +1201,52 @@ classDiagram
     }
 
     class CoordinatorAgent {
-        +expert_agents: List[ExpertAgent]
-        +aggregator: GATAggregator
+        +expert_agents: List~ExpertAgent~
+        +agent_weights: Dict~str,float~
+        +aggregation_method: str
+        +er_engine: EvidentialReasoning
+        +gat_aggregator: GATAggregator
         +consensus_model: ConsensusModel
-        +orchestrate_decision()
+        +make_final_decision()
+        +collect_assessments()
         +aggregate_beliefs()
-        +build_consensus()
+        +check_consensus()
+        +resolve_conflicts()
+        -_record_agent_assessment(agent, assessment, scenario)
+        -_update_weights_from_reliability(scenario_type)
+        -_aggregate_with_er()
+        -_aggregate_with_gat()
     }
 
     class ReliabilityTracker {
         +agent_id: str
-        +assessment_history: List
+        +expertise: str
+        +expertise_tags: List~str~
+        +assessment_history: List~AssessmentRecord~
+        +recent_assessments: deque
         +metrics: ReliabilityMetrics
-        +record_assessment()
-        +update_assessment_outcome()
-        +get_reliability_score()
-        -_calculate_accuracy()
+        +record_assessment(id, type, prediction, confidence)
+        +update_assessment_outcome(id, outcome, accuracy)
+        +get_reliability_score(scenario_type, mode) float
+        +get_expertise_domain_summary() Dict
+        +get_performance_summary() Dict
+        +save_to_file(filepath)
+        +load_from_file(filepath)$ ReliabilityTracker
+        +export_history() List
+        -_calculate_accuracy(prediction, actual) float
         -_update_reliability_metrics()
+        -_get_domain_breakdown() Dict
     }
 
     class ReliabilityMetrics {
         +overall_reliability: float
         +recent_reliability: float
         +consistency_score: float
-        +domain_reliability: Dict
+        +domain_reliability: Dict~str,float~
         +total_assessments: int
+        +accurate_assessments: int
+        +last_updated: datetime
+        +to_dict() Dict
     }
 
     class GATAggregator {
@@ -1302,8 +1497,9 @@ All diagrams are in Mermaid format and will render automatically on GitHub, GitL
 
 ---
 
-**Generated:** 2026-01-20
+**Generated:** 2026-01-20 | **Updated:** 2026-02-05
 **System:** Crisis Management Multi-Agent System
-**Version:** 0.9
+**Version:** 1.0
 **Scenarios:** Karditsa Flood | Evia Forest Fire | Elefsina Ammonia Leak
 **Expert Agents:** 13 roles organized in Tactical (6) and Strategic (7) hierarchy
+**Reliability Tracking:** Domain-aware, consensus-validated, persisted across runs

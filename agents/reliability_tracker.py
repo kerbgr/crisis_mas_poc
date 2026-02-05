@@ -6,10 +6,12 @@ multi-agent decision-making systems. Monitors reliability and consistency
 of agent assessments across different crisis scenarios.
 """
 
+import json
 import numpy as np
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime, timedelta
 from collections import deque
+from pathlib import Path
 import logging
 
 logger = logging.getLogger(__name__)
@@ -106,7 +108,9 @@ class ReliabilityTracker:
         agent_id: str,
         window_size: int = 10,
         decay_factor: float = 0.95,
-        min_assessments_for_reliability: int = 3
+        min_assessments_for_reliability: int = 3,
+        expertise: str = '',
+        expertise_tags: Optional[List[str]] = None
     ):
         """
         Initialize reliability tracker.
@@ -116,11 +120,15 @@ class ReliabilityTracker:
             window_size: Number of recent assessments for recent reliability
             decay_factor: Temporal decay factor (0-1, higher = slower decay)
             min_assessments_for_reliability: Minimum assessments before tracking
+            expertise: Agent's declared expertise domain
+            expertise_tags: Agent's expertise keywords for domain-relevance matching
         """
         self.agent_id = agent_id
         self.window_size = window_size
         self.decay_factor = decay_factor
         self.min_assessments = min_assessments_for_reliability
+        self.expertise = expertise
+        self.expertise_tags = expertise_tags or []
 
         # Storage
         self.assessment_history: List[AssessmentRecord] = []
@@ -425,17 +433,24 @@ class ReliabilityTracker:
         Get reliability score for the agent.
 
         Args:
-            scenario_type: Optional crisis type for domain-specific reliability
+            scenario_type: Optional crisis type for domain-specific reliability.
+                          If provided but no data exists for that domain, returns
+                          the neutral default (0.8) to avoid cross-domain bias.
             mode: 'overall', 'recent', or 'consistent'
 
         Returns:
             Reliability score (0-1)
         """
-        # Domain-specific reliability if requested and available
-        if scenario_type and scenario_type in self.metrics.domain_reliability:
-            return self.metrics.domain_reliability[scenario_type]
+        # Domain-specific reliability if requested
+        if scenario_type:
+            if scenario_type in self.metrics.domain_reliability:
+                return self.metrics.domain_reliability[scenario_type]
+            # No data for this domain - return neutral default to avoid
+            # cross-domain bias (e.g. wildfire scores penalizing a medical expert
+            # when running a flood scenario)
+            return 0.8
 
-        # Mode-based reliability
+        # Mode-based reliability (no domain filter)
         if mode == 'recent':
             return self.metrics.recent_reliability
         elif mode == 'consistent':
@@ -544,9 +559,86 @@ class ReliabilityTracker:
 
         return breakdown
 
+    def get_expertise_domain_summary(self) -> Dict[str, Any]:
+        """
+        Cross-reference declared expertise with actual domain performance.
+
+        Returns a summary showing how this agent's expertise aligns with
+        their performance across different scenario types.
+        """
+        domain_breakdown = self._get_domain_breakdown()
+
+        return {
+            'agent_id': self.agent_id,
+            'declared_expertise': self.expertise,
+            'expertise_tags': self.expertise_tags,
+            'domains_tested': list(domain_breakdown.keys()),
+            'domain_performance': domain_breakdown,
+            'total_assessments': len([r for r in self.assessment_history if r.is_evaluated()])
+        }
+
     def export_history(self) -> List[Dict[str, Any]]:
         """Export full assessment history as list of dictionaries."""
         return [record.to_dict() for record in self.assessment_history]
+
+    def save_to_file(self, filepath: str) -> None:
+        """Save reliability data to JSON file for persistence across runs."""
+        data = {
+            'agent_id': self.agent_id,
+            'expertise': self.expertise,
+            'expertise_tags': self.expertise_tags,
+            'metrics': self.metrics.to_dict(),
+            'assessment_history': self.export_history(),
+            'window_size': self.window_size,
+            'decay_factor': self.decay_factor,
+            'min_assessments': self.min_assessments
+        }
+        with open(filepath, 'w') as f:
+            json.dump(data, f, indent=2, default=str)
+        logger.info(f"Saved reliability data for '{self.agent_id}' to {filepath}")
+
+    @classmethod
+    def load_from_file(cls, filepath: str) -> 'ReliabilityTracker':
+        """Load reliability data from JSON file. Returns a tracker with restored history."""
+        path = Path(filepath)
+        if not path.exists():
+            raise FileNotFoundError(f"Reliability file not found: {filepath}")
+
+        with open(filepath, 'r') as f:
+            data = json.load(f)
+
+        tracker = cls(
+            agent_id=data['agent_id'],
+            window_size=data.get('window_size', 10),
+            decay_factor=data.get('decay_factor', 0.95),
+            min_assessments_for_reliability=data.get('min_assessments', 3),
+            expertise=data.get('expertise', ''),
+            expertise_tags=data.get('expertise_tags', [])
+        )
+
+        for record_data in data.get('assessment_history', []):
+            record = AssessmentRecord(
+                assessment_id=record_data['assessment_id'],
+                scenario_type=record_data['scenario_type'],
+                agent_prediction=record_data.get('predicted', {}),
+                timestamp=datetime.fromisoformat(record_data['timestamp']),
+                confidence=record_data.get('confidence', 0.5)
+            )
+            if record_data.get('evaluated') and record_data.get('actual') is not None:
+                record.record_outcome(
+                    record_data['actual'],
+                    record_data.get('accuracy_score', 0.5)
+                )
+            tracker.assessment_history.append(record)
+            tracker.recent_assessments.append(record)
+
+        tracker._update_reliability_metrics()
+
+        logger.info(
+            f"Loaded reliability data for '{tracker.agent_id}': "
+            f"{len(tracker.assessment_history)} records"
+        )
+        return tracker
 
     def __repr__(self) -> str:
         """String representation."""

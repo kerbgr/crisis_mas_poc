@@ -138,6 +138,47 @@ class CoordinatorAgent:
             f"consensus_threshold={consensus_threshold:.2f})"
         )
 
+    def _record_agent_assessment(
+        self,
+        agent: ExpertAgent,
+        assessment,
+        scenario: Dict[str, Any]
+    ) -> None:
+        """Record an agent's assessment in its reliability tracker."""
+        try:
+            scenario_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+            scenario_id = scenario.get('scenario_id', scenario.get('id', 'unknown'))
+            assessment_id = f"{scenario_id}_{agent.agent_id}_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+
+            if isinstance(assessment, AgentAssessment):
+                prediction = {
+                    'belief_distribution': assessment.belief_distribution.to_dict(),
+                    'confidence': assessment.confidence
+                }
+                confidence = assessment.confidence
+            else:
+                bd = assessment.get('belief_distribution', {})
+                prediction = {
+                    'belief_distribution': bd.to_dict() if hasattr(bd, 'to_dict') else bd,
+                    'confidence': assessment.get('confidence', 0.5)
+                }
+                confidence = assessment.get('confidence', 0.5)
+
+            agent.record_assessment(
+                assessment_id=assessment_id,
+                scenario_type=scenario_type,
+                prediction=prediction,
+                confidence=confidence
+            )
+
+            # Stash assessment_id for later outcome tracking
+            if isinstance(assessment, AgentAssessment):
+                assessment.metadata['_reliability_assessment_id'] = assessment_id
+            else:
+                assessment['_reliability_assessment_id'] = assessment_id
+        except Exception as e:
+            logger.debug(f"Could not record reliability assessment for {agent.agent_id}: {e}")
+
     def collect_assessments(
         self,
         scenario: Dict[str, Any],
@@ -196,6 +237,7 @@ class CoordinatorAgent:
                     try:
                         assessment = future.result(timeout=60)  # 60 second timeout
                         assessments[agent.agent_id] = assessment
+                        self._record_agent_assessment(agent, assessment, scenario)
                         logger.info(
                             f"Received assessment from {agent.agent_id} "
                             f"(confidence: {assessment.get('confidence', 0):.2f})"
@@ -212,6 +254,7 @@ class CoordinatorAgent:
                 try:
                     assessment = agent.evaluate_scenario(scenario, alternatives, criteria)
                     assessments[agent.agent_id] = assessment
+                    self._record_agent_assessment(agent, assessment, scenario)
                     logger.info(
                         f"Received assessment from {agent.agent_id} "
                         f"(confidence: {assessment.get('confidence', 0):.2f})"
@@ -439,6 +482,14 @@ class CoordinatorAgent:
             scenario = {}
 
         try:
+            # Inject real reliability scores for GAT feature extraction
+            for agent_id, assessment in agent_assessments.items():
+                agent_obj = next(
+                    (a for a in self.expert_agents if a.agent_id == agent_id), None
+                )
+                if agent_obj:
+                    assessment['reliability_score'] = agent_obj.get_reliability_score()
+
             gat_result = self.gat_aggregator.aggregate_beliefs_with_gat(
                 agent_assessments,
                 scenario
@@ -868,7 +919,63 @@ class CoordinatorAgent:
             f"confidence: {overall_confidence:.2f}, consensus: {consensus_info['consensus_level']:.2f})"
         )
 
+        # Update reliability trackers with consensus outcome
+        if recommended_alt:
+            for agent_id, assessment in agent_assessments.items():
+                if isinstance(assessment, AgentAssessment):
+                    aid = assessment.metadata.get('_reliability_assessment_id')
+                else:
+                    aid = assessment.get('_reliability_assessment_id') if isinstance(assessment, dict) else None
+
+                if aid:
+                    agent_obj = next(
+                        (a for a in self.expert_agents if a.agent_id == agent_id), None
+                    )
+                    if agent_obj:
+                        try:
+                            agent_obj.update_assessment_outcome(
+                                assessment_id=aid,
+                                actual_outcome={'selected_alternative': recommended_alt}
+                            )
+                        except Exception as e:
+                            logger.warning(f"Failed to update reliability for {agent_id}: {e}")
+
+            # Update agent weights from reliability scores for future decisions
+            scenario_type = scenario.get('type', scenario.get('crisis_type', None))
+            self._update_weights_from_reliability(scenario_type)
+
         return decision
+
+    def _update_weights_from_reliability(
+        self,
+        scenario_type: Optional[str] = None
+    ) -> None:
+        """Update agent_weights based on reliability scores from historical performance."""
+        raw_weights = {}
+        has_data = False
+
+        for agent in self.expert_agents:
+            score = agent.get_reliability_score(
+                scenario_type=scenario_type,
+                mode='overall'
+            )
+            raw_weights[agent.agent_id] = score
+            if agent.reliability_tracker.metrics.total_assessments > 0:
+                has_data = True
+
+        if not has_data:
+            return
+
+        total = sum(raw_weights.values())
+        if total > 0:
+            self.agent_weights = {
+                aid: w / total for aid, w in raw_weights.items()
+            }
+
+        logger.info(
+            f"Updated agent weights from reliability: "
+            f"{', '.join(f'{k}={v:.3f}' for k, v in self.agent_weights.items())}"
+        )
 
     def generate_explanation(self, decision: Dict[str, Any]) -> str:
         """
