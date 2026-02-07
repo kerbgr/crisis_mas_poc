@@ -649,6 +649,9 @@ class LMStudioClient:
             json_str = re.sub(r',\s*"\s*(\})', r'\1', json_str)
             # Remove trailing commas before } or ]
             json_str = re.sub(r',\s*(\}|\])', r'\1', json_str)
+            # Fix LLM number errors: 009 -> 0.09, 015 -> 0.15, etc.
+            # Match numbers after : that start with 0 and have 2+ digits without decimal
+            json_str = re.sub(r':\s*0(\d{2,})([,\s\}])', r': 0.\1\2', json_str)
             return json_str
 
         # Preprocess response text to remove invisible characters
@@ -744,6 +747,18 @@ class LMStudioClient:
             # Add raw_response for debugging
             if isinstance(parsed_data, dict):
                 parsed_data['raw_response'] = response_text[:500]  # Store first 500 chars
+
+                # Add default values for missing required fields (common LLM omission)
+                if 'reasoning' not in parsed_data:
+                    parsed_data['reasoning'] = "No reasoning provided by LLM."
+                    logger.debug("Added default 'reasoning' field")
+                if 'confidence' not in parsed_data:
+                    # Default to moderate confidence when LLM doesn't specify
+                    parsed_data['confidence'] = 0.5
+                    logger.debug("Added default 'confidence' field (0.5)")
+                if 'key_concerns' not in parsed_data:
+                    parsed_data['key_concerns'] = []
+                    logger.debug("Added default 'key_concerns' field (empty list)")
 
             llm_response = LLMResponse(**parsed_data)
             logger.debug(f"Successfully validated LLM response with Pydantic")

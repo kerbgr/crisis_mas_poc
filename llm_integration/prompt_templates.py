@@ -540,9 +540,41 @@ an internationally recognized incident command structure used across emergency s
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 
-    def __init__(self):
-        """Initialize prompt templates."""
-        pass
+    # Agent role to protocol category mapping
+    # Maps agent IDs to relevant protocol categories from web_tools/data/scenarios.json
+    AGENT_PROTOCOL_CATEGORIES = {
+        "meteorology_silver_advisory": ["disaster"],
+        "logistics_silver_tactical": ["disaster"],
+        "medical_bronze_operational": ["medical", "disaster"],
+        "psap_gold_strategic": ["disaster"],
+        "police_silver_tactical": ["police", "disaster"],
+        "police_gold_strategic": ["police", "disaster"],
+        "fire_silver_tactical": ["firefighting", "hazmat"],
+        "fire_gold_strategic": ["firefighting", "disaster"],
+        "medical_gold_strategic": ["medical", "disaster"],
+        "coastguard_silver_tactical": ["search_rescue", "disaster"],
+        "coastguard_gold_strategic": ["search_rescue", "disaster"],
+        "civilprotection_gold_strategic": ["disaster", "firefighting", "medical"],
+        "environment_silver_advisory": ["hazmat", "disaster"],
+    }
+
+    def __init__(self, enable_protocols: bool = True):
+        """
+        Initialize prompt templates with optional protocol integration.
+
+        Args:
+            enable_protocols: Whether to include protocol context in prompts.
+                            Set to False to disable protocol integration.
+        """
+        self._protocol_integration = None
+        self._enable_protocols = enable_protocols
+
+        if enable_protocols:
+            try:
+                from web_tools.protocol_integration import get_protocol_integration
+                self._protocol_integration = get_protocol_integration()
+            except ImportError:
+                pass  # Graceful fallback - protocols not available
 
     def _generate_example_json(self, alternatives: List[Dict[str, Any]]) -> str:
         """
@@ -623,6 +655,10 @@ an internationally recognized incident command structure used across emergency s
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
 
+        # Get protocol context for this agent type
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "meteorology_silver_advisory")
+
         prompt = f"""You are METEOROLOGY-SILVER-ADVISORY providing a critical meteorological expert assessment for an active crisis response decision.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -677,7 +713,7 @@ You are a senior meteorologist with extensive expertise in weather-related crisi
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -777,6 +813,10 @@ Provide your expert meteorological assessment as a JSON object using the exact a
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
 
+        # Get protocol context for this agent type
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "logistics_silver_tactical")
+
         prompt = f"""You are LOGISTICS-SILVER-TACTICAL providing a critical tactical logistics and resource coordination assessment for an active crisis response.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -830,7 +870,7 @@ You are an experienced Tactical Logistics Coordinator with extensive expertise i
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -917,6 +957,10 @@ Provide your expert operational assessment as a JSON object: using the exact alt
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
 
+        # Get protocol context for this agent type
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "medical_bronze_operational")
+
         prompt = f"""You are MEDICAL-BRONZE-OPERATIONAL providing a critical frontline medical operational assessment for an active crisis response.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -971,7 +1015,7 @@ You are a senior operational medical professional with extensive expertise in fr
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1059,6 +1103,10 @@ Provide your expert medical assessment as a JSON object: using the exact alterna
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
 
+        # Get protocol context for this agent type
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "psap_gold_strategic")
+
         prompt = f"""You are PSAP-GOLD-STRATEGIC providing a critical strategic emergency communications assessment for an active crisis response.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1114,7 +1162,7 @@ You are an experienced Strategic Emergency Communications Commander with extensi
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1198,6 +1246,8 @@ Provide your expert PSAP/dispatch assessment as a JSON object: using the exact a
             ]
 
         scenario_context = self.format_scenario_context(scenario)
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "police_silver_tactical")
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
@@ -1241,7 +1291,7 @@ You are an experienced Police Silver Commander with proven tactical leadership i
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1325,6 +1375,8 @@ Provide your expert tactical field assessment as a JSON object: using the exact 
             ]
 
         scenario_context = self.format_scenario_context(scenario)
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "police_gold_strategic")
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
@@ -1369,7 +1421,7 @@ You are an experienced Police Gold Commander responsible for strategic law enfor
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1453,6 +1505,8 @@ Provide your expert regional law enforcement assessment as a JSON object using t
             ]
 
         scenario_context = self.format_scenario_context(scenario)
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "fire_silver_tactical")
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
@@ -1512,7 +1566,7 @@ You are an experienced Tactical Fire Commander with extensive expertise:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1596,6 +1650,8 @@ Provide your expert tactical fire/rescue assessment as a JSON object: using the 
             ]
 
         scenario_context = self.format_scenario_context(scenario)
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "fire_gold_strategic")
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
@@ -1640,7 +1696,7 @@ You are an experienced Fire Gold Commander responsible for strategic fire servic
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1724,6 +1780,8 @@ Provide your expert regional fire service assessment as a JSON object using the 
             ]
 
         scenario_context = self.format_scenario_context(scenario)
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "medical_gold_strategic")
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
@@ -1768,7 +1826,7 @@ You are an experienced Medical Gold Commander with comprehensive knowledge of re
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1852,6 +1910,8 @@ Provide your expert medical infrastructure assessment as a JSON object using the
             ]
 
         scenario_context = self.format_scenario_context(scenario)
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "coastguard_silver_tactical")
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
@@ -1896,7 +1956,7 @@ You are an experienced Coastguard Silver Commander with extensive maritime rescu
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1980,6 +2040,8 @@ Provide your expert maritime rescue assessment as a JSON object using the exact 
             ]
 
         scenario_context = self.format_scenario_context(scenario)
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "coastguard_gold_strategic")
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
@@ -2025,7 +2087,7 @@ You are an experienced Coastguard Gold Commander responsible for strategic marit
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
-
+{protocol_context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2109,6 +2171,8 @@ Provide your expert national maritime strategy assessment as a JSON object using
             ]
 
         scenario_context = self.format_scenario_context(scenario)
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "civilprotection_gold_strategic")
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
@@ -2153,6 +2217,7 @@ You are an experienced Civil Protection Gold Commander responsible for strategic
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
+{protocol_context}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
@@ -2237,6 +2302,8 @@ Provide your expert strategic civil protection assessment as a JSON object using
             ]
 
         scenario_context = self.format_scenario_context(scenario)
+        crisis_type = scenario.get('type', scenario.get('crisis_type', 'unknown'))
+        protocol_context = self.format_protocol_context(crisis_type, "environment_silver_advisory")
         alternatives_text = self.format_alternatives(alternatives)
         criteria_text = "\n".join([f"- {c}" for c in criteria])
         example_json = self._generate_example_json(alternatives)
@@ -2281,6 +2348,7 @@ You are an experienced Environmental Specialist providing technical advice durin
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {scenario_context}
+{protocol_context}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE OPTIONS UNDER CONSIDERATION
@@ -2458,6 +2526,83 @@ Provide your expert environmental advisory assessment as a JSON object using the
                 lines.append(f"    Disadvantages: {', '.join(alt['disadvantages'])}")
 
             lines.append("")  # Blank line between alternatives
+
+        return "\n".join(lines)
+
+    def format_protocol_context(
+        self,
+        crisis_type: str,
+        agent_id: str,
+        max_protocols: int = 3
+    ) -> str:
+        """
+        Format relevant incident handling protocols for LLM consumption.
+
+        Fetches role-appropriate protocols from the knowledge base and formats
+        them concisely to provide domain knowledge without bloating the prompt.
+
+        Args:
+            crisis_type: Type of crisis (e.g., 'wildfire', 'flood', 'earthquake')
+            agent_id: Agent identifier for role-specific filtering
+            max_protocols: Maximum number of protocols to include (default 3)
+
+        Returns:
+            Formatted protocol context string, or empty string if no protocols
+        """
+        if not self._protocol_integration or not self._enable_protocols:
+            return ""
+
+        # Get categories relevant to this agent
+        categories = self.AGENT_PROTOCOL_CATEGORIES.get(agent_id.lower(), [])
+        if not categories:
+            return ""
+
+        # Collect protocols from relevant categories
+        all_protocols = []
+        seen_ids = set()
+        for category in categories:
+            protocols = self._protocol_integration.get_relevant_protocols(
+                crisis_type=crisis_type,
+                category=category,
+                limit=max_protocols
+            )
+            for p in protocols:
+                pid = p.get('id', '')
+                if pid not in seen_ids:
+                    seen_ids.add(pid)
+                    all_protocols.append(p)
+
+        # Limit total protocols
+        unique_protocols = all_protocols[:max_protocols]
+        if not unique_protocols:
+            return ""
+
+        # Format protocols concisely for LLM consumption
+        lines = [
+            "",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "INCIDENT HANDLING PROTOCOLS",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "",
+            "The following expert protocols are relevant to this incident:",
+            ""
+        ]
+
+        for i, protocol in enumerate(unique_protocols, 1):
+            question = protocol.get('question', '')
+            answer = protocol.get('answer', '')
+            category = protocol.get('category', 'general')
+
+            # Truncate long answers to keep prompt concise
+            if len(answer) > 400:
+                answer = answer[:397] + "..."
+
+            lines.append(f"Protocol {i} ({category.replace('_', ' ').title()}): {question}")
+            lines.append(f"Guidance: {answer}")
+            lines.append("")
+
+        lines.append("Consider these established procedures when evaluating response alternatives.")
+        lines.append("")
 
         return "\n".join(lines)
 

@@ -1430,6 +1430,51 @@ The system supports multiple LLM providers through a unified interface:
 - Crisis-specific reasoning patterns and decision criteria
 - Provider-agnostic (works with Claude, OpenAI, LM Studio)
 - Role-specific expertise templates (~5,000 characters each)
+- **Protocol Integration**: Automatically injects relevant incident handling protocols into agent prompts
+
+##### Protocol Integration in Agent Prompts
+
+The PromptTemplates module integrates with `web_tools/protocol_integration.py` to enhance agent assessments with domain-specific expert knowledge. When an agent evaluates a crisis scenario, relevant protocols are fetched based on the crisis type and the agent's role, then injected into the LLM prompt.
+
+**Agent-to-Category Mapping:**
+
+| Agent Role | Protocol Categories |
+| ---------- | ------------------- |
+| Fire (Tactical/Strategic) | firefighting, hazmat, disaster |
+| Police (Tactical/Strategic) | police, disaster |
+| Medical (Bronze/Gold) | medical, disaster |
+| Coast Guard (Tactical/Strategic) | search_rescue, disaster |
+| Civil Protection | disaster, firefighting, medical |
+| Environment Advisory | hazmat, disaster |
+| Meteorology Advisory | disaster |
+| Logistics Tactical | disaster |
+| PSAP Strategic | disaster |
+
+**How It Works:**
+
+1. When `generate_*_prompt()` is called, the crisis type is extracted from the scenario
+2. `format_protocol_context()` fetches up to 3 relevant protocols from `web_tools/data/scenarios.json`
+3. Protocol Q&A pairs are formatted and inserted into the prompt after scenario context
+4. The LLM uses this expert knowledge to inform its assessment reasoning
+
+**Example Protocol Injection:**
+
+```text
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INCIDENT HANDLING PROTOCOLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Protocol 1: What are the key steps for initial wildfire response?
+Guidance: Establish incident command, assess fire behavior, evacuate...
+
+Consider these established procedures when evaluating alternatives.
+```
+
+**Configuration:**
+
+- Protocol integration is enabled by default (`enable_protocols=True`)
+- Can be disabled via `PromptTemplates(enable_protocols=False)`
+- Graceful fallback if protocols are unavailable (empty string injected)
 
 #### 4. Evaluation Layer
 

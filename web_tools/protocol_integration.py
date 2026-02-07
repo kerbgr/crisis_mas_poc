@@ -36,7 +36,7 @@ class ProtocolIntegration:
             protocols_file: Path to protocols JSON file
         """
         if protocols_file is None:
-            protocols_file = Path(__file__).parent.parent / 'web_tools' / 'data' / 'scenarios.json'
+            protocols_file = Path(__file__).parent / 'data' / 'scenarios.json'
 
         self.protocols_file = Path(protocols_file)
         self.protocols = self._load_protocols()
