@@ -46,7 +46,7 @@ This methodology is designed for the **Greek Emergency Response Multi-Agent Syst
 3. **Logistics Coordinator** - Emergency supply chain, resource allocation
 
 **Emergency Response Command Structure (10 additional agents):**
-4. **Public Safety Expert** - National emergency coordination, multi-agency command
+4. **Civil Protection Director** - National emergency coordination, multi-agency command
 5. **Environmental Expert** - Environmental impact assessment, ecosystem restoration
 6. **PSAP Commander** - Emergency dispatch operations, 112 system coordination
 7. **On-Scene Police Commander** - Tactical law enforcement, scene security

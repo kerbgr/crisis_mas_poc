@@ -42,7 +42,7 @@
 | Shelter in Place | 0.398 | 56.2% | Weighted avg. 0.412 |
 
 **Expert Attention Weights** (influence on decision):
-- Public Safety Expert: 34.2% (highest - most relevant for evacuation)
+- Civil Protection Director: 34.2% (highest - most relevant for evacuation)
 - Medical Expert: 28.6% (high - health impacts)
 - Logistics Expert: 24.1% (moderate - feasibility assessment)
 - Environmental Expert: 13.1% (lowest - less relevant to immediate crisis)
@@ -56,7 +56,7 @@
 
 **Note:** With all 13 agents engaged, processing time scales to ~40-50 seconds (13 parallel API calls), but provides comprehensive multi-agency perspective.
 
-**Interpretation:** GAT dynamically weights the Public Safety Expert higher due to domain relevance, resulting in slightly higher confidence and consensus. The environmental expert's influence is appropriately reduced for immediate crisis response.
+**Interpretation:** GAT dynamically weights the Civil Protection Director higher due to domain relevance, resulting in slightly higher confidence and consensus. The environmental expert's influence is appropriately reduced for immediate crisis response.
 
 ## Performance Metrics
 

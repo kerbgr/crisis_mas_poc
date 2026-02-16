@@ -38,7 +38,7 @@ The generated visualization displays:
 
 ### Coordinators (2)
 - **PSAP Commander** - Multi-agency emergency communications
-- **Public Safety Expert** - National emergency coordination
+- **Civil Protection Director** - National emergency coordination
 
 ### Infrastructure (2)
 - **Medical Infrastructure Director** - Hospital system coordination

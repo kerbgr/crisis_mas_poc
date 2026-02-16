@@ -26,21 +26,21 @@ This guide explains how to create custom agents for the Crisis MAS using the pro
 The Crisis MAS currently includes **13 expert agents** organized in a comprehensive emergency response command structure:
 
 **Default Core Experts (3):**
-1. **Meteorologist** (`agent_meteorologist`) - Weather/environmental specialist
-2. **Logistics Coordinator** (`logistics_expert_01`) - Supply chain management
-3. **Medical Expert** (`medical_expert_01`) - Emergency medicine
+1. **Meteorologist** (`meteorology_silver_advisory`) - Weather/environmental specialist
+2. **Logistics Coordinator** (`logistics_silver_tactical`) - Supply chain management
+3. **Emergency Physician** (`medical_bronze_operational`) - Pre-hospital emergency medicine
 
 **Emergency Response Command Structure (10 additional experts):**
-4. **Public Safety Expert** (`public_safety_expert_01`) - National emergency coordination
-5. **Environmental Expert** (`environmental_expert_01`) - Environmental impact assessment
-6. **PSAP Commander** (`psap_commander_01`) - Emergency communications authority
-7. **On-Scene Police Commander** (`police_onscene_01`) - Tactical law enforcement
-8. **Regional Police Commander** (`police_regional_01`) - Strategic police authority
-9. **On-Scene Fire Commander** (`fire_onscene_01`) - Tactical fire/rescue
-10. **Regional Fire Commander** (`fire_regional_01`) - Strategic fire/rescue
-11. **Medical Infrastructure Director** (`medical_infrastructure_01`) - Healthcare system capacity
-12. **On-Scene Coast Guard Commander** (`coastguard_onscene_01`) - Maritime tactical authority
-13. **National Coast Guard Director** (`coastguard_national_01`) - Strategic maritime authority
+4. **Civil Protection Director** (`civilprotection_gold_strategic`) - National emergency coordination
+5. **Environmental Scientist** (`environment_silver_advisory`) - Environmental impact assessment
+6. **PSAP Commander** (`psap_gold_strategic`) - Emergency communications authority
+7. **Police Tactical Commander** (`police_silver_tactical`) - On-scene law enforcement
+8. **Police Regional Commander** (`police_gold_strategic`) - Strategic police authority
+9. **Fire Tactical Commander** (`fire_silver_tactical`) - On-scene fire/rescue
+10. **Fire Regional Commander** (`fire_gold_strategic`) - Strategic fire operations
+11. **Medical Infrastructure Director** (`medical_gold_strategic`) - Healthcare system capacity
+12. **Coast Guard Tactical Commander** (`coastguard_silver_tactical`) - Maritime tactical authority
+13. **Coast Guard National Director** (`coastguard_gold_strategic`) - Strategic maritime authority
 
 See `agents/agent_profiles.json` for complete agent configurations.
 

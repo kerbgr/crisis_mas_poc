@@ -38,7 +38,7 @@ graph TB
             S1[Police Regional]
             S2[Fire Regional]
             S3[Coast Guard National]
-            S4[Public Safety Expert]
+            S4[Civil Protection Director]
             S5[Environmental Expert]
             S6[Medical Infrastructure]
             S7[PSAP Commander]
@@ -151,12 +151,32 @@ graph TB
 - Enables data-driven dynamic weighting in GAT
 
 **ExpertAgent** (`agents/expert_agent.py`)
-- Domain-specific experts across 13 specialized roles (see Expert Roles section)
+- Domain-specific experts across 13 specialized roles (see table below)
 - Supports emergency response command hierarchy (tactical/strategic)
 - LLM-enhanced reasoning using Claude, OpenAI, or LM Studio
 - Configurable expertise profiles with criteria weights
 - Generates structured assessments with confidence scores
 - Role-based prompt generation mapped to agent profiles
+
+**Expert Roles — 13 agents organised in Tactical (SILVER/BRONZE) and Strategic (GOLD) levels:**
+
+| # | Agent ID | Role | Level | Focus |
+|---|----------|------|-------|-------|
+| 1 | `meteorology_silver_advisory` | Meteorologist | SILVER | Severe weather forecasting |
+| 2 | `medical_bronze_operational` | Emergency Physician | BRONZE | Pre-hospital emergency medicine |
+| 3 | `logistics_silver_tactical` | Logistics Coordinator | SILVER | Emergency supply chain |
+| 4 | `civilprotection_gold_strategic` | Civil Protection Director | GOLD | National emergency coordination |
+| 5 | `environment_silver_advisory` | Environmental Scientist | SILVER | Ecological impact assessment |
+| 6 | `psap_gold_strategic` | PSAP Commander | GOLD | Emergency dispatch operations |
+| 7 | `police_silver_tactical` | Police Tactical Commander | SILVER | On-scene law enforcement |
+| 8 | `police_gold_strategic` | Police Regional Commander | GOLD | Regional law enforcement ops |
+| 9 | `fire_silver_tactical` | Fire Tactical Commander | SILVER | On-scene fire suppression |
+| 10 | `fire_gold_strategic` | Fire Regional Commander | GOLD | Regional fire operations |
+| 11 | `medical_gold_strategic` | Medical Infrastructure Director | GOLD | Healthcare system capacity |
+| 12 | `coastguard_silver_tactical` | Coast Guard Tactical Commander | SILVER | Maritime search and rescue |
+| 13 | `coastguard_gold_strategic` | Coast Guard National Director | GOLD | National maritime operations |
+
+A fourteenth agent, `coordinator_01`, orchestrates the pipeline without contributing its own assessment.
 
 **CoordinatorAgent** (`agents/coordinator_agent.py`)
 - Orchestrates multi-agent decision process

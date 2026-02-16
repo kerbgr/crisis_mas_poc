@@ -39,7 +39,7 @@ graph TB
             S1[Police Regional]
             S2[Fire Regional]
             S3[Coast Guard National]
-            S4[Public Safety Expert]
+            S4[Civil Protection Director]
             S5[Environmental Expert]
             S6[Medical Infrastructure]
             S7[PSAP Commander]
@@ -200,7 +200,7 @@ graph TB
             S1[Police<br/>Regional]
             S2[Fire-Brigade<br/>Regional]
             S3[Coast Guard<br/>National]
-            S4[Public Safety<br/>Expert]
+            S4[Civil Protection<br/>Director]
             S5[Environmental<br/>Expert]
             S6[Medical<br/>Infrastructure]
             S7[PSAP<br/>Commander]
@@ -239,7 +239,7 @@ graph TB
 | Police Regional | Strategic Commander | Multi-jurisdictional coordination |
 | Fire Regional | Strategic Commander | Regional fire operations |
 | Coast Guard National | National Director | Maritime policy, port security |
-| Public Safety Expert | National Coordinator | Inter-agency coordination |
+| Civil Protection Director | National Coordinator | Inter-agency coordination |
 | Environmental Expert | Environmental Impact | Long-term environmental effects |
 | Medical Infrastructure | Hospital Capacity | Healthcare system coordination |
 | PSAP Commander | 112 Communications | Emergency dispatch coordination |
@@ -1099,7 +1099,7 @@ graph TB
             S1[Police Regional]
             S2[Fire Regional]
             S3[Coast Guard National]
-            S4[Public Safety Expert]
+            S4[Civil Protection Director]
             S5[Environmental Expert]
             S6[Medical Infrastructure]
             S7[PSAP Commander]
@@ -1369,7 +1369,7 @@ flowchart TB
         SE1[Police Regional]
         SE2[Fire Regional]
         SE3[Coast Guard National]
-        SE4[Public Safety Expert]
+        SE4[Civil Protection Director]
         SE5[Environmental Expert]
         SE6[Medical Infrastructure]
         SE7[PSAP Commander]

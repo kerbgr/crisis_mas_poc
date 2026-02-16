@@ -35,7 +35,7 @@ The README.md file contained **significant inconsistencies** regarding the numbe
   1. Meteorologist (Weather/environmental specialist)
   2. Medical Expert (EKAB emergency physician)
   3. Logistics Coordinator (Supply chain management)
-  4. Public Safety Expert (National emergency coordination)
+  4. Civil Protection Director (National emergency coordination)
   5. Environmental Expert (Impact assessment)
   6. PSAP Commander (Emergency dispatch/112 system)
   7. On-Scene Police Commander (Tactical law enforcement)
