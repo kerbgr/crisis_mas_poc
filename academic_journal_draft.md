@@ -57,9 +57,9 @@ The design of the proposed system draws on several research threads that we brie
 
 ### A. System Architecture
 
-The system is organised into five layers. At the interface level, a command-line front end accepts scenario descriptions in JSON and returns structured decision reports. Below it sit 13 expert agents, each associated with an LLM reasoning engine and a persistent reliability record. The decision layer houses the two aggregation mechanisms (ER and GAT), the MCDA ranker, a consensus model, and the reliability tracker. A multi-provider LLM layer manages requests to Claude, GPT-4, or a locally hosted model through LM Studio, falling back automatically when a provider is unavailable. Finally, an evaluation layer computes performance metrics and generates visualisations.
+The system is organised into five layers. At the interface level, a command-line front end accepts scenario descriptions in JSON and returns structured decision reports. Below it sit 13 expert agents, each associated with an LLM reasoning engine and a persistent reliability record. The decision layer houses the two aggregation mechanisms (ER and GAT), the MCDA ranker, a consensus model, and the reliability tracker. A multi-provider LLM layer manages requests to a locally hosted model through LM Studio or a Claude, GPT-4, falling back automatically when a provider is unavailable. Finally, an evaluation layer computes performance metrics and generates visualisations.
 
-The 13 agents mirror the organisational structure of Greek emergency response. They include a Meteorologist (HNMS), an Emergency Physician (EKAB), a Logistics Coordinator (General Secretariat of Civil Protection), a PSAP Commander, two Police Commanders at tactical and regional level (ELAS), two Fire Commanders (Hellenic Fire Corps), a Medical Infrastructure Director, two Coast Guard Directors, an Environmental Scientist, and a Civil Engineer. A fourteenth Coordinator agent orchestrates the decision pipeline without contributing its own assessment.
+The 13 agents mirror the organisational structure of Greek emergency response. They include a Meteorologist, an Emergency Physician, a Logistics Coordinator, a PSAP Commander, two Police Commanders at tactical and regional level, two Fire Commanders, a Medical Infrastructure Director, two Coast Guard Directors, an Environmental Scientist, and a Civil Engineer. A fourteenth Coordinator agent orchestrates the decision pipeline without contributing its own assessment.
 
 ### B. Evidential Reasoning
 
@@ -113,7 +113,7 @@ This mechanism gradually amplifies the influence of agents that have been consis
 
 ### A. Crisis Scenarios
 
-The system is evaluated on three scenarios modelled after real Greek emergencies (Table I). The Karditsa flood scenario reflects the Thessaly inundations during Storm Daniel (September 2023); the Evia wildfire scenario draws on the North Evia fires of August 2021; and the Elefsina HAZMAT scenario is based on the industrial risk profile of the Thriasio Plain petrochemical zone. Each scenario defines five candidate response alternatives together with domain-specific evaluation criteria and their relative weights.
+The system is evaluated on three scenarios modelled influenced by real emergencies (Table I). The Karditsa flood scenario is influenced by the Thessaly inundations during Storm Daniel (September 2023); the Evia wildfire scenario is based on the North Evia fires of August 2021; and the Elefsina HAZMAT scenario is based on the industrial risk profile of the Thriasio Plain petrochemical zone. Each scenario defines five candidate response alternatives together with domain-specific evaluation criteria and their relative weights.
 
 **TABLE I: Crisis Scenario Parameters**
 
