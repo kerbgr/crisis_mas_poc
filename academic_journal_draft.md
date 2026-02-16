@@ -9,9 +9,9 @@ Email: vkazoukas@tuc.gr, kazoukas@gmail.com
 
 ## Abstract
 
-Crisis management demands rapid, coordinated decision-making under severe uncertainty and time pressure. This paper presents a Multi-Agent System (MAS) integrating classical Evidential Reasoning (ER) with Graph Attention Networks (GAT) and Large Language Models (LLMs) for collaborative crisis response decision support. The framework features 13 specialized Greek emergency response expert agents with LLM-powered reasoning (Claude, GPT-4, local models), two belief aggregation mechanisms (Dempster-Shafer-based ER and GAT with 9-dimensional feature extraction including historical reliability tracking), and TOPSIS-based Multi-Criteria Decision Analysis.
+Effective crisis management depends on the ability to coordinate expert judgments rapidly and under considerable uncertainty. We present a multi-agent decision support system in which 13 specialised agents — modelled on Greek emergency response roles — generate structured assessments using Large Language Models and aggregate them through two complementary mechanisms: classical Evidential Reasoning based on Dempster-Shafer theory, and a Graph Attention Network that learns agent-to-agent attention weights from a 9-dimensional feature representation. A TOPSIS-based multi-criteria ranking and a historical reliability tracker that adjusts agent influence over successive decisions complete the pipeline.
 
-Evaluation across three realistic Greek crisis scenarios — Karditsa flooding, Evia wildfires, and Elefsina ammonia HAZMAT — demonstrates that multi-agent collaboration achieves +4.3% to +6.7% decision quality improvement over the best individual expert. GAT aggregation achieves 92% consensus with +2.8% consensus and +1.5% confidence improvement over classical ER. Historical reliability tracking produces +2.5% quality improvement over 100 scenarios. Emergency management professionals rate system explainability at 4.2/5 and auditability at 4.5/5.
+We evaluate the system on three crisis scenarios drawn from recent Greek emergencies (Karditsa flooding, Evia wildfires, Elefsina industrial HAZMAT). Across 75 runs, multi-agent decisions surpass the best individual expert by 4.3–6.7 % in decision quality. The two aggregation paths reach comparable quality scores, though GAT produces measurably higher consensus (+2.8 %, p<0.01) and confidence (+1.5 %, p<0.05). Reliability-adjusted weighting yields a further 2.5 % quality gain over static weights when accumulated across 100 sequential runs. In a preliminary evaluation with 15 emergency management professionals, explainability and auditability received mean ratings of 4.2/5 and 4.5/5, respectively.
 
 **Keywords:** Multi-Agent Systems, Crisis Management, Evidential Reasoning, Graph Attention Networks, Large Language Models, Decision Support Systems
 
@@ -19,35 +19,37 @@ Evaluation across three realistic Greek crisis scenarios — Karditsa flooding, 
 
 ## I. Introduction
 
-Crisis situations present unique decision-making challenges: severe time constraints, incomplete information, rapidly evolving conditions, and catastrophic consequences of error [1]. Traditional crisis management relies on human expert coordination, which can become overwhelmed during large-scale emergencies requiring synchronization across medical response, logistics, meteorology, and environmental assessment [2].
+Large-scale emergencies confront decision-makers with incomplete information, evolving hazards, and the need to synchronise responses across disciplines — medical, logistical, meteorological, environmental — within minutes rather than hours [1]. Human coordination teams, however skilled, can be overwhelmed when the number of concurrent information streams exceeds cognitive limits [2].
 
-While multi-agent systems have been explored for evacuation modeling [3] and collaborative disaster decision-making [4], existing approaches exhibit critical limitations: (1) limited integration of modern AI capabilities such as LLMs, (2) inadequate uncertainty handling through rigorous belief aggregation, (3) absent comparative analysis between classical and neural aggregation methods, (4) insufficient explainability for high-stakes domains, and (5) static agent weighting ignoring valuable performance history.
+Multi-agent systems offer a natural computational analogy: autonomous software agents, each encoding a distinct area of expertise, can deliberate in parallel and pool their judgments. Prior work has applied agent-based models to evacuation planning [3] and group decision support in emergencies [4], yet several issues remain open. Most existing frameworks rely on a single aggregation strategy without examining alternatives, treat agent credibility as fixed, and provide limited transparency into how a collective recommendation is reached — a serious shortcoming in safety-critical settings. The recent availability of Large Language Models introduces new possibilities for richer, contextually grounded agent reasoning, but also new challenges around reliability and prompt design that the literature has only begun to address.
 
-This work addresses these gaps through a novel hybrid framework with the following contributions:
+This paper makes the following contributions:
 
-1. **Hybrid Aggregation Framework**: First direct comparison of Evidential Reasoning versus Graph Attention Networks for multi-agent belief aggregation in crisis management
-2. **LLM-Enhanced Agents**: Integration of multiple LLM providers (Claude, GPT-4, LM Studio) for contextual expert reasoning with automatic fallback
-3. **Historical Reliability Tracking**: Dynamic agent weighting based on past performance, feeding into both ER weights and GAT features
-4. **Greek Emergency Response Modeling**: Authentic 13-agent system representing Hellenic emergency services (EKAB, ELAS, Fire Corps, Coast Guard, Civil Protection) with tactical/strategic command hierarchy
-5. **Explainability Mechanisms**: Attention visualization, consensus tracking, and decision audit trails achieving 4.5/5 auditability ratings
+1. A direct, controlled comparison of weighted Evidential Reasoning and Graph Attention Networks as competing belief-aggregation mechanisms within the same multi-agent architecture.
+2. A multi-provider LLM integration (Claude, GPT-4, LM Studio) that supplies each agent with structured domain reasoning and includes automatic provider fallback.
+3. A historical reliability tracker that updates agent influence weights after every decision, feeding into both the ER weighting scheme and the GAT feature vector.
+4. A 13-agent model of the Greek emergency response hierarchy — spanning EKAB paramedics, ELAS police, the Hellenic Fire Corps, the Coast Guard, and the General Secretariat of Civil Protection — evaluated on three scenario types drawn from recent Greek crises.
+5. An explainability layer comprising attention-weight visualisation, MCDA score decomposition, and natural-language justification, assessed by domain practitioners.
 
-The paper investigates five research questions: (RQ1) effective multi-agent coordination for time-critical decisions, (RQ2) belief aggregation under high uncertainty, (RQ3) LLM enhancement of agent reasoning, (RQ4) multi-agent vs. single-agent decision quality, and (RQ5) transparent, auditable decision trails for high-stakes domains.
+Five research questions guide the evaluation: how effectively can multi-agent coordination support time-critical decisions (RQ1); how do ER and GAT compare for belief aggregation under high uncertainty (RQ2); what does LLM-powered reasoning add to agent quality (RQ3); does collective judgement measurably outperform individual experts (RQ4); and can the resulting decision trails satisfy the transparency requirements of operational crisis management (RQ5).
 
 ---
 
 ## II. Related Work
 
-**Multi-Agent Systems.** Wooldridge [5] established foundational MAS principles including agent autonomy, social ability, and proactiveness. Ren et al. [3] demonstrated agent-based evacuation modeling, showing how emergent coordination optimizes life-saving outcomes. Our work adopts a hierarchical coordinator-expert architecture balancing agent independence with collective goal achievement.
+The design of the proposed system draws on several research threads that we briefly review below.
 
-**Dempster-Shafer Theory.** Shafer's [6] theory provides rigorous foundations for reasoning under uncertainty, permitting belief functions that explicitly represent ignorance. Yang and Xu [7] advanced the Evidential Reasoning Rule addressing limitations when highly conflicting evidence produces counterintuitive results. Sentz and Ferson [8] provide comprehensive analysis of combination operators. Our implementation adopts a simplified weighted ER approach for computational tractability in real-time crisis response.
+*Multi-agent systems.* Wooldridge [5] laid out the foundational properties of autonomous agents — reactivity, proactiveness, and social ability — that inform our agent design. In the emergency domain, Ren et al. [3] showed that agent-based evacuation models can capture emergent coordination patterns that monolithic simulations miss. We adopt a hierarchical coordinator-expert topology, where individual agents retain autonomy over their assessments while a coordinator agent orchestrates aggregation and final ranking.
 
-**Multi-Criteria Decision Analysis.** TOPSIS [9], surveyed extensively by Behzadian et al. [10], provides intuitive geometric interpretation and computational efficiency for group decision-making. We implement TOPSIS alongside WSM and SAW for comparative validation.
+*Dempster-Shafer theory and evidential reasoning.* Shafer's mathematical theory of evidence [6] extends Bayesian probability by allowing explicit representation of ignorance through belief and plausibility intervals. Yang and Xu [7] later refined the evidential reasoning rule to mitigate the well-known problem of counter-intuitive outputs under high inter-source conflict, while Sentz and Ferson [8] provide a systematic comparison of combination operators. In our implementation we use a simplified weighted-average formulation of ER, trading some theoretical rigour for the computational speed that real-time crisis support demands.
 
-**Graph Attention Networks.** Veličković et al. [11] introduced GAT for computing node representations through weighted attention over neighbors. Zhang et al. [12] survey deep learning on graphs. We adapt GAT to expert networks, treating agents as nodes with 9-dimensional features including historical reliability as a novel adaptive dimension.
+*Multi-criteria decision analysis.* The TOPSIS method introduced by Hwang and Yoon [9] ranks alternatives by their geometric distance to ideal and anti-ideal reference points. Behzadian et al. [10] survey its many extensions and application domains. We use TOPSIS as the primary ranker and include WSM and SAW as secondary checks.
 
-**LLMs in Decision Support.** Chain-of-Thought prompting [13] enables structured reasoning through intermediate steps. We leverage structured prompt templates (~5,000 characters each) encoding expert roles, crisis protocols, and output format constraints for parseable belief distributions.
+*Graph attention networks.* Veličković et al. [11] proposed GAT as a mechanism for learning anisotropic, neighbour-dependent weights on graph-structured data. Zhang et al. [12] survey the broader landscape of deep learning on graphs. We repurpose the GAT architecture for an expert-agent graph in which each node corresponds to an agent and each edge carries an attention coefficient reflecting inter-agent relevance. A distinctive feature of our formulation is the inclusion of a historical reliability dimension in the node feature vector, enabling the network to discount agents whose past performance has been poor.
 
-**Crisis Management.** Comfort et al. [1] and Kapucu and Garayev [2] emphasize multi-stakeholder coordination, while Levy and Taji [4] demonstrate MCDA in emergency management. Our work extends these with autonomous AI agents providing LLM-powered reasoning.
+*Large language models for reasoning.* Chain-of-thought prompting [13] demonstrated that guiding a language model through intermediate reasoning steps materially improves answer quality on complex tasks. We exploit this principle by supplying each agent with a structured prompt template (approximately 5 000 characters) that encodes the agent's professional role, the relevant emergency protocols, and the required output format for machine-parseable belief distributions.
+
+*Crisis management decision support.* Comfort et al. [1] and Kapucu and Garayev [2] highlight the central role of inter-organisational coordination in disaster response, while Levy and Taji [4] apply MCDA to hazard planning. Our work extends this line by replacing human panel deliberation with autonomous, LLM-powered agents whose collective output is aggregated through formal uncertainty calculi.
 
 ---
 
@@ -55,51 +57,55 @@ The paper investigates five research questions: (RQ1) effective multi-agent coor
 
 ### A. System Architecture
 
-The MAS implements a five-layer architecture: (1) CLI interface with JSON I/O, (2) 13 specialized expert agents with LLM reasoning engines and historical reliability tracking, (3) decision framework (ER, GAT, MCDA, consensus model, reliability tracker), (4) multi-provider LLM integration (Claude, GPT-4, LM Studio) with automatic fallback, and (5) evaluation layer with metrics computation and visualization.
+The system is organised into five layers. At the interface level, a command-line front end accepts scenario descriptions in JSON and returns structured decision reports. Below it sit 13 expert agents, each associated with an LLM reasoning engine and a persistent reliability record. The decision layer houses the two aggregation mechanisms (ER and GAT), the MCDA ranker, a consensus model, and the reliability tracker. A multi-provider LLM layer manages requests to Claude, GPT-4, or a locally hosted model through LM Studio, falling back automatically when a provider is unavailable. Finally, an evaluation layer computes performance metrics and generates visualisations.
 
-The 13 agents represent Greek emergency response roles: Meteorologist (HNMS), Emergency Physician (EKAB), Logistics Coordinator (Civil Protection), PSAP Commander, Police Tactical/Regional Commanders (ELAS), Fire Tactical/Regional Commanders (Hellenic Fire Corps), Medical Infrastructure Director, Coast Guard Tactical/National Directors, Environmental Scientist, and Civil Engineer — plus a Coordinator agent.
+The 13 agents mirror the organisational structure of Greek emergency response. They include a Meteorologist (HNMS), an Emergency Physician (EKAB), a Logistics Coordinator (General Secretariat of Civil Protection), a PSAP Commander, two Police Commanders at tactical and regional level (ELAS), two Fire Commanders (Hellenic Fire Corps), a Medical Infrastructure Director, two Coast Guard Directors, an Environmental Scientist, and a Civil Engineer. A fourteenth Coordinator agent orchestrates the decision pipeline without contributing its own assessment.
 
 ### B. Evidential Reasoning
 
-Our ER implementation uses weighted averaging of belief distributions for computational efficiency. For each alternative $i$ and agent $j$ with weight $w_j$ and belief $b_j(i)$:
+For computational tractability in time-critical settings, we adopt a weighted-average formulation of evidential reasoning rather than the full Dempster-Shafer combination rule. Given $n$ agents, the combined belief mass assigned to alternative $i$ is
 
 $$b_{\text{combined}}(i) = \frac{\sum_j w_j \cdot b_j(i)}{\sum_j w_j}$$
 
-Agent weights derive from expertise relevance, historical reliability (from ReliabilityTracker), and confidence scores. Decision confidence uses entropy-based quantification:
+where $w_j$ is the weight of agent $j$, composed of three factors: domain-relevance to the current scenario, historical reliability (Section III-E), and self-reported confidence. Overall decision confidence is derived from the normalised entropy of the combined distribution:
 
 $$\text{confidence} = 1 - \frac{H}{\log_2(n_{\text{alternatives}})}, \quad H = -\sum_i p_i \log_2(p_i)$$
 
+A low-entropy distribution — one that concentrates most belief mass on a single alternative — yields high confidence, while a near-uniform spread signals genuine ambiguity.
+
 ### C. Graph Attention Network
 
-Our GAT extracts a 9-dimensional feature vector $\mathbf{f}_j \in \mathbb{R}^9$ per agent: (1) confidence score, (2) belief certainty (inverse entropy), (3) expertise relevance, (4) risk tolerance, (5) severity awareness, (6) top choice strength, (7) concerns raised, (8) reasoning quality, and (9) historical reliability from ReliabilityTracker — our key innovation enabling dynamic, data-driven weighting.
+As an alternative to the linear ER aggregation, we construct a fully connected graph in which each agent is a node. Every node is described by a 9-dimensional feature vector $\mathbf{f}_j \in \mathbb{R}^9$ whose components capture confidence, belief certainty (inverse entropy), expertise relevance, risk tolerance, severity awareness, top-choice strength, number of concerns raised, reasoning quality, and historical reliability. The last dimension links the GAT directly to the reliability tracker described in Section III-E, allowing the network to learn from accumulated performance data.
 
-Multi-head attention ($K$=4 heads) computes attention coefficients:
+Attention coefficients are computed with $K = 4$ heads:
 
 $$e_{ij}^h = \text{LeakyReLU}(\mathbf{a}^h \cdot [\mathbf{W}^h \mathbf{f}_i \| \mathbf{W}^h \mathbf{f}_j])$$
 
 $$\alpha_{ij}^h = \text{softmax}_j(e_{ij}^h)$$
 
-Final aggregated belief for alternative $i$:
+The aggregated belief for alternative $i$ is then the mean over heads of the attention-weighted agent beliefs:
 
 $$b_{\text{combined}}(i) = \frac{1}{K} \sum_{h=1}^{K} \sum_j \alpha_{ij}^h \cdot b_j(i)$$
 
 ### D. MCDA and Consensus
 
-TOPSIS ranks alternatives by minimizing distance from ideal and maximizing distance from anti-ideal solutions in normalized criterion space. Consensus uses pairwise cosine similarity:
+Once beliefs have been aggregated, TOPSIS ranks the alternatives by their relative closeness to the ideal solution in a normalised criterion space. In parallel, we measure the degree of inter-agent agreement through pairwise cosine similarity of belief vectors:
 
 $$CL = \frac{2}{n(n-1)} \sum_i \sum_{j>i} \cos(\mathbf{b}_i, \mathbf{b}_j)$$
 
-CL > 0.9 permits automated execution; CL < 0.7 triggers mandatory human review.
+This consensus level serves as a gate for operational use: when $CL > 0.9$ the recommendation may proceed to execution without further review, whereas $CL < 0.7$ flags the decision for mandatory human deliberation.
 
 ### E. Historical Reliability Tracking
 
-The ReliabilityTracker maintains per-agent performance histories using consensus-based validation. Reliability scores combine exponential moving average of quality ($\alpha$=0.3), calibration alignment, and consistency:
+The reliability tracker maintains a per-agent performance history and updates it after every scenario. Because ground truth is unavailable in a simulated setting, we adopt a consensus-based proxy: the system's own final recommendation is treated as the reference outcome, and each agent's assessment is scored against it. The reliability score for agent $j$ at time $t$ combines three terms — an exponential moving average of past quality scores ($\alpha = 0.3$), calibration alignment, and behavioural consistency:
 
 $$\rho_j(t) = 0.7 \times \text{EMA}(q_j) + 0.2 \times c_j + 0.1 \times (1 - \sigma_j)$$
 
-Dynamic weight adjustment boosts high-reliability agents and reduces low-reliability ones:
+Agent weights are then adjusted relative to the population mean reliability $\bar{\rho}$:
 
 $$w_j = w_j^{\text{base}} \times \left(1 + 0.5 \times (\rho_j - \bar{\rho})\right)$$
+
+This mechanism gradually amplifies the influence of agents that have been consistently well-calibrated and attenuates that of persistently poor performers.
 
 ---
 
@@ -107,7 +113,7 @@ $$w_j = w_j^{\text{base}} \times \left(1 + 0.5 \times (\rho_j - \bar{\rho})\righ
 
 ### A. Crisis Scenarios
 
-We evaluate on three authentic Greek emergency scenarios (Table I).
+The system is evaluated on three scenarios modelled after real Greek emergencies (Table I). The Karditsa flood scenario reflects the Thessaly inundations during Storm Daniel (September 2023); the Evia wildfire scenario draws on the North Evia fires of August 2021; and the Elefsina HAZMAT scenario is based on the industrial risk profile of the Thriasio Plain petrochemical zone. Each scenario defines five candidate response alternatives together with domain-specific evaluation criteria and their relative weights.
 
 **TABLE I: Crisis Scenario Parameters**
 
@@ -119,18 +125,13 @@ We evaluate on three authentic Greek emergency scenarios (Table I).
 | Alternatives | 5 | 5 | 5 |
 | Top Criterion | Safety (0.35) | Life Safety (0.40) | Health Safety (0.45) |
 
-Scenarios are inspired by historical events: Thessaly Storm Daniel flooding (2023), North Evia wildfires, and industrial HAZMAT incidents in the Elefsina zone.
-
 ### B. Evaluation Metrics
 
-- **Decision Quality Score (DQS)**: Weighted criterion satisfaction via MCDA
-- **Consensus Level (CL)**: Mean pairwise cosine similarity of agent belief vectors
-- **Decision Confidence (DC)**: $0.6 \times CL + 0.4 \times \overline{c}_{\text{agents}}$
-- **Extended Comparison Bandwidth (ECB)**: Multi-agent DQS vs. each individual agent
+We report four metrics. The *Decision Quality Score* (DQS) is the weighted criterion-satisfaction value produced by the MCDA ranker. *Consensus Level* (CL) is the mean pairwise cosine similarity of agent belief vectors, indicating how much the experts agree before aggregation. *Decision Confidence* (DC) blends consensus and average agent confidence as $0.6 \times CL + 0.4 \times \overline{c}_{\text{agents}}$. Finally, the *Extended Comparison Bandwidth* (ECB) compares the multi-agent DQS against the score that each individual agent would have achieved alone.
 
 ### C. Configurations
 
-Five configurations: (1) Core 3-agent, (2) Full 13-agent, (3) ER vs. GAT comparison, (4) LLM provider comparison (Claude/GPT-4/LLaMA 2), and (5) single-agent baseline. Each executes 25 runs per scenario (75 total).
+We test five configurations: a compact 3-agent subset, the full 13-agent panel, an ER-versus-GAT comparison on the 13-agent panel, an LLM provider comparison (Claude, GPT-4, LLaMA 2 via LM Studio), and a single-agent baseline. Each configuration is run 25 times per scenario, yielding 75 runs per configuration.
 
 ---
 
@@ -138,46 +139,50 @@ Five configurations: (1) Core 3-agent, (2) Full 13-agent, (3) ER vs. GAT compari
 
 ### A. Overall System Performance
 
-**TABLE II: System Performance (Averaged across 75 runs)**
+Table II summarises the aggregate results for the 3-agent and 13-agent configurations across 75 runs.
+
+**TABLE II: System Performance (averaged across 75 runs)**
 
 | Metric | 3-Agent | 13-Agent |
 |--------|---------|----------|
-| DQS | 84.7% ± 2.3 | 86.3% ± 1.9 |
-| Consensus | 75.3% ± 8.1 | 68.7% ± 9.3 |
-| Confidence | 79.8% ± 6.4 | 81.2% ± 5.8 |
-| Processing Time | 12.4s | 39.7s |
-| Cost/Scenario | $0.012 | $0.044 |
+| DQS | 84.7 % ± 2.3 | 86.3 % ± 1.9 |
+| Consensus | 75.3 % ± 8.1 | 68.7 % ± 9.3 |
+| Confidence | 79.8 % ± 6.4 | 81.2 % ± 5.8 |
+| Processing Time | 12.4 s | 39.7 s |
+| Cost / Scenario | $0.012 | $0.044 |
 
-The 13-agent system achieves +1.6% DQS improvement (p<0.01) with expected consensus reduction from increased perspective diversity. Processing time scales approximately linearly.
+Expanding the panel from 3 to 13 agents raises DQS by 1.6 percentage points (p < 0.01) at the expense of lower consensus, which drops from 75.3 % to 68.7 %. The reduction in consensus is expected: a larger, more heterogeneous group will naturally exhibit greater disagreement, and we regard moderate consensus levels as a sign of genuine perspective diversity rather than a deficiency. Processing time scales roughly linearly with agent count.
 
 ### B. ER vs. GAT Comparison
 
-**TABLE III: Aggregation Method Comparison (13-agent, 75 scenarios)**
+Table III compares the two aggregation mechanisms on the full 13-agent panel.
 
-| Metric | ER | GAT | Δ |
+**TABLE III: Aggregation Method Comparison (13-agent, 75 runs)**
+
+| Metric | ER | GAT | Difference |
 |--------|-----|-----|---|
-| DQS | 0.861 | 0.863 | +0.002 (NS) |
-| Consensus | 68.2% | 71.0% | +2.8%** |
-| Confidence | 80.4% | 81.9% | +1.5%* |
-| Processing Time | 38.9s | 41.2s | +2.3s |
+| DQS | 0.861 | 0.863 | +0.002 (n.s.) |
+| Consensus | 68.2 % | 71.0 % | +2.8 %** |
+| Confidence | 80.4 % | 81.9 % | +1.5 %* |
+| Processing Time | 38.9 s | 41.2 s | +2.3 s |
 
-*p<0.05, **p<0.01, NS=Not Significant
+\* p < 0.05, \*\* p < 0.01, n.s. = not significant
 
-Both methods achieve comparable decision quality, but GAT provides significantly higher consensus and confidence through learned attention patterns that better downweight poorly-calibrated agents.
-
-GAT attention weights appropriately reflect scenario-specific expertise: Meteorologist receives highest attention (0.18) in flood/wildfire scenarios; HAZMAT specialists dominate (0.22) in the ammonia scenario.
+The two methods produce nearly identical decision quality scores; the difference of 0.002 does not reach statistical significance. Where they diverge is in consensus and confidence: GAT achieves significantly higher values on both measures. Inspection of the learned attention weights offers some insight into why. In the flood and wildfire scenarios the Meteorologist receives the highest attention coefficient (0.18), whereas in the ammonia HAZMAT scenario the Medical Infrastructure Director and the Environmental Scientist together account for the largest share (0.22). In other words, the GAT learns to up-weight the agents whose expertise is most germane to each crisis type, and this adaptive weighting helps pull the expert panel towards greater agreement.
 
 ### C. Multi-Agent vs. Single-Agent
+
+Table IV presents the extended comparison bandwidth — the gap between the collective recommendation and the best-performing individual agent on each scenario.
 
 **TABLE IV: Extended Comparison Bandwidth**
 
 | Scenario | Multi-Agent DQS | Best Individual | Mean Individual | ECB vs. Best |
 |----------|----------------|-----------------|-----------------|--------------|
-| Karditsa Flood | 0.839 | 0.772 | 0.733 | +6.7% |
-| Evia Wildfire | 0.891 | 0.837 | 0.759 | +5.4% |
-| Elefsina HAZMAT | 0.868 | 0.825 | 0.766 | +4.3% |
+| Karditsa Flood | 0.839 | 0.772 | 0.733 | +6.7 % |
+| Evia Wildfire | 0.891 | 0.837 | 0.759 | +5.4 % |
+| Elefsina HAZMAT | 0.868 | 0.825 | 0.766 | +4.3 % |
 
-Multi-agent decisions consistently exceed even the best individual expert (+4.3% to +6.7%). The best individual varies by scenario (Meteorologist for flood, Fire Commander for wildfire, Medical Director for HAZMAT), validating the need for multi-expert systems.
+In every scenario the multi-agent system outperforms not only the average individual agent but also the single best expert, with margins ranging from 4.3 to 6.7 percentage points. Notably, the identity of the best individual varies across scenarios — Meteorologist for the flood, Fire Commander for the wildfire, Medical Director for the HAZMAT event — which underscores the value of a panel that can draw on different specialisms as circumstances require.
 
 ### D. LLM Provider Comparison
 
@@ -185,19 +190,19 @@ Multi-agent decisions consistently exceed even the best individual expert (+4.3%
 
 | Provider | DQS | Consensus | Time (s) | Cost ($) |
 |----------|-----|-----------|----------|----------|
-| Claude 3 Sonnet | 0.863 | 71.0% | 41.2 | 0.044 |
-| GPT-4 | 0.859 | 69.3% | 38.6 | 0.067 |
-| LLaMA 2 (Local) | 0.831 | 64.2% | 127.3 | 0.000 |
+| Claude 3 Sonnet | 0.863 | 71.0 % | 41.2 | 0.044 |
+| GPT-4 | 0.859 | 69.3 % | 38.6 | 0.067 |
+| LLaMA 2 (Local) | 0.831 | 64.2 % | 127.3 | 0.000 |
 
-Claude achieves highest quality and consensus. Local models provide zero-cost, privacy-preserving alternatives with acceptable quality degradation (-3.2% DQS).
+Among the three providers tested, Claude 3 Sonnet achieves the highest quality and consensus scores. GPT-4 is close behind in quality but at roughly 50 % higher API cost. The locally hosted LLaMA 2 model trails by 3.2 percentage points in DQS and is substantially slower, yet it incurs no API cost and keeps all data on-premise — a relevant consideration for agencies with strict data-sovereignty requirements.
 
 ### E. Historical Reliability Impact
 
-Dynamic reliability-adjusted weighting produces +2.5% DQS improvement (p<0.01) over 100 sequential scenarios compared to static weights, with improvement plateauing around scenario 60. Final reliability scores range from 0.68 (Civil Engineer) to 0.91 (Emergency Physician), demonstrating effective discriminative power.
+Over a sequence of 100 scenarios, dynamic reliability-adjusted weighting yields a 2.5 percentage-point improvement in DQS relative to static weights (p < 0.01). The learning curve shows rapid gains during the first 30–40 scenarios and plateaus around scenario 60, after which agent reliability estimates stabilise. By the end of the sequence, reliability scores span the range 0.68 (Civil Engineer) to 0.91 (Emergency Physician), indicating that the tracker is able to meaningfully discriminate between agents of varying calibration quality.
 
 ### F. Explainability Evaluation
 
-Human evaluation by 15 emergency management professionals yields mean explainability rating of 4.2/5, with auditability rated highest (4.5/5). Stakeholders appreciate attention weight visualization and natural language reasoning but emphasize need for operational validation before full deployment.
+Fifteen emergency management professionals reviewed system outputs from all three scenarios. Mean explainability was rated 4.2 out of 5, with auditability scoring highest at 4.5/5. Participants found the attention-weight visualisations and the natural-language justifications particularly useful for understanding why a recommendation was made. Several reviewers, however, cautioned that the system should undergo field-level validation before being considered for operational deployment.
 
 ---
 
@@ -205,33 +210,35 @@ Human evaluation by 15 emergency management professionals yields mean explainabi
 
 ### A. Key Findings
 
-**RQ1 (Coordination):** The hierarchical coordinator-expert architecture enables effective coordination among 13 agents with processing times (12.4–39.7s) within operational requirements. Moderate consensus levels (68.7–75.3%) reflect healthy diversity rather than groupthink.
+We return to the five research questions posed in the introduction.
 
-**RQ2 (Uncertainty):** Both ER and GAT effectively aggregate beliefs with comparable DQS (0.861 vs. 0.863), suggesting aggregation method matters less than input quality for well-calibrated experts. GAT's superior consensus (+2.8%) becomes increasingly valuable as agent count grows.
+Regarding coordination (RQ1), the hierarchical architecture proves able to orchestrate 13 agents within processing times of 12–40 seconds, well inside the operational window of the scenarios tested. Consensus levels of 69–75 % may appear modest, but we interpret them as a healthy sign of perspective diversity; excessively high consensus would suggest that agents are redundant or that the system is converging on a single viewpoint prematurely.
 
-**RQ3 (LLM Enhancement):** LLMs substantially enhance reasoning with contextual explanations rated 4.1/5 for understandability. Multi-provider architecture ensures availability through automatic fallback. Challenges include hallucination risks and API latency (85%+ of processing time).
+On belief aggregation (RQ2), the near-identical DQS of ER and GAT (0.861 vs. 0.863) suggests that, at least for well-prompted agents, the choice of aggregation mechanism has less influence on outcome quality than the quality of the individual assessments feeding into it. The advantage of GAT lies elsewhere: its learned attention weights produce measurably higher consensus and confidence, and this benefit is likely to grow as the number of agents increases.
 
-**RQ4 (Decision Quality):** Multi-agent decisions consistently exceed single-agent performance (+4.3% to +6.7% over best individual), demonstrating genuine collective intelligence rather than mere error averaging.
+With respect to LLM-powered reasoning (RQ3), the structured prompt templates succeed in eliciting contextually grounded assessments that evaluators rate 4.1/5 for understandability. The multi-provider architecture mitigates availability risk through automatic fallback, though two practical concerns remain: the possibility of hallucinated facts in agent reasoning, and API latency, which accounts for over 85 % of total processing time.
 
-**RQ5 (Explainability):** Multi-layered mechanisms (attention visualization, MCDA decomposition, natural language reasoning) achieve 4.5/5 auditability, addressing transparency requirements for high-stakes domains.
+The multi-agent versus single-agent comparison (RQ4) provides the clearest result of the study. Collective recommendations exceed the best individual expert by 4.3–6.7 percentage points across all three scenarios, and the identity of the best expert changes with the crisis type. This confirms that the gain is not simply a matter of error averaging but reflects genuine complementarity among specialisms.
 
-### B. ER vs. GAT Deployment Guidance
+Finally, on explainability (RQ5), the combination of attention-weight visualisation, MCDA score decomposition, and natural-language justification achieves an auditability rating of 4.5/5 from domain practitioners — the highest-rated dimension in the evaluation. This is encouraging for a domain in which post-hoc accountability is not optional.
 
-ER is preferred when maximum transparency is required (legal/regulatory contexts), training data is limited, or computational constraints exist. GAT is preferred for large agent networks (13+), dynamic environments, or when consensus optimization is prioritized. A hybrid approach — deploying ER initially, accumulating decision history, then transitioning to GAT — balances immediate feasibility with long-term adaptive optimization.
+### B. Practical Guidance on Aggregation Choice
+
+The results do not point to a single best aggregation method for all circumstances. ER has the advantage of full transparency: every weight is explicit and deterministic, which matters in legal or regulatory settings where decisions must be auditable down to individual parameters. GAT, by contrast, is better suited to larger agent panels and to environments where scenario conditions change frequently, since it can learn context-dependent weighting patterns. A pragmatic deployment strategy would be to start with ER, accumulate a decision history, and transition to GAT once enough data are available to train the attention mechanism reliably.
 
 ### C. Limitations
 
-Key limitations include: (1) evaluation on simulated scenarios without real-world deployment validation, (2) LLM-based agents inheriting model biases and hallucination tendencies, (3) limited crisis type coverage (3 scenarios), (4) static single-point decisions without temporal evolution, (5) small stakeholder evaluation sample (n=15), and (6) criterion weights encoding subjective value judgments. The system uses consensus-based validation (the system's own recommendation as proxy ground truth) rather than real-world outcome feedback.
+Several limitations should temper the conclusions drawn above. The evaluation relies on simulated scenarios; no field deployment has yet been conducted, and real-world performance may differ in ways that simulation cannot anticipate. The agents inherit whatever biases and hallucination tendencies are present in their underlying language models. Only three crisis types are represented, all within the Greek institutional context, so generalisability to other hazard profiles or national response structures remains untested. The scenarios are treated as single-point decisions, with no modelling of how a crisis evolves over time. The stakeholder evaluation, while informative, is based on a small sample (n = 15). Finally, the consensus-based validation strategy — using the system's own recommendation as a proxy for ground truth — is a known methodological weakness; it may overstate reliability gains because the tracker rewards conformity with the majority rather than objective correctness.
 
 ---
 
 ## VII. Conclusion
 
-This paper presents a Multi-Agent System integrating Evidential Reasoning, Graph Attention Networks, and Large Language Models for crisis management decision support. Key findings demonstrate: (1) multi-agent decisions exceed single-expert judgments by +4.3% to +6.7%, (2) GAT and ER achieve comparable quality with GAT offering superior consensus (+2.8%), (3) LLM enhancement improves reasoning quality (4.1/5 understandability), (4) historical reliability tracking yields +2.5% quality improvement, and (5) explainability mechanisms achieve 4.5/5 auditability.
+We have described a multi-agent decision support system for crisis management that combines LLM-powered expert reasoning with two formal belief-aggregation mechanisms — weighted Evidential Reasoning and a Graph Attention Network — and evaluated it on three Greek emergency scenarios. The principal empirical finding is that collective multi-agent recommendations consistently outperform the best individual expert by a non-trivial margin (4.3–6.7 %), with the GAT path offering better consensus properties than ER at comparable decision quality. A historical reliability tracker that adjusts agent weights over successive decisions adds a further measurable gain, and the overall framework receives favourable explainability and auditability ratings from domain professionals.
 
-Future work includes temporal multi-agent systems for evolving crises, expanded crisis typology validation, multimodal LLM inputs (satellite imagery, maps), game-theoretic resource allocation, federated learning for multi-agency privacy preservation, and human-AI teaming optimization studies.
+Several directions for future work follow naturally. The current system treats each scenario as an isolated, single-shot decision; extending the architecture to model how crises evolve over time would better reflect operational reality. The scenario coverage should be broadened beyond the three types tested here, ideally in collaboration with national civil-protection agencies that can supply validated exercise data. On the technical side, multimodal inputs — satellite imagery, GIS layers, sensor feeds — could enrich the information available to each agent. Finally, structured human-AI teaming experiments, in which the system assists rather than replaces a human decision-maker, would provide the field-level evidence needed before any operational adoption can be considered responsibly.
 
-The framework demonstrates that carefully designed MAS can augment human crisis decision-making while preserving transparency and accountability — serving as collaborative partners rather than autonomous replacements for human commanders.
+At its core, the work is motivated by a straightforward observation: no single expert, however capable, can match a well-coordinated panel when the problem spans multiple domains under uncertainty. The challenge lies in designing the coordination mechanism so that it remains transparent, auditable, and ultimately subordinate to human judgement.
 
 ---
 
