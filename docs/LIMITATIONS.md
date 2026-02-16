@@ -148,7 +148,7 @@
 
 ### 9. Scalability Constraints
 
-**Current:** Tested with 3-13 agents, 3-5 alternatives
+**Current:** Tested with 3-13 agents, 5-12 alternatives
 
 **Scalability Limits:**
 - ER complexity: O(n²) for n agents (pairwise belief combination)

@@ -11,7 +11,7 @@ Email: vkazoukas@tuc.gr, kazoukas@gmail.com
 
 Effective crisis management depends on the ability to coordinate expert judgments rapidly and under considerable uncertainty. We present a multi-agent decision support system in which 13 specialised agents — modelled on Greek emergency response roles — generate structured assessments using Large Language Models and aggregate them through two complementary mechanisms: classical Evidential Reasoning based on Dempster-Shafer theory, and a Graph Attention Network that learns agent-to-agent attention weights from a 9-dimensional feature representation. A TOPSIS-based multi-criteria ranking and a historical reliability tracker that adjusts agent influence over successive decisions complete the pipeline.
 
-We evaluate the system on three crisis scenarios drawn from recent Greek emergencies (Karditsa flooding, Evia wildfires, Elefsina industrial HAZMAT). Across 75 runs, multi-agent decisions surpass the best individual expert by 4.3–6.7 % in decision quality. The two aggregation paths reach comparable quality scores, though GAT produces measurably higher consensus (+2.8 %, p<0.01) and confidence (+1.5 %, p<0.05). Reliability-adjusted weighting yields a further 2.5 % quality gain over static weights when accumulated across 100 sequential runs. In a preliminary evaluation with 15 emergency management professionals, explainability and auditability received mean ratings of 4.2/5 and 4.5/5, respectively.
+We evaluate the system on three crisis scenarios inspired from recent Greek emergencies (Karditsa flooding, Evia wildfires, Elefsina industrial HAZMAT). Across 75 runs, multi-agent decisions surpass the best individual expert by 4.3–6.7 % in decision quality. The two aggregation paths reach comparable quality scores, though GAT produces measurably higher consensus (+2.8 %, p<0.01) and confidence (+1.5 %, p<0.05). Reliability-adjusted weighting yields a further 2.5 % quality gain over static weights when accumulated across 100 sequential runs. In a preliminary evaluation with 15 emergency management professionals, explainability and auditability received mean ratings of 4.2/5 and 4.5/5, respectively.
 
 **Keywords:** Multi-Agent Systems, Crisis Management, Evidential Reasoning, Graph Attention Networks, Large Language Models, Decision Support Systems
 
@@ -26,9 +26,9 @@ Multi-agent systems offer a natural computational analogy: autonomous software a
 This paper makes the following contributions:
 
 1. A direct, controlled comparison of weighted Evidential Reasoning and Graph Attention Networks as competing belief-aggregation mechanisms within the same multi-agent architecture.
-2. A multi-provider LLM integration (Claude, GPT-4, LM Studio) that supplies each agent with structured domain reasoning and includes automatic provider fallback.
+2. A multi-provider LLM integration (Local LLM (by LM Studio), Anthropic Claude, OpenAI GPT-4) that supplies each agent with structured domain reasoning and includes automatic provider fallback.
 3. A historical reliability tracker that updates agent influence weights after every decision, feeding into both the ER weighting scheme and the GAT feature vector.
-4. A 13-agent model of the Greek emergency response hierarchy — spanning EKAB paramedics, ELAS police, the Hellenic Fire Corps, the Coast Guard, and the General Secretariat of Civil Protection — evaluated on three scenario types drawn from recent Greek crises.
+4. A 13-agent model of the Greek emergency response hierarchy — spanning Paramedics,  Police, the Hellenic Fire Corps, the Coast Guard, and the General Secretariat of Civil Protection — evaluated on three scenario types inspired from recent Greek crises.
 5. An explainability layer comprising attention-weight visualisation, MCDA score decomposition, and natural-language justification, assessed by domain practitioners.
 
 Five research questions guide the evaluation: how effectively can multi-agent coordination support time-critical decisions (RQ1); how do ER and GAT compare for belief aggregation under high uncertainty (RQ2); what does LLM-powered reasoning add to agent quality (RQ3); does collective judgement measurably outperform individual experts (RQ4); and can the resulting decision trails satisfy the transparency requirements of operational crisis management (RQ5).
@@ -57,9 +57,36 @@ The design of the proposed system draws on several research threads that we brie
 
 ### A. System Architecture
 
-The system is organised into five layers. At the interface level, a command-line front end accepts scenario descriptions in JSON and returns structured decision reports. Below it sit 13 expert agents, each associated with an LLM reasoning engine and a persistent reliability record. The decision layer houses the two aggregation mechanisms (ER and GAT), the MCDA ranker, a consensus model, and the reliability tracker. A multi-provider LLM layer manages requests to a locally hosted model through LM Studio or a Claude, GPT-4, falling back automatically when a provider is unavailable. Finally, an evaluation layer computes performance metrics and generates visualisations.
+The system is organised into six layers (Fig. 1). At the interface level, a command-line front end accepts scenario descriptions in JSON and returns structured decision reports. A coordination layer, built around a dedicated Coordinator agent, orchestrates the deliberation pipeline: it distributes the scenario to the expert panel, collects their assessments, invokes the chosen aggregation mechanism, checks consensus, and triggers conflict resolution when needed. Below the coordinator sit 13 expert agents, each associated with an LLM reasoning engine and a persistent reliability record. The decision framework layer houses the two aggregation mechanisms (ER and GAT), the MCDA ranker, and the consensus model. A multi-provider LLM layer manages requests to Claude, GPT-4, or a locally hosted model through LM Studio, falling back automatically when a provider is unavailable. Finally, an evaluation layer computes performance metrics and generates visualisations.
 
-The 13 agents mirror the organisational structure of Greek emergency response. They include a Meteorologist, an Emergency Physician, a Logistics Coordinator, a PSAP Commander, two Police Commanders at tactical and regional level, two Fire Commanders, a Medical Infrastructure Director, two Coast Guard Directors, an Environmental Scientist, and a Civil Engineer. A fourteenth Coordinator agent orchestrates the decision pipeline without contributing its own assessment.
+```mermaid
+graph TB
+    UI[User Interface Layer<br/>CLI, JSON I/O, Visualization]
+    COORD[Coordination Layer<br/>Orchestration, Consensus]
+    AGENTS[Agent Layer<br/>13 Experts: 6 Tactical + 7 Strategic]
+    DF[Decision Framework<br/>ER, GAT, MCDA]
+    LLM[LLM Integration<br/>Claude, OpenAI, LM Studio]
+    EVAL[Evaluation Layer<br/>Metrics, Baseline, Visualization]
+
+    UI -->|1. Load Scenario| COORD
+    COORD -->|2. Distribute| AGENTS
+    AGENTS -->|3. LLM Reasoning| LLM
+    LLM -->|4. Structured Response| AGENTS
+    AGENTS -->|5. Assessments| DF
+    DF -->|6. Aggregated Decision| COORD
+    COORD -->|7. Final Decision| EVAL
+    EVAL -->|8. Results| UI
+
+    style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style COORD fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style AGENTS fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style EVAL fill:#fffde7,stroke:#f9a825,stroke-width:2px
+```
+*Fig. 1. Six-layer system architecture and data flow. Numbered edges indicate the processing sequence for a single crisis scenario.*
+
+The 13 agents mirror the organisational structure of Greek emergency response. They include a Meteorologist, an Emergency Physician, a Logistics Coordinator, a PSAP Commander, two Police Commanders at tactical and regional level, two Fire Commanders, a Medical Infrastructure Director, two Coast Guard Directors, an Environmental Scientist, and a Civil Protection Director.
 
 ### B. Evidential Reasoning
 
@@ -93,19 +120,102 @@ Once beliefs have been aggregated, TOPSIS ranks the alternatives by their relati
 
 $$CL = \frac{2}{n(n-1)} \sum_i \sum_{j>i} \cos(\mathbf{b}_i, \mathbf{b}_j)$$
 
-This consensus level serves as a gate for operational use: when $CL > 0.9$ the recommendation may proceed to execution without further review, whereas $CL < 0.7$ flags the decision for mandatory human deliberation.
+This consensus level serves as a gate for operational use: the default threshold is set at $CL = 0.75$, below which the system flags the decision as lacking sufficient agreement and triggers conflict identification among the agents.
+
+Fig. 2 summarises the end-to-end decision pipeline, showing how the coordinator distributes the scenario to the tactical and strategic agents, collects their assessments in parallel, routes them through either ER or GAT aggregation, and combines the result with MCDA scores to produce a final recommendation.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Coordinator
+    participant Tactical as Tactical Level<br/>(6 Agents)
+    participant Strategic as Strategic Level<br/>(7 Agents)
+    participant ER as ER Engine
+    participant GAT as GAT Aggregator
+    participant MCDA as MCDA Engine
+    participant Consensus
+
+    User->>Coordinator: Submit Crisis Scenario
+
+    par Parallel Assessment
+        Coordinator->>Tactical: evaluate_scenario()
+        Tactical->>Tactical: LLM Reasoning → Belief Distribution
+        Tactical-->>Coordinator: {belief, confidence, reasoning}
+    and
+        Coordinator->>Strategic: evaluate_scenario()
+        Strategic->>Strategic: LLM Reasoning → Belief Distribution
+        Strategic-->>Coordinator: {belief, confidence, reasoning}
+    end
+
+    alt ER aggregation (default)
+        Coordinator->>ER: combine_beliefs(beliefs, weights)
+        ER-->>Coordinator: Aggregated Beliefs + Confidence
+    else GAT aggregation
+        Coordinator->>GAT: aggregate(9D features, beliefs)
+        GAT-->>Coordinator: Aggregated Beliefs + Attention Weights
+    end
+
+    Coordinator->>MCDA: rank_alternatives (TOPSIS)
+    MCDA-->>Coordinator: MCDA Scores
+
+    Coordinator->>Consensus: check_consensus(assessments)
+    Consensus-->>Coordinator: Consensus Level + Conflicts
+
+    Note over Coordinator: final_score = 0.6 × ER/GAT + 0.4 × MCDA<br/>confidence = 0.6 × CL + 0.4 × mean(agent confidence)
+    Coordinator-->>User: Final Decision + Explanation + Metrics
+```
+*Fig. 2. Six-step decision pipeline. Expert agents are queried in parallel; belief aggregation (ER or GAT) and MCDA scoring are combined with a 60/40 weighting to produce the final recommendation.*
 
 ### E. Historical Reliability Tracking
 
-The reliability tracker maintains a per-agent performance history and updates it after every scenario. Because ground truth is unavailable in a simulated setting, we adopt a consensus-based proxy: the system's own final recommendation is treated as the reference outcome, and each agent's assessment is scored against it. The reliability score for agent $j$ at time $t$ combines three terms — an exponential moving average of past quality scores ($\alpha = 0.3$), calibration alignment, and behavioural consistency:
+The reliability tracker maintains a per-agent performance history and updates it after every scenario. Because ground truth is unavailable in a simulated setting, we adopt a consensus-based proxy: the system's own final recommendation is treated as the reference outcome, and each agent's assessment is scored against it.
 
-$$\rho_j(t) = 0.7 \times \text{EMA}(q_j) + 0.2 \times c_j + 0.1 \times (1 - \sigma_j)$$
+The reliability score for agent $j$ is computed as a temporally decayed, confidence-weighted average of past accuracy scores. For each evaluated assessment $k$ with age $d_k$ days and self-reported confidence $c_k$, the weight is
 
-Agent weights are then adjusted relative to the population mean reliability $\bar{\rho}$:
+$$w_k = \gamma^{d_k} \times (0.5 + 0.5 \, c_k)$$
 
-$$w_j = w_j^{\text{base}} \times \left(1 + 0.5 \times (\rho_j - \bar{\rho})\right)$$
+where $\gamma$ is a decay factor that down-weights older assessments. The overall reliability is then
 
-This mechanism gradually amplifies the influence of agents that have been consistently well-calibrated and attenuates that of persistently poor performers.
+$$\rho_j = \frac{\sum_k w_k \cdot a_k}{\sum_k w_k}$$
+
+with $a_k$ the accuracy score of assessment $k$. A separate consistency score, defined as $1/(1 + \text{Var}(a))$ over recent assessments, is tracked alongside but does not enter the reliability computation directly.
+
+Agent weights for ER aggregation are set by normalising the raw reliability scores across the panel:
+
+$$w_j = \frac{\rho_j}{\sum_{j'} \rho_{j'}}$$
+
+This scheme gradually concentrates influence on agents that have been consistently well-calibrated and dilutes the contribution of persistently poor performers.
+
+As shown in Fig. 3, reliability scores feed into both aggregation paths through different mechanisms: the ER path consumes them as normalised weights, while the GAT path incorporates them as the ninth dimension of each agent's feature vector, allowing the attention mechanism to learn their importance jointly with the other eight features.
+
+```mermaid
+flowchart LR
+    RT[ReliabilityTracker<br/>per agent]
+
+    subgraph ER_PATH["ER Path"]
+        direction TB
+        WEIGHTS[Normalise reliability scores]
+        AW[agent_weights = ρⱼ / Σρ]
+        DS[Weighted belief<br/>combination]
+        WEIGHTS --> AW --> DS
+    end
+
+    subgraph GAT_PATH["GAT Path"]
+        direction TB
+        INJECT[Inject reliability score<br/>into assessment]
+        F9[Feature 9 of 9:<br/>Historical Reliability]
+        ATT[Multi-head attention<br/>learns data-driven weights]
+        INJECT --> F9 --> ATT
+    end
+
+    RT -->|get_reliability_score| ER_PATH
+    RT -->|get_reliability_score| GAT_PATH
+
+    style ER_PATH fill:#ffcccc,stroke:#c62828,stroke-width:2px
+    style GAT_PATH fill:#ccddff,stroke:#1565c0,stroke-width:2px
+    style RT fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+```
+*Fig. 3. Dual-path injection of reliability scores. The ER path uses normalised scores as explicit weights; the GAT path embeds them as a learned feature dimension.*
 
 ---
 
@@ -122,7 +232,7 @@ The system is evaluated on three scenarios modelled influenced by real emergenci
 | Severity | 0.8 (High) | 0.9 (Very High) | 0.85 (Very High) |
 | Affected Pop. | 15,000 | 8,000 | 12,000 |
 | Time Constraint | 2 hours | Immediate | 30 minutes |
-| Alternatives | 5 | 5 | 5 |
+| Alternatives | 5 | 12 | 5 |
 | Top Criterion | Safety (0.35) | Life Safety (0.40) | Health Safety (0.45) |
 
 ### B. Evaluation Metrics
@@ -198,7 +308,7 @@ Among the three providers tested, Claude 3 Sonnet achieves the highest quality a
 
 ### E. Historical Reliability Impact
 
-Over a sequence of 100 scenarios, dynamic reliability-adjusted weighting yields a 2.5 percentage-point improvement in DQS relative to static weights (p < 0.01). The learning curve shows rapid gains during the first 30–40 scenarios and plateaus around scenario 60, after which agent reliability estimates stabilise. By the end of the sequence, reliability scores span the range 0.68 (Civil Engineer) to 0.91 (Emergency Physician), indicating that the tracker is able to meaningfully discriminate between agents of varying calibration quality.
+Over a sequence of 100 scenarios, dynamic reliability-adjusted weighting yields a 2.5 percentage-point improvement in DQS relative to static weights (p < 0.01). The learning curve shows rapid gains during the first 30–40 scenarios and plateaus around scenario 60, after which agent reliability estimates stabilise. By the end of the sequence, reliability scores span the range 0.68 (Civil Protection Director) to 0.91 (Emergency Physician), indicating that the tracker is able to meaningfully discriminate between agents of varying calibration quality.
 
 ### F. Explainability Evaluation
 
