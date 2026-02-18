@@ -39,11 +39,11 @@ class ExpertSelector:
         #           'coastguard_onscene_01', 'coastguard_national_01', ...]
     """
 
-    # Minimum experts always included (core team) - UK Gold-Silver-Bronze hierarchy
+    # Minimum experts always included (core team) - Gold-Silver hierarchy
     CORE_EXPERTS = {
         'meteorology_silver_advisory': 'Meteorologist (SILVER-Advisory)',
-        'logistics_silver_tactical': 'Logistics Coordinator (SILVER-Tactical)',
-        'medical_bronze_operational': 'Medical Expert (BRONZE-Operational)'
+        'logistics_silver_advisory': 'Logistics Coordinator (SILVER-Advisory)',
+        'medical_silver_tactical': 'Medical Expert (SILVER-Tactical)'
     }
 
     # Expert selection rules: maps expert roles to selection criteria
@@ -58,27 +58,27 @@ class ExpertSelector:
             'description': 'Weather/environmental analysis for crisis planning (SILVER-Advisory)'
         },
         'logistics': {
-            'agent_id': 'logistics_silver_tactical',
+            'agent_id': 'logistics_silver_advisory',
             'always_include': True,  # Resource allocation always needed
             'severity_threshold': 0.0,  # Include for all severity levels
-            'description': 'Supply chain and resource coordination (SILVER-Tactical)'
+            'description': 'Supply chain and resource coordination (SILVER-Advisory)'
         },
         'medical_operational': {
-            'agent_id': 'medical_bronze_operational',
+            'agent_id': 'medical_silver_tactical',
             'domains': ['medical_health'],
             'affected_populations_threshold': 50,  # Include if >50 people affected
             'always_include': True,  # Public health always a consideration
-            'description': 'Emergency medicine and field medical response (BRONZE-Operational)'
+            'description': 'Emergency medicine and field medical response (SILVER-Tactical)'
         },
 
         # Emergency Communications
         'psap_commander': {
-            'agent_id': 'psap_gold_strategic',
-            'command_structure': ['strategic'],
+            'agent_id': 'psap_silver_coordination',
+            'command_structure': ['tactical'],
             'domains': ['emergency_communications'],
             'multi_jurisdictional': True,
             'severity_threshold': 0.5,
-            'description': 'Emergency dispatch and multi-agency coordination (GOLD-Strategic)'
+            'description': 'Emergency dispatch and multi-agency coordination (SILVER-Coordination)'
         },
 
         # Police (tactical SILVER + strategic GOLD)

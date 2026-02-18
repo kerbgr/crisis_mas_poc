@@ -473,31 +473,31 @@ KEY CONCERNS
         expertise_lower = self.expertise.lower()
         role_lower = self.role.lower()
 
-        # Determine which template to use based on agent_id (UK Gold-Silver-Bronze structure)
+        # Determine which template to use based on agent_id (Gold-Silver command structure)
         # Direct agent_id mapping ensures correct command-level prompt selection
 
         agent_id_lower = self.agent_id.lower()
 
-        # UK Command Hierarchy Agent Routing
+        # Gold-Silver Command Hierarchy Agent Routing
         if agent_id_lower == "meteorology_silver_advisory":
             prompt = self.prompt_templates.generate_meteorology_silver_advisory_prompt(
                 scenario, alternatives, criteria
             )
             system_prompt = self.prompt_templates.get_system_prompt("meteorology_silver_advisory")
 
-        elif agent_id_lower == "medical_bronze_operational":
+        elif agent_id_lower == "medical_silver_tactical":
             prompt = self.prompt_templates.generate_medical_bronze_operational_prompt(
                 scenario, alternatives, criteria
             )
             system_prompt = self.prompt_templates.get_system_prompt("medical_bronze_operational")
 
-        elif agent_id_lower == "logistics_silver_tactical":
+        elif agent_id_lower == "logistics_silver_advisory":
             prompt = self.prompt_templates.generate_logistics_silver_tactical_prompt(
                 scenario, alternatives, criteria
             )
             system_prompt = self.prompt_templates.get_system_prompt("logistics_silver_tactical")
 
-        elif agent_id_lower == "psap_gold_strategic":
+        elif agent_id_lower == "psap_silver_coordination":
             prompt = self.prompt_templates.generate_psap_gold_strategic_prompt(
                 scenario, alternatives, criteria
             )

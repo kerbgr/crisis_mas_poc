@@ -83,8 +83,8 @@ def generate_simulated_assessments(
             'expertise': 'fire_rescue',
             'relevance': {'flood': 0.55, 'wildfire': 0.90, 'hazmat': 0.80}
         },
-        'medical_bronze_operational': {
-            'name': 'Medical-Bronze-Operational',
+        'medical_silver_tactical': {
+            'name': 'Medical-Silver-Tactical',
             'expertise': 'medical_health',
             'relevance': {'flood': 0.75, 'wildfire': 0.70, 'hazmat': 0.90}
         },
@@ -93,8 +93,8 @@ def generate_simulated_assessments(
             'expertise': 'medical_health',
             'relevance': {'flood': 0.70, 'wildfire': 0.65, 'hazmat': 0.85}
         },
-        'logistics_silver_tactical': {
-            'name': 'Logistics-Silver-Tactical',
+        'logistics_silver_advisory': {
+            'name': 'Logistics-Silver-Advisory',
             'expertise': 'logistics',
             'relevance': {'flood': 0.80, 'wildfire': 0.75, 'hazmat': 0.75}
         },
@@ -113,8 +113,8 @@ def generate_simulated_assessments(
             'expertise': 'civil_protection',
             'relevance': {'flood': 0.85, 'wildfire': 0.85, 'hazmat': 0.85}
         },
-        'psap_gold_strategic': {
-            'name': 'PSAP-Gold-Strategic',
+        'psap_silver_coordination': {
+            'name': 'PSAP-Silver-Coordination',
             'expertise': 'emergency_communications',
             'relevance': {'flood': 0.75, 'wildfire': 0.75, 'hazmat': 0.80}
         },
