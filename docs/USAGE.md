@@ -26,9 +26,9 @@ python main.py [OPTIONS]
 Options:
   --scenario PATH              Scenario JSON file (default: scenarios/flood_scenario.json)
   --agents AGENT_IDS           Specific agent IDs to load (space-separated), or "all" for all 13 experts
-                               Default: meteorology_silver_advisory logistics_silver_tactical medical_bronze_operational
-                               Available: meteorology_silver_advisory, medical_bronze_operational, logistics_silver_tactical,
-                                         psap_gold_strategic, police_silver_tactical, police_gold_strategic,
+                               Default: meteorology_silver_advisory logistics_silver_advisory medical_silver_tactical
+                               Available: meteorology_silver_advisory, logistics_silver_advisory, medical_silver_tactical,
+                                         psap_silver_coordination, police_silver_tactical, police_gold_strategic,
                                          fire_silver_tactical, fire_gold_strategic, medical_gold_strategic,
                                          coastguard_silver_tactical, coastguard_gold_strategic,
                                          civilprotection_gold_strategic, environment_silver_advisory
@@ -156,10 +156,10 @@ This loads the full emergency response command structure with all 13 expert agen
 python main.py --agents fire_silver_tactical fire_gold_strategic police_silver_tactical police_gold_strategic
 
 # Maritime crisis team
-python main.py --agents coastguard_silver_tactical coastguard_gold_strategic medical_bronze_operational
+python main.py --agents coastguard_silver_tactical coastguard_gold_strategic medical_silver_tactical
 
 # Medical infrastructure focus
-python main.py --agents medical_bronze_operational medical_gold_strategic logistics_silver_tactical
+python main.py --agents medical_silver_tactical medical_gold_strategic logistics_silver_advisory
 ```
 
 ### Example 8: Automatic Expert Selection (NEW in v0.8!)
@@ -249,7 +249,7 @@ python main.py --scenario scenarios/ammonia_leak_elefsina.json --expert-selectio
 # With HAZMAT-focused team
 python main.py \
   --scenario scenarios/ammonia_leak_elefsina.json \
-  --agents fire_silver_tactical medical_bronze_operational police_silver_tactical meteorology_silver_advisory \
+  --agents fire_silver_tactical medical_silver_tactical police_silver_tactical meteorology_silver_advisory \
   --output results/elefsina_hazmat_results.json \
   --verbose
 ```
@@ -276,53 +276,49 @@ python main.py --scenario scenarios/ammonia_leak_elefsina.json --expert-selectio
 
 ## Expert Roles
 
-The Crisis MAS system includes **13 expert roles** organised in a **UK Gold-Silver-Bronze command hierarchy** — a comprehensive emergency response command structure. The system is designed with backward compatibility — by default, it uses three core experts, but can scale to the full 13-agent team.
+The Crisis MAS system includes **13 expert roles** organised in a **two-level Gold-Silver command hierarchy** — a comprehensive emergency response command structure. The system is designed with backward compatibility — by default, it uses three core experts, but can scale to the full 13-agent team.
 
 ### Default Core Agents
 
 When run without the `--agents` flag, the system loads **3 core expert agents** (always included):
 
 1. **Meteorology-Silver-Advisory** (`meteorology_silver_advisory`) — Senior Meteorologist, severe weather forecasting
-2. **Logistics-Silver-Tactical** (`logistics_silver_tactical`) — Emergency supply chain and resource allocation
-3. **Medical-Bronze-Operational** (`medical_bronze_operational`) — Pre-hospital emergency medicine and triage
+2. **Logistics-Silver-Advisory** (`logistics_silver_advisory`) — Emergency supply chain and resource allocation
+3. **Medical-Silver-Tactical** (`medical_silver_tactical`) — Pre-hospital emergency medicine and triage
 
 ### Full Emergency Response Command Structure (13 Agents)
 
-Use `--agents all` to activate the complete multi-agency command structure organised in three tiers:
+Use `--agents all` to activate the complete multi-agency command structure organised in two tiers:
 
 ### Agent Matrix
 
 | # | Agent ID | Name | Level | Role | Exp (yrs) | Confidence | Risk Tol. |
 |---|----------|------|-------|------|-----------|------------|-----------|
-| 1 | `meteorology_silver_advisory` | Meteorology-Silver | SILVER | Senior Meteorologist — Severe Weather Forecasting | 15 | 0.88 | 0.40 |
-| 2 | `logistics_silver_tactical` | Logistics-Silver | SILVER | Tactical Logistics — Emergency Supply Chain | 12 | 0.80 | 0.50 |
-| 3 | `medical_bronze_operational` | Medical-Bronze | BRONZE | Operational Medical — Pre-Hospital Emergency Medicine | 20 | 0.85 | 0.30 |
-| 4 | `psap_gold_strategic` | PSAP-Gold | GOLD | Strategic Communications — National Emergency Dispatch | 16 | 0.85 | 0.35 |
-| 5 | `police_silver_tactical` | Police-Silver | SILVER | Tactical Police — On-Scene Law Enforcement | 22 | 0.88 | 0.30 |
-| 6 | `police_gold_strategic` | Police-Gold | GOLD | Strategic Police — Regional Law Enforcement | 28 | 0.90 | 0.40 |
-| 7 | `fire_silver_tactical` | Fire-Silver | SILVER | Tactical Fire — On-Scene Suppression & Rescue | 19 | 0.86 | 0.35 |
-| 8 | `fire_gold_strategic` | Fire-Gold | GOLD | Strategic Fire — Regional Fire Operations | 26 | 0.88 | 0.40 |
-| 9 | `medical_gold_strategic` | Medical-Gold | GOLD | Strategic Medical — Healthcare System Capacity | 24 | 0.87 | 0.30 |
-| 10 | `coastguard_silver_tactical` | CoastGuard-Silver | SILVER | Tactical Coast Guard — Maritime SAR | 18 | 0.84 | 0.35 |
-| 11 | `coastguard_gold_strategic` | CoastGuard-Gold | GOLD | Strategic Coast Guard — National Maritime Ops | 30 | 0.92 | 0.40 |
-| 12 | `civilprotection_gold_strategic` | CivilProtection-Gold | GOLD | Strategic Civil Protection — National Coordination | 25 | 0.82 | 0.20 |
-| 13 | `environment_silver_advisory` | Environment-Silver | SILVER | Environmental Scientist — Ecological Impact | 18 | 0.78 | 0.40 |
+| 1 | `civilprotection_gold_strategic` | CivilProtection-Gold | GOLD | Strategic Civil Protection — National Coordination | 25 | 0.82 | 0.20 |
+| 2 | `police_gold_strategic` | Police-Gold | GOLD | Strategic Police — Regional Law Enforcement | 28 | 0.90 | 0.40 |
+| 3 | `fire_gold_strategic` | Fire-Gold | GOLD | Strategic Fire — Regional Fire Operations | 26 | 0.88 | 0.40 |
+| 4 | `medical_gold_strategic` | Medical-Gold | GOLD | Strategic Medical — Healthcare System Capacity | 24 | 0.87 | 0.30 |
+| 5 | `coastguard_gold_strategic` | CoastGuard-Gold | GOLD | Strategic Coast Guard — National Maritime Ops | 30 | 0.92 | 0.40 |
+| 6 | `meteorology_silver_advisory` | Meteorology-Silver | SILVER | Senior Meteorologist — Severe Weather Forecasting | 15 | 0.88 | 0.40 |
+| 7 | `logistics_silver_advisory` | Logistics-Silver | SILVER | Logistics Coordinator — Emergency Supply Chain | 12 | 0.80 | 0.50 |
+| 8 | `environment_silver_advisory` | Environment-Silver | SILVER | Environmental Scientist — Ecological Impact | 18 | 0.78 | 0.40 |
+| 9 | `psap_silver_coordination` | PSAP-Silver | SILVER | Emergency Communications — National Dispatch | 16 | 0.85 | 0.35 |
+| 10 | `police_silver_tactical` | Police-Silver | SILVER | Tactical Police — On-Scene Law Enforcement | 22 | 0.88 | 0.30 |
+| 11 | `fire_silver_tactical` | Fire-Silver | SILVER | Tactical Fire — On-Scene Suppression & Rescue | 19 | 0.86 | 0.35 |
+| 12 | `medical_silver_tactical` | Medical-Silver | SILVER | Tactical Medical — Pre-Hospital Emergency Medicine | 20 | 0.85 | 0.30 |
+| 13 | `coastguard_silver_tactical` | CoastGuard-Silver | SILVER | Tactical Coast Guard — Maritime SAR | 18 | 0.84 | 0.35 |
 
-### Gold-Silver-Bronze Command Hierarchy
+### Gold-Silver Command Hierarchy
 
-The expert roles are organized in a **three-tier UK Gold-Silver-Bronze command hierarchy**:
+The expert roles are organized in a **two-level Gold-Silver command hierarchy**:
 
-- **GOLD (Strategic/National)** — 6 agents: National policy, multi-agency coordination, resource allocation
-  - CivilProtection-Gold, PSAP-Gold, Police-Gold, Fire-Gold, Medical-Gold, CoastGuard-Gold
+- **GOLD (Strategic/National)** — 5 agents: National policy, multi-agency coordination, resource allocation
+  - CivilProtection-Gold, Police-Gold, Fire-Gold, Medical-Gold, CoastGuard-Gold
   - Typical risk tolerance: 0.2–0.4 | Decision style: Formal, hierarchical
 
-- **SILVER (Tactical/Advisory)** — 6 agents: Field operations, tactical coordination, advisory
-  - Police-Silver, Fire-Silver, CoastGuard-Silver, Meteorology-Silver, Logistics-Silver, Environment-Silver
+- **SILVER (Tactical/Advisory)** — 8 agents: Field operations, tactical coordination, specialist advisory
+  - Police-Silver, Fire-Silver, CoastGuard-Silver, Medical-Silver, PSAP-Silver, Meteorology-Silver, Logistics-Silver, Environment-Silver
   - Typical risk tolerance: 0.3–0.5 | Decision style: Rapid assessment, balanced
-
-- **BRONZE (Operational/Field)** — 1 agent: Direct hands-on emergency operations
-  - Medical-Bronze (pre-hospital emergency medicine, START triage, mass casualty)
-  - Risk tolerance: 0.3 | Decision style: Life-saving focus
 
 **Decision Weight Profiles:**
 
@@ -330,7 +326,7 @@ The expert roles are organized in a **three-tier UK Gold-Silver-Bronze command h
 |---|---|---|
 | **Safety-first** | CivilProtection-Gold, Police-Silver, Fire-Silver, CoastGuard-Silver | Safety 0.35, Effectiveness 0.30 |
 | **Balanced** | Meteorology, Police-Gold, Fire-Gold, CoastGuard-Gold | Effectiveness/Safety ~0.25 each |
-| **Effectiveness-driven** | Medical-Bronze, Medical-Gold | Effectiveness 0.30–0.35, Safety 0.30 |
+| **Effectiveness-driven** | Medical-Silver, Medical-Gold | Effectiveness 0.30–0.35, Safety 0.30 |
 | **Cost-conscious** | Logistics-Silver | Cost 0.25, Speed 0.25, Effectiveness 0.25 |
 | **Public-acceptance aware** | Environment-Silver | Public Acceptance 0.25 (unique) |
 
@@ -340,26 +336,23 @@ The expert roles are organized in a **three-tier UK Gold-Silver-Bronze command h
 graph TB
     COORD[CoordinatorAgent<br/>Deliberation Orchestrator]
 
-    subgraph "GOLD Level - Strategic/National"
+    subgraph "GOLD Level - Strategic/National (5 Agents)"
         G1[CivilProtection-Gold<br/>National Coordinator]
-        G2[PSAP-Gold<br/>Emergency Dispatch]
-        G3[Police-Gold<br/>Regional Commander]
-        G4[Fire-Gold<br/>Regional Commander]
-        G5[Medical-Gold<br/>Healthcare Capacity]
-        G6[CoastGuard-Gold<br/>National Maritime]
+        G2[Police-Gold<br/>Regional Commander]
+        G3[Fire-Gold<br/>Regional Commander]
+        G4[Medical-Gold<br/>Healthcare Capacity]
+        G5[CoastGuard-Gold<br/>National Maritime]
     end
 
-    subgraph "SILVER Level - Tactical/Advisory"
+    subgraph "SILVER Level - Tactical/Advisory (8 Agents)"
         S1[Police-Silver<br/>On-Scene Commander]
         S2[Fire-Silver<br/>On-Scene Commander]
         S3[CoastGuard-Silver<br/>SAR Commander]
-        S4[Meteorology-Silver<br/>Weather Forecasting]
-        S5[Logistics-Silver<br/>Supply Chain]
-        S6[Environment-Silver<br/>Ecological Impact]
-    end
-
-    subgraph "BRONZE Level - Operational"
-        B1[Medical-Bronze<br/>Pre-Hospital Medicine]
+        S4[Medical-Silver<br/>Pre-Hospital Medicine]
+        S5[PSAP-Silver<br/>Emergency Dispatch]
+        S6[Meteorology-Silver<br/>Weather Forecasting]
+        S7[Logistics-Silver<br/>Supply Chain]
+        S8[Environment-Silver<br/>Ecological Impact]
     end
 
     subgraph "Technical Infrastructure"
@@ -368,13 +361,11 @@ graph TB
         PROF[agent_profiles.json<br/>13 Expert Profiles]
     end
 
-    COORD --> G1 & G2 & G3 & G4 & G5 & G6
-    COORD --> S1 & S2 & S3 & S4 & S5 & S6
-    COORD --> B1
+    COORD --> G1 & G2 & G3 & G4 & G5
+    COORD --> S1 & S2 & S3 & S4 & S5 & S6 & S7 & S8
 
-    G1 & G2 & G3 & G4 & G5 & G6 -.->|inherits| BA
-    S1 & S2 & S3 & S4 & S5 & S6 -.->|inherits| BA
-    B1 -.->|inherits| BA
+    G1 & G2 & G3 & G4 & G5 -.->|inherits| BA
+    S1 & S2 & S3 & S4 & S5 & S6 & S7 & S8 -.->|inherits| BA
 
     BA --> RT
     BA --> PROF
@@ -386,9 +377,8 @@ graph TB
 
 **Hierarchy Key Points:**
 - **CoordinatorAgent** (red): Orchestrates all deliberation and consensus building
-- **GOLD Level**: 6 strategic/national agents — policy, multi-agency coordination, resource allocation
-- **SILVER Level**: 6 tactical/advisory agents — field operations, on-scene command, environmental analysis
-- **BRONZE Level**: 1 operational agent — direct hands-on pre-hospital emergency medicine
+- **GOLD Level**: 5 strategic/national agents — policy, multi-agency coordination, resource allocation
+- **SILVER Level**: 8 tactical/advisory agents — on-scene command, specialist advisory, emergency communications
 - **Technical Infrastructure** (blue/green): Shared components — BaseAgent for LLM integration, ReliabilityTracker for performance history
 
 ### Smart Expert Selection (Auto-Mode)

@@ -57,11 +57,11 @@
       "description": "SILVER-level advisory meteorologist providing specialist weather forecasting expertise to all command levels. 15 years specializing in severe weather prediction and climate analysis for Greece and Eastern Mediterranean. Known for accurate wildfire weather forecasting and flash flood risk assessment."
     },
     {
-      "agent_id": "medical_bronze_operational",
-      "name": "Medical-Bronze-Operational",
-      "command_level": "BRONZE",
-      "command_level_description": "Operational level - Direct hands-on pre-hospital emergency medical operations",
-      "role": "Operational Medical Commander - Pre-Hospital Emergency Medicine",
+      "agent_id": "medical_silver_tactical",
+      "name": "Medical-Silver-Tactical",
+      "command_level": "SILVER",
+      "command_level_description": "Tactical level - On-scene pre-hospital emergency medical operations and mass casualty coordination",
+      "role": "Tactical Medical Commander - Pre-Hospital Emergency Medicine",
       "expertise": "pre_hospital_emergency_medicine",
       "experience_years": 20,
       "education": "M.D., Medical School, University of Patras (2004); Emergency Medicine Residency, Evangelismos Hospital, Athens (2004-2008); Fellowship in Disaster Medicine, Johns Hopkins University, USA (2010-2011); M.Sc. in Public Health Emergency Preparedness, University of Athens (2015)",
@@ -118,14 +118,14 @@
         "public_health_emergency"
       ],
       "confidence_level": 0.85,
-      "description": "BRONZE-level operational medical commander responsible for direct hands-on pre-hospital emergency medicine. 20 years with EKAB specializing in field medical operations and mass casualty response. Led operational medical response for major incidents including Attica wildfires and Tempi train collision."
+      "description": "SILVER-level tactical medical commander responsible for on-scene pre-hospital emergency medicine and mass casualty coordination. 20 years with EKAB specializing in field medical operations and mass casualty response. Led tactical medical operations for major incidents including Attica wildfires and Tempi train collision."
     },
     {
-      "agent_id": "logistics_silver_tactical",
-      "name": "Logistics-Silver-Tactical",
+      "agent_id": "logistics_silver_advisory",
+      "name": "Logistics-Silver-Advisory",
       "command_level": "SILVER",
-      "command_level_description": "Tactical level - Emergency supply chain coordination and resource allocation",
-      "role": "Tactical Logistics Coordinator - Emergency Supply Chain and Resource Allocation",
+      "command_level_description": "Advisory role - Emergency supply chain coordination and resource allocation specialist",
+      "role": "Logistics Coordinator - Emergency Supply Chain and Resource Allocation (Advisory)",
       "expertise": "emergency_supply_chain_management",
       "experience_years": 12,
       "education": "M.Sc. in Supply Chain Management, Athens University of Economics and Business (2013); B.Sc. in Industrial Engineering, National Technical University of Athens (2011); Executive Certificate in Humanitarian Logistics, INSEAD Business School (2018)",
@@ -180,7 +180,7 @@
         "humanitarian_logistics"
       ],
       "confidence_level": 0.80,
-      "description": "SILVER-level tactical logistics coordinator managing emergency supply chain operations. 12 years focused on resource allocation and distribution network optimization during crisis response. Coordinates tactical-level logistics for incident operations."
+      "description": "SILVER-level advisory logistics coordinator providing specialist supply chain expertise to all command levels. 12 years focused on resource allocation and distribution network optimization during crisis response. Advises on logistics feasibility and resource availability across incident operations."
     },
     {
       "agent_id": "civilprotection_gold_strategic",
@@ -373,11 +373,11 @@
       "description": "Cross-level AI coordinator responsible for aggregating assessments from GOLD, SILVER, and BRONZE command levels. Employs Dempster-Shafer evidential reasoning and multi-criteria analysis to synthesize diverse expert perspectives."
     },
     {
-      "agent_id": "psap_gold_strategic",
-      "name": "PSAP-Gold-Strategic",
-      "command_level": "GOLD",
-      "command_level_description": "Strategic level - National emergency communications and dispatch operations strategy",
-      "role": "Strategic Communications Director - National Emergency Dispatch Operations",
+      "agent_id": "psap_silver_coordination",
+      "name": "PSAP-Silver-Coordination",
+      "command_level": "SILVER",
+      "command_level_description": "Coordination level - National emergency communications and dispatch operations",
+      "role": "Emergency Communications Coordinator - National Emergency Dispatch Operations",
       "expertise": "emergency_dispatch_and_communications",
       "experience_years": 16,
       "education": "M.Sc. in Emergency Management and Public Safety, University of Athens (2015); B.Sc. in Telecommunications Engineering, National Technical University of Athens (2008); Advanced Certificate in Emergency Medical Dispatch, National Academies of Emergency Dispatch, USA (2010); Executive Education in Crisis Communications, London School of Economics (2019)",
@@ -434,7 +434,7 @@
         "inter_agency_coordination"
       ],
       "confidence_level": 0.85,
-      "description": "GOLD-level strategic communications director responsible for national PSAP operations and 112 emergency dispatch strategy. 16 years managing nationwide emergency communications infrastructure and multi-agency coordination protocols."
+      "description": "SILVER-level emergency communications coordinator responsible for national PSAP operations and 112 emergency dispatch. 16 years managing nationwide emergency communications infrastructure and multi-agency coordination protocols."
     },
     {
       "agent_id": "police_silver_tactical",

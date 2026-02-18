@@ -271,7 +271,7 @@ cd web_tools && python app.py    # Available at http://localhost:5000
 
 ## Architecture
 
-The system consists of six core layers: User Interface, Coordination, Agent (13 experts in Gold-Silver-Bronze hierarchy), Decision Framework (ER/GAT + MCDA), LLM Integration (Claude/OpenAI/LM Studio), and Evaluation. For detailed component descriptions, diagrams, decision-making flow, and algorithm specifications (Dempster-Shafer, GAT, TOPSIS), see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+The system consists of six core layers: User Interface, Coordination, Agent (13 experts in Gold-Silver hierarchy), Decision Framework (ER/GAT + MCDA), LLM Integration (Claude/OpenAI/LM Studio), and Evaluation. For detailed component descriptions, diagrams, decision-making flow, and algorithm specifications (Dempster-Shafer, GAT, TOPSIS), see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ---
 

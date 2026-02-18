@@ -8,7 +8,7 @@
 
 ## System Components
 
-The Crisis MAS consists of six core layers with integrated evaluation framework and 13 expert agents organized in a UK Gold-Silver-Bronze command hierarchy:
+The Crisis MAS consists of six core layers with integrated evaluation framework and 13 expert agents organized in a two-level Gold-Silver command hierarchy:
 
 ```mermaid
 graph TB
@@ -26,22 +26,22 @@ graph TB
 
     subgraph Agents["AGENT LAYER - 13 Expert Roles"]
         direction TB
-        subgraph Tactical["Tactical Level - 6 Agents"]
+        subgraph Silver["SILVER — Tactical / Advisory (8 Agents)"]
             T1[Police On-Scene]
             T2[Fire On-Scene]
-            T3[Coast Guard On-Scene]
-            T4[Medical Expert]
+            T3[Coast Guard Tactical]
+            T4[Medical Tactical]
             T5[Meteorologist]
             T6[Logistics Coordinator]
+            T7[PSAP Coordinator]
+            T8[Environmental Expert]
         end
-        subgraph Strategic["Strategic Level - 7 Agents"]
+        subgraph Gold["GOLD — Strategic (5 Agents)"]
             S1[Police Regional]
             S2[Fire Regional]
             S3[Coast Guard National]
             S4[Civil Protection Director]
-            S5[Environmental Expert]
-            S6[Medical Infrastructure]
-            S7[PSAP Commander]
+            S5[Medical Infrastructure]
         end
         BA[BaseAgent<br/>Interface]
         RT[ReliabilityTracker<br/>Performance History]
@@ -77,15 +77,15 @@ graph TB
     Main -->|Load Scenario| Input
     Input -->|Initialize| CA
 
-    CA -->|Collect Assessments| Tactical & Strategic
-    Tactical -.->|Inherit from| BA
-    Strategic -.->|Inherit from| BA
-    Tactical & Strategic -->|Track Performance| RT
+    CA -->|Collect Assessments| Silver & Gold
+    Silver -.->|Inherit from| BA
+    Gold -.->|Inherit from| BA
+    Silver & Gold -->|Track Performance| RT
 
-    Tactical & Strategic -->|LLM Reasoning| Prompt
+    Silver & Gold -->|LLM Reasoning| Prompt
     Prompt -->|Route to| Claude & OpenAI & LMStudio
     Claude & OpenAI & LMStudio -->|Parse| Parser
-    Parser -->|Structured Response| Tactical & Strategic
+    Parser -->|Structured Response| Silver & Gold
 
     CA -->|Aggregate Beliefs| ER & GAT
     ER & GAT -.->|Use Reliability| RT
@@ -112,8 +112,8 @@ graph TB
     style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Tactical fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
-    style Strategic fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
+    style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
     style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
     style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px
@@ -122,7 +122,7 @@ graph TB
 **Architecture Overview:**
 - **User Interface Layer**: Entry point, I/O handling, visualization generation
 - **Coordination Layer**: Orchestrates multi-agent decision-making, builds consensus
-- **Agent Layer**: 13 domain experts in Gold-Silver-Bronze hierarchy with LLM-enhanced reasoning and performance tracking
+- **Agent Layer**: 13 domain experts in a Gold-Silver hierarchy with LLM-enhanced reasoning and performance tracking
 - **Decision Framework Layer**: Belief aggregation (ER/GAT), multi-criteria analysis (MCDA)
 - **LLM Integration Layer**: Multi-provider support (Claude, OpenAI, LM Studio)
 - **Evaluation Layer**: Metrics calculation, baseline comparison, visualization
@@ -158,23 +158,23 @@ graph TB
 - Generates structured assessments with confidence scores
 - Role-based prompt generation mapped to agent profiles
 
-**Expert Roles — 13 agents organised in Tactical (SILVER/BRONZE) and Strategic (GOLD) levels:**
+**Expert Roles — 13 agents in a two-level Gold-Silver command hierarchy:**
 
 | # | Agent ID | Role | Level | Focus |
 |---|----------|------|-------|-------|
-| 1 | `meteorology_silver_advisory` | Meteorologist | SILVER | Severe weather forecasting |
-| 2 | `medical_bronze_operational` | Emergency Physician | BRONZE | Pre-hospital emergency medicine |
-| 3 | `logistics_silver_tactical` | Logistics Coordinator | SILVER | Emergency supply chain |
-| 4 | `civilprotection_gold_strategic` | Civil Protection Director | GOLD | National emergency coordination |
-| 5 | `environment_silver_advisory` | Environmental Scientist | SILVER | Ecological impact assessment |
-| 6 | `psap_gold_strategic` | PSAP Commander | GOLD | Emergency dispatch operations |
-| 7 | `police_silver_tactical` | Police Tactical Commander | SILVER | On-scene law enforcement |
-| 8 | `police_gold_strategic` | Police Regional Commander | GOLD | Regional law enforcement ops |
-| 9 | `fire_silver_tactical` | Fire Tactical Commander | SILVER | On-scene fire suppression |
-| 10 | `fire_gold_strategic` | Fire Regional Commander | GOLD | Regional fire operations |
-| 11 | `medical_gold_strategic` | Medical Infrastructure Director | GOLD | Healthcare system capacity |
-| 12 | `coastguard_silver_tactical` | Coast Guard Tactical Commander | SILVER | Maritime search and rescue |
-| 13 | `coastguard_gold_strategic` | Coast Guard National Director | GOLD | National maritime operations |
+| 1 | `civilprotection_gold_strategic` | Civil Protection Director | GOLD | National emergency coordination |
+| 2 | `police_gold_strategic` | Police Regional Commander | GOLD | Regional law enforcement ops |
+| 3 | `fire_gold_strategic` | Fire Regional Commander | GOLD | Regional fire operations |
+| 4 | `medical_gold_strategic` | Medical Infrastructure Director | GOLD | Healthcare system capacity |
+| 5 | `coastguard_gold_strategic` | Coast Guard National Director | GOLD | National maritime operations |
+| 6 | `meteorology_silver_advisory` | Meteorologist | SILVER | Severe weather forecasting |
+| 7 | `logistics_silver_advisory` | Logistics Coordinator | SILVER | Emergency supply chain |
+| 8 | `environment_silver_advisory` | Environmental Scientist | SILVER | Ecological impact assessment |
+| 9 | `psap_silver_coordination` | PSAP Coordinator | SILVER | Emergency dispatch operations |
+| 10 | `police_silver_tactical` | Police Tactical Commander | SILVER | On-scene law enforcement |
+| 11 | `fire_silver_tactical` | Fire Tactical Commander | SILVER | On-scene fire suppression |
+| 12 | `medical_silver_tactical` | Emergency Physician | SILVER | Pre-hospital emergency medicine |
+| 13 | `coastguard_silver_tactical` | Coast Guard Tactical Commander | SILVER | Maritime search and rescue |
 
 A fourteenth agent, `coordinator_01`, orchestrates the pipeline without contributing its own assessment.
 
@@ -270,13 +270,13 @@ The PromptTemplates module integrates with `web_tools/protocol_integration.py` t
 | ---------- | ------------------- |
 | Fire (Tactical/Strategic) | firefighting, hazmat, disaster |
 | Police (Tactical/Strategic) | police, disaster |
-| Medical (Bronze/Gold) | medical, disaster |
+| Medical (Tactical/Strategic) | medical, disaster |
 | Coast Guard (Tactical/Strategic) | search_rescue, disaster |
 | Civil Protection | disaster, firefighting, medical |
 | Environment Advisory | hazmat, disaster |
 | Meteorology Advisory | disaster |
-| Logistics Tactical | disaster |
-| PSAP Strategic | disaster |
+| Logistics Advisory | disaster |
+| PSAP Coordination | disaster |
 
 **How It Works:**
 

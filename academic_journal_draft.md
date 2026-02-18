@@ -63,7 +63,7 @@ The system is organised into six layers (Fig. 1). At the interface level, a comm
 graph TB
     UI[User Interface Layer<br/>CLI, JSON I/O, Visualization]
     COORD[Coordination Layer<br/>Orchestration, Consensus]
-    AGENTS[Agent Layer<br/>13 Experts: 6 Tactical + 7 Strategic]
+    AGENTS[Agent Layer<br/>13 Experts: 5 GOLD + 8 SILVER]
     DF[Decision Framework<br/>ER, GAT, MCDA]
     LLM[LLM Integration<br/>Claude, OpenAI, LM Studio]
     EVAL[Evaluation Layer<br/>Metrics, Baseline, Visualization]
@@ -128,8 +128,8 @@ Fig. 2 summarises the end-to-end decision pipeline, showing how the coordinator 
 sequenceDiagram
     participant User
     participant Coordinator
-    participant Tactical as Tactical Level<br/>(6 Agents)
-    participant Strategic as Strategic Level<br/>(7 Agents)
+    participant Silver as SILVER Level<br/>(8 Agents)
+    participant Gold as GOLD Level<br/>(5 Agents)
     participant ER as ER Engine
     participant GAT as GAT Aggregator
     participant MCDA as MCDA Engine
@@ -138,13 +138,13 @@ sequenceDiagram
     User->>Coordinator: Submit Crisis Scenario
 
     par Parallel Assessment
-        Coordinator->>Tactical: evaluate_scenario()
-        Tactical->>Tactical: LLM Reasoning → Belief Distribution
-        Tactical-->>Coordinator: {belief, confidence, reasoning}
+        Coordinator->>Silver: evaluate_scenario()
+        Silver->>Silver: LLM Reasoning → Belief Distribution
+        Silver-->>Coordinator: {belief, confidence, reasoning}
     and
-        Coordinator->>Strategic: evaluate_scenario()
-        Strategic->>Strategic: LLM Reasoning → Belief Distribution
-        Strategic-->>Coordinator: {belief, confidence, reasoning}
+        Coordinator->>Gold: evaluate_scenario()
+        Gold->>Gold: LLM Reasoning → Belief Distribution
+        Gold-->>Coordinator: {belief, confidence, reasoning}
     end
 
     alt ER aggregation (default)

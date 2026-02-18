@@ -422,8 +422,8 @@ graph TB
 sequenceDiagram
     participant User
     participant Coordinator
-    participant SilverBronze as Silver/Bronze Level<br/>(7 Tactical/Operational/Advisory)
-    participant Gold as Gold Level<br/>(6 Strategic Agents)
+    participant Silver as Silver Level<br/>(8 Tactical/Advisory)
+    participant Gold as Gold Level<br/>(5 Strategic Agents)
     participant ER as ER Engine<br/>(Dempster-Shafer)
     participant GAT as GAT Aggregator<br/>(9D Attention)
     participant MCDA as MCDA Engine<br/>(TOPSIS)
@@ -433,15 +433,15 @@ sequenceDiagram
 
     Note over Coordinator: Step 1/6: Distribute to Expert Agents (ThreadPoolExecutor)
 
-    par Parallel Agent Evaluation - Silver/Bronze Level
-        Coordinator->>SilverBronze: evaluate_scenario()
-        Note over SilverBronze: Police Tactical (SILVER)<br/>Fire Tactical (SILVER)<br/>Coast Guard Tactical (SILVER)<br/>Logistics Tactical (SILVER)<br/>Medical Operational (BRONZE)<br/>Meteorology Advisory (SILVER)<br/>Environment Advisory (SILVER)
-        SilverBronze->>SilverBronze: LLM Reasoning
-        SilverBronze->>SilverBronze: Generate Belief Distribution
-        SilverBronze-->>Coordinator: {belief, confidence, reasoning}
+    par Parallel Agent Evaluation - Silver Level
+        Coordinator->>Silver: evaluate_scenario()
+        Note over Silver: Police Tactical (SILVER)<br/>Fire Tactical (SILVER)<br/>Coast Guard Tactical (SILVER)<br/>Medical Tactical (SILVER)<br/>PSAP Coordination (SILVER)<br/>Meteorology Advisory (SILVER)<br/>Logistics Advisory (SILVER)<br/>Environment Advisory (SILVER)
+        Silver->>Silver: LLM Reasoning
+        Silver->>Silver: Generate Belief Distribution
+        Silver-->>Coordinator: {belief, confidence, reasoning}
     and Parallel Agent Evaluation - Gold Level
         Coordinator->>Gold: evaluate_scenario()
-        Note over Gold: Civil Protection Strategic<br/>PSAP Strategic<br/>Police Strategic<br/>Fire Strategic<br/>Medical Strategic<br/>Coast Guard Strategic
+        Note over Gold: Civil Protection Strategic<br/>Police Strategic<br/>Fire Strategic<br/>Medical Strategic<br/>Coast Guard Strategic
         Gold->>Gold: LLM Reasoning
         Gold->>Gold: Generate Belief Distribution
         Gold-->>Coordinator: {belief, confidence, reasoning}
