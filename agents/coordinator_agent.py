@@ -7,6 +7,7 @@ detects consensus, and generates final decisions with explanations.
 """
 
 import logging
+import time
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -56,6 +57,7 @@ class CoordinatorAgent:
         agent_weights: Optional[Dict[str, float]] = None,
         consensus_threshold: float = 0.75,
         parallel_assessment: bool = True,
+        max_parallel_workers: int = 4,
         gat_aggregator: Optional[GATAggregator] = None,
         aggregation_method: str = "ER"
     ):
@@ -70,6 +72,9 @@ class CoordinatorAgent:
             agent_weights: Optional custom weights for agents (will use equal if not provided)
             consensus_threshold: Minimum consensus level to avoid conflict resolution (0-1)
             parallel_assessment: Whether to collect assessments in parallel (default: True)
+            max_parallel_workers: Max concurrent API calls when parallel (default: 4).
+                                  Keeps token bursts under cloud provider TPM limits.
+                                  Use len(expert_agents) for local/unlimited providers.
             gat_aggregator: Optional Graph Attention Network aggregator (alternative to ER)
             aggregation_method: Aggregation method to use: "ER" or "GAT" (default: "ER")
 
@@ -92,6 +97,7 @@ class CoordinatorAgent:
         self.consensus_model = consensus_model
         self.consensus_threshold = consensus_threshold
         self.parallel_assessment = parallel_assessment
+        self.max_parallel_workers = max_parallel_workers
 
         # GAT aggregation support
         self.gat_aggregator = gat_aggregator
@@ -218,18 +224,23 @@ class CoordinatorAgent:
         failed_agents = []
 
         if self.parallel_assessment:
-            # Parallel collection using ThreadPoolExecutor
-            with ThreadPoolExecutor(max_workers=len(self.expert_agents)) as executor:
-                # Submit all assessment tasks
-                future_to_agent = {
-                    executor.submit(
+            # Parallel collection using ThreadPoolExecutor.
+            # max_parallel_workers caps concurrent API calls to avoid TPM bursts
+            # on cloud providers (e.g. OpenAI 30k TPM limit).
+            workers = min(self.max_parallel_workers, len(self.expert_agents))
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                # Submit tasks with a small stagger so the first batch doesn't
+                # all fire at exactly the same millisecond
+                future_to_agent = {}
+                for i, agent in enumerate(self.expert_agents):
+                    future_to_agent[executor.submit(
                         agent.evaluate_scenario,
                         scenario,
                         alternatives,
                         criteria
-                    ): agent
-                    for agent in self.expert_agents
-                }
+                    )] = agent
+                    if i > 0 and i % workers == 0:
+                        time.sleep(0.5)  # brief pause between batches
 
                 # Collect results as they complete
                 for future in as_completed(future_to_agent):

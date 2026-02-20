@@ -277,7 +277,16 @@ The system consists of six core layers: User Interface, Coordination, Agent (13 
 
 ## Results
 
-Sample results from the Urban Flood Emergency scenario comparing ER and GAT aggregation methods, including performance metrics, consensus analysis, and visualizations. See **[docs/RESULTS.md](docs/RESULTS.md)**.
+The system was evaluated across **45 controlled runs** (5 replicates × 3 LLM providers × 3 crisis scenarios) using all 13 expert agents with `--compare-methods` mode, producing 135 result records. Key findings:
+
+- **ER and GAT are statistically equivalent** — DQS 0.475 ± 0.049 vs 0.482 ± 0.050 (p > 0.05); 82.2% recommendation agreement
+- **GPT-OSS 20B** (local, via LM Studio) achieves the highest mean DQS (0.504 ± 0.051) at zero API cost
+- **Claude Sonnet 4** is 5–9× faster than other providers (mean 11.6 s/run), decisive for real-time use
+- **GPT-4o** yields the most consistent consensus (0.917 ± 0.036, lowest variance)
+- **System consensus** averages 0.898 ± 0.057; run-level recommendation stability is 91.1%
+- **HAZMAT provider divergence**: GPT-4o reproducibly selects immediate evacuation while Claude and GPT-OSS 20B converge on integrated response — a genuine inter-model interpretive difference
+
+See **[docs/RESULTS.md](docs/RESULTS.md)** for full tables, statistical tests, and per-scenario detail.
 
 ---
 
@@ -376,7 +385,7 @@ crisis_mas_poc/
 ├── docs/                            # Technical documentation
 │   ├── USAGE.md                    # Complete usage guide
 │   ├── ARCHITECTURE.md             # System architecture & algorithms
-│   ├── RESULTS.md                  # Sample results & metrics
+│   ├── RESULTS.md                  # Experimental results (45 runs, 3 providers, 3 scenarios)
 │   ├── LIMITATIONS.md              # Known limitations
 │   ├── FUTURE_WORK.md              # Research roadmap
 │   ├── REFERENCES.md               # Academic references

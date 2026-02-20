@@ -652,6 +652,13 @@ class LMStudioClient:
             # Fix LLM number errors: 009 -> 0.09, 015 -> 0.15, etc.
             # Match numbers after : that start with 0 and have 2+ digits without decimal
             json_str = re.sub(r':\s*0(\d{2,})([,\s\}])', r': 0.\1\2', json_str)
+            # Fix: LLM used } to close an unclosed array (should be ]})
+            # e.g. "key_concerns":["a","b","c"} -> "key_concerns":["a","b","c"]}
+            open_brackets = json_str.count('[') - json_str.count(']')
+            if open_brackets > 0:
+                stripped = json_str.rstrip()
+                if stripped.endswith('}'):
+                    json_str = stripped[:-1] + (']' * open_brackets) + '}' + json_str[len(stripped):]
             return json_str
 
         # Preprocess response text to remove invisible characters

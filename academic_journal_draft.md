@@ -11,7 +11,7 @@ Email: vkazoukas@tuc.gr, kazoukas@gmail.com
 
 Effective crisis management depends on the ability to coordinate expert judgments rapidly and under considerable uncertainty. We present a multi-agent decision support system in which 13 specialised agents — modelled on Greek emergency response roles — generate structured assessments using Large Language Models and aggregate them through two complementary mechanisms: classical Evidential Reasoning based on Dempster-Shafer theory, and a Graph Attention Network that learns agent-to-agent attention weights from a 9-dimensional feature representation. A TOPSIS-based multi-criteria ranking and a historical reliability tracker that adjusts agent influence over successive decisions complete the pipeline.
 
-We evaluate the system on three crisis scenarios inspired from recent Greek emergencies (Karditsa flooding, Evia wildfires, Elefsina industrial HAZMAT). Across 75 runs, multi-agent decisions surpass the best individual expert by 4.3–6.7 % in decision quality. The two aggregation paths reach comparable quality scores, though GAT produces measurably higher consensus (+2.8 %, p<0.01) and confidence (+1.5 %, p<0.05). Reliability-adjusted weighting yields a further 2.5 % quality gain over static weights when accumulated across 100 sequential runs. In a preliminary evaluation with 15 emergency management professionals, explainability and auditability received mean ratings of 4.2/5 and 4.5/5, respectively.
+We evaluate the system on three crisis scenarios inspired by recent Greek emergencies (Karditsa flooding, Evia wildfires, Elefsina industrial HAZMAT). Across 45 controlled runs (5 replicates × 3 LLM providers × 3 scenarios), both aggregation paths produce comparable decision quality (ER DQS: 0.475±0.049; GAT DQS: 0.482±0.050; p>0.05), with an 82.2% recommendation agreement rate and a mean system consensus of 0.898±0.057. Claude Sonnet 4 is the fastest provider (mean 11.6 s/run), GPT-OSS 20B via LM Studio achieves the highest mean DQS (0.504±0.051), and GPT-4o yields the most consistent consensus (0.917±0.036, lowest variance). A provider-dependent divergence in the HAZMAT scenario — GPT-4o consistently selects immediate downwind evacuation while Claude and GPT-OSS 20B favour an integrated response — highlights genuine inter-model interpretive differences that merit further investigation. In a preliminary evaluation with 15 emergency management professionals, explainability and auditability received mean ratings of 4.2/5 and 4.5/5, respectively.
 
 **Keywords:** Multi-Agent Systems, Crisis Management, Evidential Reasoning, Graph Attention Networks, Large Language Models, Decision Support Systems
 
@@ -26,7 +26,7 @@ Multi-agent systems offer a natural computational analogy: autonomous software a
 This paper makes the following contributions:
 
 1. A direct, controlled comparison of weighted Evidential Reasoning and Graph Attention Networks as competing belief-aggregation mechanisms within the same multi-agent architecture.
-2. A multi-provider LLM integration (Local LLM (by LM Studio), Anthropic Claude, OpenAI GPT-4) that supplies each agent with structured domain reasoning and includes automatic provider fallback.
+2. A multi-provider LLM integration (GPT-OSS 20B via LM Studio, Anthropic Claude Sonnet 4, OpenAI GPT-4o) that supplies each agent with structured domain reasoning and includes automatic provider fallback.
 3. A historical reliability tracker that updates agent influence weights after every decision, feeding into both the ER weighting scheme and the GAT feature vector.
 4. A 13-agent model of the Greek emergency response hierarchy — spanning Paramedics,  Police, the Hellenic Fire Corps, the Coast Guard, and the General Secretariat of Civil Protection — evaluated on three scenario types inspired from recent Greek crises.
 5. An explainability layer comprising attention-weight visualisation, MCDA score decomposition, and natural-language justification, assessed by domain practitioners.
@@ -241,7 +241,7 @@ We report four metrics. The *Decision Quality Score* (DQS) is the weighted crite
 
 ### C. Configurations
 
-We test five configurations: a compact 3-agent subset, the full 13-agent panel, an ER-versus-GAT comparison on the 13-agent panel, an LLM provider comparison (Claude, GPT-4, LLaMA 2 via LM Studio), and a single-agent baseline. Each configuration is run 25 times per scenario, yielding 75 runs per configuration.
+The primary experimental evaluation compares three LLM providers on the full 13-agent panel: Anthropic Claude Sonnet 4, OpenAI GPT-4o, and GPT-OSS 20B via LM Studio (local, on-premise inference). Every run uses `--compare-methods` mode, which executes both ER and GAT aggregation on the same set of agent assessments so that aggregation effects are isolated from LLM variance. Each provider is run 5 times per scenario, yielding 45 total runs (5 replicates × 3 providers × 3 scenarios). Each run invokes all 13 agents with 3 LLM passes per agent, producing 39 API calls per run.
 
 ---
 
@@ -249,62 +249,71 @@ We test five configurations: a compact 3-agent subset, the full 13-agent panel, 
 
 ### A. Overall System Performance
 
-Table II summarises the aggregate results for the 3-agent and 13-agent configurations across 75 runs.
+Table II summarises the 13-agent results across 45 runs broken down by scenario. All runs used the full panel with both ER and GAT aggregation enabled simultaneously.
 
-**TABLE II: System Performance (averaged across 75 runs)**
+**TABLE II: 13-Agent System Performance by Scenario (n=45; 5 replicates × 3 providers × 3 scenarios)**
 
-| Metric | 3-Agent | 13-Agent |
-|--------|---------|----------|
-| DQS | 84.7 % ± 2.3 | 86.3 % ± 1.9 |
-| Consensus | 75.3 % ± 8.1 | 68.7 % ± 9.3 |
-| Confidence | 79.8 % ± 6.4 | 81.2 % ± 5.8 |
-| Processing Time | 12.4 s | 39.7 s |
-| Cost / Scenario | $0.012 | $0.044 |
+| Metric | Karditsa Flood | Evia Wildfire | Elefsina HAZMAT | Overall |
+|--------|---------------|---------------|-----------------|---------|
+| DQS | 0.504 ± 0.020 | 0.418 ± 0.024 | 0.515 ± 0.036 | 0.479 ± 0.054 |
+| Consensus | 0.941 ± 0.011 | 0.830 ± 0.057 | 0.922 ± 0.036 | 0.898 ± 0.057 |
+| Confidence | 0.899 ± 0.009 | 0.835 ± 0.040 | 0.883 ± 0.020 | 0.872 ± 0.034 |
+| Run consistency | 100 % | 93.3 % | 80–100 %* | 91.1 % |
+| Processing time (s)† | 43.9 | 87.7 | 43.0 | 58.2 |
 
-Expanding the panel from 3 to 13 agents raises DQS by 1.6 percentage points (p < 0.01) at the expense of lower consensus, which drops from 75.3 % to 68.7 %. The reduction in consensus is expected: a larger, more heterogeneous group will naturally exhibit greater disagreement, and we regard moderate consensus levels as a sign of genuine perspective diversity rather than a deficiency. Processing time scales roughly linearly with agent count.
+*HAZMAT consistency per provider: Claude 80 %, GPT-OSS 20B 100 %, GPT-4o 100 %. The overall split reflects a genuine cross-provider interpretive divergence, not within-provider instability.
+†Averaged across all three providers; individual ranges from 8.7 s (Claude, Flood) to 154.6 s (GPT-OSS 20B, Forest Fire).
+
+The Evia Wildfire scenario yields the lowest DQS (0.418) and consensus (0.830), reflecting the greater ambiguity inherent in a multi-front wildfire where trade-offs between immediate evacuation and aerial fire-fighting assets are genuinely contested. The Flood and HAZMAT scenarios produce higher DQS values (0.504 and 0.515) with correspondingly stronger consensus (0.941 and 0.922), indicating that the agent panel reaches clearer collective judgements when the dominant response strategy is less contested.
 
 ### B. ER vs. GAT Comparison
 
-Table III compares the two aggregation mechanisms on the full 13-agent panel.
+Table III compares the two aggregation mechanisms across all 45 runs. Because every run used `--compare-methods`, ER and GAT operate on identical agent assessments, making the comparison fully controlled.
 
-**TABLE III: Aggregation Method Comparison (13-agent, 75 runs)**
+**TABLE III: Aggregation Method Comparison (13-agent, 45 runs, both methods per run)**
 
 | Metric | ER | GAT | Difference |
-|--------|-----|-----|---|
-| DQS | 0.861 | 0.863 | +0.002 (n.s.) |
-| Consensus | 68.2 % | 71.0 % | +2.8 %** |
-| Confidence | 80.4 % | 81.9 % | +1.5 %* |
-| Processing Time | 38.9 s | 41.2 s | +2.3 s |
+|--------|-----|-----|------------|
+| DQS | 0.475 ± 0.049 | 0.482 ± 0.050 | +0.007 (n.s.) |
+| Consensus | 0.900 ± 0.063 | 0.900 ± 0.063 | 0.000 (n.s.) |
+| Confidence | 0.868 ± 0.034 | 0.873 ± 0.034 | +0.005 (n.s.) |
+| Recommendation agreement | — | — | 82.2 % (37/45) |
 
-\* p < 0.05, \*\* p < 0.01, n.s. = not significant
+n.s. = not significant (p > 0.05, Kruskal-Wallis)
 
-The two methods produce nearly identical decision quality scores; the difference of 0.002 does not reach statistical significance. Where they diverge is in consensus and confidence: GAT achieves significantly higher values on both measures. Inspection of the learned attention weights offers some insight into why. In the flood and wildfire scenarios the Meteorologist receives the highest attention coefficient (0.18), whereas in the ammonia HAZMAT scenario the Medical Infrastructure Director and the Environmental Scientist together account for the largest share (0.22). In other words, the GAT learns to up-weight the agents whose expertise is most germane to each crisis type, and this adaptive weighting helps pull the expert panel towards greater agreement.
+The two methods produce virtually identical outcomes on all three metrics; none of the differences reach statistical significance. The 82.2% recommendation agreement rate (37 of 45 runs produced identical recommended alternatives from both methods) confirms that the two paths are largely interchangeable in practice. The 8 disagreements occur exclusively in the two more ambiguous scenarios — Forest Fire (6 cases) and HAZMAT (2 cases) — while the Flood scenario achieves 100% ER-GAT agreement. This pattern is consistent with the GAT's attention mechanism distributing weights more evenly when agent beliefs are tightly clustered, yielding the same effective aggregation as the explicit ER weighting.
 
-### C. Multi-Agent vs. Single-Agent
+### C. Decision Consistency and Agent Agreement
 
-Table IV presents the extended comparison bandwidth — the gap between the collective recommendation and the best-performing individual agent on each scenario.
+Table IV presents decision consistency at two levels: run-level (whether repeated runs with the same provider produce the same recommended alternative) and agent-level (the proportion of individual agents within a run that support the consensus recommendation).
 
-**TABLE IV: Extended Comparison Bandwidth**
+**TABLE IV: Decision Consistency and Agent Agreement (n=45 runs)**
 
-| Scenario | Multi-Agent DQS | Best Individual | Mean Individual | ECB vs. Best |
-|----------|----------------|-----------------|-----------------|--------------|
-| Karditsa Flood | 0.839 | 0.772 | 0.733 | +6.7 % |
-| Evia Wildfire | 0.891 | 0.837 | 0.759 | +5.4 % |
-| Elefsina HAZMAT | 0.868 | 0.825 | 0.766 | +4.3 % |
+| Scenario | Run consistency | Dominant recommendation | Mean agent agreement |
+|----------|----------------|------------------------|---------------------|
+| Karditsa Flood | 15/15 (100 %) | Hybrid approach | ~73 % |
+| Evia Wildfire | 14/15 (93.3 %) | Combined assault | 73–91 % |
+| Elefsina HAZMAT | per-provider: 80–100 %* | Integrated response / Downwind evacuation | 78–96 % |
 
-In every scenario the multi-agent system outperforms not only the average individual agent but also the single best expert, with margins ranging from 4.3 to 6.7 percentage points. Notably, the identity of the best individual varies across scenarios — Meteorologist for the flood, Fire Commander for the wildfire, Medical Director for the HAZMAT event — which underscores the value of a panel that can draw on different specialisms as circumstances require.
+*HAZMAT per-provider consistency: Claude 80 %, GPT-OSS 20B 100 %, GPT-4o 100 %. Across all providers combined, 9/15 runs recommend integrated response and 6/15 recommend immediate downwind evacuation — a genuine inter-model divergence rather than statistical noise.
+
+The Flood scenario achieves perfect run-level consistency across all providers, reflecting a scenario where the relative merits of the alternatives are unambiguous. The Forest Fire scenario shows one Claude run deviating to immediate evacuation, a difference that reflects the 4-vs-7 split in agent beliefs in that replicate rather than a systematic failure. The HAZMAT scenario reveals the most scientifically interesting pattern: GPT-4o consistently recommends a different course of action from Claude and GPT-OSS 20B, indicating that the two model families weigh the ammonia exposure risk versus shelter-in-place trade-off differently. This cross-provider divergence is reproducible across all 5 replicates per provider and warrants further investigation with domain experts.
 
 ### D. LLM Provider Comparison
 
-**TABLE V: LLM Provider Performance**
+**TABLE V: LLM Provider Performance (n=15 per provider across 3 scenarios)**
 
-| Provider | DQS | Consensus | Time (s) | Cost ($) |
-|----------|-----|-----------|----------|----------|
-| Claude 3 Sonnet | 0.863 | 71.0 % | 41.2 | 0.044 |
-| GPT-4 | 0.859 | 69.3 % | 38.6 | 0.067 |
-| LLaMA 2 (Local) | 0.831 | 64.2 % | 127.3 | 0.000 |
+| Provider | Model | DQS (mean ± σ) | Consensus (mean ± σ) | Confidence (mean ± σ) | Avg time (s) |
+|----------|-------|---------------|---------------------|----------------------|-------------|
+| Anthropic | Claude Sonnet 4 | 0.468 ± 0.060 | 0.882 ± 0.059 | 0.866 ± 0.034 | 11.6 ± 3.7 |
+| OpenAI API | GPT-4o | 0.464 ± 0.032 | 0.917 ± 0.036 | 0.886 ± 0.022 | 62.4 ± 29.3 |
+| Local (LM Studio) | GPT-OSS 20B | 0.504 ± 0.051 | 0.895 ± 0.086 | 0.865 ± 0.050 | 100.7 ± 41.2 |
 
-Among the three providers tested, Claude 3 Sonnet achieves the highest quality and consensus scores. GPT-4 is close behind in quality but at roughly 50 % higher API cost. The locally hosted LLaMA 2 model trails by 3.2 percentage points in DQS and is substantially slower, yet it incurs no API cost and keeps all data on-premise — a relevant consideration for agencies with strict data-sovereignty requirements.
+Kruskal-Wallis across providers: DQS H = 7.39 (p < 0.05); Time H = 28.45 (p < 0.001); Consensus H = 2.69 (n.s.); Confidence H = 1.51 (n.s.)
+
+The three providers show statistically significant differences in DQS (H = 7.39, p < 0.05) despite small absolute magnitudes. GPT-OSS 20B achieves the highest mean DQS (0.504), marginally ahead of Claude (0.468) and GPT-4o (0.464), though the practical difference is small (Δ ≈ 0.04). GPT-4o achieves the highest consensus (0.917) and confidence (0.886) with the lowest variance on both metrics, indicating the most predictable output — a relevant property for a production decision-support system. Claude is dramatically faster (11.6 s vs 62.4 s for GPT-4o and 100.7 s for GPT-OSS 20B), with processing time differences being highly significant (H = 28.45, p < 0.001). Consensus and confidence do not differ significantly across providers when averaged across all scenarios, suggesting that all three models are capable of driving the agent panel to comparable levels of agreement.
+
+The most notable finding is a systematic cross-provider divergence on the HAZMAT scenario: GPT-4o consistently recommends immediate downwind evacuation across all 5 replicates, while Claude and GPT-OSS 20B consistently favour an integrated response. This is not a stochastic artefact but a reproducible interpretive difference that likely stems from how each model weights acute toxicological risk relative to the logistical complexity of mass evacuation. The locally hosted GPT-OSS 20B incurs no API cost and keeps all inference on-premise — a relevant consideration for agencies with data-sovereignty requirements — though at a 9× time penalty compared to Claude.
 
 ### E. Historical Reliability Impact
 
@@ -322,13 +331,13 @@ Fifteen emergency management professionals reviewed system outputs from all thre
 
 We return to the five research questions posed in the introduction.
 
-Regarding coordination (RQ1), the hierarchical architecture proves able to orchestrate 13 agents within processing times of 12–40 seconds, well inside the operational window of the scenarios tested. Consensus levels of 69–75 % may appear modest, but we interpret them as a healthy sign of perspective diversity; excessively high consensus would suggest that agents are redundant or that the system is converging on a single viewpoint prematurely.
+Regarding coordination (RQ1), the hierarchical architecture orchestrates 13 agents within processing times of 8.7–154.6 seconds depending on provider, with cloud-based providers (Claude 11.6 s, GPT-4o 62.4 s) well inside the operational window of the scenarios tested. Consensus levels of 83–94 % indicate that the 13-agent panel reaches strong collective agreement on all three scenario types, exceeding the 75 % operational threshold in every run. The lower consensus observed in the Forest Fire scenario (0.830) reflects the genuine ambiguity of multi-front wildfire response, where trade-offs between evacuation and aerial resource deployment are legitimately contested.
 
-On belief aggregation (RQ2), the near-identical DQS of ER and GAT (0.861 vs. 0.863) suggests that, at least for well-prompted agents, the choice of aggregation mechanism has less influence on outcome quality than the quality of the individual assessments feeding into it. The advantage of GAT lies elsewhere: its learned attention weights produce measurably higher consensus and confidence, and this benefit is likely to grow as the number of agents increases.
+On belief aggregation (RQ2), the near-identical DQS of ER and GAT (0.475 vs. 0.482, p > 0.05) and their 82.2 % recommendation agreement rate confirm that, for well-prompted 13-agent panels, the choice of aggregation mechanism has less influence on the final recommendation than the quality of the individual assessments. The two methods disagree only in the ambiguous scenarios (Forest Fire and HAZMAT), where belief distributions are less concentrated and the aggregation weighting can tip a borderline decision. This suggests deploying ER for transparency-critical settings and reserving GAT for larger panels where learned attention weights provide additional value.
 
-With respect to LLM-powered reasoning (RQ3), the structured prompt templates succeed in eliciting contextually grounded assessments that evaluators rate 4.1/5 for understandability. The multi-provider architecture mitigates availability risk through automatic fallback, though two practical concerns remain: the possibility of hallucinated facts in agent reasoning, and API latency, which accounts for over 85 % of total processing time.
+With respect to LLM-powered reasoning (RQ3), all three providers successfully elicit structured, domain-appropriate belief distributions with 100 % parse success after JSON cleaning. The multi-provider architecture provides operational resilience through automatic fallback, and the local GPT-OSS 20B option demonstrates that competitive decision quality (DQS 0.504) is achievable without any API dependency. The main practical concern is API latency, which accounts for over 90 % of total processing time across all providers.
 
-The multi-agent versus single-agent comparison (RQ4) provides the clearest result of the study. Collective recommendations exceed the best individual expert by 4.3–6.7 percentage points across all three scenarios, and the identity of the best expert changes with the crisis type. This confirms that the gain is not simply a matter of error averaging but reflects genuine complementarity among specialisms.
+On decision consistency (RQ4), collective recommendations are stable across replicates in 41 of 45 runs (91.1 %). The four deviating runs (one Forest Fire, three HAZMAT) all occur at the boundary between two well-supported alternatives rather than representing random failures. The most notable finding is the reproducible cross-provider divergence on HAZMAT, where GPT-4o consistently selects a different alternative from Claude and GPT-OSS 20B. This inter-model difference does not indicate a system malfunction; rather, it surfaces a genuine ambiguity in the scenario that warrants expert review — precisely the kind of flag a decision-support system should raise.
 
 Finally, on explainability (RQ5), the combination of attention-weight visualisation, MCDA score decomposition, and natural-language justification achieves an auditability rating of 4.5/5 from domain practitioners — the highest-rated dimension in the evaluation. This is encouraging for a domain in which post-hoc accountability is not optional.
 
@@ -344,7 +353,7 @@ Several limitations should temper the conclusions drawn above. The evaluation re
 
 ## VII. Conclusion
 
-We have described a multi-agent decision support system for crisis management that combines LLM-powered expert reasoning with two formal belief-aggregation mechanisms — weighted Evidential Reasoning and a Graph Attention Network — and evaluated it on three Greek emergency scenarios. The principal empirical finding is that collective multi-agent recommendations consistently outperform the best individual expert by a non-trivial margin (4.3–6.7 %), with the GAT path offering better consensus properties than ER at comparable decision quality. A historical reliability tracker that adjusts agent weights over successive decisions adds a further measurable gain, and the overall framework receives favourable explainability and auditability ratings from domain professionals.
+We have described a multi-agent decision support system for crisis management that combines LLM-powered expert reasoning with two formal belief-aggregation mechanisms — weighted Evidential Reasoning and a Graph Attention Network — and evaluated it across 45 controlled runs on three Greek emergency scenarios using three LLM providers. The principal empirical finding is that ER and GAT produce effectively equivalent outcomes (DQS 0.475 vs. 0.482, 82.2 % recommendation agreement), confirming that at the 13-agent scale the quality of agent reasoning dominates over the choice of aggregation algorithm. Provider comparisons reveal that GPT-OSS 20B achieves the highest mean DQS (0.504), GPT-4o the most consistent consensus (0.917), and Claude Sonnet 4 the fastest response times (11.6 s) — all three being viable choices with distinct operational trade-offs. A reproducible cross-provider divergence on the HAZMAT scenario demonstrates that the system can surface genuine inter-model interpretive differences, a property that may itself be valuable for flagging high-ambiguity decisions for human review. A historical reliability tracker that adjusts agent weights over successive decisions is implemented and integrated, and the overall framework receives favourable explainability and auditability ratings from domain professionals.
 
 Several directions for future work follow naturally. The current system treats each scenario as an isolated, single-shot decision; extending the architecture to model how crises evolve over time would better reflect operational reality. The scenario coverage should be broadened beyond the three types tested here, ideally in collaboration with national civil-protection agencies that can supply validated exercise data. On the technical side, multimodal inputs — satellite imagery, GIS layers, sensor feeds — could enrich the information available to each agent. Finally, structured human-AI teaming experiments, in which the system assists rather than replaces a human decision-maker, would provide the field-level evidence needed before any operational adoption can be considered responsibly.
 

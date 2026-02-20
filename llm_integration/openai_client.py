@@ -431,7 +431,7 @@ class OpenAIClient:
         {'A1': 0.7, 'A2': 0.2, 'A3': 0.08, 'A4': 0.02}
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4-turbo-preview"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
         """
         Initialize OpenAI client.
 
@@ -780,18 +780,19 @@ class OpenAIClient:
         return True
 
     def _api_call_with_retry(self, request_params: Dict[str, Any],
-                            max_retries: int = 3,
-                            base_delay: float = 2.0) -> Any:
+                            max_retries: int = 6,
+                            base_delay: float = 5.0) -> Any:
         """
         Make API call with exponential backoff retry logic.
 
-        Retries on rate limit errors and transient API errors.
-        Uses exponential backoff: delay = base_delay * (2 ** attempt)
+        On 429 RateLimitError, parses OpenAI's "try again in Xs" from the
+        error message and waits at least that long (plus random jitter) to
+        avoid a thundering-herd when 13 agents retry simultaneously.
 
         Args:
             request_params: Parameters for API call
-            max_retries: Maximum number of retries (default: 3)
-            base_delay: Base delay in seconds for exponential backoff (default: 2.0)
+            max_retries: Maximum number of retries (default: 6)
+            base_delay: Minimum base delay in seconds (default: 5.0)
 
         Returns:
             API response object
@@ -800,6 +801,13 @@ class OpenAIClient:
             APIError: If all retries fail
             RateLimitError: If rate limit persists after all retries
         """
+        import random
+
+        def _parse_retry_after(error_str: str) -> float:
+            """Extract wait seconds from OpenAI 429 message, or return 0."""
+            match = re.search(r'try again in (\d+\.?\d*)s', str(error_str))
+            return float(match.group(1)) if match else 0.0
+
         last_exception = None
 
         for attempt in range(max_retries):
@@ -814,11 +822,13 @@ class OpenAIClient:
                     logger.error(f"Rate limit error after {max_retries} attempts")
                     raise
 
-                # Exponential backoff
-                delay = base_delay * (2 ** attempt)
+                # Respect OpenAI's own retry-after, add jitter to spread
+                # concurrent agent retries apart
+                retry_after = _parse_retry_after(str(e))
+                delay = max(retry_after, base_delay * (2 ** attempt)) + random.uniform(1, 5)
                 logger.warning(
                     f"Rate limit hit (attempt {attempt + 1}/{max_retries}), "
-                    f"retrying in {delay:.1f}s..."
+                    f"retrying in {delay:.1f}s (OpenAI suggests {retry_after:.1f}s)..."
                 )
                 time.sleep(delay)
 
@@ -828,7 +838,7 @@ class OpenAIClient:
                     logger.error(f"Connection error after {max_retries} attempts")
                     raise
 
-                delay = base_delay * (2 ** attempt)
+                delay = base_delay * (2 ** attempt) + random.uniform(0, 2)
                 logger.warning(
                     f"Connection error (attempt {attempt + 1}/{max_retries}), "
                     f"retrying in {delay:.1f}s..."
@@ -837,7 +847,7 @@ class OpenAIClient:
 
             except APIError as e:
                 last_exception = e
-                # Don't retry on client errors (4xx)
+                # Don't retry on client errors (4xx) except 429 (handled above)
                 if hasattr(e, 'status_code') and 400 <= e.status_code < 500:
                     logger.error(f"Client error (status {e.status_code}), not retrying")
                     raise
@@ -846,7 +856,7 @@ class OpenAIClient:
                     logger.error(f"API error after {max_retries} attempts")
                     raise
 
-                delay = base_delay * (2 ** attempt)
+                delay = base_delay * (2 ** attempt) + random.uniform(0, 2)
                 logger.warning(
                     f"API error (attempt {attempt + 1}/{max_retries}), "
                     f"retrying in {delay:.1f}s..."

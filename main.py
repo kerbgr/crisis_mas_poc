@@ -25,6 +25,9 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
+from dotenv import load_dotenv
+load_dotenv()  # loads .env from project root into os.environ
+
 # Import Crisis MAS components
 from agents.expert_agent import ExpertAgent
 from agents.coordinator_agent import CoordinatorAgent
@@ -1007,6 +1010,7 @@ def save_results(
     decision: Dict[str, Any],
     metrics: Dict[str, Any],
     output_dir: Path,
+    llm_provider: str = "unknown",
     filename: str = "results.json"
 ) -> str:
     """
@@ -1016,6 +1020,7 @@ def save_results(
         decision: Decision results
         metrics: Evaluation metrics
         output_dir: Output directory
+        llm_provider: LLM provider used for this run (e.g. 'claude', 'openai', 'lmstudio')
         filename: Output filename
 
     Returns:
@@ -1028,6 +1033,7 @@ def save_results(
 
     results = {
         'timestamp': datetime.now().isoformat(),
+        'llm_provider': llm_provider,
         'decision': decision,
         'metrics': metrics
     }
@@ -1530,7 +1536,10 @@ For more information, see README.md
     # Extract scenario name for directory structure
     scenario_name = Path(args.scenario).stem
 
-    # Setup output directory with structure: results/scenario_name/run_X
+    # Ask which LLM provider to use — needed before folder creation so name is included
+    llm_provider = prompt_llm_provider()
+
+    # Setup output directory with structure: results/scenario_name/run_X_<provider>
     base_output_dir = Path(args.output_dir)
     scenario_output_dir = base_output_dir / scenario_name
 
@@ -1548,7 +1557,7 @@ For more information, see README.md
     else:
         next_run = 1
 
-    output_dir = scenario_output_dir / f"run_{next_run}"
+    output_dir = scenario_output_dir / f"run_{next_run}_{llm_provider}"
     output_dir.mkdir(exist_ok=True, parents=True)
 
     # Setup logging
@@ -1586,8 +1595,6 @@ For more information, see README.md
         # ===== 2. INITIALIZE COMPONENTS =====
         logger.info("Step 3/6: Initializing Components")
 
-        # Ask user which LLM provider to use (interactive prompt)
-        llm_provider = prompt_llm_provider()
         llm_client = initialize_llm_client(llm_provider, api_keys)
 
         # Determine which agents to use based on expert selection mode
@@ -1682,7 +1689,7 @@ For more information, see README.md
         logger.info("Step 6/6: Generating Output")
 
         # Save results
-        save_results(decision, metrics, output_dir)
+        save_results(decision, metrics, output_dir, llm_provider=llm_provider)
 
         # Persist reliability data for all agents
         for agent in expert_agents:
@@ -1702,6 +1709,17 @@ For more information, see README.md
 
                     method_decision = comparative_results['methods'][method]['decision']
                     method_metrics = comparative_results['methods'][method]['metrics']
+
+                    # Enrich method metrics with individual comparisons so the
+                    # decision_comparison plot has data to render
+                    if individual_decisions:
+                        full_method_metrics = evaluate_decision(
+                            method_decision,
+                            individual_decisions=individual_decisions
+                        )
+                        method_metrics['individual_comparisons'] = full_method_metrics.get(
+                            'individual_comparisons', {}
+                        )
 
                     logger.info(f"Generating {method} visualizations in {method_dir}")
                     generate_visualizations(

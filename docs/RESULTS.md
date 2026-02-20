@@ -1,207 +1,127 @@
-# Results
+# Experimental Results
 
-## Sample Decision Scenario: Urban Flood Emergency
+## Overview
 
-**Scenario Parameters:**
-- Type: Flood
-- Severity: 8.5/10
-- Affected Population: 10,000
-- Time Pressure: High (2-3 hours window)
-- Available Actions: 3
+The system was evaluated across **45 controlled runs**: 5 replicates × 3 LLM providers × 3 crisis scenarios. Every run used all 13 expert agents with `--compare-methods` mode (both ER and GAT aggregation per run), producing 135 result records in total. The local model was **GPT-OSS 20B** served via LM Studio; cloud providers were **Anthropic Claude Sonnet 4** and **OpenAI GPT-4o**.
 
-**Expert Agents (Default 3-Agent Team):**
-1. Meteorologist (confidence: 0.85)
-2. Logistics Expert (confidence: 0.80)
-3. Medical Expert (confidence: 0.90)
+---
 
-**Note:** Results below use the default 3-agent configuration. With `--agents all`, the system engages all 13 experts including tactical and strategic command authorities.
+## TABLE I — Performance by Scenario (all providers combined, n=15 per scenario)
 
-## Comparative Results: ER vs. GAT
+| Metric | Karditsa Flood | Evia Wildfire | Elefsina HAZMAT | Overall |
+|--------|---------------|---------------|-----------------|---------|
+| DQS (mean ± σ) | 0.504 ± 0.020 | 0.418 ± 0.024 | 0.515 ± 0.036 | 0.479 ± 0.054 |
+| Consensus (mean ± σ) | 0.941 ± 0.011 | 0.830 ± 0.057 | 0.922 ± 0.036 | 0.898 ± 0.057 |
+| Confidence (mean ± σ) | 0.899 ± 0.009 | 0.835 ± 0.040 | 0.883 ± 0.020 | 0.872 ± 0.034 |
+| Run consistency | 100 % | 93.3 % | 80–100 %* | 91.1 % |
+| Avg processing time (s)† | 43.9 | 87.7 | 43.0 | 58.2 |
 
-### Evidential Reasoning Results
+*HAZMAT per-provider: Claude 80 %, GPT-OSS 20B 100 %, GPT-4o 100 % — but GPT-4o chooses a different alternative than the other two providers (see Section 4).
+†Averaged across providers; individual range: 8.7 s (Claude, Flood) to 154.6 s (GPT-OSS 20B, Forest Fire).
 
-| Alternative | ER Score | Confidence | Agent Support |
-|------------|----------|------------|---------------|
-| Immediate Evacuation | 0.847 | 84.7% | 3/3 agents (100%) |
-| Deploy Flood Barriers | 0.623 | 67.2% | 0/3 agents (0%) |
-| Shelter in Place | 0.412 | 58.1% | 0/3 agents (0%) |
+---
 
-**Key Metrics:**
-- Consensus Level: 75.3%
-- Average Confidence: 79.8%
-- Decision Uncertainty: 15.3%
-- Processing Time: 12.4s
-- API Calls: 3 (one per agent)
+## TABLE II — Performance by LLM Provider (all scenarios, n=15 per provider)
 
-### GAT Results
+| Provider | Model | DQS (mean ± σ) | Consensus (mean ± σ) | Confidence (mean ± σ) | Avg time (s) |
+|----------|-------|----------------|---------------------|-----------------------|-------------|
+| Anthropic | Claude Sonnet 4 | 0.468 ± 0.060 | 0.882 ± 0.059 | 0.866 ± 0.034 | 11.6 ± 3.7 |
+| OpenAI API | GPT-4o | 0.464 ± 0.032 | **0.917 ± 0.036** | **0.886 ± 0.022** | 62.4 ± 29.3 |
+| Local (LM Studio) | GPT-OSS 20B | **0.504 ± 0.051** | 0.895 ± 0.086 | 0.865 ± 0.050 | 100.7 ± 41.2 |
 
-| Alternative | GAT Score | Confidence | Attention-Weighted Support |
-|------------|-----------|------------|---------------------------|
-| Immediate Evacuation | 0.862 | 86.2% | Weighted avg. 0.831 |
-| Deploy Flood Barriers | 0.601 | 64.8% | Weighted avg. 0.589 |
-| Shelter in Place | 0.398 | 56.2% | Weighted avg. 0.412 |
+**Kruskal-Wallis statistical tests (df=2):**
+- DQS: H = 7.39 → **significant (p < 0.05)**
+- Processing time: H = 28.45 → **highly significant (p < 0.001)**
+- Consensus: H = 2.69 → not significant
+- Confidence: H = 1.51 → not significant
 
-**Expert Attention Weights** (influence on decision):
-- Civil Protection Director: 34.2% (highest - most relevant for evacuation)
-- Medical Expert: 28.6% (high - health impacts)
-- Logistics Expert: 24.1% (moderate - feasibility assessment)
-- Environmental Expert: 13.1% (lowest - less relevant to immediate crisis)
+---
 
-**Key Metrics:**
-- Consensus Level: 78.1% (+2.8% vs ER)
-- Average Confidence: 81.3% (+1.5% vs ER)
-- Decision Uncertainty: 13.8% (-1.5% vs ER)
-- Processing Time: 14.2s (+1.8s vs ER)
-- API Calls: 3
+## TABLE III — Provider × Scenario Detail
 
-**Note:** With all 13 agents engaged, processing time scales to ~40-50 seconds (13 parallel API calls), but provides comprehensive multi-agency perspective.
+| Scenario | Provider | n | DQS | Consensus | Confidence | Time (s) |
+|----------|----------|---|-----|-----------|------------|----------|
+| Flood | Claude Sonnet 4 | 5 | 0.509 ± 0.006 | 0.934 ± 0.005 | 0.898 ± 0.002 | 8.7 ± 0.3 |
+| Flood | GPT-OSS 20B | 5 | 0.521 ± 0.007 | 0.935 ± 0.008 | 0.888 ± 0.006 | 74.2 ± 4.9 |
+| Flood | GPT-4o | 5 | 0.482 ± 0.016 | 0.955 ± 0.013 | 0.910 ± 0.009 | 48.9 ± 14.1 |
+| Forest Fire | Claude Sonnet 4 | 5 | 0.391 ± 0.011 | 0.807 ± 0.013 | 0.824 ± 0.008 | 16.3 ± 1.8 |
+| Forest Fire | GPT-OSS 20B | 5 | 0.439 ± 0.018 | 0.788 ± 0.064 | 0.805 ± 0.039 | 154.6 ± 21.8 |
+| Forest Fire | GPT-4o | 5 | 0.424 ± 0.007 | 0.894 ± 0.016 | 0.875 ± 0.011 | 92.2 ± 6.4 |
+| HAZMAT | Claude Sonnet 4 | 5 | 0.505 ± 0.037 | 0.904 ± 0.035 | 0.875 ± 0.020 | 9.7 ± 0.8 |
+| HAZMAT | GPT-OSS 20B | 5 | 0.553 ± 0.007 | 0.960 ± 0.007 | 0.903 ± 0.006 | 73.4 ± 1.1 |
+| HAZMAT | GPT-4o | 5 | 0.487 ± 0.017 | 0.902 ± 0.036 | 0.872 ± 0.019 | 46.0 ± 33.2 |
 
-**Interpretation:** GAT dynamically weights the Civil Protection Director higher due to domain relevance, resulting in slightly higher confidence and consensus. The environmental expert's influence is appropriately reduced for immediate crisis response.
+---
 
-## Performance Metrics
+## TABLE IV — ER vs. GAT Aggregation Comparison (n=45 each)
 
-> **Important Note:** As of commit `8bb88bd` (November 2025), the comparison methodology has been significantly improved to evaluate multi-agent consensus against EACH individual agent rather than just one baseline. This provides comprehensive analysis of collaborative decision-making value. Previous versions only compared against a single arbitrary agent. See [`evaluation/EVALUATION_METHODOLOGY.md`](../evaluation/EVALUATION_METHODOLOGY.md) for details.
+| Metric | ER | GAT | Difference |
+|--------|----|-----|------------|
+| DQS (mean ± σ) | 0.475 ± 0.049 | 0.482 ± 0.050 | +0.007 (n.s.) |
+| Consensus (mean ± σ) | 0.900 ± 0.063 | 0.900 ± 0.063 | 0.000 (n.s.) |
+| Confidence (mean ± σ) | 0.868 ± 0.034 | 0.873 ± 0.034 | +0.005 (n.s.) |
+| Recommendation agreement | — | — | 82.2 % (37/45 runs) |
 
-### Decision Quality Metrics
+All differences are non-significant (p > 0.05, Kruskal-Wallis). ER and GAT are effectively interchangeable for this 13-agent panel. The 8 disagreements occur exclusively in ambiguous scenarios (6 × Forest Fire, 2 × HAZMAT).
 
-```json
-{
-  "weighted_score": 0.847,
-  "confidence": 0.823,
-  "criteria_satisfaction": {
-    "effectiveness": 0.90,
-    "safety": 0.95,
-    "speed": 0.85,
-    "cost": 0.45,
-    "public_acceptance": 0.78
-  },
-  "improvement_over_individuals": {
-    "avg_individual_quality": 0.521,
-    "multi_agent_quality": 0.774,
-    "improvement_percentage": 48.6,
-    "quality_range": {"min": 0.350, "max": 0.685},
-    "agents_agreeing": 5,
-    "total_agents": 11,
-    "agreement_rate": 45.5
-  }
-}
-```
+---
 
-**Interpretation:**
-- **Quality (0.847):** Calculated from criteria scores - shows strong satisfaction of safety (0.95) and effectiveness (0.90), with trade-off on cost (0.45)
-- **Confidence (0.823):** Separate metric indicating high certainty in the decision based on agent consensus
-- **Multi-Agent Advantage (48.6%):** Comprehensive comparison showing multi-agent consensus significantly outperforms average individual agent decisions
-- **Agreement Analysis:** Shows 5 out of 13 agents agreed with consensus, demonstrating value of synthesizing diverse perspectives
-- **Quality Range:** Individual agents ranged from 0.350 to 0.685, showing multi-agent (0.774) exceeds even the best individual
+## Section 4 — Decision Consistency
 
-### Consensus Metrics
+### Run-Level Recommendation (dominant alternative across all 45 runs)
 
-```json
-{
-  "consensus_level": 0.753,
-  "pairwise_agreements": {
-    "medical_safety": 0.89,
-    "medical_logistics": 0.82,
-    "medical_environmental": 0.61,
-    "safety_logistics": 0.85,
-    "safety_environmental": 0.58,
-    "logistics_environmental": 0.64
-  },
-  "agreement_variance": 0.124,
-  "outliers": ["environmental_expert"]
-}
-```
+| Scenario | Recommendation | Runs |
+|----------|----------------|------|
+| Karditsa Flood | **Hybrid approach** | 15/15 (100 %) |
+| Evia Wildfire | **Combined assault** | 14/15 (93.3 %) |
+| Elefsina HAZMAT | Integrated response | 9/15 (60 %) |
+| Elefsina HAZMAT | Immediate downwind evacuation | 6/15 (40 %) |
 
-**Interpretation:** Strong agreement (>0.80) between medical, safety, and logistics experts. Environmental expert is outlier, preferring barriers (focuses on long-term damage mitigation vs. immediate life safety).
+### HAZMAT Provider Divergence
 
-### Confidence Metrics
+The HAZMAT split is not random — it is fully explained by provider identity:
 
-```json
-{
-  "average_confidence": 0.798,
-  "decision_confidence": 0.847,
-  "uncertainty": 0.153,
-  "confidence_variance": 0.032,
-  "confidence_by_agent": {
-    "medical_expert": 0.82,
-    "logistics_expert": 0.78,
-    "safety_expert": 0.88,
-    "environmental_expert": 0.71
-  }
-}
-```
+| Provider | n | Recommendation | Consistency |
+|----------|---|----------------|-------------|
+| Claude Sonnet 4 | 5 | Integrated response (4×), Evacuation (1×) | 80 % |
+| GPT-OSS 20B | 5 | Integrated response | 100 % |
+| GPT-4o | 5 | Immediate downwind evacuation | 100 % |
 
-**Interpretation:** Low variance indicates consistent confidence across agents. Decision confidence (84.7%) exceeds average agent confidence (79.8%), showing emergent benefit of aggregation.
+GPT-4o reproducibly weights acute inhalation risk more heavily than logistical constraints, resulting in a clear split. Claude and GPT-OSS 20B converge on the integrated response that balances evacuation with shelter-and-monitor for lower-risk zones.
 
-### Efficiency Metrics
+---
 
-```json
-{
-  "total_time_seconds": 12.4,
-  "api_calls": 4,
-  "tokens_used": 3847,
-  "estimated_cost_usd": 0.0192,
-  "iterations_to_consensus": 1,
-  "agents_changed_opinion": 0
-}
-```
+## Section 5 — Processing Time Analysis
 
-**Interpretation:** Single iteration achieved consensus (threshold: 0.70). No opinion changes needed, indicating clear scenario with strong initial agreement.
+| Provider | Flood (s) | Forest Fire (s) | HAZMAT (s) | Overall (s) |
+|----------|-----------|----------------|------------|-------------|
+| Claude Sonnet 4 | 8.7 ± 0.3 | 16.3 ± 1.8 | 9.7 ± 0.8 | 11.6 ± 3.7 |
+| GPT-4o (OpenAI) | 48.9 ± 14.1 | 92.2 ± 6.4 | 46.0 ± 33.2 | 62.4 ± 29.3 |
+| GPT-OSS 20B (local) | 74.2 ± 4.9 | 154.6 ± 21.8 | 73.4 ± 1.1 | 100.7 ± 41.2 |
 
-## Visualizations
+**Forest Fire is consistently the slowest scenario** across all providers because its 12 candidate alternatives (vs 5 in the other scenarios) require more tokens per agent assessment. Claude's speed advantage (~9× faster than GPT-OSS 20B overall) is critical for time-sensitive operational use.
 
-The system generates four key visualizations:
+---
 
-### 1. Agent Contribution Analysis
+## Key Findings Summary
 
-**Description:** Bar chart showing each agent's influence on final decision
+1. **ER and GAT are statistically equivalent** for 13-agent panels (DQS Δ = 0.007, p > 0.05; 82.2 % recommendation agreement).
+2. **GPT-OSS 20B achieves the highest mean DQS** (0.504), demonstrating that competitive decision quality is achievable with local, on-premise inference at zero API cost.
+3. **GPT-4o achieves the most consistent consensus** (0.917 ± 0.036) and confidence (0.886 ± 0.022) across all scenarios, suggesting the most predictable output.
+4. **Claude Sonnet 4 is 5–9× faster** than the other providers (11.6 s mean), which is decisive for real-time emergency response.
+5. **The Evia Wildfire scenario is the hardest** — lowest DQS (0.418), lowest consensus (0.830), most ER-GAT disagreements — reflecting genuine ambiguity in multi-front wildfire trade-offs.
+6. **The HAZMAT provider divergence is the most scientifically interesting finding**: GPT-4o consistently selects a different response than Claude and GPT-OSS 20B. This is reproducible across all 5 replicates and indicates a real inter-model interpretive difference warranting domain expert review.
+7. **Run-level recommendation stability is 91.1 %** across all 45 runs; the 4 deviating runs all occur at the boundary between two closely ranked alternatives.
 
-**Sample Interpretation:**
-- Safety Expert: 34.2% influence (GAT) - Highest due to expertise match
-- Equal weights (25% each) would underweight safety considerations
-- GAT attention reveals implicit expertise relevance
+---
 
-### 2. Alternative Comparison Radar Chart
+## Result Files
 
-**Description:** Multi-axis radar comparing alternatives across 5 criteria
+Results are stored at `results/<scenario>/<run_N_provider>/`:
+- `results.json` — combined ER+GAT decision, full agent opinions, all metrics
+- `er/results.json` — ER-only aggregation result
+- `gat/results.json` — GAT-only aggregation result
+- `decision_comparison.png` — ER vs GAT visual comparison
+- `*.png` — additional visualisations (agent contributions, belief heatmap, etc.)
 
-**Sample Interpretation:**
-- Evacuation excels in effectiveness (0.90) and safety (0.95)
-- Barriers excel in cost (0.82) but poor in speed (0.35)
-- Clear visual separation supports decision confidence
-
-### 3. Consensus Evolution Plot
-
-**Description:** Line graph of agreement level across iterations
-
-**Sample Interpretation:**
-- Initial consensus: 75.3% (above threshold)
-- No iterations needed
-- Monotonic increase would indicate successful negotiation
-
-### 4. Belief Distribution Heatmap
-
-**Description:** Heatmap of agent beliefs across alternatives
-
-**Sample Interpretation:**
-```
-              Evacuate  Barriers  Shelter
-Medical        0.82      0.14      0.04
-Logistics      0.78      0.18      0.04
-Safety         0.88      0.09      0.03
-Environmental  0.23      0.71      0.06
-```
-
-Clear clustering shows 3-agent coalition for evacuation, 1 dissenter for barriers.
-
-## Key Findings
-
-1. **Multi-Agent Advantage:** 17% decision quality improvement over single-agent baseline
-2. **GAT vs ER:** GAT shows +2.8% consensus, +1.5% confidence through dynamic expert weighting
-3. **Scalability:** Successfully expanded from 4 to 13 expert roles (v0.8) with tactical/strategic hierarchy
-4. **Explainability:** Attention weights provide interpretable expert influence measures
-5. **Efficiency:**
-   - 3-agent (default): 10-15s decision time, ~$0.012 per scenario
-   - 13-agent (full): 35-45s decision time, ~$0.044 per scenario
-6. **Robustness:** 92% consensus achieved in test scenarios (n=25 simulations)
-7. **Command Structure:** Realistic two-tier hierarchy (tactical/strategic) enables multi-jurisdictional crisis modeling
+See [EVALUATION_METHODOLOGY.md](EVALUATION_METHODOLOGY.md) for metric definitions and [REGENERATE_VISUALIZATIONS.md](REGENERATE_VISUALIZATIONS.md) for regenerating plots from existing JSON.
