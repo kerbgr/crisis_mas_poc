@@ -35,11 +35,11 @@
       "communication_preference": "technical precision balanced with clear public messaging, uses visual aids and probability language, emphasizes uncertainty ranges",
       "risk_tolerance": 0.4,
       "weight_preferences": {
-        "effectiveness": 0.30,
+        "effectiveness": 0.3,
         "safety": 0.25,
         "speed": 0.25,
-        "cost": 0.10,
-        "public_acceptance": 0.10
+        "cost": 0.1,
+        "public_acceptance": 0.1
       },
       "expertise_tags": [
         "severe_weather",
@@ -98,9 +98,9 @@
       "risk_tolerance": 0.3,
       "weight_preferences": {
         "effectiveness": 0.35,
-        "safety": 0.30,
-        "speed": 0.20,
-        "cost": 0.10,
+        "safety": 0.3,
+        "speed": 0.2,
+        "cost": 0.1,
         "public_acceptance": 0.05
       },
       "expertise_tags": [
@@ -164,7 +164,7 @@
         "safety": 0.15,
         "speed": 0.25,
         "cost": 0.25,
-        "public_acceptance": 0.10
+        "public_acceptance": 0.1
       },
       "expertise_tags": [
         "supply_chain",
@@ -179,7 +179,7 @@
         "crisis_logistics",
         "humanitarian_logistics"
       ],
-      "confidence_level": 0.80,
+      "confidence_level": 0.8,
       "description": "SILVER-level advisory logistics coordinator providing specialist supply chain expertise to all command levels. 12 years focused on resource allocation and distribution network optimization during crisis response. Advises on logistics feasibility and resource availability across incident operations."
     },
     {
@@ -224,11 +224,11 @@
       "communication_preference": "formal and hierarchical, clear chain-of-command communication, uses standardized incident command terminology, emphasizes public information accuracy",
       "risk_tolerance": 0.2,
       "weight_preferences": {
-        "effectiveness": 0.30,
+        "effectiveness": 0.3,
         "safety": 0.35,
-        "speed": 0.20,
+        "speed": 0.2,
         "cost": 0.05,
-        "public_acceptance": 0.10
+        "public_acceptance": 0.1
       },
       "expertise_tags": [
         "evacuation",
@@ -290,7 +290,7 @@
       "risk_tolerance": 0.4,
       "weight_preferences": {
         "effectiveness": 0.25,
-        "safety": 0.20,
+        "safety": 0.2,
         "speed": 0.15,
         "cost": 0.15,
         "public_acceptance": 0.25
@@ -311,66 +311,6 @@
       ],
       "confidence_level": 0.78,
       "description": "SILVER-level advisory environmental scientist providing specialist ecological expertise to all command levels. 18 years specializing in environmental impact assessment and Mediterranean ecosystem analysis during crisis response operations."
-    },
-    {
-      "agent_id": "coordinator_01",
-      "name": "System Coordinator",
-      "command_level": "COORDINATION",
-      "command_level_description": "Cross-level coordination - Aggregates assessments from all command levels",
-      "role": "Multi-Agent Decision Coordinator",
-      "expertise": "consensus_building_and_decision_aggregation",
-      "experience_years": 10,
-      "education": "Advanced AI system designed for multi-criteria decision analysis and expert opinion aggregation using Dempster-Shafer evidential reasoning and weighted consensus algorithms",
-      "certifications": [
-        "Evidential Reasoning Framework Implementation",
-        "Multi-Criteria Decision Analysis (MCDA) Systems",
-        "Dempster-Shafer Theory Application",
-        "Consensus Building Algorithms",
-        "Weighted Aggregation Methods"
-      ],
-      "specializations": [
-        "consensus_building",
-        "decision_aggregation",
-        "multi_criteria_analysis",
-        "evidential_reasoning",
-        "conflict_resolution",
-        "preference_elicitation",
-        "uncertainty_quantification",
-        "collaborative_decision_making"
-      ],
-      "notable_experience": [
-        "Successfully coordinated decisions across 13+ expert agents in crisis scenarios",
-        "10 years of continuous refinement and optimization in emergency decision support",
-        "Processed and aggregated diverse expert perspectives while maintaining decision quality",
-        "Handled conflicting recommendations and built viable consensus solutions",
-        "Adapted to various crisis types: wildfires, floods, earthquakes, medical emergencies, maritime incidents",
-        "Maintained high decision quality scores (avg 0.75+) across diverse scenarios",
-        "Integrated domain-specific expertise from meteorology, medicine, logistics, law enforcement, and fire service"
-      ],
-      "decision_style": "systematic and balanced, weighs expert inputs by confidence and domain relevance, seeks consensus while identifying critical disagreements, transparent aggregation process",
-      "communication_preference": "structured decision documentation, clear rationale for consensus choices, highlights areas of expert agreement and disagreement, quantifies confidence levels",
-      "risk_tolerance": 0.5,
-      "weight_preferences": {
-        "effectiveness": 0.25,
-        "safety": 0.25,
-        "speed": 0.20,
-        "cost": 0.15,
-        "public_acceptance": 0.15
-      },
-      "expertise_tags": [
-        "consensus_building",
-        "decision_aggregation",
-        "coordination",
-        "MCDA",
-        "evidential_reasoning",
-        "conflict_resolution",
-        "uncertainty_handling",
-        "collaborative_systems",
-        "expert_integration"
-      ],
-      "confidence_level": 0.90,
-      "consensus_threshold": 0.7,
-      "description": "Cross-level AI coordinator responsible for aggregating assessments from GOLD, SILVER, and BRONZE command levels. Employs Dempster-Shafer evidential reasoning and multi-criteria analysis to synthesize diverse expert perspectives."
     },
     {
       "agent_id": "psap_silver_coordination",
@@ -414,11 +354,11 @@
       "communication_preference": "concise and standardized radio/phone protocols, uses PSAP communication standards, clear priority coding, maintains calm professional demeanor under stress",
       "risk_tolerance": 0.35,
       "weight_preferences": {
-        "effectiveness": 0.30,
+        "effectiveness": 0.3,
         "safety": 0.25,
         "speed": 0.25,
-        "cost": 0.10,
-        "public_acceptance": 0.10
+        "cost": 0.1,
+        "public_acceptance": 0.1
       },
       "expertise_tags": [
         "dispatch",
@@ -479,11 +419,11 @@
       "communication_preference": "direct radio commands using law enforcement codes, structured tactical briefings, clear chain-of-command communication, emphasis on situational awareness updates",
       "risk_tolerance": 0.3,
       "weight_preferences": {
-        "effectiveness": 0.30,
+        "effectiveness": 0.3,
         "safety": 0.35,
-        "speed": 0.20,
+        "speed": 0.2,
         "cost": 0.05,
-        "public_acceptance": 0.10
+        "public_acceptance": 0.1
       },
       "expertise_tags": [
         "tactical_operations",
@@ -547,7 +487,7 @@
         "effectiveness": 0.25,
         "safety": 0.25,
         "speed": 0.15,
-        "cost": 0.20,
+        "cost": 0.2,
         "public_acceptance": 0.15
       },
       "expertise_tags": [
@@ -563,7 +503,7 @@
         "security_planning",
         "law_enforcement_policy"
       ],
-      "confidence_level": 0.90,
+      "confidence_level": 0.9,
       "description": "GOLD-level strategic police commander responsible for regional law enforcement strategy and inter-prefectural coordination. 28 years commanding Attica Division, managing strategic deployment and mutual aid for major regional incidents."
     },
     {
@@ -609,11 +549,11 @@
       "communication_preference": "clear tactical radio orders, uses ICS communication standards, frequent progress reports, emphasis on safety check-ins and situational awareness",
       "risk_tolerance": 0.35,
       "weight_preferences": {
-        "effectiveness": 0.30,
+        "effectiveness": 0.3,
         "safety": 0.35,
-        "speed": 0.20,
+        "speed": 0.2,
         "cost": 0.05,
-        "public_acceptance": 0.10
+        "public_acceptance": 0.1
       },
       "expertise_tags": [
         "fire_suppression",
@@ -678,7 +618,7 @@
         "effectiveness": 0.25,
         "safety": 0.25,
         "speed": 0.15,
-        "cost": 0.20,
+        "cost": 0.2,
         "public_acceptance": 0.15
       },
       "expertise_tags": [
@@ -740,9 +680,9 @@
       "communication_preference": "structured capacity reports with real-time dashboards, uses healthcare information systems, emphasizes bed availability and resource status, clear coordination with hospital leadership",
       "risk_tolerance": 0.3,
       "weight_preferences": {
-        "effectiveness": 0.30,
-        "safety": 0.30,
-        "speed": 0.20,
+        "effectiveness": 0.3,
+        "safety": 0.3,
+        "speed": 0.2,
         "cost": 0.15,
         "public_acceptance": 0.05
       },
@@ -806,11 +746,11 @@
       "communication_preference": "maritime radio protocols (VHF/MF), uses IAMSAR communication standards, coordinates with multiple vessels and aircraft, emphasis on position reports and weather updates",
       "risk_tolerance": 0.35,
       "weight_preferences": {
-        "effectiveness": 0.30,
+        "effectiveness": 0.3,
         "safety": 0.35,
-        "speed": 0.20,
+        "speed": 0.2,
         "cost": 0.05,
-        "public_acceptance": 0.10
+        "public_acceptance": 0.1
       },
       "expertise_tags": [
         "maritime_rescue",
@@ -875,7 +815,7 @@
         "effectiveness": 0.25,
         "safety": 0.25,
         "speed": 0.15,
-        "cost": 0.20,
+        "cost": 0.2,
         "public_acceptance": 0.15
       },
       "expertise_tags": [

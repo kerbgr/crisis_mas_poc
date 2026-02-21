@@ -253,46 +253,45 @@ def initialize_expert_agents(
     Args:
         llm_client: LLM client to use for all agents
         agent_ids: Optional list of specific agent IDs to load.
-                   Supported agent IDs include (13 expert agents total):
-                   - Original 3: agent_meteorologist, logistics_expert_01, medical_expert_01
-                   - Civil Protection: public_safety_expert_01
-                   - Environmental: environmental_expert_01
-                   - Emergency Response: psap_commander_01
-                   - Police: police_onscene_01, police_regional_01
-                   - Fire: fire_onscene_01, fire_regional_01
-                   - Medical: medical_infrastructure_01
-                   - Coast Guard: coastguard_onscene_01, coastguard_national_01
+                   Supported agent IDs (13 expert agents total):
+                   - Core: meteorology_silver_advisory, logistics_silver_advisory, medical_silver_tactical
+                   - Civil Protection: civilprotection_gold_strategic
+                   - Environmental: environment_silver_advisory
+                   - Emergency Response: psap_silver_coordination
+                   - Police: police_silver_tactical, police_gold_strategic
+                   - Fire: fire_silver_tactical, fire_gold_strategic
+                   - Medical: medical_gold_strategic
+                   - Coast Guard: coastguard_silver_tactical, coastguard_gold_strategic
 
     Returns:
         List of ExpertAgent instances
     """
     logger = logging.getLogger(__name__)
 
-    # Default agents if not specified - use original 3 for backward compatibility
-    # Users can specify --agents flag to load specific agents or use ALL_AGENTS constant
+    # Default agents if not specified - use 3 core agents for backward compatibility
     if agent_ids is None:
         agent_ids = [
-            "agent_meteorologist",
-            "logistics_expert_01",
-            "medical_expert_01"
+            "meteorology_silver_advisory",
+            "logistics_silver_advisory",
+            "medical_silver_tactical"
         ]
 
     # If user passes 'all', load all 13 expert agents
     if agent_ids == ['all']:
         agent_ids = [
-            "agent_meteorologist",
-            "medical_expert_01",
-            "logistics_expert_01",
-            "public_safety_expert_01",
-            "environmental_expert_01",
-            "psap_commander_01",
-            "police_onscene_01",
-            "police_regional_01",
-            "fire_onscene_01",
-            "fire_regional_01",
-            "medical_infrastructure_01",
-            "coastguard_onscene_01",
-            "coastguard_national_01"
+            "meteorology_silver_advisory",
+            "medical_silver_tactical",
+            "logistics_silver_advisory",
+            "civilprotection_gold_strategic",
+            "environment_silver_advisory",
+            "psap_silver_coordination",
+            "police_silver_tactical",
+            "police_gold_strategic",
+            "fire_silver_tactical",
+            "fire_gold_strategic",
+            "medical_gold_strategic",
+            "coastguard_silver_tactical",
+            "coastguard_gold_strategic"
         ]
         logger.info("Loading all 13 expert agents...")
 
@@ -1465,11 +1464,12 @@ For more information, see README.md
         '--agents',
         nargs='+',
         default=None,
-        help='Specific agent IDs to use (default: meteorologist, logistics, medical). '
+        help='Specific agent IDs to use (default: 3 core agents). '
              'Use "all" to load all 13 expert agents, or specify agent IDs: '
-             'agent_meteorologist, medical_expert_01, logistics_expert_01, psap_commander_01, '
-             'police_onscene_01, police_regional_01, fire_onscene_01, fire_regional_01, '
-             'medical_infrastructure_01, coastguard_onscene_01, coastguard_national_01'
+             'meteorology_silver_advisory, logistics_silver_advisory, medical_silver_tactical, '
+             'civilprotection_gold_strategic, environment_silver_advisory, psap_silver_coordination, '
+             'police_silver_tactical, police_gold_strategic, fire_silver_tactical, fire_gold_strategic, '
+             'medical_gold_strategic, coastguard_silver_tactical, coastguard_gold_strategic'
     )
 
     parser.add_argument(

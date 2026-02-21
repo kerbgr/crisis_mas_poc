@@ -5,7 +5,7 @@ This module provides automatic expert agent selection based on scenario metadata
 eliminating the need for manual expert selection for each crisis scenario.
 
 The ExpertSelector analyzes scenario characteristics and automatically determines
-which of the 11 available expert agents should be engaged based on:
+which of the 13 available expert agents should be engaged based on:
 - Crisis type and subtypes
 - Severity and scope
 - Affected domains and infrastructure
@@ -35,8 +35,9 @@ class ExpertSelector:
         selector = ExpertSelector()
         scenario = load_scenario('scenarios/coastal_flood.json')
         agent_ids = selector.select_experts(scenario)
-        # Returns: ['agent_meteorologist', 'medical_expert_01', 'logistics_expert_01',
-        #           'coastguard_onscene_01', 'coastguard_national_01', ...]
+        # Returns: ['meteorology_silver_advisory', 'medical_silver_tactical',
+        #           'logistics_silver_advisory', 'coastguard_silver_tactical',
+        #           'coastguard_gold_strategic', ...]
     """
 
     # Minimum experts always included (core team) - Gold-Silver hierarchy
@@ -164,23 +165,34 @@ class ExpertSelector:
             'description': 'Multi-agency strategic civil protection coordination (GOLD-Strategic)'
         },
 
-        # Environment (advisory SILVER) - NEW
+        # Environment (advisory SILVER)
         'environment': {
             'agent_id': 'environment_silver_advisory',
-            'domains': ['environmental', 'ecological'],
-            'crisis_types': ['chemical_spill', 'pollution', 'ecological_disaster', 'oil_spill'],
-            'severity_threshold': 0.5,
+            'domains': [
+                'environmental', 'ecological', 'hazmat', 'air_quality', 'water_quality',
+                'weather_environment'  # wildfire/flood scenarios tag this domain
+            ],
+            'crisis_subtypes': [
+                'forest_fire', 'wildfire', 'air_quality', 'chemical', 'hazmat_spill',
+                'water_contamination', 'ecological_impact', 'pollution'
+            ],
+            'crisis_types': [
+                'chemical_spill', 'pollution', 'ecological_disaster', 'oil_spill',
+                'flood', 'wildfire', 'hazmat', 'earthquake', 'tsunami',
+                'storm', 'hurricane', 'industrial_accident'
+            ],
+            'severity_threshold': 0.4,
             'description': 'Environmental impact assessment and ecological protection (SILVER-Advisory)'
         }
     }
 
-    def __init__(self, min_experts: int = 3, max_experts: int = 11, verbose: bool = False):
+    def __init__(self, min_experts: int = 3, max_experts: int = 13, verbose: bool = False):
         """
         Initialize ExpertSelector.
 
         Args:
             min_experts: Minimum number of experts to select (default: 3 core)
-            max_experts: Maximum number of experts to select (default: 11 all)
+            max_experts: Maximum number of experts to select (default: 13 all)
             verbose: Enable verbose logging of selection process
         """
         self.min_experts = min_experts
@@ -207,8 +219,8 @@ class ExpertSelector:
             ...     }
             ... }
             >>> selector.select_experts(scenario)
-            ['agent_meteorologist', 'logistics_expert_01', 'medical_expert_01',
-             'coastguard_onscene_01', 'police_onscene_01']
+            ['meteorology_silver_advisory', 'logistics_silver_advisory',
+             'medical_silver_tactical', 'coastguard_silver_tactical', 'police_silver_tactical']
         """
         expert_meta = scenario.get('expert_selection', {})
 

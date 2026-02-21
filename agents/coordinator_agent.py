@@ -961,9 +961,12 @@ class CoordinatorAgent:
         self,
         scenario_type: Optional[str] = None
     ) -> None:
-        """Update agent_weights based on reliability scores from historical performance."""
+        """Update agent_weights based on reliability scores from historical performance.
+
+        Agents with no assessment history return the default 0.8 reliability score,
+        so they remain neutral (equal weight) until real data is collected.
+        """
         raw_weights = {}
-        has_data = False
 
         for agent in self.expert_agents:
             score = agent.get_reliability_score(
@@ -971,11 +974,6 @@ class CoordinatorAgent:
                 mode='overall'
             )
             raw_weights[agent.agent_id] = score
-            if agent.reliability_tracker.metrics.total_assessments > 0:
-                has_data = True
-
-        if not has_data:
-            return
 
         total = sum(raw_weights.values())
         if total > 0:
