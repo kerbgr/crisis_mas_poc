@@ -38,7 +38,7 @@ The web interface will be available at `http://localhost:5000`
 
 **Expert Agents Include:**
 - Meteorologist, Medical Expert, Logistics Coordinator
-- Public Safety Officer, Environmental Scientist
+- Civil Protection Director, Environmental Scientist
 - PSAP Commander, Police (On-Scene & Regional)
 - Fire-Brigade (On-Scene & Regional)
 - Medical Infrastructure Director

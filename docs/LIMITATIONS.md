@@ -61,12 +61,12 @@
 
 **Costs:**
 - ~$0.004-0.005 per agent assessment
-- ~$0.015-0.020 per complete decision (4 agents)
+- ~$0.052-0.065 per complete decision (13 agents, full team)
 - Scales linearly with agent count
 
 **Latency:**
 - ~2-4 seconds per agent (API call + processing)
-- ~8-16 seconds total for 4-agent decision
+- ~8-16 seconds total for parallel 13-agent decision (LLM-bound)
 - Network dependency introduces variability
 
 **Impact:** Not suitable for:

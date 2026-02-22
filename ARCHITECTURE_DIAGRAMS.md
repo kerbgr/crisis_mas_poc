@@ -40,7 +40,7 @@ graph TB
             S2[Fire Regional]
             S3[Coast Guard National]
             S4[Civil Protection Director]
-            S5[Environmental Expert]
+            S5[Environmental Scientist]
             S6[Medical Infrastructure]
             S7[PSAP Commander]
         end
@@ -240,7 +240,7 @@ graph TB
 | Fire Regional | Strategic Commander | Regional fire operations |
 | Coast Guard National | National Director | Maritime policy, port security |
 | Civil Protection Director | National Coordinator | Inter-agency coordination |
-| Environmental Expert | Environmental Impact | Long-term environmental effects |
+| Environmental Scientist | Environmental Impact | Long-term environmental effects |
 | Medical Infrastructure | Hospital Capacity | Healthcare system coordination |
 | PSAP Commander | 112 Communications | Emergency dispatch coordination |
 
@@ -291,7 +291,7 @@ graph TB
   8. Reasoning Quality
   9. Historical Reliability
 - **MCDA Engine:** TOPSIS multi-criteria ranking
-- **Consensus Model:** Cosine similarity threshold (default: 0.7)
+- **Consensus Model:** Cosine similarity threshold (default: 0.75)
 
 ---
 
@@ -1100,7 +1100,7 @@ graph TB
             S2[Fire Regional]
             S3[Coast Guard National]
             S4[Civil Protection Director]
-            S5[Environmental Expert]
+            S5[Environmental Scientist]
             S6[Medical Infrastructure]
             S7[PSAP Commander]
         end
@@ -1370,7 +1370,7 @@ flowchart TB
         SE2[Fire Regional]
         SE3[Coast Guard National]
         SE4[Civil Protection Director]
-        SE5[Environmental Expert]
+        SE5[Environmental Scientist]
         SE6[Medical Infrastructure]
         SE7[PSAP Commander]
     end

@@ -11,7 +11,7 @@ python main.py
 This will:
 1. Load 3 default expert agents (Meteorologist, Logistics, Medical) for backward compatibility
 2. Initialize decision framework (ER + MCDA + Consensus)
-3. Process the flood scenario with 3 alternative actions
+3. Process the flood scenario with 5 alternative actions
 4. Generate decision with explanations
 5. Save results to `results/results.json`
 6. Generate visualizations (if enabled)
@@ -48,7 +48,7 @@ Options:
   --compare-methods            Run comparative analysis of ER vs GAT methods side-by-side
                                Generates comparison visualizations and detailed metrics
   --seed N                     Random seed for reproducibility (integer)
-  --consensus-threshold N      Consensus threshold 0-1 (default: 0.7)
+  --consensus-threshold N      Consensus threshold 0-1 (default: 0.75)
   --verbose                    Enable verbose logging
   --help                       Show help message
 ```
@@ -127,10 +127,10 @@ Useful for:
 - Baseline comparison
 - Environments without internet access
 
-### Example 4: Custom Scenario
+### Example 4: Custom Output Path
 
 ```bash
-python main.py --scenario scenarios/earthquake_scenario.json --output results/earthquake_results.json
+python main.py --scenario scenarios/ammonia_leak_elefsina.json --output results/hazmat_results.json
 ```
 
 ### Example 5: Adjust Consensus Requirements
@@ -185,7 +185,7 @@ python main.py --scenario flood_scenario --expert-selection auto --verbose
 ```bash
 python main.py \
   --llm-provider openai \
-  --aggregation GAT \
+  --aggregation-method gat \
   --expert-selection auto \
   --scenario scenarios/custom_scenario.json \
   --output results/custom_output.json \

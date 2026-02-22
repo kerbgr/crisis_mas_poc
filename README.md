@@ -279,12 +279,12 @@ The system consists of six core layers: User Interface, Coordination, Agent (13 
 
 The system was evaluated across **45 controlled runs** (5 replicates × 3 LLM providers × 3 crisis scenarios) using all 13 expert agents with `--compare-methods` mode, producing 135 result records. Key findings:
 
-- **ER and GAT are statistically equivalent** — DQS 0.475 ± 0.049 vs 0.482 ± 0.050 (p > 0.05); 82.2% recommendation agreement
+- **ER and GAT are statistically equivalent** — DQS 0.775 ± 0.032 vs 0.781 ± 0.029 (p > 0.05); 88.9% (40/45) recommendation agreement
 - **GPT-OSS 20B** (local, via LM Studio) achieves the highest mean DQS (0.504 ± 0.051) at zero API cost
 - **Claude Sonnet 4** is 5–9× faster than other providers (mean 11.6 s/run), decisive for real-time use
 - **GPT-4o** yields the most consistent consensus (0.917 ± 0.036, lowest variance)
-- **System consensus** averages 0.898 ± 0.057; run-level recommendation stability is 91.1%
-- **HAZMAT provider divergence**: GPT-4o reproducibly selects immediate evacuation while Claude and GPT-OSS 20B converge on integrated response — a genuine inter-model interpretive difference
+- **System consensus** averages 0.902 ± 0.066; run-level recommendation stability is 97.8% (44/45 runs)
+- **HAZMAT convergence**: all three providers converge on `action_integrated_response` across all 15 HAZMAT runs via both ER and GAT — the highest cross-provider agreement of any scenario
 
 See **[docs/RESULTS.md](docs/RESULTS.md)** for full tables, statistical tests, and per-scenario detail.
 

@@ -124,7 +124,7 @@ class CoordinatorAgent(Agent):
 - **Error Handling**: Timeouts, missing messages, network failures
 
 **Analysis:**
-For crisis scenarios requiring 4-10 expert agents on a single machine, synchronous method invocation provides **10-100x lower latency** and **significantly simpler debugging** compared to XMPP message passing.
+For crisis scenarios requiring 4-13 expert agents on a single machine, synchronous method invocation provides **10-100x lower latency** and **significantly simpler debugging** compared to XMPP message passing.
 
 ---
 
@@ -228,7 +228,7 @@ SPADE's rich lifecycle is valuable for **long-running, distributed systems** but
 | CPU overhead | Minimal | XMPP parsing, async loops |
 
 **Analysis:**
-Our research focuses on **4-10 expert agents** representing specialized domains (medical, logistics, safety, environmental). This scale is well-suited to centralized coordination. SPADE's distributed architecture would introduce **unnecessary latency and complexity** without providing scalability benefits for our use case.
+Our research focuses on **4-13 expert agents** representing specialized domains (medical, logistics, safety, environmental). This scale is well-suited to centralized coordination. SPADE's distributed architecture would introduce **unnecessary latency and complexity** without providing scalability benefits for our use case.
 
 ---
 
@@ -417,7 +417,7 @@ We evaluated SPADE vs. custom implementation against weighted research criteria:
 2. ❌ **FIPA Compliance**: No standard ACL messages
    - *Acceptable:* No interoperability requirement with other MAS
 3. ❌ **Scalability**: Limited to ~100 agents (single process)
-   - *Acceptable:* Research uses 4-10 expert agents
+   - *Acceptable:* Research uses 4-13 expert agents
 4. ❌ **Agent Discovery**: No DF/Yellow Pages
    - *Acceptable:* Agents are statically configured
 5. ❌ **Fault Tolerance**: No automatic agent restart
@@ -742,7 +742,7 @@ This approach **preserves research value** while enabling **future scalability**
 ```python
 # Complete decision-making in ~50 lines
 def make_final_decision(self, scenario, alternatives):
-    # Step 1: Collect assessments (4-10 agents)
+    # Step 1: Collect assessments (up to 13 agents)
     assessments = [agent.evaluate_scenario(scenario, alternatives)
                    for agent in self.expert_agents]
 

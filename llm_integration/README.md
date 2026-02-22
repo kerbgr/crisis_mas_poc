@@ -276,7 +276,7 @@ client = ClaudeClient()
 
 ### 2. OpenAI (GPT-4) - Alternative Cloud Provider
 
-**Model**: `gpt-4-turbo-preview` (default), `gpt-4`, `gpt-4o`, `gpt-3.5-turbo`
+**Model**: `gpt-4o` (default), `gpt-4`, `gpt-4-turbo-preview`, `gpt-3.5-turbo`
 
 **Strengths**:
 - ✅ Built-in JSON mode (guaranteed valid JSON)
@@ -429,7 +429,7 @@ client = ClaudeClient(model="claude-sonnet-4-20250514")  # Default
 # client = ClaudeClient(model="claude-opus-3-20240229")  # Higher quality, higher cost
 
 # OpenAI - choose model
-client = OpenAIClient(model="gpt-4-turbo-preview")  # Default
+client = OpenAIClient(model="gpt-4o")  # Default
 # client = OpenAIClient(model="gpt-3.5-turbo")  # Budget option
 # client = OpenAIClient(model="gpt-4o")  # Optimized variant
 
@@ -555,7 +555,7 @@ response = client.generate_assessment(prompt)
 
 The `PromptTemplates` class generates role-specific expert prompts for all 13 expert agent types.
 
-### Eleven Expert Roles (v0.8)
+### Thirteen Expert Roles (v0.8)
 
 The system now supports **13 expert agents** organized in a comprehensive emergency response command structure:
 
@@ -642,7 +642,7 @@ coastguard_national_prompt = templates.generate_coastguard_national_prompt(scena
 system_prompt = templates.get_system_prompt("meteorologist")
 system_prompt = templates.get_system_prompt("psap_commander")
 system_prompt = templates.get_system_prompt("police_onscene")
-# ... and so on for all 11 roles
+# ... and so on for all 13 roles
 ```
 
 ### Expected Response Format
@@ -874,7 +874,7 @@ class ExpertAgent(BaseAgent):
         expertise_lower = self.expertise.lower()
         role_lower = self.role.lower()
 
-        # Hierarchical role detection (11 roles supported)
+        # Hierarchical role detection (13 roles supported)
         if 'meteorolog' in expertise_lower or 'meteorolog' in role_lower:
             prompt = self.prompt_templates.generate_meteorologist_prompt(
                 scenario, alternatives, criteria
@@ -891,7 +891,7 @@ class ExpertAgent(BaseAgent):
             prompt = self.prompt_templates.generate_police_regional_prompt(
                 scenario, alternatives, criteria
             )
-        # ... and so on for all 11 roles (see agents/expert_agent.py)
+        # ... and so on for all 13 roles (see agents/expert_agent.py)
 
         return prompt
 
@@ -943,7 +943,7 @@ def get_assessment(expert_type):
         "medical": templates.generate_medical_prompt,
         "psap_commander": templates.generate_psap_commander_prompt,
         "police_onscene": templates.generate_police_onscene_prompt,
-        # ... all 11 roles
+        # ... all 13 roles
     }
 
     generator = prompt_generators.get(expert_type)
@@ -956,7 +956,7 @@ expert_types = ['meteorologist', 'operations', 'medical', 'psap_commander',
                 'police_onscene', 'police_regional', 'fire_onscene', 'fire_regional',
                 'medical_infrastructure', 'coastguard_onscene', 'coastguard_national']
 
-with ThreadPoolExecutor(max_workers=11) as executor:
+with ThreadPoolExecutor(max_workers=13) as executor:
     futures = [executor.submit(get_assessment, exp_type) for exp_type in expert_types]
     results = [f.result() for f in futures]
 

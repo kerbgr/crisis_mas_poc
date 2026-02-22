@@ -291,35 +291,33 @@ Defines decision criteria and their relative importance:
 ```json
 {
   "decision_criteria": {
-    "effectiveness": {
-      "name": "Effectiveness",
-      "weight": 0.30,
-      "type": "benefit",
-      "description": "How well the action addresses the crisis"
-    },
     "safety": {
       "name": "Safety",
-      "weight": 0.25,
+      "weight": 0.30,
       "type": "benefit",
-      "description": "Safety for responders and affected population"
-    },
-    "speed": {
-      "name": "Response Speed",
-      "weight": 0.20,
-      "type": "benefit",
-      "description": "How quickly the action can be executed"
+      "description": "Safety of the action for both responders and affected population",
+      "scale": "0.0 (unsafe) to 1.0 (very safe)"
     },
     "cost": {
       "name": "Cost",
-      "weight": 0.15,
+      "weight": 0.25,
       "type": "cost",
-      "description": "Financial and resource cost"
+      "description": "Economic cost of implementing the action",
+      "scale": "Lower is better (euros)"
     },
-    "public_acceptance": {
-      "name": "Public Acceptance",
-      "weight": 0.10,
+    "response_time": {
+      "name": "Response Time",
+      "weight": 0.25,
+      "type": "cost",
+      "description": "Time required to implement and see results",
+      "scale": "Lower is better (hours)"
+    },
+    "social_acceptance": {
+      "name": "Social Acceptance",
+      "weight": 0.20,
       "type": "benefit",
-      "description": "Level of public support"
+      "description": "Likelihood of public cooperation and acceptance",
+      "scale": "0.0 (strong resistance) to 1.0 (strong support)"
     }
   }
 }

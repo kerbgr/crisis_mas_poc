@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-During conflict resolution with 11 agents, the error `'str' object has no attribute 'get'` occurs when trying to access `agent_beliefs[agent_id].get(alt_id, 0.0)`.
+During conflict resolution with 13 agents, the error `'str' object has no attribute 'get'` occurs when trying to access `agent_beliefs[agent_id].get(alt_id, 0.0)`.
 
 This indicates that some agents' `belief_distribution` field contains a **string** (or other non-dict type) instead of the expected **dictionary**.
 
@@ -360,4 +360,4 @@ After implementing fixes:
 
 **Last Updated:** November 10, 2025
 **Status:** Investigation in progress
-**Priority:** HIGH - Blocks 11-agent consensus
+**Priority:** HIGH - Blocks 13-agent consensus

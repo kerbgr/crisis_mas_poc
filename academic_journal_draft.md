@@ -90,11 +90,11 @@ The 13 agents mirror the organisational structure of Greek emergency response. T
 
 ### B. Evidential Reasoning
 
-For computational tractability in time-critical settings, we adopt a weighted-average formulation of evidential reasoning rather than the full Dempster-Shafer combination rule. Given $n$ agents, the combined belief mass assigned to alternative $i$ is
+We implement Dempster-Shafer evidential reasoning using iterative pairwise combination. Agents are sorted by reliability (descending) and their mass functions are combined sequentially. For each pair of mass functions $m_1$ and $m_2$, the combined mass assigned to alternative $A$ is
 
-$$b_{\text{combined}}(i) = \frac{\sum_j w_j \cdot b_j(i)}{\sum_j w_j}$$
+$$m_{12}(A) = \frac{m_1(A) \cdot m_2(A)}{1 - K}, \quad K = \sum_{B \cap C = \emptyset} m_1(B) \cdot m_2(C)$$
 
-where $w_j$ is the weight of agent $j$, composed of three factors: domain-relevance to the current scenario, historical reliability (Section III-E), and self-reported confidence. Overall decision confidence is derived from the normalised entropy of the combined distribution:
+where $K$ is the conflict mass representing the total probability assigned to contradictory focal elements. When $K > 0.7$, the combination falls back to proportional redistribution to avoid the counter-intuitive outputs that can arise from high-conflict Dempster combination. Agent weights $w_j$ — composed of domain-relevance to the current scenario, historical reliability (Section III-E), and self-reported confidence — are used to determine the combination order and to normalise the final result. Overall decision confidence is derived from the normalised entropy of the combined distribution:
 
 $$\text{confidence} = 1 - \frac{H}{\log_2(n_{\text{alternatives}})}, \quad H = -\sum_i p_i \log_2(p_i)$$
 
@@ -104,13 +104,13 @@ A low-entropy distribution — one that concentrates most belief mass on a singl
 
 As an alternative to the linear ER aggregation, we construct a fully connected graph in which each agent is a node. Every node is described by a 9-dimensional feature vector $\mathbf{f}_j \in \mathbb{R}^9$ whose components capture confidence, belief certainty (inverse entropy), expertise relevance, risk tolerance, severity awareness, top-choice strength, number of concerns raised, reasoning quality, and historical reliability. The last dimension links the GAT directly to the reliability tracker described in Section III-E, allowing the network to learn from accumulated performance data.
 
-Attention coefficients are computed with $K = 4$ heads:
+Attention coefficients are computed with $K = 4$ heads. Rather than learning $\mathbf{W}^h$ and $\mathbf{a}^h$ from data — which would require a labelled decision history not available at system initialisation — the projection and scoring weights are hand-crafted based on domain knowledge: agent $j$'s attention score toward agent $i$ weights confidence at 40%, expertise relevance at 30%, and belief certainty at 30%, with a +20% similarity bonus when the two agents' feature vectors are close. Concretely, for head $h$:
 
-$$e_{ij}^h = \text{LeakyReLU}(\mathbf{a}^h \cdot [\mathbf{W}^h \mathbf{f}_i \| \mathbf{W}^h \mathbf{f}_j])$$
+$$e_{ij}^h = \text{LeakyReLU}\!\left(\mathbf{a}^h \cdot [\mathbf{W}^h \mathbf{f}_i \,\|\, \mathbf{W}^h \mathbf{f}_j]\right)$$
 
 $$\alpha_{ij}^h = \text{softmax}_j(e_{ij}^h)$$
 
-The aggregated belief for alternative $i$ is then the mean over heads of the attention-weighted agent beliefs:
+where $\mathbf{W}^h$ and $\mathbf{a}^h$ are fixed (not trained) parameter matrices encoding the domain-knowledge weighting described above. The aggregated belief for alternative $i$ is then the mean over heads of the attention-weighted agent beliefs:
 
 $$b_{\text{combined}}(i) = \frac{1}{K} \sum_{h=1}^{K} \sum_j \alpha_{ij}^h \cdot b_j(i)$$
 
@@ -223,7 +223,7 @@ flowchart LR
 
 ### A. Crisis Scenarios
 
-The system is evaluated on three scenarios modelled influenced by real emergencies (Table I). The Karditsa flood scenario is influenced by the Thessaly inundations during Storm Daniel (September 2023); the Evia wildfire scenario is based on the North Evia fires of August 2021; and the Elefsina HAZMAT scenario is based on the industrial risk profile of the Thriasio Plain petrochemical zone. Each scenario defines five candidate response alternatives together with domain-specific evaluation criteria and their relative weights.
+The system is evaluated on three scenarios modelled influenced by real emergencies (Table I). The Karditsa flood scenario is influenced by the Thessaly inundations during Storm Daniel (September 2023); the Evia wildfire scenario is based on the North Evia fires of August 2021; and the Elefsina HAZMAT scenario is based on the industrial risk profile of the Thriasio Plain petrochemical zone. Each scenario defines a set of candidate response alternatives; each alternative is scored against five evaluation criteria (safety, cost, response time, and social acceptance) weighted uniformly across all scenarios (0.30, 0.25, 0.25, 0.20 respectively).
 
 **TABLE I: Crisis Scenario Parameters**
 
@@ -233,7 +233,7 @@ The system is evaluated on three scenarios modelled influenced by real emergenci
 | Affected Pop. | 15,000 | 8,000 | 12,000 |
 | Time Constraint | 2 hours | Immediate | 30 minutes |
 | Alternatives | 5 | 12 | 5 |
-| Top Criterion | Safety (0.35) | Life Safety (0.40) | Health Safety (0.45) |
+| Top Criterion | Safety | Life Safety | Health Safety |
 
 ### B. Evaluation Metrics
 
@@ -263,7 +263,7 @@ Table II summarises the 13-agent results across 45 runs broken down by scenario.
 
 †Averaged across all three providers and both aggregation methods; individual ranges from 8.7 s (Claude, Flood) to 154.6 s (GPT-OSS 20B, Forest Fire).
 
-The Evia Wildfire scenario yields the lowest DQS (0.418) and consensus (0.830), reflecting the greater ambiguity inherent in a multi-front wildfire where trade-offs between immediate evacuation and aerial fire-fighting assets are genuinely contested. The Flood and HAZMAT scenarios produce higher DQS values (0.504 and 0.515) with correspondingly stronger consensus (0.941 and 0.922), indicating that the agent panel reaches clearer collective judgements when the dominant response strategy is less contested.
+The Evia Wildfire scenario yields the lowest consensus (0.826 ± 0.064) and lowest confidence (0.832 ± 0.039), reflecting the greater ambiguity inherent in a multi-front wildfire where trade-offs between immediate evacuation and aerial fire-fighting assets are genuinely contested. The Karditsa Flood scenario produces the lowest DQS (0.743 ± 0.013), while Wildfire and HAZMAT achieve higher and similar DQS values (0.799 ± 0.027 and 0.792 ± 0.000). The Flood and HAZMAT scenarios show correspondingly stronger consensus (0.943 ± 0.015 and 0.939 ± 0.023), indicating that the agent panel reaches clearer collective judgements when the dominant response strategy is less contested. Notably, HAZMAT is the only scenario where DQS variance across all 15 runs is zero, a direct consequence of all three providers converging on the same alternative via both aggregation methods in every replicate.
 
 ### B. ER vs. GAT Comparison
 
@@ -300,21 +300,25 @@ The Flood scenario achieves perfect run-level consistency across all providers, 
 
 **TABLE V: LLM Provider Performance (n=15 per provider across 3 scenarios)**
 
-| Provider | Model | DQS (mean ± σ) | Consensus (mean ± σ) | Confidence (mean ± σ) | Avg time (s) |
+| Provider | Model | Combined Score†  (mean ± σ) | Consensus (mean ± σ) | Confidence (mean ± σ) | Avg time (s) |
 |----------|-------|---------------|---------------------|----------------------|-------------|
 | Anthropic | Claude Sonnet 4 | 0.468 ± 0.060 | 0.882 ± 0.059 | 0.866 ± 0.034 | 11.6 ± 3.7 |
 | OpenAI API | GPT-4o | 0.464 ± 0.032 | 0.917 ± 0.036 | 0.886 ± 0.022 | 62.4 ± 29.3 |
 | Local (LM Studio) | GPT-OSS 20B | 0.504 ± 0.051 | 0.895 ± 0.086 | 0.865 ± 0.050 | 100.7 ± 41.2 |
 
-Kruskal-Wallis across providers: DQS H = 7.39 (p < 0.05); Time H = 28.45 (p < 0.001); Consensus H = 2.69 (n.s.); Confidence H = 1.51 (n.s.)
+†Combined Score = 0.6 × aggregated ER/GAT belief mass for the recommended alternative + 0.4 × TOPSIS closeness coefficient. This is the coordinator's internal ranking score and differs from the TOPSIS-only DQS reported in Tables II–III (which averages 0.775, 0.784, and 0.784 for Claude, GPT-4o, and GPT-OSS 20B respectively — no significant provider difference on that metric).
 
-The three providers show statistically significant differences in DQS (H = 7.39, p < 0.05) despite small absolute magnitudes. GPT-OSS 20B achieves the highest mean DQS (0.504), marginally ahead of Claude (0.468) and GPT-4o (0.464), though the practical difference is small (Δ ≈ 0.04). GPT-4o achieves the highest consensus (0.917) and confidence (0.886) with the lowest variance on both metrics, indicating the most predictable output — a relevant property for a production decision-support system. Claude is dramatically faster (11.6 s vs 62.4 s for GPT-4o and 100.7 s for GPT-OSS 20B), with processing time differences being highly significant (H = 28.45, p < 0.001). Consensus and confidence do not differ significantly across providers when averaged across all scenarios, suggesting that all three models are capable of driving the agent panel to comparable levels of agreement.
+Kruskal-Wallis across providers: Combined Score H = 7.39 (p < 0.05); Time H = 28.45 (p < 0.001); Consensus H = 2.69 (n.s.); Confidence H = 1.51 (n.s.)
+
+The three providers show statistically significant differences in Combined Score (H = 7.39, p < 0.05) despite small absolute magnitudes. GPT-OSS 20B achieves the highest mean Combined Score (0.504), marginally ahead of Claude (0.468) and GPT-4o (0.464), though the practical difference is small (Δ ≈ 0.04). GPT-4o achieves the highest consensus (0.917) and confidence (0.886) with the lowest variance on both metrics, indicating the most predictable output — a relevant property for a production decision-support system. Claude is dramatically faster (11.6 s vs 62.4 s for GPT-4o and 100.7 s for GPT-OSS 20B), with processing time differences being highly significant (H = 28.45, p < 0.001). Consensus and confidence do not differ significantly across providers when averaged across all scenarios, suggesting that all three models are capable of driving the agent panel to comparable levels of agreement.
 
 The most notable finding is strong cross-provider convergence on the HAZMAT scenario: all 15 runs across all three providers converge on `action_integrated_response`, indicating that all three model families similarly weigh the ammonia exposure risk against the logistical complexity of mass evacuation. The locally hosted GPT-OSS 20B incurs no API cost and keeps all inference on-premise — a relevant consideration for agencies with data-sovereignty requirements — though at a 9× time penalty compared to Claude.
 
 ### E. Historical Reliability Impact
 
-Over a sequence of 100 scenarios, dynamic reliability-adjusted weighting yields a 2.5 percentage-point improvement in DQS relative to static weights (p < 0.01). The learning curve shows rapid gains during the first 30–40 scenarios and plateaus around scenario 60, after which agent reliability estimates stabilise. By the end of the sequence, reliability scores span the range 0.68 (Civil Protection Director) to 0.91 (Emergency Physician), indicating that the tracker is able to meaningfully discriminate between agents of varying calibration quality.
+Across the 45 experimental runs (585 agent assessment records), the tracker produces differentiated per-agent reliability scores that span the range 0.41 (Logistics Coordinator) to 0.61 (Civil Protection Director), confirming that the mechanism can discriminate between agents of varying calibration quality within the evaluation corpus. All 13 agents achieve high consistency scores (0.92–0.999), indicating that the LLM-driven agents produce reproducible belief distributions across runs; the reliability dispersion arises from differential alignment with the consensus outcome rather than from erratic individual behaviour.
+
+The tracker's most observable effect is on the GAT aggregation path. Because GAT injects per-agent reliability as the ninth feature dimension, it structurally down-weights agents whose scores are lowest on a given scenario type. In the Forest Fire scenario, agents outside the fire domain (Logistics, Medical, Coast Guard) show markedly lower wildfire reliability (0.20–0.34) than the fire specialists (0.34–0.52), and GAT's attention correspondingly amplifies the fire-domain signals — producing the +1.3 pp DQS advantage over ER and converging on `action_combined_assault` in all three Forest Fire disagreements. A controlled comparison between static and dynamic weighting across a longer decision sequence remains as future work.
 
 ### F. Explainability Evaluation
 

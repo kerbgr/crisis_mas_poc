@@ -209,13 +209,15 @@ The `criteria_weights.json` file defines the decision criteria and their relativ
 
 ### Default Criteria
 
-The system uses these five standard criteria:
+The existing scenario files (`flood_scenario.json`, `ammonia_leak_elefsina.json`, `forest_fire_scenario.json`) use these five legacy criteria in their `criteria_scores` fields:
 
 1. **Effectiveness** (30%): How well does the action solve the problem?
 2. **Safety** (25%): How safe is the action for responders and public?
 3. **Speed** (20%): How quickly can the action be executed?
 4. **Cost** (15%): How cost-effective is the action?
 5. **Public Acceptance** (10%): How well will the public accept this action?
+
+**Note:** The system's decision-framework criteria weights (`scenarios/criteria_weights.json`) use a different set: `safety` (30%), `cost` (25%), `response_time` (25%), `social_acceptance` (20%). New scenarios should align their `criteria_scores` keys with the criteria defined in `criteria_weights.json`.
 
 ---
 

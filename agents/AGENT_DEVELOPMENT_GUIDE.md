@@ -289,7 +289,7 @@ Output: Beliefs: {Immediate: 0.7, Shelter: 0.2, Hybrid: 0.1}, Confidence: 0.85
 Agent Type: Economic/Financial Expert
 Domain: Cost-benefit analysis, budget constraints, economic impact
 Unique Value: Assesses financial feasibility and economic consequences
-Gap Filled: Currently missing economic/financial perspective in 11-agent structure
+Gap Filled: Currently missing economic/financial perspective in 13-agent structure
 ```
 
 ### Step 2: Configure Agent Profile
@@ -627,7 +627,7 @@ agent = MyCustomAgent(agent_id="agent_custom", llm_client=llm_client)
 ```python
 from llm_integration import OpenAIClient
 
-llm_client = OpenAIClient(api_key="your-key", model="gpt-4-turbo-preview")
+llm_client = OpenAIClient(api_key="your-key", model="gpt-4o")
 agent = MyCustomAgent(agent_id="agent_custom", llm_client=llm_client)
 ```
 

@@ -82,7 +82,7 @@ config = Config('config.json')
 
 # Access nested values with dot notation
 max_agents = config.get('agents.max_agents', default=10)
-llm_model = config.get('llm.model', default='claude-3-5-sonnet-20241022')
+llm_model = config.get('llm.model', default='claude-sonnet-4-20250514')
 ```
 
 ### Basic Validation
@@ -155,7 +155,7 @@ value = safe_get(data, 'key', default=None, expected_type=int)
     "mcda_method": "weighted_sum"
   },
   "llm": {             # LLM integration
-    "model": "claude-3-5-sonnet-20241022",
+    "model": "claude-sonnet-4-20250514",
     "max_tokens": 1024,
     "temperature": 0.7,
     "enable_llm": true,
@@ -494,7 +494,7 @@ consensus = config.config.get('decision_framework', {}).get('consensus_threshold
 Key path: 'llm.model'
 Split on '.': ['llm', 'model']
 Traverse: config['llm']['model']
-Return: 'claude-3-5-sonnet-20241022'
+Return: 'claude-sonnet-4-20250514'
 ```
 
 ### Environment-Specific Configs

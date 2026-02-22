@@ -225,7 +225,7 @@ $$C_i = \frac{d_i^-}{d_i^+ + d_i^-}$$
 
 ### Implementation
 
-**File:** `decision_making/mcda.py`, lines 126-166
+**File:** `decision_framework/mcda_engine.py`, lines 126-166
 
 **Distance calculation:**
 ```python
@@ -266,7 +266,7 @@ $$K = 1 - \sum_{B \cap C = \emptyset} m_1(B) \cdot m_2(C)$$
 
 ### Implementation
 
-**File:** `belief_aggregation/evidential_reasoning.py`, lines 120-180
+**File:** `decision_framework/evidential_reasoning.py`, lines 120-180
 
 **Combination:**
 ```python
@@ -413,8 +413,8 @@ This test demonstrates that:
 - `evaluation/metrics.py` - Core metric calculations
 - `evaluation/EVALUATION_METHODOLOGY.md` - Complete formula documentation
 - `README.md` - Overview and key formulas
-- `decision_making/mcda.py` - TOPSIS implementation
-- `belief_aggregation/evidential_reasoning.py` - ER implementation
+- `decision_framework/mcda_engine.py` - TOPSIS implementation
+- `decision_framework/evidential_reasoning.py` - ER implementation
 - `agents/coordinator_agent.py` - Multi-agent decision logic
 
 ---

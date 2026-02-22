@@ -93,7 +93,7 @@ The full technical specification includes:
 **Completed (v0.8):** Expanded from 4 to 13 expert types
 - Added emergency response command structure (8 new roles)
 - Implemented tactical/strategic hierarchy
-- Created 11 domain-specific prompt templates (~5,000 chars each)
+- Created 13 domain-specific prompt templates (~5,000 chars each)
 - Validated agent profiles with realistic experience levels
 
 **Proposed Next Phase - Expand to 15-20 experts:**
