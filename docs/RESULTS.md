@@ -152,31 +152,31 @@ ER elevates evacuation collectively. GAT suppresses those signals and concentrat
 
 ## 3. Agent Reliability
 
-Reliability is tracked per agent using **consensus-based ground truth**: an assessment is scored correct when the agent's top-ranked alternative matches the final `recommended_alternative`. 45 runs x 13 agents = 585 assessment records.
+Reliability is tracked per agent using **consensus-based ground truth**: an assessment is scored correct when the agent's top-ranked alternative matches the final `recommended_alternative`. 45 runs × 13 agents = up to 90 assessment records per agent (fewer for agents excluded from certain scenarios).
 
 ### 3.1 Overall Reliability Ranking
 
 | Agent | Overall | Recent | Consistency | Accuracy rate | Assessments |
 |-------|---------|--------|-------------|---------------|-------------|
-| civilprotection_gold_strategic | **0.608** | 0.615 | **0.972** | 0.466 | 58 |
-| police_gold_strategic | 0.543 | 0.189 | 0.949 | 0.398 | 88 |
-| coastguard_gold_strategic | 0.494 | 0.480 | 0.933 | 0.307 | 88 |
-| medical_silver_tactical | 0.493 | 0.084 | **0.999** | 0.466 | 88 |
-| fire_silver_tactical | 0.493 | 0.506 | 0.933 | 0.318 | 88 |
-| psap_silver_coordination | 0.492 | 0.312 | 0.923 | 0.330 | 88 |
-| police_silver_tactical | 0.476 | 0.261 | 0.931 | 0.368 | 87 |
-| medical_gold_strategic | 0.469 | 0.378 | 0.918 | 0.341 | 88 |
-| fire_gold_strategic | 0.459 | 0.366 | 0.926 | 0.217 | 60 |
-| environment_silver_advisory | 0.446 | 0.423 | 0.926 | 0.398 | 88 |
-| meteorology_silver_advisory | 0.438 | 0.261 | 0.931 | 0.352 | 88 |
-| coastguard_silver_tactical | 0.432 | 0.254 | 0.951 | 0.362 | 58 |
-| logistics_silver_advisory | **0.402** | 0.059 | **0.999** | 0.205 | 88 |
+| civilprotection_gold_strategic | **0.613** | 0.629 | **0.969** | 0.467 | 60 |
+| police_gold_strategic | 0.540 | 0.254 | 0.932 | 0.389 | 90 |
+| medical_silver_tactical | 0.499 | 0.217 | 0.932 | 0.478 | 90 |
+| coastguard_gold_strategic | 0.493 | 0.498 | 0.934 | 0.311 | 90 |
+| psap_silver_coordination | 0.490 | 0.320 | 0.922 | 0.322 | 90 |
+| fire_silver_tactical | 0.484 | 0.509 | 0.935 | 0.311 | 90 |
+| medical_gold_strategic | 0.468 | 0.444 | 0.922 | 0.333 | 90 |
+| police_silver_tactical | 0.467 | 0.202 | 0.947 | 0.360 | 89 |
+| fire_gold_strategic | 0.448 | 0.375 | 0.931 | 0.210 | 62 |
+| environment_silver_advisory | 0.445 | 0.427 | 0.926 | 0.389 | 90 |
+| meteorology_silver_advisory | 0.437 | 0.328 | 0.923 | 0.344 | 90 |
+| coastguard_silver_tactical | 0.431 | 0.310 | 0.937 | 0.350 | 60 |
+| logistics_silver_advisory | **0.408** | 0.184 | 0.939 | 0.200 | 90 |
 
 **Key observations:**
 
-- **Consistency is uniformly high (0.92-0.999)** across all agents. Each agent produces internally coherent belief distributions across runs — the multi-agent framework generates stable, reproducible outputs.
-- **`civilprotection_gold_strategic`** is the clear outlier at 0.608 overall reliability — highest alignment with consensus outcomes.
-- **Recent reliability diverges sharply from overall** for several agents (e.g. `medical_silver_tactical` drops from 0.493 to 0.084; `logistics_silver_advisory` from 0.402 to 0.059). The most recent batch was Wildfire, which has 12 alternatives and genuine ambiguity — reducing consensus alignment for agents outside their core fire domain.
+- **Consistency is uniformly high (0.922–0.969)** across all agents. Each agent produces internally coherent belief distributions across runs — the multi-agent framework generates stable, reproducible outputs.
+- **`civilprotection_gold_strategic`** is the clear outlier at 0.613 overall reliability — highest alignment with consensus outcomes. GOLD-tier agents average 0.512 vs. 0.458 for SILVER (+5.4 pp).
+- **Recent reliability is lower than overall for most agents**, reflecting that the final batches of assessments included Wildfire runs (12 alternatives, genuine ambiguity), which reduces consensus alignment for agents outside their core fire domain. The drop is most pronounced for `logistics_silver_advisory` (overall 0.408 → recent 0.184).
 - **GAT's advantage in Forest Fire** is directly explained by these reliability scores: it down-weights logistics and medical agents (poor wildfire reliability) and up-weights fire specialists and civil protection (stronger wildfire reliability).
 
 ---
@@ -186,12 +186,12 @@ Reliability is tracked per agent using **consensus-based ground truth**: an asse
 ```mermaid
 xychart-beta
     title "Agent Overall Reliability Score (consensus-based)"
-    x-axis ["CivPro-G", "Pol-G", "CG-G", "Med-S", "Fire-S", "PSAP-S", "Pol-S", "Med-G", "Fire-G", "Env-S", "Met-S", "CG-S", "Log-S"]
+    x-axis ["CivPro-G", "Pol-G", "Med-S", "CG-G", "PSAP-S", "Fire-S", "Med-G", "Pol-S", "Fire-G", "Env-S", "Met-S", "CG-S", "Log-S"]
     y-axis "Reliability" 0.35 --> 0.65
-    bar [0.608, 0.543, 0.494, 0.493, 0.493, 0.492, 0.476, 0.469, 0.459, 0.446, 0.438, 0.432, 0.402]
+    bar [0.613, 0.540, 0.499, 0.493, 0.490, 0.484, 0.468, 0.467, 0.448, 0.445, 0.437, 0.431, 0.408]
 ```
 
-*Agent abbreviations: CivPro-G = civilprotection_gold_strategic, Pol-G = police_gold_strategic, CG-G = coastguard_gold_strategic, Med-S = medical_silver_tactical, Fire-S = fire_silver_tactical, PSAP-S = psap_silver_coordination, Pol-S = police_silver_tactical, Med-G = medical_gold_strategic, Fire-G = fire_gold_strategic, Env-S = environment_silver_advisory, Met-S = meteorology_silver_advisory, CG-S = coastguard_silver_tactical, Log-S = logistics_silver_advisory.*
+*Agent abbreviations: CivPro-G = civilprotection_gold_strategic, Pol-G = police_gold_strategic, Med-S = medical_silver_tactical, CG-G = coastguard_gold_strategic, PSAP-S = psap_silver_coordination, Fire-S = fire_silver_tactical, Med-G = medical_gold_strategic, Pol-S = police_silver_tactical, Fire-G = fire_gold_strategic, Env-S = environment_silver_advisory, Met-S = meteorology_silver_advisory, CG-S = coastguard_silver_tactical, Log-S = logistics_silver_advisory.*
 
 ---
 
@@ -199,19 +199,21 @@ xychart-beta
 
 | Agent | Flood | Wildfire | HAZMAT |
 |-------|-------|---------|--------|
-| civilprotection_gold_strategic | -- | 0.512 | **0.709** |
-| police_gold_strategic | 0.659 | 0.341 | 0.634 |
-| coastguard_gold_strategic | 0.617 | 0.197 | 0.680 |
-| medical_silver_tactical | 0.575 | 0.244 | 0.672 |
-| fire_silver_tactical | 0.336 | 0.518 | 0.634 |
-| psap_silver_coordination | 0.595 | 0.309 | 0.582 |
-| police_silver_tactical | 0.492 | 0.380 | 0.564 |
-| medical_gold_strategic | 0.493 | 0.306 | 0.619 |
-| fire_gold_strategic | 0.617 | 0.302 | -- |
-| environment_silver_advisory | **0.631** | 0.217 | 0.492 |
-| meteorology_silver_advisory | 0.508 | 0.304 | 0.507 |
-| coastguard_silver_tactical | 0.321 | -- | 0.553 |
-| logistics_silver_advisory | 0.556 | 0.218 | 0.435 |
+| civilprotection_gold_strategic | -- | 0.512 | **0.712** |
+| police_gold_strategic | 0.659 | 0.341 | 0.619 |
+| medical_silver_tactical | 0.575 | 0.244 | **0.678** |
+| coastguard_gold_strategic | 0.617 | 0.197 | 0.664 |
+| psap_silver_coordination | 0.595 | 0.309 | 0.570 |
+| fire_silver_tactical | 0.336 | 0.518 | 0.599 |
+| medical_gold_strategic | 0.493 | 0.306 | 0.606 |
+| police_silver_tactical | 0.492 | 0.380 | 0.532 |
+| fire_gold_strategic | 0.617 | 0.302 | 0.122¹ |
+| environment_silver_advisory | **0.631** | 0.217 | 0.486 |
+| meteorology_silver_advisory | 0.508 | 0.304 | 0.501 |
+| coastguard_silver_tactical | 0.321 | -- | 0.544 |
+| logistics_silver_advisory | 0.556 | 0.218 | 0.452 |
+
+*¹ `fire_gold_strategic` participated in only 1/15 HAZMAT runs — the value 0.122 is not statistically representative.*
 
 **Structural pattern:** Every agent scores highest on Flood or HAZMAT and lowest on Wildfire — consistent across all 13 agents. The specialisation gradient is visible: `fire_silver_tactical` (0.518) and `civilprotection_gold_strategic` (0.512) are the most reliable wildfire agents; coastguard and medical agents drop below 0.25 on wildfire, reflecting the mismatch between their domain expertise and fire suppression decisions.
 
