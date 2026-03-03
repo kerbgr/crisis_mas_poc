@@ -173,6 +173,7 @@
 - No comparison with actual crisis management outcomes
 
 **Current Validation:** Limited to:
-- Face validity (expert review)
+
+- Face validity: single-expert self-evaluation by the lead researcher (see Section V.F of the academic draft). The evaluator is also the system designer, introducing a confirmation bias risk. An independent, multi-rater practitioner study is required before findings can be considered externally valid.
 - Internal consistency checks
 - Comparative benchmarks (single vs. multi-agent)

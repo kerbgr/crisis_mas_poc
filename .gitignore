@@ -41,3 +41,8 @@ logs/
 .env
 test_*.json/
 test_enriched_data.json
+
+# Thesis / sensitive documents — keep locally, never push to remote
+*.docx
+*.doc
+*.pdf

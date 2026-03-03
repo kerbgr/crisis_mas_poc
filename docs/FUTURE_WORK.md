@@ -144,17 +144,28 @@ The full technical specification includes:
 - Frontend: React + D3.js
 - Real-time: WebSockets
 
-### 4. Improved GAT Training
+### 4. Warm-Started Online Learning for the Graph Attention Aggregator (Option C)
 
-**Goal:** Learn attention weights from historical crisis data
+**Goal:** Transition the current untrained, rule-based GAT variant into a genuinely adaptive aggregator without discarding the domain knowledge already encoded in its fixed coefficients.
+
+**Motivation:** The current implementation uses hand-crafted attention weights (40% confidence, 30% expertise relevance, 30% belief certainty) that are interpretable and operational from the first run, but do not improve with experience. A naive training approach on the 585-record self-generated corpus would introduce circular labels (consensus = system's own output) and likely reproduce the fixed weights with little gain. Option C avoids both problems.
 
 **Approach:**
-- Collect historical crisis decisions (if available)
-- Label outcomes (success/failure)
-- Train GAT via supervised learning or reinforcement learning
-- Compare learned vs. rule-based attention
+1. **Initialise** the attention parameter vector from the existing domain-knowledge coefficients (40/30/30 split + similarity bonus) — cold-start is solved immediately.
+2. **Online update** after each decision cycle: use the reliability tracker's consensus-outcome signal as a weak supervision label and apply a small gradient step (e.g., projected gradient descent or a Bayesian update) to the attention coefficients.
+3. **Audit trail** — log the coefficient vector after every update so that any drift is fully traceable and reversible.
+4. **Convergence check** — monitor DQS and recommendation stability across a rolling window; freeze updates if performance degrades (conservative online learning).
 
-**Challenges:** Data availability, outcome definition, ethical concerns
+**Why this solves the cold-start and circularity problems:**
+- The domain-informed initialisation means the system performs correctly before any data is collected.
+- Each incremental update uses only the *marginal* signal from the new decision, not the full self-generated corpus, limiting circularity.
+- The reliability tracker already discriminates between well- and poorly-calibrated agents; its signal is a stronger supervision proxy than raw consensus alone.
+
+**Starting point:** The existing 585-record corpus (45 runs × 13 agents) is available for a retrospective convergence analysis to validate the update rule before live deployment.
+
+**Challenges:** Choosing an appropriate learning rate to prevent over-fitting to noisy consensus labels; ensuring updates do not erase domain-knowledge priors in low-data regimes.
+
+**Relationship to current system:** This is an incremental extension, not a replacement. The rule-based coefficients remain the default; online learning activates only after a configurable number of decisions (e.g., ≥ 10 cycles per scenario type).
 
 ## Medium-Term Research (6-12 months)
 

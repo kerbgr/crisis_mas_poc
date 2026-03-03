@@ -476,7 +476,7 @@ V. Kazoukas, "Crisis Management Multi-Agent System: Graph Attention Networks and
 ## Acknowledgments
 
 - **Thesis Advisors** at Military Academy (SSE) and Technical University of Crete (TUC) for guidance and feedback
-- **Crisis Management Experts** who provided domain knowledge for validation
+- **Domain Expert Evaluation** — explainability and auditability were assessed by the lead researcher (Vasileios Kazoukas) in his capacity as a practitioner with 20 years of operational experience in crisis management technology systems (national C4I infrastructure, Hellenic Civil Protection, EENA/ITU, NCCM unit 5/112, H2020/Horizon Europe safety research). Independent validation by a broader panel of emergency management professionals remains as planned future work.
 - **Open Source Community** for foundational libraries (NumPy, Matplotlib, pytest)
 
 ---
