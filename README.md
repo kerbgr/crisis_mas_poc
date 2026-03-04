@@ -89,7 +89,7 @@ This PoC investigates the following research questions:
 - *What mechanisms can effectively aggregate expert beliefs under high uncertainty, incomplete information, and conflicting opinions?*
 - Addressed through two approaches:
   - **Evidential Reasoning (ER)**: Dempster-Shafer theory-based belief aggregation
-  - **Graph Attention Networks (GAT)**: Neural attention mechanisms for dynamic expert weighting
+  - **Graph Attention Networks (GAT)**: Domain-parameterized, rule-based attention aggregator (untrained GAT variant with fixed attention coefficients) for interpretable expert weighting
 
 **RQ3: LLM Enhancement**
 - *Can Large Language Models enhance multi-agent decision-making by providing contextual reasoning, justification generation, and natural language understanding?*
@@ -105,7 +105,7 @@ This PoC investigates the following research questions:
 
 ### Key Contributions
 
-1. **Hybrid Aggregation Framework**: Novel comparison of classical ER vs. neural GAT for belief aggregation
+1. **Hybrid Aggregation Framework**: Novel comparison of classical ER vs. rule-based GAT (untrained, domain-parameterized) for belief aggregation
 2. **LLM-Enhanced Agents**: Integration of multiple LLM providers (Claude, OpenAI, LM Studio) for advanced reasoning
 3. **Historical Reliability Tracking**: Dynamic agent weighting based on proven past performance and consistency
 4. **Comprehensive Evaluation**: Multi-dimensional metrics framework for MAS performance
