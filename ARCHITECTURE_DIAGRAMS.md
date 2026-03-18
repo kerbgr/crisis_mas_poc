@@ -30,15 +30,20 @@ flowchart TD
     subgraph Agents["Agent Layer - 13 Expert Roles"]
         direction LR
         BA[BaseAgent]
-        subgraph Tactical["Tactical Level - 6 Agents"]
+        subgraph Silver["SILVER Level - 8 Agents"]
             direction LR
-            T1[Police On-Scene] --- T2[Fire On-Scene] --- T3[Coast Guard On-Scene]
-            T4[Medical Expert] --- T5[Meteorologist] --- T6[Logistics Coordinator]
+            subgraph SilverTactical["Tactical - 4"]
+                direction LR
+                T1[Police On-Scene] --- T2[Fire On-Scene] --- T3[Coast Guard On-Scene] --- T4[Medical Expert]
+            end
+            subgraph SilverAdvisory["Advisory - 4"]
+                direction LR
+                A1[Meteorologist] --- A2[Logistics Coordinator] --- A3[PSAP Commander] --- A4[Environmental Scientist]
+            end
         end
-        subgraph Strategic["Strategic Level - 7 Agents"]
+        subgraph Gold["GOLD Level - 5 Agents"]
             direction LR
-            S1[Police Regional] --- S2[Fire Regional] --- S3[Coast Guard National] --- S4[Civil Protection Director]
-            S5[Environmental Scientist] --- S6[Medical Infrastructure] --- S7[PSAP Commander]
+            G1[Police Regional] --- G2[Fire Regional] --- G3[Coast Guard National] --- G4[Civil Protection Director] --- G5[Medical Infrastructure]
         end
         RT[ReliabilityTracker]
         PROFILES[Agent Profiles JSON]
@@ -81,8 +86,10 @@ flowchart TD
     style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Tactical fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
-    style Strategic fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
+    style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    style SilverTactical fill:#b3e5fc,stroke:#0288d1,stroke-width:1px
+    style SilverAdvisory fill:#b3e5fc,stroke:#0288d1,stroke-width:1px
+    style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
     style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
     style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px
@@ -183,69 +190,83 @@ graph TB
 
 ### 1.4 Layer 3: Agent Layer - 13 Expert Roles
 
-**Purpose:** Domain experts organized in Tactical/Strategic hierarchy providing LLM-enhanced assessments.
+**Purpose:** Domain experts organised in SILVER (8) / GOLD (5) command hierarchy providing LLM-enhanced assessments.
 
 ```mermaid
 graph TB
     subgraph Agents["Agent Layer - 13 Expert Roles"]
         BA[BaseAgent<br/>Abstract Interface]
 
-        subgraph Tactical["Tactical Level - 6 On-Scene Agents"]
-            T1[Police<br/>On-Scene]
-            T2[Fire-Brigade<br/>On-Scene]
-            T3[Coast Guard<br/>On-Scene]
-            T4[Medical<br/>Expert]
-            T5[Meteorologist]
-            T6[Logistics<br/>Coordinator]
+        subgraph Silver["SILVER Level - 8 Agents"]
+            subgraph SilverTactical["Tactical - 4 On-Scene"]
+                T1[Police<br/>On-Scene]
+                T2[Fire-Brigade<br/>On-Scene]
+                T3[Coast Guard<br/>On-Scene]
+                T4[Medical<br/>Expert]
+            end
+            subgraph SilverAdvisory["Advisory - 4"]
+                A1[Meteorologist]
+                A2[Logistics<br/>Coordinator]
+                A3[PSAP<br/>Commander]
+                A4[Environmental<br/>Scientist]
+            end
         end
 
-        subgraph Strategic["Strategic Level - 7 Regional/National Agents"]
-            S1[Police<br/>Regional]
-            S2[Fire-Brigade<br/>Regional]
-            S3[Coast Guard<br/>National]
-            S4[Civil Protection<br/>Director]
-            S5[Environmental<br/>Expert]
-            S6[Medical<br/>Infrastructure]
-            S7[PSAP<br/>Commander]
+        subgraph Gold["GOLD Level - 5 Strategic Agents"]
+            G1[Police<br/>Regional]
+            G2[Fire-Brigade<br/>Regional]
+            G3[Coast Guard<br/>National]
+            G4[Civil Protection<br/>Director]
+            G5[Medical<br/>Infrastructure]
         end
 
         RT[ReliabilityTracker<br/>Performance History]
         PROFILES[agent_profiles.json<br/>13 Expert Profiles]
     end
 
-    T1 & T2 & T3 & T4 & T5 & T6 -.->|inherits| BA
-    S1 & S2 & S3 & S4 & S5 & S6 & S7 -.->|inherits| BA
+    T1 & T2 & T3 & T4 -.->|inherits| BA
+    A1 & A2 & A3 & A4 -.->|inherits| BA
+    G1 & G2 & G3 & G4 & G5 -.->|inherits| BA
     BA --> RT
     BA --> PROFILES
 
     style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Tactical fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
-    style Strategic fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
+    style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    style SilverTactical fill:#b3e5fc,stroke:#0288d1,stroke-width:1px
+    style SilverAdvisory fill:#b3e5fc,stroke:#0288d1,stroke-width:1px
+    style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
     style BA fill:#ce93d8,stroke:#7b1fa2
     style RT fill:#ce93d8,stroke:#7b1fa2
     style PROFILES fill:#ce93d8,stroke:#7b1fa2
 ```
 
-**Tactical Level (Field Operations):**
-| Agent | Role | Focus |
-|-------|------|-------|
-| Police On-Scene | Tactical Commander | Crowd control, security |
-| Fire On-Scene | Tactical Commander | Fire suppression, rescue |
-| Coast Guard On-Scene | Tactical Commander | Maritime rescue, SAR |
-| Medical Expert | Medical Assessment | Triage, health impacts |
-| Meteorologist | Environmental Analysis | Weather forecasting |
-| Logistics Coordinator | Supply Chain | Resource allocation |
+**SILVER Level - Tactical (On-Scene Field Operations):**
 
-**Strategic Level (Regional/National):**
-| Agent | Role | Focus |
-|-------|------|-------|
-| Police Regional | Strategic Commander | Multi-jurisdictional coordination |
-| Fire Regional | Strategic Commander | Regional fire operations |
-| Coast Guard National | National Director | Maritime policy, port security |
-| Civil Protection Director | National Coordinator | Inter-agency coordination |
-| Environmental Scientist | Environmental Impact | Long-term environmental effects |
-| Medical Infrastructure | Hospital Capacity | Healthcare system coordination |
-| PSAP Commander | 112 Communications | Emergency dispatch coordination |
+| Agent | ID | Focus |
+| --- | --- | --- |
+| Police On-Scene | police_silver_tactical | Crowd control, scene security |
+| Fire-Brigade On-Scene | fire_silver_tactical | Fire suppression, rescue |
+| Coast Guard On-Scene | coastguard_silver_tactical | Maritime search and rescue |
+| Medical Expert | medical_silver_tactical | Triage, pre-hospital medicine |
+
+**SILVER Level - Advisory:**
+
+| Agent | ID | Focus |
+| --- | --- | --- |
+| Meteorologist | meteorology_silver_advisory | Severe weather forecasting |
+| Logistics Coordinator | logistics_silver_advisory | Supply chain, resource allocation |
+| PSAP Commander | psap_silver_coordination | 112 emergency dispatch coordination |
+| Environmental Scientist | environment_silver_advisory | Ecological impact assessment |
+
+**GOLD Level - Strategic (Regional/National):**
+
+| Agent | ID | Focus |
+| --- | --- | --- |
+| Civil Protection Director | civilprotection_gold_strategic | National inter-agency coordination |
+| Police Regional | police_gold_strategic | Multi-jurisdictional law enforcement |
+| Fire-Brigade Regional | fire_gold_strategic | Regional fire operations |
+| Medical Infrastructure | medical_gold_strategic | Healthcare system capacity planning |
+| Coast Guard National | coastguard_gold_strategic | National maritime operations |
 
 ---
 
@@ -395,19 +416,19 @@ graph TB
 graph TB
     UI[User Interface Layer<br/>CLI, JSON I/O, Visualization]
     COORD[Coordination Layer<br/>Orchestration, Consensus]
-    AGENTS[Agent Layer<br/>13 Experts: 6 Tactical + 7 Strategic]
+    AGENTS[Agent Layer<br/>13 Experts: 8 SILVER + 5 GOLD]
     DF[Decision Framework<br/>ER, GAT, MCDA]
     LLM[LLM Integration<br/>Claude, OpenAI, LM Studio]
     EVAL[Evaluation Layer<br/>Metrics, Baseline, Visualization]
 
-    UI -->|1. Load Scenario| COORD
-    COORD -->|2. Distribute| AGENTS
-    AGENTS -->|3. LLM Reasoning| LLM
-    LLM -->|4. Structured Response| AGENTS
-    AGENTS -->|5. Assessments| DF
-    DF -->|6. Aggregated Decision| COORD
-    COORD -->|7. Final Decision| EVAL
-    EVAL -->|8. Results| UI
+    UI -->|Load Scenario| COORD
+    COORD -->|Distribute Tasks| AGENTS
+    AGENTS -->|LLM Reasoning| LLM
+    LLM -->|Structured Response| AGENTS
+    AGENTS -->|Expert Assessments| DF
+    DF -->|Aggregated Decision| COORD
+    COORD -->|Final Decision| EVAL
+    EVAL -->|Results| UI
 
     style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style COORD fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
