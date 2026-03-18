@@ -11,8 +11,9 @@ The system consists of six layers. Below is the complete architecture followed b
 ### 1.1 Complete Architecture Overview
 
 ```mermaid
-graph TB
+flowchart TD
     subgraph UI["User Interface Layer"]
+        direction LR
         CLI[Command Line Interface]
         JSON_IN[JSON Input Files]
         JSON_OUT[JSON Output Results]
@@ -20,42 +21,31 @@ graph TB
     end
 
     subgraph Coord["Coordination Layer"]
+        direction LR
         COORD[CoordinatorAgent]
         ORCH[Orchestration Logic]
         CONS_BUILD[Consensus Builder]
     end
 
     subgraph Agents["Agent Layer - 13 Expert Roles"]
+        direction LR
         BA[BaseAgent]
         subgraph Tactical["Tactical Level - 6 Agents"]
-            T1[Police On-Scene]
-            T2[Fire On-Scene]
-            T3[Coast Guard On-Scene]
-            T4[Medical Expert]
-            T5[Meteorologist]
-            T6[Logistics Coordinator]
+            direction LR
+            T1[Police On-Scene] --- T2[Fire On-Scene] --- T3[Coast Guard On-Scene]
+            T4[Medical Expert] --- T5[Meteorologist] --- T6[Logistics Coordinator]
         end
         subgraph Strategic["Strategic Level - 7 Agents"]
-            S1[Police Regional]
-            S2[Fire Regional]
-            S3[Coast Guard National]
-            S4[Civil Protection Director]
-            S5[Environmental Scientist]
-            S6[Medical Infrastructure]
-            S7[PSAP Commander]
+            direction LR
+            S1[Police Regional] --- S2[Fire Regional] --- S3[Coast Guard National] --- S4[Civil Protection Director]
+            S5[Environmental Scientist] --- S6[Medical Infrastructure] --- S7[PSAP Commander]
         end
         RT[ReliabilityTracker]
-        PROFILES[Agent Profiles JSON<br/>13 Expert Profiles]
-    end
-
-    subgraph DF["Decision Framework Layer"]
-        ER[Evidential Reasoning]
-        GAT[GAT Aggregator<br/>9D Features]
-        MCDA[MCDA Engine<br/>TOPSIS]
-        CONSENSUS[Consensus Model<br/>Cosine Similarity]
+        PROFILES[Agent Profiles JSON]
     end
 
     subgraph LLM["LLM Integration Layer"]
+        direction LR
         LLM_INT[LLM Interface]
         CLAUDE[Claude Client]
         OPENAI[OpenAI Client]
@@ -63,51 +53,64 @@ graph TB
         PROMPTS[Prompt Templates]
     end
 
+    subgraph DF["Decision Framework Layer"]
+        direction LR
+        ER[Evidential Reasoning]
+        GAT[GAT Aggregator]
+        CONSENSUS[Consensus Model]
+        MCDA[MCDA Engine - TOPSIS]
+    end
+
     subgraph Eval["Evaluation & Utilities Layer"]
+        direction LR
         METRICS[Metrics Calculator]
         VIS[Visualizations]
         VALID[Validation]
         CONFIG[Configuration]
     end
 
-    CLI --> COORD
-    JSON_IN --> COORD
-    COORD --> ORCH
-    ORCH --> T1 & T2 & T3 & T4 & T5 & T6
-    ORCH --> S1 & S2 & S3 & S4 & S5 & S6 & S7
-    T1 & T2 & T3 & T4 & T5 & T6 -.inherits.-> BA
-    S1 & S2 & S3 & S4 & S5 & S6 & S7 -.inherits.-> BA
-    BA --> RT
-    BA --> PROFILES
+    UI -->|"Load Scenario"| Coord
+    Coord -->|"Dispatch Tasks"| Agents
+    Agents <-->|"LLM Requests / Responses"| LLM
+    Agents -->|"Expert Assessments"| DF
+    DF -->|"Aggregated Decision"| Coord
+    Coord -->|"Final Decision"| Eval
+    Eval -->|"Results & Metrics"| UI
 
-    ORCH --> ER & GAT
-    ER --> CONSENSUS
-    GAT --> CONSENSUS
-    CONSENSUS --> CONS_BUILD
-    CONS_BUILD --> MCDA
-
-    T1 & T2 & T3 & T4 & T5 & T6 --> LLM_INT
-    S1 & S2 & S3 & S4 & S5 & S6 & S7 --> LLM_INT
-    LLM_INT --> CLAUDE & OPENAI & LMSTUDIO
-    LLM_INT --> PROMPTS
-
-    MCDA --> METRICS
-    METRICS --> VIS
-    VIS --> VIZ
-    VIZ --> JSON_OUT
-
-    VALID -.validates.-> JSON_IN
-    CONFIG -.configures.-> COORD & LLM_INT
-
-    %% Layer background colors (soft pastels)
+    %% Subgraph layer colors — match 1.2–1.7
     style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style Tactical fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
     style Strategic fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
-    style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px
+
+    %% Node colors — match individual layer diagrams (1.2–1.7)
+    style CLI fill:#bbdefb,stroke:#1976d2
+    style JSON_IN fill:#bbdefb,stroke:#1976d2
+    style JSON_OUT fill:#bbdefb,stroke:#1976d2
+    style VIZ fill:#bbdefb,stroke:#1976d2
+    style COORD fill:#ffe0b2,stroke:#f57c00
+    style ORCH fill:#ffe0b2,stroke:#f57c00
+    style CONS_BUILD fill:#ffe0b2,stroke:#f57c00
+    style BA fill:#ce93d8,stroke:#7b1fa2
+    style RT fill:#ce93d8,stroke:#7b1fa2
+    style PROFILES fill:#ce93d8,stroke:#7b1fa2
+    style LLM_INT fill:#f8bbd9,stroke:#c2185b
+    style CLAUDE fill:#f8bbd9,stroke:#c2185b
+    style OPENAI fill:#f8bbd9,stroke:#c2185b
+    style LMSTUDIO fill:#f8bbd9,stroke:#c2185b
+    style PROMPTS fill:#f8bbd9,stroke:#c2185b
+    style ER fill:#a5d6a7,stroke:#388e3c
+    style GAT fill:#a5d6a7,stroke:#388e3c
+    style CONSENSUS fill:#a5d6a7,stroke:#388e3c
+    style MCDA fill:#a5d6a7,stroke:#388e3c
+    style METRICS fill:#fff59d,stroke:#f9a825
+    style VIS fill:#fff59d,stroke:#f9a825
+    style VALID fill:#fff59d,stroke:#f9a825
+    style CONFIG fill:#fff59d,stroke:#f9a825
 ```
 
 ---
