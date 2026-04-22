@@ -1,0 +1,73 @@
+flowchart TD
+    subgraph UI["User Interface Layer"]
+        direction LR
+        CLI[Command Line Interface]
+        JSON_IN[JSON Input Scenarios]
+        JSON_OUT[JSON Output Results]
+        VIZ[Visualization Generator]
+    end
+
+    subgraph Coord["Coordination Layer"]
+        direction LR
+        COORD[CoordinatorAgent]
+        ORCH[Orchestration Logic]
+        CONS_BUILD[Consensus Builder]
+    end
+
+    subgraph Agents["Agent Layer - 13 Expert Roles"]
+        direction LR
+        BA[BaseAgent]
+        subgraph Silver["SILVER Level - 8 Agents"]
+            direction LR
+            subgraph SilverTactical["Tactical - 4"]
+                T1[Police On-Scene] --- T2[Fire On-Scene] --- T3[Coast Guard On-Scene] --- T4[Medical Expert]
+            end
+            subgraph SilverAdvisory["Advisory - 4"]
+                A1[Meteorologist] --- A2[Logistics] --- A3[PSAP Commander] --- A4[Environmental Scientist]
+            end
+        end
+        subgraph Gold["GOLD Level - 5 Agents"]
+            G1[Police Regional] --- G2[Fire Regional] --- G3[Coast Guard National] --- G4[Civil Protection Director] --- G5[Medical Infrastructure]
+        end
+        RT[ReliabilityTracker]
+    end
+
+    subgraph LLM["LLM Integration Layer"]
+        direction LR
+        CLAUDE[Claude Sonnet 4]
+        OPENAI[GPT-4o]
+        LMSTUDIO[GPT-OSS 20B / LM Studio]
+        PROMPTS[13 Role-Specific Templates]
+    end
+
+    subgraph DF["Decision Framework Layer"]
+        direction LR
+        ER[Evidential Reasoning]
+        GAT[GAT Aggregator]
+        CONSENSUS[Consensus Model]
+        MCDA[MCDA - TOPSIS]
+    end
+
+    subgraph Eval["Evaluation & Utilities Layer"]
+        direction LR
+        METRICS[Metrics Calculator]
+        VIS[Visualizations]
+        VALID[Validation]
+    end
+
+    UI -->|Load Scenario| Coord
+    Coord -->|Dispatch Tasks| Agents
+    Agents <-->|LLM Requests / Responses| LLM
+    Agents -->|Expert Assessments| DF
+    DF -->|Aggregated Decision| Coord
+    Coord -->|Final Decision| Eval
+    Eval -->|Results & Metrics| UI
+
+    style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
+    style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px

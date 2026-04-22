@@ -1,0 +1,22 @@
+flowchart TB
+    START[Agent Assessment + Scenario Context] --> EXTRACT[Extract Features per Agent]
+
+    subgraph "9-Dimensional Feature Vector"
+        EXTRACT --> F1["f¹: Confidence Score - self-reported certainty ∈ [0,1]"]
+        EXTRACT --> F2["f²: Belief Certainty - 1 - normalised Shannon entropy"]
+        EXTRACT --> F3["f³: Expertise Relevance - keyword match to scenario type"]
+        EXTRACT --> F4["f⁴: Risk Tolerance - conservative vs. aggressive stance ∈ [0,1]"]
+        EXTRACT --> F5["f⁵: Severity Awareness - scenario severity parameter ∈ [0,1]"]
+        EXTRACT --> F6["f⁶: Top-Choice Strength - gap between 1st and 2nd belief mass"]
+        EXTRACT --> F7["f⁷: Thoroughness - normalised count of key concerns raised"]
+        EXTRACT --> F8["f⁸: Reasoning Quality - normalised length of natural-language justification"]
+        EXTRACT --> F9["f⁹: Historical Reliability - time-decayed accuracy from ReliabilityTracker ⭐"]
+    end
+
+    F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 --> VECTOR["Feature vector f_i ∈ ℝ⁹"]
+    VECTOR --> ATTENTION[Multi-Head Attention - H=4]
+    ATTENTION --> AGGREGATE[Weighted Belief Aggregation]
+    AGGREGATE --> OUTPUT[Aggregated Beliefs + Attention Weights + Uncertainty]
+
+    style F9 fill:#c8e6c9,stroke:#388e3c
+    style AGGREGATE fill:#ffccbc,stroke:#e64a19

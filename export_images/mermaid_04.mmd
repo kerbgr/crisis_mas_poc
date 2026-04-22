@@ -1,0 +1,41 @@
+flowchart TB
+    subgraph INIT["Startup"]
+        LOAD[Load reliability JSON from disk]
+        CHECK{File exists?}
+        RESTORE[Restore history + recompute metrics]
+        FRESH[Initialise at default ρ = 0.80]
+        LOAD --> CHECK
+        CHECK -->|Yes| RESTORE
+        CHECK -->|No| FRESH
+    end
+
+    subgraph COLLECT["Assessment Collection"]
+        EVAL[Agent evaluates scenario via LLM]
+        RECORD[Record belief distribution + confidence]
+        STASH[Store assessment_id in metadata]
+        EVAL --> RECORD --> STASH
+    end
+
+    subgraph DECIDE["Aggregation"]
+        ER_W[ER path: use ρ as normalised weights]
+        GAT_F[GAT path: inject ρ as feature f⁹]
+        FINAL[make_final_decision → A*]
+        ER_W & GAT_F --> FINAL
+    end
+
+    subgraph VALIDATE["Consensus Validation"]
+        LOOP[For each agent assessment]
+        SCORE[Compute 3-component accuracy a_k]
+        UPDATE[Update reliability with temporal decay]
+        LOOP --> SCORE --> UPDATE
+    end
+
+    subgraph PERSIST["Persistence"]
+        SAVE[Save reliability JSON to disk]
+        SAVE --> DONE[Ready for next run]
+    end
+
+    INIT --> COLLECT --> DECIDE --> VALIDATE --> PERSIST
+
+    style ER_W fill:#ffccbc,stroke:#e64a19
+    style GAT_F fill:#c8e6c9,stroke:#388e3c

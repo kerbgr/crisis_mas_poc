@@ -1,0 +1,54 @@
+sequenceDiagram
+    participant User
+    participant Coordinator
+    participant Silver as SILVER Level (8 Agents)
+    participant Gold as GOLD Level (5 Agents)
+    participant ER as ER Engine
+    participant GAT as GAT Aggregator
+    participant MCDA as MCDA / TOPSIS
+    participant Consensus
+
+    User->>Coordinator: Submit Crisis Scenario (JSON)
+
+    par Step 1 - Parallel Assessment
+        Coordinator->>Silver: evaluate_scenario()
+        Silver->>Silver: LLM Reasoning → Belief Distribution
+        Silver-->>Coordinator: {belief, confidence, reasoning, key_concerns}
+    and
+        Coordinator->>Gold: evaluate_scenario()
+        Gold->>Gold: LLM Reasoning → Belief Distribution
+        Gold-->>Coordinator: {belief, confidence, reasoning, key_concerns}
+    end
+
+    Note over Coordinator: Step 2 - Belief Aggregation (ER and/or GAT)
+
+    alt ER aggregation
+        Coordinator->>ER: combine_beliefs(BBAs, weights, reliabilities)
+        ER-->>Coordinator: Aggregated Belief Distribution + Confidence
+    else GAT aggregation
+        Coordinator->>GAT: aggregate(9D features per agent, belief vectors)
+        GAT-->>Coordinator: Aggregated Beliefs + Attention Weights
+    end
+
+    Note over Coordinator: Step 3 - MCDA Scoring (independent of aggregation)
+
+    Coordinator->>MCDA: rank_alternatives(criterion_scores, weights)
+    MCDA->>MCDA: TOPSIS: normalise → ideal solutions → closeness coefficients
+    MCDA-->>Coordinator: TOPSIS scores per alternative
+
+    Note over Coordinator: Step 4 - Consensus Check
+
+    Coordinator->>Consensus: check_consensus(agent_beliefs)
+    Consensus->>Consensus: Pairwise cosine similarity → CL
+    Consensus-->>Coordinator: Consensus Level + Conflict List
+
+    alt CL < 0.75 - Conflict Resolution
+        Coordinator->>Coordinator: identify divergent agents
+        Coordinator->>Silver: request supplementary assessment (targeted)
+        Note over Coordinator: Max 5 resolution iterations
+    end
+
+    Note over Coordinator: Step 5 - Final Decision
+    Note over Coordinator: Score(A_k) = 0.6 × belief_agg(A_k) + 0.4 × TOPSIS(A_k)
+
+    Coordinator-->>User: Recommended Alternative + Reasoning + Metrics (JSON)

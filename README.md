@@ -257,6 +257,16 @@ python main.py --llm-provider lmstudio      # Use local LLM (free, offline)
 python main.py --compare-methods            # Compare ER vs GAT side-by-side
 ```
 
+**Evaluation commands (45-run benchmark - 3 scenarios x 3 providers x 5 replicates):**
+
+```bash
+python main.py --scenario flood_scenario --compare-methods --expert-selection auto
+python main.py --scenario forest_fire_evia --compare-methods --expert-selection auto
+python main.py --scenario ammonia_leak_elefsina --compare-methods --expert-selection auto
+```
+
+Add `--llm-provider claude|openai|lmstudio` to select the LLM backend (default: claude).
+
 ---
 
 ## Web Tools

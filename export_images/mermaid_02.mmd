@@ -1,0 +1,39 @@
+graph TB
+    subgraph Agents["Agent Layer - 13 Expert Roles"]
+        BA[BaseAgent - Abstract Interface]
+        subgraph Silver["SILVER Level - 8 Agents"]
+            subgraph SilverTactical["Tactical - 4 On-Scene"]
+                T1[Police On-Scene]
+                T2[Fire-Brigade On-Scene]
+                T3[Coast Guard On-Scene]
+                T4[Medical Expert / Triage]
+            end
+            subgraph SilverAdvisory["Advisory - 4"]
+                A1[Meteorologist]
+                A2[Logistics Coordinator]
+                A3[PSAP Commander / 112]
+                A4[Environmental Scientist]
+            end
+        end
+        subgraph Gold["GOLD Level - 5 Strategic Agents"]
+            G1[Police Regional Commander]
+            G2[Fire-Brigade Regional Director]
+            G3[Coast Guard National Director]
+            G4[Civil Protection Director]
+            G5[Medical Infrastructure Director]
+        end
+        RT[ReliabilityTracker - Performance History]
+        PROFILES[agent_profiles.json - 13 Expert Profiles]
+    end
+
+    T1 & T2 & T3 & T4 -.->|inherits| BA
+    A1 & A2 & A3 & A4 -.->|inherits| BA
+    G1 & G2 & G3 & G4 & G5 -.->|inherits| BA
+    BA --> RT
+    BA --> PROFILES
+
+    style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    style SilverTactical fill:#b3e5fc,stroke:#0288d1,stroke-width:1px
+    style SilverAdvisory fill:#b3e5fc,stroke:#0288d1,stroke-width:1px
+    style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
