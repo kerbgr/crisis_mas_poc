@@ -845,14 +845,21 @@ class CoordinatorAgent:
         logger.info("Step 6/6: Generating final decision")
 
         # Combine ER beliefs and MCDA scores (60/40 weighting)
-        combined_scores = {}
+        # L1-normalize MCDA scores so they form a distribution summing to 1,
+        # matching the ER belief scale and ensuring the 60/40 split reflects
+        # true information contribution rather than scale dominance.
         er_beliefs = aggregated['aggregated_beliefs']
+        mcda_total = sum(mcda_scores.values())
+        mcda_norm = (
+            {k: v / mcda_total for k, v in mcda_scores.items()}
+            if mcda_total > 0 else mcda_scores
+        )
 
+        combined_scores = {}
         for alt in alternatives:
             alt_id = alt.get('id', alt.get('name'))
-            er_score = er_beliefs.get(alt_id, 0.0)
-            mcda_score = mcda_scores.get(alt_id, 0.0)
-            # Weighted combination: 60% ER beliefs, 40% MCDA scores
+            er_score   = er_beliefs.get(alt_id, 0.0)
+            mcda_score = mcda_norm.get(alt_id, 0.0)
             combined_scores[alt_id] = 0.6 * er_score + 0.4 * mcda_score
 
         # Find recommended alternative
@@ -901,17 +908,27 @@ class CoordinatorAgent:
             'consensus_level': consensus_info['consensus_level'],
             'final_scores': combined_scores,
             'er_scores': er_beliefs,
-            'mcda_scores': mcda_scores,
+            'mcda_scores': mcda_norm,
+            'mcda_scores_raw': mcda_scores,
             'agent_opinions': agent_opinions,
             'consensus_reached': consensus_info['consensus_reached'],
             'conflicts': consensus_info.get('conflicts', []),
             'resolution': resolution,
             'timestamp': datetime.now().isoformat(),
-            'scenario_id': scenario.get('scenario_id', 'unknown'),
+            'scenario_id': scenario.get('scenario_id') or scenario.get('id', 'unknown'),
             'decision_time_seconds': (datetime.now() - start_time).total_seconds(),
             'agents_participated': len(agent_assessments),
             'collection_info': collection_results
         }
+
+        # Attach GAT attention analysis when GAT was used
+        if self.aggregation_method == 'GAT':
+            gat_details = aggregated.get('method_details', {}) or {}
+            decision['gat_analysis'] = {
+                'attention_weights': aggregated.get('attention_weights', gat_details.get('attention_weights', {})),
+                'top_influential_agents': gat_details.get('top_influential_agents', []),
+                'uncertainty': aggregated.get('uncertainty', 1.0),
+            }
 
         # Generate explanation
         decision['explanation'] = self.generate_explanation(decision)
@@ -1231,7 +1248,7 @@ class CoordinatorAgent:
             'conflicts': [],
             'resolution': None,
             'timestamp': datetime.now().isoformat(),
-            'scenario_id': scenario.get('scenario_id', 'unknown'),
+            'scenario_id': scenario.get('scenario_id') or scenario.get('id', 'unknown'),
             'error': error_message,
             'explanation': f"ERROR: {error_message}\n\nUnable to generate decision."
         }

@@ -304,7 +304,8 @@ def crisis_scenario_new():
         # This will be handled by JavaScript/AJAX for complex form
         pass
 
-    return render_template('crisis_scenario_form_enhanced.html', scenario=None, mode='create')
+    return render_template('crisis_scenario_form_enhanced.html', scenario=None, mode='create',
+                           scenarios_dir=str(CRISIS_SCENARIOS_DIR))
 
 
 @app.route('/crisis-scenarios/<filename>/view')
@@ -334,7 +335,8 @@ def crisis_scenario_edit(filename):
         scenario = json.load(f)
 
     scenario['_filename'] = filename
-    return render_template('crisis_scenario_form_enhanced.html', scenario=scenario, mode='edit')
+    return render_template('crisis_scenario_form_enhanced.html', scenario=scenario, mode='edit',
+                           scenarios_dir=str(CRISIS_SCENARIOS_DIR))
 
 
 @app.route('/api/crisis-scenarios/save', methods=['POST'])

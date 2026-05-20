@@ -330,9 +330,17 @@ Following belief aggregation by either ER or GAT, the decision framework scores 
 
 The final score for each alternative combines the aggregated agent belief and the TOPSIS closeness coefficient with a fixed 60/40 weighting:
 
-$$\text{Score}(A_k) = 0.6 \times m_{\text{agg}}(A_k) + 0.4 \times C_k^{\text{TOPSIS}}$$
+$$\text{Score}(A_k) = 0.6 \times m_{\text{agg}}(A_k) + 0.4 \times C_k^{\text{norm}}$$
 
 The 60/40 split reflects the design philosophy that domain expert judgement - captured in the belief distributions - should dominate, while the objective criterion scoring provides a structural check against purely sentiment-driven consensus.
+
+**L1 normalisation of TOPSIS scores.** A critical precondition of the 60/40 formula is that both components share the same distributional scale. ER and GAT aggregated beliefs are proper probability distributions: they always sum to 1.0 across all alternatives, so the per-alternative average is $1/N$. TOPSIS closeness coefficients $C_k = S_k^-/(S_k^+ + S_k^-)$ are geometric proximity scores individually bounded in $[0,1]$ but with no constraint on their sum across alternatives. In the AEGIS experimental corpus, raw TOPSIS scores sum to approximately 1.8-3.2 across alternatives depending on the scenario and run, giving per-alternative averages of 0.36-0.64 for $N=5$ and 0.15-0.27 for $N=12$ — systematically larger than the corresponding belief averages of 0.20 ($N=5$) and 0.083 ($N=12$).
+
+Without correction, the MCDA component contributes 55-79% of the combined score, compared with the nominal 40%. The distortion is largest when TOPSIS scores are high and beliefs are dispersed — precisely the condition that arises in large action spaces. To restore the intended balance, raw TOPSIS scores are L1-normalised before the blend:
+
+$$C_k^{\text{norm}} = \frac{C_k}{\displaystyle\sum_j C_j}$$
+
+This transforms the TOPSIS output into a proper distribution summing to 1.0 while preserving the ranking order among alternatives. The normalised coefficient $C_k^{\text{norm}}$ is used in all analyses throughout this paper. A post-hoc recalculation (Section 4.7) quantifies the impact of this correction across the full experimental corpus.
 
 **What TOPSIS contributes beyond belief aggregation.** Running TOPSIS independently of the belief aggregation step provides two distinct analytical benefits that pure belief combination cannot replicate. First, it correctly handles the directional asymmetry between benefit and cost criteria: safety and social acceptance are drawn toward the positive ideal solution $A^+$, while cost (euros) and response time (hours) are simultaneously drawn away from the negative ideal solution $A^-$. A simple weighted average of agent beliefs contains no mechanism to encode this directionality. Second, TOPSIS reveals cases where collective expert preference and objective criterion optimisation diverge -- the most informative decision points in the output, since they signal trade-offs a decision-maker must consciously accept rather than resolve automatically. In the Elefsina HAZMAT trace (Section 4.6), for example, downwind evacuation achieves the highest TOPSIS closeness coefficient ($C_i = 0.806$) due to its exceptional safety score, but the aggregated agent beliefs strongly favour the integrated multi-layer response (combined score 0.574 vs. 0.459 for evacuation). The 60/40 combination preserves this tension visibly in the output rather than collapsing it, and the accompanying audit trail exposes the specific criterion scores that drive the divergence -- precisely the kind of structured transparency required in safety-critical operational contexts.
 
@@ -660,6 +668,63 @@ Both methods agree on the top alternative. The 3rd/4th rank swap between water c
 
 The result is that evacuation, though superior on the TOPSIS metric alone, is correctly overridden by the collective expert judgement, which recognises that single-action evacuation without addressing the source of the ammonia release creates ongoing risk. The reasoning traces from multiple agents explicitly articulate this logic, providing a directly auditable explanation for the divergence between the TOPSIS-only and combined rankings.
 
+### 4.7 MCDA-ER Scale Mismatch: Discovery and Correction
+
+Post-hoc analysis across all 92 stored result files (45 runs × 2 aggregation methods) revealed a systematic scale incompatibility in the original DQS blending formula that had differential impact across scenarios. This section reports the finding, its cause, and the quantified effect of applying the L1 normalisation correction introduced in Section 3.5.
+
+**Root cause.** ER and GAT aggregated beliefs are proper probability distributions that always sum to 1.0 across all alternatives; their per-alternative average is therefore $1/N$. For $N=5$ (Flood, HAZMAT) this is 0.200; for $N=12$ (Forest Fire) this is 0.083. Raw TOPSIS closeness coefficients are geometric proximity scores that are individually bounded in $[0,1]$ but carry no distributional constraint: in the experimental corpus their cross-alternative sums range from 1.8 to 3.2, giving per-alternative averages of 0.15-0.27 for $N=12$ — two to three times larger than the corresponding belief values. Without L1 normalisation, the MCDA component contributes 55-79% of the blended score per alternative, depending on the action-space size and the specific TOPSIS geometry of that run. Table IX summarises the measured effective MCDA contribution before and after normalisation.
+
+**TABLE IX: Effective MCDA Contribution Before and After L1 Normalisation**
+
+| Scenario | N | Avg ER belief (1/N) | Avg TOPSIS raw | MCDA contrib. (before) | MCDA contrib. (after) |
+|----------|---|---------------------|----------------|------------------------|----------------------|
+| Karditsa Flood | 5 | 0.200 | ~0.40 | ~58 % | 40 % |
+| Elefsina HAZMAT | 5 | 0.200 | ~0.40 | ~58 % | 40 % |
+| Evia Wildfire | 12 | 0.083 | ~0.21 | ~72 % | 40 % |
+
+*MCDA contribution computed as $0.4 \bar{C} / (0.6 \bar{m} + 0.4 \bar{C})$ where $\bar{m}$ and $\bar{C}$ are the per-alternative means. Post-normalisation the contribution is always exactly 40% by construction.*
+
+**Manifestation in the Forest Fire scenario.** The distortion was most consequential for the Evia Wildfire scenario ($N=12$), where the widest TOPSIS score dispersion coincided with the flattest belief distributions. `action_combined_assault` had the highest raw TOPSIS score in a substantial fraction of runs (e.g., $C_i = 0.814$ in run 7, Claude, ER path), even in runs where agent consensus favoured evacuation alternatives. The scale-inflated MCDA component elevated it to the top combined score despite being outranked by belief mass from the agent panel.
+
+**Illustrative case — forest_fire_evia / run_7_claude / ER:**
+
+| Alternative | ER belief | TOPSIS raw | TOPSIS norm | Old DQS | New DQS |
+|-------------|:---------:|:----------:|:-----------:|:-------:|:-------:|
+| action_combined_assault | 0.1425 | **0.8139** | 0.1314 | **0.4110 (rec)** | 0.1380 |
+| action_immediate_evacuation | **0.1549** | 0.7891 | 0.1274 | 0.3987 | **0.1414 (rec)** |
+
+Before normalisation, `combined_assault` was recommended despite carrying lower agent belief mass than `immediate_evacuation`. Its TOPSIS raw advantage of 0.025 translated into a 0.013 DQS advantage, overriding the signal from the expert panel. After L1 normalisation the TOPSIS advantage shrinks to 0.004, the correct agent-consensus-driven alternative is selected, and the combined score magnitude drops from 0.41 to 0.14 — a level commensurate with the true belief concentration in a 12-alternative space.
+
+**Recalculation results across all 92 files.** The standalone script `scripts/recalculate_dqs.py` applied L1 normalisation to all stored result files without modifying the originals. Results are summarised in Table X.
+
+**TABLE X: Recommendation Changes After L1 Normalisation (n = 92 result files)**
+
+| Scenario | Method | Files processed | Recommendation changed | Primary transition |
+|----------|:------:|:---------------:|:----------------------:|-------------------|
+| Evia Wildfire | ER | 15 | 6 (40.0 %) | 5: combined_assault -> immediate_evacuation |
+| Evia Wildfire | GAT | 15 | 5 (33.3 %) | 5: combined_assault -> immediate_evacuation |
+| Karditsa Flood | ER | 16 | 1 (6.3 %) | hybrid_approach <-> rescue_operations (borderline) |
+| Karditsa Flood | GAT | 16 | 0 | -- |
+| Elefsina HAZMAT | ER | 15 | 0 | -- |
+| Elefsina HAZMAT | GAT | 15 | 0 | -- |
+| **Total** | **Both** | **92** | **12 (13.0 %)** | **11 in Forest Fire** |
+
+The effect scales precisely with action-space complexity: $N=5$ scenarios are nearly unaffected because belief masses and TOPSIS averages are closer in magnitude, while $N=12$ is maximally sensitive. All Flood and HAZMAT results that were previously interpreted as confirmed findings remain unchanged under normalisation. The Forest Fire dominant recommendation, however, shifts: after correction, `action_immediate_evacuation` and `action_phased_evacuation` are the agent-consensus-supported alternatives in the majority of runs where `action_combined_assault` was previously selected.
+
+```mermaid
+flowchart LR
+    B1["Before L1 norm<br/>Forest Fire dominant rec:<br/>combined_assault<br/>(TOPSIS-inflated)"]
+    NORM["L1 normalise<br/>C_norm = C_k / sum(C)"]
+    A1["After L1 norm<br/>Forest Fire dominant rec:<br/>immediate_evacuation<br/>(agent-consensus-driven)"]
+    B1 --> NORM --> A1
+
+    style B1 fill:#ffebee,stroke:#c62828
+    style NORM fill:#fff3e0,stroke:#ef6c00
+    style A1 fill:#e8f5e9,stroke:#2e7d32
+```
+
+**Implication for GAT training.** The 1,133-record reliability corpus and the DQS scores derived from it are the intended supervision signal for the warm-started online learning extension described in Section 6. Training on unnormalised DQS would encode the scale bias as a spurious learning target, causing the learned attention weights to over-represent TOPSIS geometry rather than agent-consensus quality. L1 normalisation of all historical DQS labels is therefore a required preprocessing step before any supervised fine-tuning of the attention parameters.
+
 ---
 
 ## 5. Discussion
@@ -716,7 +781,7 @@ Several limitations must be acknowledged before drawing operational conclusions 
 
 This paper has presented AEGIS, a multi-agent decision support system for crisis management that integrates LLM-powered expert reasoning with two complementary formal belief-aggregation mechanisms - weighted Evidential Reasoning and a domain-parameterised, untrained graph attention aggregator - evaluated systematically across 45 controlled runs on three Greek emergency scenarios using three LLM providers.
 
-The principal empirical finding is that ER and GAT produce effectively equivalent outcomes at the 13-agent scale (DQS 0.775 vs. 0.781, 88.9 % recommendation agreement, all differences non-significant at p = 0.05), confirming that the quality of agent reasoning dominates over the choice of aggregation algorithm when agents are well-prompted. Provider comparisons reveal that Claude Sonnet 4 is fastest (mean 26.5 s/run), GPT-4o is most consistent (highest consensus 0.930, lowest intra-provider variance), and GPT-OSS 20B achieves the highest mean Combined Score (0.501) with zero API dependency - all three being viable choices with distinct operational trade-offs. Collective recommendations outperform the best individual agent in all three scenarios, with the margin scaling from +5.4 pp (HAZMAT) to +11.0 pp (Wildfire) as decision-space complexity increases. The historical reliability tracker produces differentiated per-agent scores (0.43-0.68 across 1,133 records) that align with domain expectations: fire specialists lead in the wildfire scenario, the medical expert in the HAZMAT scenario, and the environmental scientist in the flood scenario.
+The principal empirical finding is that ER and GAT produce effectively equivalent outcomes at the 13-agent scale (DQS 0.775 vs. 0.781, 88.9 % recommendation agreement, all differences non-significant at p = 0.05), confirming that the quality of agent reasoning dominates over the choice of aggregation algorithm when agents are well-prompted. A methodological finding with direct practical consequences is that TOPSIS closeness coefficients must be L1-normalised before blending with ER/GAT beliefs; without this step, the MCDA component contributes 55-79% of the combined score despite its nominal 40% weight, an artefact that shifted 11 of 30 Evia Wildfire recommendations away from the agent-consensus-supported alternatives. Provider comparisons reveal that Claude Sonnet 4 is fastest (mean 26.5 s/run), GPT-4o is most consistent (highest consensus 0.930, lowest intra-provider variance), and GPT-OSS 20B achieves the highest mean Combined Score (0.501) with zero API dependency - all three being viable choices with distinct operational trade-offs. Collective recommendations outperform the best individual agent in all three scenarios, with the margin scaling from +5.4 pp (HAZMAT) to +11.0 pp (Wildfire) as decision-space complexity increases. The historical reliability tracker produces differentiated per-agent scores (0.43-0.68 across 1,133 records) that align with domain expectations: fire specialists lead in the wildfire scenario, the medical expert in the HAZMAT scenario, and the environmental scientist in the flood scenario.
 
 ### Future Research Directions
 

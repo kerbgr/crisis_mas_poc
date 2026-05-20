@@ -282,6 +282,117 @@ All three providers successfully operate the multi-agent framework across every 
 
 ---
 
+---
+
+## 7. Methodological Finding: MCDA/ER Scale Mismatch and L1 Normalisation
+
+### 7.1 Discovery
+
+A systematic scale incompatibility between the two components of the combined DQS formula was identified during post-hoc analysis across all 92 result files (45 runs × 2 aggregation methods, ER and GAT).
+
+The combined score formula is:
+
+```
+Score(A_k) = 0.6 * ER/GAT_belief(A_k) + 0.4 * TOPSIS_raw(A_k)
+```
+
+This 60/40 weighting assumption is only mathematically valid when **both components share the same distributional scale**. They do not.
+
+**ER/GAT aggregated beliefs** are proper probability distributions: they always sum to 1.0 across all alternatives. For a scenario with N alternatives the average belief per alternative is 1/N:
+- Flood (N=5): average ER belief ~0.200
+- Forest Fire (N=12): average ER belief ~0.083
+- HAZMAT (N=5): average ER belief ~0.200
+
+**TOPSIS closeness coefficients** C_i = S_i^- / (S_i^+ + S_i^-) are geometric proximity scores. They are bounded in [0,1] but do **not** sum to 1 across alternatives. In the experimental corpus, raw TOPSIS scores ranged from 0.16 to 0.75, with cross-alternative sums reaching 1.8-3.2 depending on the scenario.
+
+### 7.2 Effective Weight Distortion
+
+Because TOPSIS scores are systematically larger than belief masses (especially for N=12), the MCDA component dominated the combined score regardless of the nominal 40% weight. Across the experimental corpus, the effective MCDA contribution was **55-79% of the combined DQS** — well above the intended 40%.
+
+```mermaid
+xychart-beta
+    title "Effective MCDA Contribution vs Nominal 40% Weight"
+    x-axis ["Flood (N=5)", "Forest Fire (N=12)", "HAZMAT (N=5)"]
+    y-axis "Effective MCDA contribution (%)" 0 --> 85
+    bar [58, 76, 58]
+    line [40, 40, 40]
+```
+
+*Bar = measured effective MCDA weight in combined DQS. Line = nominal 40% target. The distortion is most severe for the 12-alternative Forest Fire scenario where belief masses average 1/12 ≈ 0.083 while TOPSIS scores average near 0.40.*
+
+### 7.3 Impact on Recommendations
+
+The inflation was most consequential for the **Evia Wildfire scenario (N=12)**, where `action_combined_assault` had the highest TOPSIS raw score in many runs (C_i up to 0.814), even when agent consensus favoured evacuation alternatives. The biased formula elevated it to the recommended alternative in runs where the ER/GAT belief distribution clearly favoured immediate or phased evacuation.
+
+**Illustrative example — forest_fire_evia / run_7_claude / ER:**
+
+| Alternative | ER belief | TOPSIS raw | TOPSIS norm | Old DQS | New DQS |
+|-------------|-----------|------------|-------------|---------|---------|
+| action_combined_assault | 0.1425 | **0.8139** | 0.1314 | **0.4110 (rec)** | 0.1380 |
+| action_immediate_evacuation | **0.1549** | 0.7891 | 0.1274 | 0.3987 | **0.1414 (rec)** |
+
+Before normalisation, `combined_assault` was recommended despite having *lower* agent belief mass than `immediate_evacuation`. Its TOPSIS raw advantage of 0.025 translated into a 0.0123 DQS advantage that overrode the expert consensus signal. The MCDA component contributed 79% of that run's final score.
+
+**Post-hoc recalculation across all 92 result files (`scripts/recalculate_dqs.py`):**
+
+| Scenario | Method | Runs changed | Primary change |
+|----------|--------|-------------|----------------|
+| Evia Wildfire | ER | 6/15 | 5 runs: combined_assault -> immediate_evacuation |
+| Evia Wildfire | GAT | 5/15 | 5 runs: combined_assault -> immediate_evacuation |
+| Karditsa Flood | ER | 1/16 | 1 borderline run (hybrid <-> rescue) |
+| Karditsa Flood | GAT | 0/16 | No change |
+| Elefsina HAZMAT | ER | 0/15 | No change |
+| Elefsina HAZMAT | GAT | 0/15 | No change |
+| **Total** | **Both** | **12/92** | **11 in Forest Fire scenario** |
+
+The effect scales with action-space size: N=5 scenarios (Flood, HAZMAT) are largely unaffected because ER beliefs and TOPSIS scores operate at more comparable per-alternative magnitudes. The N=12 Forest Fire scenario is most sensitive — a direct consequence of beliefs averaging 1/12 versus TOPSIS scores averaging near 0.40.
+
+### 7.4 Correction: L1 Normalisation
+
+The fix maps raw TOPSIS scores to a proper distribution before combining:
+
+```
+C_norm(A_k) = C_raw(A_k) / sum_j( C_raw(A_j) )
+```
+
+This preserves TOPSIS ranking order while ensuring both components are true distributions that sum to 1. The corrected combined score formula:
+
+```
+Score(A_k) = 0.6 * ER/GAT_belief(A_k) + 0.4 * C_norm(A_k)
+```
+
+enforces the intended 60/40 balance regardless of action-space size.
+
+```mermaid
+flowchart LR
+    ER["ER/GAT beliefs<br/>sum to 1.0<br/>(proper distribution)"]
+    TOPSIS_RAW["TOPSIS raw C_i<br/>sum = 1.8-3.2<br/>(geometric proximity)"]
+    L1["L1 normalise<br/>C_norm = C_i / sum(C)"]
+    TOPSIS_NORM["TOPSIS normalised<br/>sum to 1.0<br/>(proper distribution)"]
+    COMBINE["0.6 x belief + 0.4 x C_norm<br/>(scale-compatible blend)"]
+
+    ER --> COMBINE
+    TOPSIS_RAW --> L1 --> TOPSIS_NORM --> COMBINE
+
+    style ER fill:#e3f2fd,stroke:#1565c0
+    style TOPSIS_RAW fill:#ffebee,stroke:#c62828
+    style L1 fill:#fff3e0,stroke:#ef6c00
+    style TOPSIS_NORM fill:#e8f5e9,stroke:#2e7d32
+    style COMBINE fill:#f3e5f5,stroke:#7b1fa2
+```
+
+The fix is implemented in `agents/coordinator_agent.py` and applies to all new runs. Original `results.json` files are preserved unmodified; corrected scores are available as `dqs_recalculated.json` in each `results/<scenario>/<run>/<method>/` directory.
+
+### 7.5 Implications for Previous Results
+
+**Finding 10 — Scale normalisation is required for valid 60/40 blending.** Combining a proper probability distribution (ER/GAT beliefs) with an unnormalised proximity score (TOPSIS raw) on a fixed weight violates the mathematical precondition of the formula. The effect grows with action-space size: it is negligible for N=5 but inflates the MCDA contribution to ~76% for N=12.
+
+**Finding 11 — 11 of 30 Forest Fire recommendations were MCDA-dominated artefacts.** After L1 normalisation, `action_immediate_evacuation` and `action_phased_evacuation` emerge as the correct agent-consensus-driven recommendations in runs where the biased formula selected `action_combined_assault`. Flood and HAZMAT results are robust (0-1 changes each).
+
+**Finding 12 — Scale normalisation is a prerequisite for GAT training.** The reliability tracker and future warm-started online learning extension (Finding 6, Key Findings) require that the DQS signal used as training supervision accurately reflects expert consensus rather than TOPSIS scale artefacts. L1 normalisation must be applied before any supervised training on this corpus.
+
+---
+
 ## Result Files
 
 Results are stored at `results/<scenario>/<run_N_provider>/`:

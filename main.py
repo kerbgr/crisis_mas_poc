@@ -66,7 +66,8 @@ def setup_logging(verbose: bool = False, log_file: Optional[str] = None):
     logging.basicConfig(
         level=level,
         format=log_format,
-        handlers=handlers
+        handlers=handlers,
+        force=True  # override any handlers set by imported libs (e.g. numexpr)
     )
 
     logger = logging.getLogger(__name__)
@@ -945,6 +946,7 @@ def generate_visualizations(
                 'Effectiveness': 0.20
             },
             'metrics': metrics,
+            'decision': decision,
             'agent_profiles': {
                 agent_id: {
                     'name': assessment.get('agent_name', agent_id),
@@ -1002,6 +1004,18 @@ def generate_visualizations(
         except Exception as e:
             logger.error(f"Failed to plot comparative summary: {e}")
 
+        try:
+            # Per-alternative DQS deviation ER vs GAT
+            path = viz.plot_dqs_er_gat_deviation(
+                comparative_results,
+                "er_vs_gat_dqs_deviation.png"
+            )
+            if path:
+                saved_paths['dqs_deviation'] = path
+                logger.info(f"  - dqs_deviation: {path}")
+        except Exception as e:
+            logger.error(f"Failed to plot DQS ER vs GAT deviation: {e}")
+
     return saved_paths
 
 
@@ -1037,8 +1051,15 @@ def save_results(
         'metrics': metrics
     }
 
+    def _json_default(obj):
+        if hasattr(obj, 'model_dump'):
+            return obj.model_dump()
+        if hasattr(obj, 'dict'):
+            return obj.dict()
+        return str(obj)
+
     with open(output_path, 'w') as f:
-        json.dump(results, f, indent=2, default=str)
+        json.dump(results, f, indent=2, default=_json_default)
 
     logger.info(f"Results saved to: {output_path}")
 
@@ -1147,6 +1168,27 @@ def print_summary(
         logger.info(f"  Confidence:  {sa_confidence:.3f} (single) → {ma_confidence:.3f} (multi)")
 
     logger.info("")
+
+    # Per-alternative DQS breakdown
+    final_scores = decision.get('final_scores', {})
+    er_scores    = decision.get('er_scores', {})
+    mcda_scores  = decision.get('mcda_scores', {})
+    recommended  = decision.get('recommended_alternative')
+
+    if final_scores:
+        logger.info("ALTERNATIVE RANKINGS  (DQS = 60% ER + 40% MCDA)")
+        logger.info(f"  {'Rank':<5} {'Alternative':<35} {'DQS':>7} {'ER':>7} {'MCDA':>7}")
+        logger.info("  " + "-"*65)
+        for rank, (alt_id, combined) in enumerate(
+            sorted(final_scores.items(), key=lambda x: x[1], reverse=True), 1
+        ):
+            er_s    = er_scores.get(alt_id, 0.0)
+            mcda_s  = mcda_scores.get(alt_id, 0.0)
+            marker  = "  ← RECOMMENDED" if alt_id == recommended else ""
+            logger.info(
+                f"  {rank:<5} {alt_id:<35} {combined:>7.4f} {er_s:>7.4f} {mcda_s:>7.4f}{marker}"
+            )
+        logger.info("")
 
     # Output files
     logger.info("OUTPUT")
@@ -1285,7 +1327,7 @@ def run_comparative_analysis(
     logger.info("COMPARATIVE RESULTS SUMMARY")
     logger.info("="*80)
     logger.info("")
-    logger.info(f"{'Metric':<25} {'ER':>12} {'GAT':>12} {'Δ (GAT-ER)':>15}")
+    logger.info(f"{'Metric':<25} {'ER':>12} {'GAT':>12} {'Delta (GAT-ER)':>15}")
     logger.info("-"*65)
     logger.info(f"{'Decision Quality Score':<25} {er_result['decision_quality_score']:>12.3f} {gat_result['decision_quality_score']:>12.3f} {comparison['decision_quality_delta']:>+15.4f}")
     logger.info(f"{'Consensus Level':<25} {er_result['consensus_level']:>12.3f} {gat_result['consensus_level']:>12.3f} {comparison['consensus_delta']:>+15.4f}")
@@ -1295,6 +1337,33 @@ def run_comparative_analysis(
     logger.info(f"{'ER Recommendation:':<25} {er_result['recommended_alternative']}")
     logger.info(f"{'GAT Recommendation:':<25} {gat_result['recommended_alternative']}")
     logger.info(f"{'Same Recommendation:':<25} {'Yes ✓' if comparison['same_recommendation'] else 'No ✗'}")
+
+    # Per-alternative score deviations
+    er_final   = er_result['decision'].get('final_scores', {})
+    gat_final  = gat_result['decision'].get('final_scores', {})
+    all_alts   = sorted(
+        set(list(er_final.keys()) + list(gat_final.keys())),
+        key=lambda a: gat_final.get(a, er_final.get(a, 0.0)),
+        reverse=True
+    )
+    if all_alts:
+        logger.info("")
+        logger.info("PER-ALTERNATIVE SCORE DEVIATIONS  (Delta = GAT - ER)")
+        logger.info(f"  {'Alternative':<35} {'ER':>8} {'GAT':>8} {'Delta':>8}")
+        logger.info("  " + "-"*62)
+        for alt_id in all_alts:
+            er_s   = er_final.get(alt_id, 0.0)
+            gat_s  = gat_final.get(alt_id, 0.0)
+            delta  = gat_s - er_s
+            tags   = []
+            if alt_id == er_result['recommended_alternative']:
+                tags.append("ER✓")
+            if alt_id == gat_result['recommended_alternative']:
+                tags.append("GAT✓")
+            tag_str = f"  [{', '.join(tags)}]" if tags else ""
+            logger.info(
+                f"  {alt_id:<35} {er_s:>8.4f} {gat_s:>8.4f} {delta:>+8.4f}{tag_str}"
+            )
 
     # Show GAT attention analysis if available
     if 'top_influential_agents' in gat_result and gat_result['top_influential_agents']:
@@ -1455,9 +1524,11 @@ For more information, see README.md
     parser.add_argument(
         '--llm-provider',
         type=str,
-        default='lmstudio',
+        default=None,
         choices=['claude', 'openai', 'lmstudio'],
-        help='LLM provider to use (default: lmstudio). Overridden by interactive prompt.'
+        help='LLM provider to use (claude, openai, lmstudio). '
+             'If omitted, prompts interactively when run in a terminal; '
+             'defaults to lmstudio in non-interactive (scripted) mode.'
     )
 
     parser.add_argument(
@@ -1536,8 +1607,13 @@ For more information, see README.md
     # Extract scenario name for directory structure
     scenario_name = Path(args.scenario).stem
 
-    # Ask which LLM provider to use — needed before folder creation so name is included
-    llm_provider = prompt_llm_provider()
+    # Determine LLM provider: use CLI arg if given, prompt when interactive, else default
+    if args.llm_provider is not None:
+        llm_provider = args.llm_provider
+    elif sys.stdin.isatty():
+        llm_provider = prompt_llm_provider()
+    else:
+        llm_provider = 'lmstudio'
 
     # Setup output directory with structure: results/scenario_name/run_X_<provider>
     base_output_dir = Path(args.output_dir)

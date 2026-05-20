@@ -1561,6 +1561,228 @@ class SystemVisualizer:
         logger.info(f"Comparative summary plot saved to {full_path}")
         return str(full_path)
 
+    def plot_dqs_breakdown(
+        self,
+        decision: Dict[str, Any],
+        save_path: str,
+        title: str = "Alternative Ranking - DQS Decomposition (60% ER + 40% MCDA)"
+    ) -> str:
+        """
+        Plot per-alternative DQS decomposition as grouped horizontal bars.
+
+        Shows three bars per alternative:
+          - ER belief score (blue)
+          - MCDA score (orange)
+          - Combined DQS = 0.6*ER + 0.4*MCDA (green, bold)
+
+        Alternatives are sorted by combined DQS descending.
+        The recommended alternative is highlighted with a gold border.
+
+        Args:
+            decision: Decision dict with keys final_scores, er_scores, mcda_scores,
+                      recommended_alternative
+            save_path: Filename to save the plot
+            title: Plot title
+
+        Returns:
+            Full path to saved plot
+        """
+        final_scores = decision.get('final_scores', {})
+        er_scores    = decision.get('er_scores', {})
+        mcda_scores  = decision.get('mcda_scores', {})
+        recommended  = decision.get('recommended_alternative')
+
+        if not final_scores:
+            logger.warning("plot_dqs_breakdown: no final_scores in decision, skipping")
+            return ""
+
+        # Sort alternatives by combined DQS descending
+        alts = sorted(final_scores.keys(), key=lambda a: final_scores[a], reverse=True)
+        n = len(alts)
+
+        # Shorten labels for readability
+        def _short(name: str) -> str:
+            return name.replace('action_', '').replace('_', ' ').title()
+
+        labels   = [_short(a) for a in alts]
+        combined = [final_scores[a] for a in alts]
+        er_vals  = [er_scores.get(a, 0.0) for a in alts]
+        mcda_vals = [mcda_scores.get(a, 0.0) for a in alts]
+
+        fig, ax = plt.subplots(figsize=(10, max(4, n * 0.9)))
+
+        y = np.arange(n)
+        height = 0.25
+
+        bar_er   = ax.barh(y + height,  er_vals,   height, label='ER Belief Score',  color=self.colors[0], alpha=0.85)
+        bar_mcda = ax.barh(y,           mcda_vals, height, label='MCDA Score',        color=self.colors[1], alpha=0.85)
+        bar_dqs  = ax.barh(y - height,  combined,  height, label='Combined DQS',      color=self.colors[2], alpha=0.95)
+
+        # Highlight recommended alternative with a gold border box
+        if recommended in alts:
+            idx = alts.index(recommended)
+            for bar in [bar_er, bar_mcda, bar_dqs]:
+                bar[idx].set_edgecolor('goldenrod')
+                bar[idx].set_linewidth(2.0)
+
+        # Value labels on the DQS bars
+        for i, (bar, val) in enumerate(zip(bar_dqs, combined)):
+            ax.text(
+                val + 0.005, bar.get_y() + bar.get_height() / 2,
+                f'{val:.3f}{"  *" if alts[i] == recommended else ""}',
+                va='center', ha='left', fontsize=9,
+                fontweight='bold' if alts[i] == recommended else 'normal'
+            )
+
+        ax.set_yticks(y)
+        ax.set_yticklabels(labels, fontsize=10)
+        ax.set_xlabel('Score', fontsize=11)
+        ax.set_title(title, fontsize=13, fontweight='bold', pad=12)
+        ax.set_xlim(0, min(1.0, max(combined) * 1.30))
+        ax.axvline(x=0, color='grey', linewidth=0.5)
+        ax.legend(loc='lower right', fontsize=9)
+
+        # Footnote
+        ax.text(
+            0.01, -0.06,
+            '* Recommended alternative     Gold border = recommended',
+            transform=ax.transAxes, fontsize=8, color='grey', style='italic'
+        )
+
+        plt.tight_layout()
+
+        full_path = str(self.output_dir / save_path)
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        logger.info(f"DQS breakdown plot saved to {full_path}")
+        return full_path
+
+    def plot_dqs_er_gat_deviation(
+        self,
+        comparative_results: Dict[str, Any],
+        save_path: str,
+        title: str = "DQS per Alternative - ER vs GAT Deviation"
+    ) -> str:
+        """
+        Plot per-alternative DQS comparison between ER and GAT methods.
+
+        Shows grouped horizontal bars (ER combined score vs GAT combined score)
+        for every alternative, sorted by GAT score descending.
+        Delta (GAT-ER) is annotated on each pair.
+        Recommended alternatives for each method are marked.
+
+        Args:
+            comparative_results: Dict from run_comparative_analysis containing
+                methods['ER']['decision'] and methods['GAT']['decision']
+            save_path: Filename to save the plot
+            title: Plot title
+
+        Returns:
+            Full path to saved plot
+        """
+        er_dec  = comparative_results.get('methods', {}).get('ER', {}).get('decision', {})
+        gat_dec = comparative_results.get('methods', {}).get('GAT', {}).get('decision', {})
+
+        er_scores  = er_dec.get('final_scores', {})
+        gat_scores = gat_dec.get('final_scores', {})
+        er_rec  = comparative_results.get('methods', {}).get('ER', {}).get('recommended_alternative')
+        gat_rec = comparative_results.get('methods', {}).get('GAT', {}).get('recommended_alternative')
+
+        if not er_scores and not gat_scores:
+            logger.warning("plot_dqs_er_gat_deviation: no final_scores in comparative results, skipping")
+            return ""
+
+        all_alts = sorted(
+            set(list(er_scores.keys()) + list(gat_scores.keys())),
+            key=lambda a: gat_scores.get(a, er_scores.get(a, 0.0)),
+            reverse=True
+        )
+        n = len(all_alts)
+
+        def _short(name: str) -> str:
+            return name.replace('action_', '').replace('_', ' ').title()
+
+        labels    = [_short(a) for a in all_alts]
+        er_vals   = [er_scores.get(a, 0.0) for a in all_alts]
+        gat_vals  = [gat_scores.get(a, 0.0) for a in all_alts]
+        deltas    = [g - e for g, e in zip(gat_vals, er_vals)]
+
+        fig, axes = plt.subplots(1, 2, figsize=(14, max(4, n * 0.9)),
+                                 gridspec_kw={'width_ratios': [3, 1]})
+
+        # Left panel: grouped bars ER vs GAT
+        ax = axes[0]
+        y      = np.arange(n)
+        height = 0.35
+
+        bar_er  = ax.barh(y + height / 2, er_vals,  height, label='ER',  color=self.colors[0], alpha=0.85)
+        bar_gat = ax.barh(y - height / 2, gat_vals, height, label='GAT', color=self.colors[3], alpha=0.85)
+
+        # Highlight recommended bars
+        for bars, rec, alts_list in [(bar_er, er_rec, all_alts), (bar_gat, gat_rec, all_alts)]:
+            if rec and rec in alts_list:
+                idx = alts_list.index(rec)
+                bars[idx].set_edgecolor('goldenrod')
+                bars[idx].set_linewidth(2.0)
+
+        # Score labels on bars
+        for bar, val in zip(bar_er, er_vals):
+            if val > 0.02:
+                ax.text(val + 0.003, bar.get_y() + bar.get_height() / 2,
+                        f'{val:.3f}', va='center', ha='left', fontsize=8)
+        for bar, val in zip(bar_gat, gat_vals):
+            if val > 0.02:
+                ax.text(val + 0.003, bar.get_y() + bar.get_height() / 2,
+                        f'{val:.3f}', va='center', ha='left', fontsize=8)
+
+        ax.set_yticks(y)
+        ax.set_yticklabels(labels, fontsize=10)
+        ax.set_xlabel('Combined DQS Score', fontsize=11)
+        ax.set_title('Score per Alternative', fontsize=11)
+        ax.set_xlim(0, min(1.0, max(er_vals + gat_vals) * 1.35))
+        ax.legend(fontsize=9)
+
+        # Right panel: delta bar chart
+        ax2 = axes[1]
+        colors_delta = ['#2ca02c' if d >= 0 else '#d62728' for d in deltas]
+        ax2.barh(y, deltas, height * 0.8, color=colors_delta, alpha=0.85)
+        ax2.axvline(x=0, color='black', linewidth=1.0)
+        for i, (bar_y, d) in enumerate(zip(y, deltas)):
+            ax2.text(
+                d + (0.001 if d >= 0 else -0.001),
+                bar_y,
+                f'{d:+.4f}',
+                va='center',
+                ha='left' if d >= 0 else 'right',
+                fontsize=8
+            )
+        ax2.set_yticks(y)
+        ax2.set_yticklabels([])
+        ax2.set_xlabel('Delta (GAT - ER)', fontsize=10)
+        ax2.set_title('Deviation', fontsize=11)
+
+        fig.suptitle(title, fontsize=13, fontweight='bold', y=1.01)
+
+        # Legend markers for recommendations
+        legend_parts = []
+        if er_rec:
+            legend_parts.append(f'ER recommends: {_short(er_rec)}')
+        if gat_rec:
+            legend_parts.append(f'GAT recommends: {_short(gat_rec)}')
+        if legend_parts:
+            fig.text(0.5, -0.03, '  |  '.join(legend_parts) + '   (gold border)',
+                     ha='center', fontsize=9, color='#555555', style='italic')
+
+        plt.tight_layout()
+
+        full_path = str(self.output_dir / save_path)
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        logger.info(f"DQS ER vs GAT deviation plot saved to {full_path}")
+        return full_path
+
     def generate_all_plots(
         self,
         results: Dict[str, Any],
@@ -1678,6 +1900,19 @@ class SystemVisualizer:
                 saved_paths['network'] = path
             except Exception as e:
                 logger.error(f"Failed to plot agent network: {e}")
+
+        # 6. DQS Breakdown (per-alternative ER / MCDA / Combined)
+        if 'decision' in results:
+            try:
+                path = self.plot_dqs_breakdown(
+                    results['decision'],
+                    "dqs_breakdown.png",
+                    title=f"Alternative Ranking - DQS Decomposition (60% ER + 40% MCDA){method_label}"
+                )
+                if path:
+                    saved_paths['dqs_breakdown'] = path
+            except Exception as e:
+                logger.error(f"Failed to plot DQS breakdown: {e}")
 
         # Restore original directory if changed
         if output_subdir:
