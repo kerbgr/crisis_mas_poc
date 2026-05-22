@@ -1,0 +1,339 @@
+{
+  "id": "volcanic_seismic_001",
+  "type": "volcanic_seismic",
+  "name": "Santorini Volcanic-Seismic Multi-Hazard Emergency - Peak Summer Season",
+  "name_greek": "Ηφαιστειοσεισμική Κρίση Σαντορίνης - Καλοκαιρινή Τουριστική Περίοδος",
+  "description": "A Mw 5.7 earthquake has struck the Santorini region at 14:22 local time on 18 July, during peak tourist season. The earthquake originates at a depth of 8 km, associated with the Kolumbo submarine volcano system (6.5 km NE of Santorini) - the primary seismic source of the ongoing swarm, consistent with the January-February 2025 real-world event in which a state of emergency was declared on 6 February 2025 by Civil Protection Secretary General Vasilis Papageorgiou and approximately 11,000 of Santorini's 15,500 permanent residents voluntarily departed. Kolumbo is a highly active submarine caldera last erupting in 1650 CE, generating a destructive tsunami. Seismic swarm activity has been escalating for 11 days, with OASP (led by Prof. Efthymis Lekkas), the NKUA Seismology Laboratory, and the EVIGO volcanological observatory reporting elevated SO2 emissions, ground deformation (+4 cm uplift in the Kolumbo area), and a series of 200+ micro-earthquakes in the preceding 72 hours. The Mw 5.7 mainshock has caused structural damage to buildings on the caldera rim (Fira, Oia, Imerovigli), triggered small landslides on the caldera cliffs, and generated a localised tsunami advisory (0.3-0.8m waves) at the ports of Athinios and Fira Skala. The island currently hosts approximately 22,000 permanent residents and an estimated 30,000-35,000 tourists, including 12,000 cruise-ship passengers aboard 6 vessels anchored in the caldera. A second significant seismic event (Mw 4.8) struck 27 minutes after the mainshock, increasing public panic. Volcanic escalation to sub-Plinian eruption is assessed at 15-25% probability within 72 hours by EVIGO. Mayor Nikos Zorzos of the Municipality of Thira leads the local political response and has activated Civil Protection Plan 'Thiras 2', which divides Santorini into 8 evacuation sectors with designated assembly points (Baxedes Plain for Oia/Finikia/Koloumbos sector; Vourvoulos Plain for Imerovigli/Vourvoulos sector; six additional sector assembly points inland). The Port Authority of Thera (Hellenic Coast Guard) has imposed immediate port access controls: restricted mooring at Athinios, Fira Skala, Ammoudi, Armeni, Korfos, and Thirassia ports - access permitted only for scheduled ferry operations with timed entry; vehicle access managed at port entrances; vessel captains (Blue Star Ferries, SeaJets, private mariners) being coordinated by sequence and dock assignment. All emergency services, the Hellenic Coast Guard, and Hellenic Navy assets in the South Aegean are activated.",
+  "event_reference": "Santorini seismic swarm and Kolumbo submarine volcano unrest, January-March 2025 (thousands of earthquakes originating from Kolumbo 6.5 km NE of Santorini; state of emergency declared 6 February 2025 by Civil Protection Secretary General Vasilis Papageorgiou; approx. 11,000 voluntary departures from permanent population of ~15,500; OASP/EVIGO/NKUA elevated alert; Port Authority of Thera port access controls; ferry service augmentation by Blue Star Ferries and SeaJets). Scenario amplifies to July peak season with 54,000 total population, compounding volcanic and tsunami hazards, and a Mw 5.7 mainshock.",
+  "severity": 0.95,
+  "affected_population": 54000,
+  "casualties": 12,
+  "infrastructure_damage": true,
+  "location": {
+    "region": "Santorini (Thira), Cyclades, South Aegean, Greece",
+    "region_greek": "Σαντορίνη (Θήρα), Κυκλάδες, Νότιο Αιγαίο, Ελλάδα",
+    "coordinates": {"lat": 36.4072, "lon": 25.4615},
+    "affected_area_km2": 76,
+    "affected_area_description": "76 km² island of Santorini including caldera rim settlements (Fira, Oia, Imerovigli, Firostefani), inland villages (Pyrgos, Messaria, Emporio), port facilities (Athinios car ferry port, Fira Skala cable-car port), and Santorini JTR airport. Six cruise ships with 12,000 passengers anchored in the caldera. No road or rail connection to mainland Greece."
+  },
+  "tags": ["volcanic_seismic", "tsunami_risk", "multi_hazard", "island_evacuation", "mass_tourism", "caldera", "natural_disaster", "maritime_emergency"],
+  "available_actions": [
+    {
+      "id": "action_total_island_evacuation",
+      "name": "Total Immediate Island Evacuation - All Assets",
+      "description": "Immediate full-scale evacuation of all 54,000 persons (residents + tourists) via every available sea and air asset. All ferry services to Piraeus and Heraklion operating continuously. Coast Guard vessels redirected from other duties. Military transport aircraft. Cruise ships ordered to take caldera-side tourists on board. Target: island clear within 12-18 hours. NO prioritisation - all persons evacuate simultaneously.",
+      "required_resources": ["all_ferry_services", "coast_guard_fleet", "military_aircraft", "cruise_ships_commandeered", "all_port_facilities", "police_crowd_control", "athinios_port_full_ops"],
+      "estimated_duration": "Full clearance 12-18h, but significant port crowding within first 2h",
+      "risk_level": 0.72,
+      "criteria_scores": {
+        "effectiveness": 0.88,
+        "safety": 0.44,
+        "speed": 0.82,
+        "cost": 0.18,
+        "public_acceptance": 0.95
+      }
+    },
+    {
+      "id": "action_caldera_rim_priority_evacuation",
+      "name": "Caldera Rim Urgent Evacuation (Fira, Oia, Imerovigli)",
+      "description": "Immediately evacuate only the highest-risk caldera rim settlements - Fira, Oia, Imerovigli, Firostefani - which face cliff collapse risk from aftershocks and direct exposure to any volcanic eruption column. Estimated 8,000 residents and 10,000 tourists in these zones. Remaining island population shelters in lower-risk inland locations (Pyrgos, Messaria, airport area) pending further assessment. Uses a fraction of transport assets - manageable and orderly.",
+      "required_resources": ["targeted_bus_convoy", "coast_guard_vessels", "police_zone_management", "temporary_inland_shelter", "cable_car_operations"],
+      "estimated_duration": "Priority zones cleared in 3-4h, subsequent reassessment",
+      "risk_level": 0.42,
+      "criteria_scores": {
+        "effectiveness": 0.72,
+        "safety": 0.80,
+        "speed": 0.82,
+        "cost": 0.55,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_tourist_priority_evacuation",
+      "name": "Tourist and Visitor Priority Evacuation First",
+      "description": "Prioritise evacuation of all 30,000+ tourists and cruise passengers before permanent residents. Cruise ships become primary evacuation vessels for caldera-side guests. Ferry services prioritise tourist accommodation hubs. Residents who know the island remain to assist and shelter in familiar locations. Reduces evacuee unfamiliarity with island geography, eases coordination, but raises equity concerns.",
+      "required_resources": ["cruise_ship_activation", "ferry_priority_boarding", "hotel_coordination", "tourist_assembly_points", "multilingual_communication", "police_access_control"],
+      "estimated_duration": "Tourist evacuation 8-12h, all ferry runs fully occupied",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.55,
+        "speed": 0.68,
+        "cost": 0.28,
+        "public_acceptance": 0.80
+      }
+    },
+    {
+      "id": "action_shelter_high_inland_ground",
+      "name": "Shelter on High Inland Ground - Tsunami and Cliff Protective Movement",
+      "description": "Direct all island population away from coastal and caldera-rim areas to the highest inland ground: Pyrgos hilltop (568m), Profitis Ilias monastery ridge, and Messaria plateau. NO sea evacuation - this avoids crowding at port access roads during ongoing aftershocks and eliminates tsunami risk at Athinios and Fira Skala. Maintains population on island pending full volcanic assessment. Hotels and village halls serve as shelter.",
+      "required_resources": ["island_bus_services", "police_directional_control", "inland_shelter_provision", "water_food_distribution", "communication_systems"],
+      "estimated_duration": "Movement to high ground achievable in 2-3h for 80% of population",
+      "risk_level": 0.35,
+      "criteria_scores": {
+        "effectiveness": 0.68,
+        "safety": 0.90,
+        "speed": 0.80,
+        "cost": 0.72,
+        "public_acceptance": 0.52
+      }
+    },
+    {
+      "id": "action_phased_zone_evacuation",
+      "name": "Phased Zone-by-Zone Controlled Evacuation",
+      "description": "Systematic zone-based evacuation following Civil Protection Plan 'Thiras 2' sector structure in strict priority order: (1) caldera rim sectors (Oia/Finikia assemble at Baxedes Plain; Imerovigli/Vourvoulos assemble at Vourvoulos Plain), (2) coastal zones adjacent to Athinios port, (3) Fira town centre sector, (4) general population by remaining sectors. Each zone cleared before next begins - prevents port saturation and crowd crush. Port Authority of Thera manages timed access for scheduled ferry operations; police control access to Athinios cliff road (single-lane, hairpin). Estimated 48h for full island clearance at safe throughput rate.",
+      "required_resources": ["zone_management_police", "ferry_scheduled_runs", "coast_guard_escort", "public_address_systems", "medical_teams_at_port", "traffic_management"],
+      "estimated_duration": "Phased: 0-6h rim, 6-18h coastal, 18-36h general, 36-48h completion",
+      "risk_level": 0.38,
+      "criteria_scores": {
+        "effectiveness": 0.80,
+        "safety": 0.78,
+        "speed": 0.48,
+        "cost": 0.32,
+        "public_acceptance": 0.72
+      }
+    },
+    {
+      "id": "action_volcanic_monitoring_assessment",
+      "name": "Scientific Assessment Hold - No Mass Movement Pending EVIGO Report",
+      "description": "Impose a 4-6 hour pause on mass evacuation to allow EVIGO volcanological team and OASP seismological network to issue a structured risk assessment. Current 15-25% eruption probability does NOT constitute imminent eruption. Mass movement itself creates secondary hazard risk. Caldera-rim residents move inland only. All cruise ships ordered to steam out of caldera to open sea as precaution. Wait for science before committing population to hazardous port approach roads.",
+      "required_resources": ["evigo_field_team", "oasp_seismic_monitoring", "cruise_ship_precautionary_departure", "restricted_movement_order", "public_messaging_calm"],
+      "estimated_duration": "Hold for 4-6h pending assessment, then decision point",
+      "risk_level": 0.48,
+      "criteria_scores": {
+        "effectiveness": 0.58,
+        "safety": 0.78,
+        "speed": 0.90,
+        "cost": 0.88,
+        "public_acceptance": 0.38
+      }
+    },
+    {
+      "id": "action_maritime_floating_refuge",
+      "name": "Hellenic Navy and Cruise Fleet as Maritime Humanitarian Platform",
+      "description": "Position all available Hellenic Navy vessels (frigates, landing ships, coast guard cutters) and the 6 cruise ships as a maritime humanitarian platform anchored safely beyond the caldera. Ferries act as shuttle between island pick-up points and the fleet. Avoids land-based port bottlenecks. Medical facilities on cruise ships (equipped hospitals) serve as forward triage. Navy landing craft can approach multiple beach points simultaneously, not just Athinios.",
+      "required_resources": ["hellenic_navy_fleet", "cruise_ships_commandeered", "navy_landing_craft", "ferry_shuttle_service", "coast_guard_coordination", "medical_transfer_teams"],
+      "estimated_duration": "Navy positioning 3-4h, shuttle operations begin immediately",
+      "risk_level": 0.32,
+      "criteria_scores": {
+        "effectiveness": 0.78,
+        "safety": 0.82,
+        "speed": 0.55,
+        "cost": 0.25,
+        "public_acceptance": 0.82
+      }
+    },
+    {
+      "id": "action_airport_medical_priority",
+      "name": "Airport Reserved for Medical Emergencies and Critical Command",
+      "description": "Santorini JTR airport (1,650m runway, capacity ~1,800 PAX/hour) immediately suspended for commercial flights. All slots reserved for: (1) medical helicopter and fixed-wing evacuations of critically injured, (2) government and civil protection command aircraft, (3) military logistics. Prevents airport from becoming a tourist panic bottleneck that would block medical access. Commercial tourists redirected to sea routes.",
+      "required_resources": ["airport_authority", "haf_military_aircraft", "ekab_helicopter_fleet", "airport_security", "flight_slot_management", "medical_ground_crews"],
+      "estimated_duration": "Airport restriction in effect within 30 minutes",
+      "risk_level": 0.28,
+      "criteria_scores": {
+        "effectiveness": 0.62,
+        "safety": 0.88,
+        "speed": 0.92,
+        "cost": 0.60,
+        "public_acceptance": 0.65
+      }
+    },
+    {
+      "id": "action_integrated_multi_hazard_response",
+      "name": "Integrated Multi-Hazard Response under Unified Civil Protection Command",
+      "description": "Activate full GSCP multi-hazard response framework under political direction of Mayor Nikos Zorzos (Municipality of Thira) with a single Unified Command at the South Aegean Regional Emergency Coordination Centre (Rhodes) and a forward command post at Santorini JTR airport. Port Authority of Thera (Hellenic Coast Guard) implements port access controls across all six ports (Athinios, Fira Skala, Ammoudi, Armeni, Korfos, Thirassia): timed mooring restricted to scheduled operations only, vehicle management at port entrances, vessel captain coordination by Blue Star Ferries, SeaJets, and private mariners by sequence and dock assignment. Five simultaneous tracks: (1) Immediate zone-based evacuation per Civil Protection Plan 'Thiras 2' sectors, prioritising caldera rim and vulnerable populations; (2) Hellenic Navy maritime humanitarian platform positioning; (3) Airport reserved for medical airlift and command; (4) Cruise ships ordered to open sea with caldera-side guests; (5) EVIGO/OASP/NKUA continuous monitoring with 2-hourly risk assessment updates triggering escalation if eruption probability exceeds 40%. Phased general evacuation on 6-hour decision cycles. Multilingual crisis communication (Greek, English, German, French) via EU ERCC support.",
+      "required_resources": ["gscp_full_activation", "unified_command_centre_rhodes", "forward_cp_jtr", "navy_fleet_positioning", "phased_ferry_operations", "airport_medical_priority", "evigo_oasp_continuous", "eu_ercc_support", "multilingual_comms", "coast_guard_full_fleet"],
+      "estimated_duration": "Command operational in 45 minutes, sustained multi-track response 72h+",
+      "risk_level": 0.28,
+      "criteria_scores": {
+        "effectiveness": 0.88,
+        "safety": 0.80,
+        "speed": 0.44,
+        "cost": 0.15,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_tourism_suspension_managed_shelter",
+      "name": "Tourism Suspension and Managed In-Place Sheltering",
+      "description": "Halt all tourism activity and incoming traffic immediately. Hotels and Airbnb properties serve as organised shelters - tourists remain in registered accommodation on high ground (caldera rim hotels above port road elevation are actually relatively safe from tsunami but at cliff collapse risk; inland hotels are safest). Coordinated by Greek Tourism Organisation and hotel federation. No uncontrolled movement. Population remains on island but concentrated in structural assessed safe buildings. Provides time for scientific assessment.",
+      "required_resources": ["tourism_organisation_gto", "hotel_federation", "police_movement_control", "structural_assessment_teams", "food_supply_chain_extension", "communication_systems"],
+      "estimated_duration": "Shelter-in-place operational within 2h, sustained until risk assessment complete",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.62,
+        "safety": 0.70,
+        "speed": 0.85,
+        "cost": 0.78,
+        "public_acceptance": 0.48
+      }
+    },
+    {
+      "id": "action_international_maritime_sar",
+      "name": "International Maritime SAR Coalition Activation",
+      "description": "Immediately activate EU Civil Protection Mechanism for maritime Search and Rescue assets, request Turkish Coast Guard cooperative support (bilateral agreement), request NATO maritime patrol aircraft for coordination, and request Italian Coast Guard vessels from Otranto. International assets supplement Hellenic Coast Guard overwhelmed by 54,000 person evacuation requirement. Establishes international maritime coordination centre at Heraklion. Time-critical: international assets arrive 6-14 hours after request.",
+      "required_resources": ["eu_civil_protection_maritime", "turkish_coast_guard_bilateral", "nato_maritime_patrol", "italian_coast_guard", "international_coordination_centre_heraklion", "liaison_officers"],
+      "estimated_duration": "Request issued within 1h, first assets operational 6-8h, full international capacity 12-18h",
+      "risk_level": 0.35,
+      "criteria_scores": {
+        "effectiveness": 0.85,
+        "safety": 0.80,
+        "speed": 0.30,
+        "cost": 0.28,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_eruption_contingency_pre_positioning",
+      "name": "Pre-Position for Eruption Escalation - Staged Asset Deployment",
+      "description": "Without triggering full evacuation, immediately pre-position all key assets for rapid activation if EVIGO issues eruption imminent alert. Navy fleet steams to 15-nautical-mile standby position. Ferry operators put all vessels on 30-minute notice. Athinios port cleared of non-essential traffic. Airport cleared of commercial operations. Medical teams deployed to island. All this done quietly to avoid panic. When/if the escalation threshold is triggered, response begins within 2 hours from a much stronger readiness posture.",
+      "required_resources": ["navy_standby_positioning", "ferry_readiness_status", "port_pre-clearance", "airport_preparation", "medical_pre-positioning", "evigo_direct_link"],
+      "estimated_duration": "Pre-positioning complete in 2-3h, execution readiness within 2h of order",
+      "risk_level": 0.30,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.85,
+        "speed": 0.62,
+        "cost": 0.45,
+        "public_acceptance": 0.55
+      }
+    }
+  ],
+  "constraints": {
+    "time_critical": true,
+    "resource_limitations": [
+      "single_access_road_to_athinios_port_cliff_road_one_lane",
+      "jtr_airport_single_runway_capacity_limited",
+      "no_mainland_road_connection",
+      "limited_hospital_capacity_8_beds_icu",
+      "ferry_throughput_maximum_8000_pax_per_hour",
+      "athinios_port_tsunami_risk_zone",
+      "mobile_network_overloaded",
+      "multilingual_communication_challenge",
+      "volcanic_ash_potential_closes_airport_if_eruption_occurs"
+    ],
+    "weather_conditions": "clear_hot_july_afternoon_35c_meltemi_wind_building_north_to_northeast_40kmh",
+    "accessibility": "island_only_sea_and_air_no_mainland_road",
+    "volcanic_specific": {
+      "volcano_type": "submarine_caldera_stratovolcano",
+      "volcano_name": "Kolumbo (submarine caldera, 6.5 km NE of Santorini)",
+      "last_eruption": "1650 CE (Kolumbo); 1950 CE (Nea Kameni within caldera)",
+      "volcanic_explosivity_index_potential": "3-4 (sub-Plinian)",
+      "eruption_probability_72h": "15-25%",
+      "so2_emissions_current": "elevated_3200_tons_per_day",
+      "ground_deformation_7days": "+4cm_uplift_kolumbo_area",
+      "lahars_risk": "none",
+      "pyroclastic_flow_risk": "low_to_moderate_caldera_contained",
+      "volcanic_ash_plume_forecast": "southeast_towards_crete_if_eruption_occurs"
+    },
+    "tsunami_specific": {
+      "current_advisory_level": "watch",
+      "observed_wave_height": "0.3m_athinios_port",
+      "modelled_worst_case_caldera_collapse": "up_to_12m_locally",
+      "athinios_port_elevation": "sea_level",
+      "fira_skala_port_elevation": "sea_level",
+      "tsunami_travel_time_to_crete": "25_minutes",
+      "noa_tsunami_warning_centre_status": "active"
+    },
+    "additional_concerns": [
+      "Athinios cliff road: single-lane, hairpin turns, 200m above sea level - bottleneck for all vehicle evacuation",
+      "Cable car between Fira town and Fira Skala port: capacity 36 persons per cabin, 8 min cycle - useless for mass evacuation",
+      "6 cruise ships with 12,000 passengers anchored in caldera - CANNOT dock at Athinios (too large), use tenders",
+      "JTR airport: 1,650m runway, no ILS - closes in volcanic ash, strong meltemi crosswinds limit light aircraft",
+      "Island hospital (Therassia and Santorini General): combined 65 beds, 8 ICU beds, 2 operating theatres",
+      "July is the busiest month: 22,000 residents + 30,000-35,000 tourists (hotels + Airbnb + cruise)",
+      "International tourists: 40+ nationalities on island, crisis communication in 5+ languages essential",
+      "Historical precedent: 1650 BCE Minoan eruption generated tsunamis reaching Egypt - high public awareness/fear",
+      "Meltemi wind (NE 40 km/h): helps volcanic ash drift southeast but creates rough sea for small vessels",
+      "Nearest major hospital: Syros (90 nautical miles, 4h by ferry), Heraklion Crete (130 nm, 6h by ferry)",
+      "Santorini is a UNESCO World Heritage Site - political pressure against images of chaotic evacuation",
+      "Social media: caldera eruption imagery spreading globally within minutes of mainshock - international attention"
+    ]
+  },
+  "real_time_factors": {
+    "mainshock_time": "14:22 local time (peak beach and restaurant occupation)",
+    "mainshock_magnitude": "Mw 5.7",
+    "mainshock_depth_km": 8,
+    "epicentre": "6.5 km NE of Santorini, near Kolumbo submarine volcano (outside caldera, consistent with 2025 Kolumbo swarm location)",
+    "largest_aftershock": "Mw 4.8 at 14:49 (27 minutes after mainshock)",
+    "total_aftershocks_past_hour": 23,
+    "confirmed_structural_collapses": 4,
+    "buildings_with_major_damage": 28,
+    "casualties_reported": 12,
+    "seriously_injured": 38,
+    "minor_injuries": 145,
+    "persons_trapped_in_rubble": 9,
+    "caldera_rim_cliff_slides": 3,
+    "tsunami_waves_observed": "0.3m at Athinios, 0.2m at Vlychada",
+    "cruise_ships_in_caldera": 6,
+    "cruise_passengers_total": 12000,
+    "tourists_currently_at_athinios_port": "estimated 3,000 attempting spontaneous departure",
+    "evigo_alert_level": "ORANGE - Elevated Unrest",
+    "oasp_seismic_alert": "Level 3 / Intense Sequence",
+    "noa_tsunami_warning": "Advisory active for South Aegean",
+    "airport_status": "operational but commercial flights suspended by authority",
+    "ferry_status": "Blue Star Ferries (vessels Blue Star Paros, Kissamos) and SeaJets services suspended pending port safety assessment - 4 ferries diverted; Port Authority of Thera has imposed timed access control at all ports (Athinios, Fira Skala, Ammoudi, Armeni, Korfos, Thirassia) - mooring restricted to scheduled ferry operations only; vessel captains being coordinated by Port Authority for sequenced dock assignments",
+    "coast_guard_assets_south_aegean": "3 patrol vessels, 1 SAR helicopter (AB-212) at Santorini, 4 additional vessels en route from Piraeus and Heraklion"
+  },
+  "metadata": {
+    "created_date": "2026-05-20",
+    "author": "Crisis MAS Research Team",
+    "version": "1.0",
+    "purpose": "HELD-OUT EVALUATION SCENARIO - NOT FOR TRAINING. Use exclusively for evaluating ER vs GAT-Untrained vs GAT-Trained on an unseen multi-hazard scenario type. Do not include in GAT training corpus.",
+    "scenario_complexity": "extreme",
+    "n_alternatives": 12,
+    "recommended_expert_domains": ["coast_guard", "civil_protection", "meteorology", "medical", "law_enforcement", "logistics", "fire_rescue"],
+    "design_rationale": "N=12 alternatives matching forest fire complexity. Dominant agent coalition: Coastguard Gold + Coastguard Silver are lead agents (maritime island evacuation) - never dominant in any training scenario. Multi-hazard interaction: earthquake triggers tsunami advisory AND volcanic escalation risk, creating compounding decision tradeoffs absent from training data. The 'obvious' public choice (total immediate evacuation) carries high secondary hazard risk (port crowding during tsunami advisory). Tests whether trained GAT generalises to correctly up-weight coastguard and environmental agents on an unseen maritime-volcanic scenario. Reference event: January-March 2025 Santorini / Kolumbo submarine volcano seismic swarm (state of emergency 6 Feb 2025, ~11,000 voluntary departures, Port Authority of Thera port controls, Mayor Nikos Zorzos, Civil Protection Plan Thiras 2).",
+    "expected_dominant_recommendation": "action_integrated_multi_hazard_response",
+    "expected_topsis_leader": "action_maritime_floating_refuge (Ci=0.746, safety=0.82 wins TOPSIS)",
+    "topsis_vs_agent_consensus_gap": "TOPSIS leader maritime_floating_refuge (0.1073 L1-norm) vs integrated response (0.1034 L1-norm) - gap 0.0039. Agent beliefs decisive: any consensus shift toward integrated overrides TOPSIS ranking.",
+    "three_way_tension": "TOPSIS=maritime_floating_refuge | Expert_consensus=integrated_multi_hazard | Public_demand=total_island_evacuation. Evaluates whether ER/GAT correctly weights civil_protection and medical agents over the public-preferred but dangerous total evacuation.",
+    "evaluation_hypothesis": "GAT-Trained will outperform GAT-Untrained by correctly weighting coastguard agents (high maritime domain reliability learned from reliability tracker patterns) and environmental scientist (SO2/volcanic monitoring). ER will show higher disagreement with both GAT variants than in training scenarios due to novel multi-hazard agent opinion distribution.",
+    "version_notes": "v1.1: Updated with verified research facts from 2025 Santorini/Kolumbo seismic crisis. Key corrections: seismic source is Kolumbo submarine volcano (6.5 km NE, NOT Nea Kameni in caldera); Mayor Nikos Zorzos (Municipality of Thira) named as political leader; Civil Protection Plan 'Thiras 2' with 8 sectors integrated (assembly points: Baxedes Plain for Oia/Finikia/Koloumbos, Vourvoulos Plain for Imerovigli/Vourvoulos); Port Authority of Thera actual port controls (timed access, restricted mooring, vessel captain coordination); Blue Star Ferries (Blue Star Paros, Kissamos) and SeaJets named; state of emergency declared 6 Feb 2025 by Civil Protection Secretary General Vasilis Papageorgiou; ~11,000 voluntary departures from 15,500 permanent residents during real event; NKUA Seismology Laboratory added alongside OASP and EVIGO. July setting maximises population complexity. 12 alternatives span from immediate total evacuation to scientific hold."
+  },
+  "expert_selection": {
+    "crisis_type": "volcanic_seismic",
+    "crisis_subtypes": ["island_evacuation", "tsunami_risk", "volcanic_eruption_threat", "mass_tourism", "maritime_emergency", "multi_hazard"],
+    "severity": 0.95,
+    "geographic_scope": "island_national",
+    "geographic_location": "island_coastal_caldera",
+    "affected_populations": 54000,
+    "duration_estimated_hours": 72,
+    "affected_domains": [
+      "coast_guard_maritime",
+      "medical_health",
+      "law_enforcement",
+      "weather_environment",
+      "fire_rescue",
+      "emergency_communications",
+      "logistics_supply",
+      "civil_protection",
+      "volcanology_seismology"
+    ],
+    "command_structure_needed": {
+      "tactical": true,
+      "strategic": true,
+      "multi_jurisdictional": true,
+      "maritime_command": true,
+      "international_coordination": true
+    },
+    "infrastructure_systems": [
+      "ports_ferries",
+      "airport",
+      "hospitals",
+      "communications",
+      "power",
+      "water",
+      "hotels_accommodation",
+      "coastal_infrastructure"
+    ],
+    "volcanic_seismic_specific": {
+      "usar_teams_required": true,
+      "tsunami_warning_active": true,
+      "volcanic_monitoring_required": true,
+      "maritime_evacuation_primary": true,
+      "multilingual_comms_required": true,
+      "cruise_ship_coordination": true
+    }
+  }
+}

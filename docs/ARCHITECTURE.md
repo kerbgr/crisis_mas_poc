@@ -180,9 +180,10 @@ A fourteenth agent, `coordinator_01`, orchestrates the pipeline without contribu
 
 **CoordinatorAgent** (`agents/coordinator_agent.py`)
 - Orchestrates multi-agent decision process
-- Aggregates expert beliefs using ER or GAT
+- Aggregates expert beliefs using one of four methods: ER, GAT, GAT_TRAINED, or MCDA standalone
 - Facilitates consensus through iterative refinement
 - Produces final decision with explanation
+- `--compare-methods` mode runs all four methods on the same assessments for direct comparison
 
 ### 2. Decision Framework Layer
 
@@ -205,8 +206,12 @@ A fourteenth agent, `coordinator_01`, orchestrates the pipeline without contribu
   8. Reasoning quality
   9. **Historical reliability** (from ReliabilityTracker)
 - Multi-head attention (4 heads) for robustness
-- Attention mechanism: $\alpha_{ij} = \text{softmax}_j(0.4 \cdot f_i^{(1)} + 0.3 \cdot f_i^{(3)} + 0.3 \cdot f_i^{(2)} + 0.2 \cdot \cos(\mathbf{f}_i, \mathbf{f}_j))$
-- **Data-driven weighting**: Agents with proven track records receive higher attention
+- Attention mechanism with **learnable/trainable weights** `[w_conf, w_rel, w_cert, w_sim]`:
+  $\alpha_{ij} = \text{softmax}_j(w_0 \cdot f_j^{(1)} + w_1 \cdot f_j^{(3)} + w_2 \cdot f_j^{(2)} + w_3 \cdot \max(\cos(\mathbf{f}_i, \mathbf{f}_j), 0))$
+- **Two variants**:
+  - *GAT (untrained)*: Hand-crafted prior weights [0.40, 0.30, 0.30, 0.20] - interpretable, no training data required
+  - *GAT_TRAINED*: Weights learned offline via L-BFGS-B on 46 historical runs - loaded from `models/gat_weights/gat_trained_weights.json`
+- Methods: `save_weights()`, `load_weights()`, `from_trained()` (factory classmethod)
 
 **MCDAEngine** (`decision_framework/mcda_engine.py`)
 - Multiple MCDA methods:
@@ -318,7 +323,8 @@ Consider these established procedures when evaluating alternatives.
 - Alternative comparison radar charts
 - Consensus evolution over iterations
 - Confidence distribution histograms
-- Decision tree visualizations
+- 4-method comparison plots (ER / GAT / GAT_TRAINED / MCDA) via `METHOD_COLORS` dict
+- GAT training result plot (`plot_gat_training_result()`) - prior vs learned weights, metric comparison, metadata table
 
 ## Decision-Making Flow
 
@@ -483,9 +489,12 @@ $$f_i^{(9)} = \text{ReliabilityScore}(i) = \frac{\sum_{t} w_t \cdot \text{Accura
 
 where $w_t = \gamma^{(T-t)}$ is temporal decay weight ($\gamma = 0.95$), $T$ is current time, and accuracy combines probability, rank, and confidence appropriateness scores from historical assessments.
 
-**2. Attention Score Computation:** For each agent pair $(i,j)$, compute attention logit:
+**2. Attention Score Computation:** For each agent pair $(i,j)$, compute attention logit using learnable weights $\mathbf{w} = [w_0, w_1, w_2, w_3]$ (constraints: $w_0+w_1+w_2=1$, $w_3 \geq 0$):
 
-$$e_{ij} = 0.4 \cdot f_i^{(1)} + 0.3 \cdot f_i^{(3)} + 0.3 \cdot f_i^{(2)} + 0.2 \cdot \cos(\mathbf{f}_i, \mathbf{f}_j)$$
+$$e_{ij} = w_0 \cdot f_i^{(1)} + w_1 \cdot f_i^{(3)} + w_2 \cdot f_i^{(2)} + w_3 \cdot \max\!\left(\cos(\mathbf{f}_i, \mathbf{f}_j),\, 0\right)$$
+
+**Default (untrained GAT):** $\mathbf{w} = [0.40, 0.30, 0.30, 0.20]$ - domain-expert prior, interpretable and operational from run one.
+**GAT_TRAINED:** $\mathbf{w} = [0.4002, 0.2860, 0.3127, 0.2007]$ - learned offline via L-BFGS-B on 46 historical runs; prior was already near-optimal (top-1 accuracy unchanged at 86.7%).
 
 where cosine similarity is:
 
@@ -641,3 +650,68 @@ $$U = \frac{H(m_{\text{final}})}{\log_2 |\mathcal{A}|}$$
 $$G = \frac{\sum_{i=1}^{n} \sum_{j=1}^{n} |w_i - w_j|}{2n \sum_{i=1}^{n} w_i}$$
 
 where $G = 0$ indicates perfect equality and $G = 1$ indicates maximum inequality.
+
+---
+
+## Training Module
+
+The `training/` package provides offline supervised learning of the GAT attention weights. It is fully decoupled from the runtime system and does not affect ER or untrained-GAT operation.
+
+### GATTrainingDataExtractor (`training/gat_training_data.py`)
+
+- Walks `results/` for the three training scenarios: `flood_scenario`, `forest_fire_evia`, `ammonia_leak_elefsina`
+- Extracts per-agent features and ground-truth labels from stored `results.json` files
+- **Training corpus**: 46 runs (flood: 16, forest_fire: 15, hazmat: 15)
+- **Held-out**: `santorini_volcanic_seismic` — excluded from training, used for out-of-distribution evaluation only
+- Parses `AgentAssessment` Pydantic repr strings with regex + `ast.literal_eval`
+
+### GATTrainer (`training/gat_trainer.py`)
+
+- **Loss**: cross-entropy of `softmax(T * DQS_scores)[ground_truth_index]`, temperature T=10, averaged over corpus + L2 regularisation toward prior (lambda=0.1)
+- **Optimiser**: `scipy.optimize.minimize` with L-BFGS-B (4 parameters, no GPU required)
+- **Constraints**: `_decode_weights()` normalises first three components to sum to 1, fourth non-negative
+- **Warm start**: from domain-expert prior `[0.4, 0.3, 0.3, 0.2]`
+- `PRIOR_WEIGHTS = np.array([0.4, 0.3, 0.3, 0.2])`
+- `train(max_iter)` returns learned weights as `np.ndarray`
+- `evaluate(weights)` returns `{top1_accuracy, mean_rank, mean_rank_percentile, n_samples}`
+
+**Training result (46-run corpus):**
+
+| Weights | top-1 accuracy | mean rank |
+|---------|----------------|-----------|
+| Prior [0.40, 0.30, 0.30, 0.20] | 86.7 % | 1.178 |
+| Trained [0.4002, 0.2860, 0.3127, 0.2007] | 86.7 % | 1.178 |
+
+The optimizer converged in 3 iterations. The hand-crafted prior was already near-optimal on the 46-run corpus - confirming that the domain-expert weighting is well-calibrated.
+
+### Training CLI (`scripts/train_gat.py`)
+
+```
+python scripts/train_gat.py [--results-dir results] [--output models/gat_weights/gat_trained_weights.json] [--max-iter 300]
+```
+
+Outputs:
+- `models/gat_weights/gat_trained_weights.json` - learned weights JSON
+- `models/gat_weights/gat_training_result.png` - training result visualisation (prior vs learned bars, metric comparison, metadata table)
+
+### 4-Way Comparison Mode
+
+Running `python main.py --scenario <scenario> --compare-methods` executes all four aggregation methods on the same 13-agent assessments:
+
+| Method | Description |
+|--------|-------------|
+| ER | Dempster-Shafer evidential reasoning (classical baseline) |
+| GAT | Graph attention with hand-crafted prior weights [0.40, 0.30, 0.30, 0.20] |
+| GAT_TRAINED | Graph attention with weights loaded from `models/gat_weights/gat_trained_weights.json` |
+| MCDA | Pure TOPSIS with uniform 1/N beliefs - no agent reasoning, no LLM calls |
+
+**Held-out evaluation (Santorini volcanic seismic, 1 run):**
+
+| Method | Recommendation | Confidence | Consensus | DQS |
+|--------|---------------|------------|-----------|-----|
+| ER | action_integrated_multi_hazard_response | 0.863 | 0.893 | 0.103 |
+| GAT | action_integrated_multi_hazard_response | 0.835 | 0.838 | 0.103 |
+| GAT_TRAINED | action_integrated_multi_hazard_response | **0.873** | **0.903** | 0.103 |
+| MCDA | action_maritime_floating_refuge | 0.107 | 0.000 | **0.745** |
+
+GAT_TRAINED achieves the highest confidence (0.873) and consensus (0.903) on the held-out scenario. ER, GAT, and GAT_TRAINED agree on the recommendation; MCDA selects a different alternative, illustrating the divergence between pure criterion scoring and agent-consensus-driven aggregation.

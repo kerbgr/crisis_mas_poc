@@ -104,14 +104,14 @@ class CoordinatorAgent:
         self.aggregation_method = aggregation_method.upper()
 
         # Validate aggregation method
-        if self.aggregation_method not in ["ER", "GAT"]:
+        if self.aggregation_method not in ["ER", "GAT", "GAT_TRAINED"]:
             logger.warning(
                 f"Invalid aggregation method '{aggregation_method}', defaulting to 'ER'"
             )
             self.aggregation_method = "ER"
 
-        # Create GAT aggregator if GAT method selected but not provided
-        if self.aggregation_method == "GAT" and self.gat_aggregator is None:
+        # Create GAT aggregator if GAT/GAT_TRAINED method selected but not provided
+        if self.aggregation_method in ("GAT", "GAT_TRAINED") and self.gat_aggregator is None:
             logger.info("GAT method selected, creating default GATAggregator")
             self.gat_aggregator = GATAggregator(
                 num_attention_heads=4,
@@ -323,6 +323,8 @@ class CoordinatorAgent:
         """
         if self.aggregation_method == "GAT":
             return self._aggregate_with_gat(agent_assessments, scenario)
+        elif self.aggregation_method == "GAT_TRAINED":
+            return self._aggregate_with_gat_trained(agent_assessments, scenario)
         else:
             return self._aggregate_with_er(agent_assessments)
 
@@ -749,6 +751,34 @@ class CoordinatorAgent:
                 'rationale': f'Default resolution due to error: {e}',
                 'error': str(e)
             }
+
+    def _aggregate_with_gat_trained(
+        self,
+        agent_assessments: Dict[str, Any],
+        scenario: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Aggregate beliefs with GAT using learned (trained) attention weights.
+
+        Loads weights from models/gat_weights/gat_trained_weights.json if
+        available; falls back to untrained GAT if the file does not exist.
+        """
+        from pathlib import Path
+        weights_path = Path("models/gat_weights/gat_trained_weights.json")
+        if not weights_path.exists():
+            logger.warning(
+                "GAT trained weights not found at %s — falling back to untrained GAT",
+                weights_path
+            )
+            return self._aggregate_with_gat(agent_assessments, scenario)
+
+        trained_gat = GATAggregator.from_trained(str(weights_path))
+        result = trained_gat.aggregate_beliefs_with_gat(
+            agent_assessments,
+            scenario or {}
+        )
+        # Tag the method so downstream consumers can distinguish it
+        result["method"] = "GAT_TRAINED"
+        return result
 
     def make_final_decision(
         self,

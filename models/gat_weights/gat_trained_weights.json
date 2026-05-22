@@ -1,0 +1,48 @@
+{
+  "weights": [
+    0.40024083852767944,
+    0.28601664304733276,
+    0.3127121329307556,
+    0.20065203309059143
+  ],
+  "labels": [
+    "w_confidence",
+    "w_relevance",
+    "w_certainty",
+    "w_similarity"
+  ],
+  "trained": true,
+  "prior_weights": [
+    0.4,
+    0.3,
+    0.3,
+    0.2
+  ],
+  "weight_delta": [
+    0.00024083852767942115,
+    -0.013983356952667225,
+    0.012712132930755626,
+    0.0006520330905914196
+  ],
+  "training_metrics": {
+    "prior": {
+      "top1_accuracy": 0.8666666666666667,
+      "mean_rank": 1.1777777777777778,
+      "mean_rank_percentile": 0.02829680891964629,
+      "n_samples": 45
+    },
+    "trained": {
+      "top1_accuracy": 0.8666666666666667,
+      "mean_rank": 1.1777777777777778,
+      "mean_rank_percentile": 0.02829680891964629,
+      "n_samples": 45
+    }
+  },
+  "training_scenarios": [
+    "wildfire",
+    "hazmat",
+    "flood"
+  ],
+  "n_training_samples": 46,
+  "timestamp": "2026-05-21T19:32:06.651546"
+}

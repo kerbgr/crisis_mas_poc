@@ -1206,6 +1206,39 @@ def print_summary(
 # Comparative Analysis
 # ============================================================================
 
+def _run_mcda_only(mcda_engine, alternatives: list) -> dict:
+    """Build a synthetic decision dict using pure TOPSIS (no agent beliefs)."""
+    rankings = mcda_engine.rank_alternatives(alternatives)
+    mcda_scores = {alt_id: score for alt_id, score, _ in rankings}
+
+    # L1-normalise
+    total = sum(mcda_scores.values())
+    mcda_norm = {k: v / total for k, v in mcda_scores.items()} if total > 0 else mcda_scores
+
+    recommended = max(mcda_norm, key=mcda_norm.get) if mcda_norm else None
+    top_score = mcda_norm.get(recommended, 0.0) if recommended else 0.0
+
+    return {
+        'recommended_alternative': recommended,
+        'confidence': top_score,
+        'decision_quality_score': top_score,
+        'consensus_level': 0.0,
+        'consensus_reached': False,
+        'final_scores': mcda_norm,
+        'er_scores': {},
+        'mcda_scores': mcda_scores,
+        'agent_opinions': {},
+        'agents_participated': 0,
+        'conflicts': [],
+        'resolution': {},
+        'explanation': 'Pure MCDA (TOPSIS) ranking - no agent beliefs used.',
+        'scenario_id': 'unknown',
+        'timestamp': datetime.now().isoformat(),
+        'decision_time_seconds': 0.0,
+        'collection_info': {'assessments': {}}
+    }
+
+
 def run_comparative_analysis(
     coordinator: CoordinatorAgent,
     expert_agents: List[ExpertAgent],
@@ -1249,25 +1282,37 @@ def run_comparative_analysis(
         'methods': {}
     }
 
-    # Run with each aggregation method
-    for method in ['ER', 'GAT']:
-        logger.info(f"\n--- Running with {method} aggregation ---")
-
-        # Create coordinator with specific aggregation method
-        method_coordinator = CoordinatorAgent(
-            expert_agents=expert_agents,
-            er_engine=framework['er_engine'],
-            mcda_engine=framework['mcda_engine'],
-            consensus_model=framework['consensus_model'],
-            parallel_assessment=True,
-            aggregation_method=method
+    # Determine which methods to run (GAT_TRAINED only if weights exist)
+    _weights_path = Path("models/gat_weights/gat_trained_weights.json")
+    _weights_available = _weights_path.exists()
+    if _weights_available:
+        methods_to_run = ['ER', 'GAT', 'GAT_TRAINED', 'MCDA']
+    else:
+        methods_to_run = ['ER', 'GAT', 'MCDA']
+        logger.warning(
+            "GAT trained weights not found at %s -- skipping GAT_TRAINED. "
+            "Run 'python scripts/train_gat.py' to generate them.", _weights_path
         )
 
-        # Time the execution
+    # Run with each aggregation method
+    for method in methods_to_run:
+        logger.info(f"\n--- Running with {method} aggregation ---")
+
         start_time = time.time()
 
-        # Run decision process
-        decision = method_coordinator.make_final_decision(scenario, alternatives)
+        if method == 'MCDA':
+            # MCDA-only: pure TOPSIS ranking, no agent beliefs involved
+            decision = _run_mcda_only(framework['mcda_engine'], alternatives)
+        else:
+            method_coordinator = CoordinatorAgent(
+                expert_agents=expert_agents,
+                er_engine=framework['er_engine'],
+                mcda_engine=framework['mcda_engine'],
+                consensus_model=framework['consensus_model'],
+                parallel_assessment=True,
+                aggregation_method=method
+            )
+            decision = method_coordinator.make_final_decision(scenario, alternatives)
 
         processing_time = (time.time() - start_time) * 1000  # Convert to ms
 
@@ -1295,8 +1340,7 @@ def run_comparative_analysis(
             'metrics': metrics
         }
 
-        # Extract GAT attention weights if available
-        if method == 'GAT' and 'gat_analysis' in decision:
+        if method in ('GAT', 'GAT_TRAINED') and 'gat_analysis' in decision:
             method_result['attention_weights'] = decision['gat_analysis'].get('attention_weights', {})
             method_result['top_influential_agents'] = decision['gat_analysis'].get('top_influential_agents', [])
 
@@ -1308,114 +1352,108 @@ def run_comparative_analysis(
         logger.info(f"  DQS: {method_result['decision_quality_score']:.3f}")
         logger.info(f"  Processing time: {processing_time:.1f} ms")
 
-    # Calculate comparison metrics
+    # Build generic comparison metrics (all methods vs ER baseline)
     er_result = results['methods']['ER']
-    gat_result = results['methods']['GAT']
-
-    comparison = {
-        'decision_quality_delta': gat_result['decision_quality_score'] - er_result['decision_quality_score'],
-        'consensus_delta': gat_result['consensus_level'] - er_result['consensus_level'],
-        'confidence_delta': gat_result['confidence'] - er_result['confidence'],
-        'processing_time_delta_ms': gat_result['processing_time_ms'] - er_result['processing_time_ms'],
-        'same_recommendation': er_result['recommended_alternative'] == gat_result['recommended_alternative']
-    }
+    comparison = {'same_recommendation_all': len({v['recommended_alternative'] for v in results['methods'].values()}) == 1}
+    for m, mdata in results['methods'].items():
+        if m == 'ER':
+            continue
+        comparison[f'{m}_vs_ER'] = {
+            'decision_quality_delta': mdata['decision_quality_score'] - er_result['decision_quality_score'],
+            'consensus_delta': mdata['consensus_level'] - er_result['consensus_level'],
+            'confidence_delta': mdata['confidence'] - er_result['confidence'],
+            'same_recommendation': mdata['recommended_alternative'] == er_result['recommended_alternative'],
+        }
+    # Keep legacy keys for backward compatibility with older result readers
+    if 'GAT' in results['methods']:
+        gat_result = results['methods']['GAT']
+        comparison['decision_quality_delta'] = gat_result['decision_quality_score'] - er_result['decision_quality_score']
+        comparison['consensus_delta'] = gat_result['consensus_level'] - er_result['consensus_level']
+        comparison['confidence_delta'] = gat_result['confidence'] - er_result['confidence']
+        comparison['processing_time_delta_ms'] = gat_result['processing_time_ms'] - er_result['processing_time_ms']
+        comparison['same_recommendation'] = er_result['recommended_alternative'] == gat_result['recommended_alternative']
     results['comparison'] = comparison
 
-    # Print comparison summary
+    # Print 4-way comparison summary table
     logger.info("")
     logger.info("="*80)
-    logger.info("COMPARATIVE RESULTS SUMMARY")
+    logger.info("4-WAY COMPARATIVE RESULTS SUMMARY")
     logger.info("="*80)
     logger.info("")
-    logger.info(f"{'Metric':<25} {'ER':>12} {'GAT':>12} {'Delta (GAT-ER)':>15}")
-    logger.info("-"*65)
-    logger.info(f"{'Decision Quality Score':<25} {er_result['decision_quality_score']:>12.3f} {gat_result['decision_quality_score']:>12.3f} {comparison['decision_quality_delta']:>+15.4f}")
-    logger.info(f"{'Consensus Level':<25} {er_result['consensus_level']:>12.3f} {gat_result['consensus_level']:>12.3f} {comparison['consensus_delta']:>+15.4f}")
-    logger.info(f"{'Confidence':<25} {er_result['confidence']:>12.3f} {gat_result['confidence']:>12.3f} {comparison['confidence_delta']:>+15.4f}")
-    logger.info(f"{'Processing Time (ms)':<25} {er_result['processing_time_ms']:>12.1f} {gat_result['processing_time_ms']:>12.1f} {comparison['processing_time_delta_ms']:>+15.1f}")
-    logger.info("-"*65)
-    logger.info(f"{'ER Recommendation:':<25} {er_result['recommended_alternative']}")
-    logger.info(f"{'GAT Recommendation:':<25} {gat_result['recommended_alternative']}")
-    logger.info(f"{'Same Recommendation:':<25} {'Yes ✓' if comparison['same_recommendation'] else 'No ✗'}")
+    col_w = 14
+    header_methods = list(results['methods'].keys())
+    hdr = f"{'Metric':<26}" + "".join(f"{m:>{col_w}}" for m in header_methods)
+    logger.info(hdr)
+    logger.info("-" * (26 + col_w * len(header_methods)))
 
-    # Per-alternative score deviations
-    er_final   = er_result['decision'].get('final_scores', {})
-    gat_final  = gat_result['decision'].get('final_scores', {})
-    all_alts   = sorted(
-        set(list(er_final.keys()) + list(gat_final.keys())),
-        key=lambda a: gat_final.get(a, er_final.get(a, 0.0)),
+    def _row(label, key, fmt=".3f"):
+        vals = [results['methods'][m][key] for m in header_methods]
+        return f"{label:<26}" + "".join(f"{v:{col_w}{fmt}}" for v in vals)
+
+    logger.info(_row("Decision Quality Score", "decision_quality_score"))
+    logger.info(_row("Consensus Level",        "consensus_level"))
+    logger.info(_row("Confidence",             "confidence"))
+    logger.info(_row("Processing Time (ms)",   "processing_time_ms", ".1f"))
+    logger.info("-" * (26 + col_w * len(header_methods)))
+    for m in header_methods:
+        logger.info(f"  {m} -> {results['methods'][m]['recommended_alternative']}")
+
+    # Per-alternative DQS scores across all methods
+    all_alts = sorted(
+        set().union(*[set(results['methods'][m]['decision'].get('final_scores', {}).keys())
+                      for m in header_methods]),
+        key=lambda a: er_result['decision'].get('final_scores', {}).get(a, 0.0),
         reverse=True
     )
     if all_alts:
         logger.info("")
-        logger.info("PER-ALTERNATIVE SCORE DEVIATIONS  (Delta = GAT - ER)")
-        logger.info(f"  {'Alternative':<35} {'ER':>8} {'GAT':>8} {'Delta':>8}")
-        logger.info("  " + "-"*62)
+        logger.info("PER-ALTERNATIVE DQS SCORES")
+        score_hdr = f"  {'Alternative':<35}" + "".join(f"{m:>{col_w}}" for m in header_methods)
+        logger.info(score_hdr)
+        logger.info("  " + "-" * (35 + col_w * len(header_methods)))
         for alt_id in all_alts:
-            er_s   = er_final.get(alt_id, 0.0)
-            gat_s  = gat_final.get(alt_id, 0.0)
-            delta  = gat_s - er_s
-            tags   = []
-            if alt_id == er_result['recommended_alternative']:
-                tags.append("ER✓")
-            if alt_id == gat_result['recommended_alternative']:
-                tags.append("GAT✓")
+            tags = [m + "✓" for m in header_methods
+                    if results['methods'][m]['recommended_alternative'] == alt_id]
             tag_str = f"  [{', '.join(tags)}]" if tags else ""
-            logger.info(
-                f"  {alt_id:<35} {er_s:>8.4f} {gat_s:>8.4f} {delta:>+8.4f}{tag_str}"
+            row_vals = "".join(
+                f"{results['methods'][m]['decision'].get('final_scores', {}).get(alt_id, 0.0):>{col_w}.4f}"
+                for m in header_methods
             )
-
-    # Show GAT attention analysis if available
-    if 'top_influential_agents' in gat_result and gat_result['top_influential_agents']:
-        logger.info("")
-        logger.info("GAT Attention Analysis - Top Influential Agents:")
-        for i, agent_info in enumerate(gat_result['top_influential_agents'][:5], 1):
-            if isinstance(agent_info, dict):
-                logger.info(f"  {i}. {agent_info.get('agent_id', 'unknown')}: {agent_info.get('attention_weight', 0.0):.4f}")
-            else:
-                logger.info(f"  {i}. {agent_info}")
+            logger.info(f"  {alt_id:<35}{row_vals}{tag_str}")
 
     logger.info("")
     logger.info("="*80)
 
-    # Save comparative results
+    # Save comparative results JSON
     comparison_file = output_dir / "comparative_analysis.json"
-    with open(comparison_file, 'w') as f:
-        # Prepare serializable version (remove non-serializable parts)
-        serializable_results = {
-            'scenario': results['scenario'],
-            'scenario_type': results['scenario_type'],
-            'num_agents': results['num_agents'],
-            'comparison': results['comparison'],
-            'methods': {
-                method: {
+    serializable_results = {
+        'scenario': results['scenario'],
+        'scenario_type': results['scenario_type'],
+        'num_agents': results['num_agents'],
+        'comparison': results['comparison'],
+        'methods': {
+            method: {
+                'recommended_alternative': data['recommended_alternative'],
+                'confidence': data['confidence'],
+                'consensus_level': data['consensus_level'],
+                'decision_quality_score': data['decision_quality_score'],
+                'processing_time_ms': data['processing_time_ms'],
+                'decision': {
+                    'final_scores': data.get('decision', {}).get('final_scores', {}),
                     'recommended_alternative': data['recommended_alternative'],
-                    'confidence': data['confidence'],
-                    'consensus_level': data['consensus_level'],
-                    'decision_quality_score': data['decision_quality_score'],
-                    'processing_time_ms': data['processing_time_ms']
                 }
-                for method, data in results['methods'].items()
             }
+            for method, data in results['methods'].items()
         }
-        if 'attention_weights' in gat_result:
-            serializable_results['methods']['GAT']['attention_weights'] = gat_result.get('attention_weights', {})
-        if 'top_influential_agents' in gat_result:
-            serializable_results['methods']['GAT']['top_influential_agents'] = gat_result.get('top_influential_agents', [])
-
+    }
+    with open(comparison_file, 'w') as f:
         json.dump(serializable_results, f, indent=2, default=str)
-
     logger.info(f"Comparative analysis saved to: {comparison_file}")
 
-    # Save full results for each method in their respective subdirectories
-    for method in ['ER', 'GAT']:
-        method_data = results['methods'][method]
-
-        # Create method-specific subdirectory
+    # Save full results for each method in its own subdirectory
+    for method, method_data in results['methods'].items():
         method_dir = output_dir / method.lower()
         method_dir.mkdir(exist_ok=True, parents=True)
-        method_file = method_dir / "results.json"
-
         full_results = {
             'timestamp': datetime.now().isoformat(),
             'scenario': results['scenario'],
@@ -1424,18 +1462,14 @@ def run_comparative_analysis(
             'decision': method_data['decision'],
             'metrics': method_data['metrics']
         }
-
-        # Add GAT-specific analysis if available
-        if method == 'GAT':
+        if method in ('GAT', 'GAT_TRAINED'):
             if 'attention_weights' in method_data:
                 full_results['gat_attention_weights'] = method_data['attention_weights']
             if 'top_influential_agents' in method_data:
                 full_results['gat_top_influential_agents'] = method_data['top_influential_agents']
-
-        with open(method_file, 'w') as f:
+        with open(method_dir / "results.json", 'w') as f:
             json.dump(full_results, f, indent=2, default=str)
-
-        logger.info(f"{method} full results saved to: {method_file}")
+        logger.info(f"{method} full results saved to: {method_dir / 'results.json'}")
 
     # Persist reliability data after comparative runs
     for agent in expert_agents:
@@ -1584,8 +1618,8 @@ For more information, see README.md
         '--aggregation-method',
         type=str,
         default='er',
-        choices=['er', 'gat'],
-        help='Aggregation method: "er" (Evidential Reasoning) or "gat" (Graph Attention Network). Default: er'
+        choices=['er', 'gat', 'gat_trained', 'mcda'],
+        help='Aggregation method: "er", "gat", "gat_trained" (trained weights), "mcda" (pure TOPSIS). Default: er'
     )
 
     parser.add_argument(
@@ -1778,7 +1812,7 @@ For more information, see README.md
         if not args.no_viz:
             if args.compare_methods and comparative_results:
                 # Generate separate visualizations for each method in subdirectories
-                for method in ['ER', 'GAT']:
+                for method in list(comparative_results['methods'].keys()):
                     method_lower = method.lower()
                     method_dir = output_dir / method_lower
                     method_dir.mkdir(exist_ok=True, parents=True)

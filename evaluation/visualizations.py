@@ -302,6 +302,7 @@ SEE ALSO:
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.patheffects as mpe
 import seaborn as sns
 import numpy as np
 import networkx as nx
@@ -366,6 +367,20 @@ class SystemVisualizer:
         plt.rcParams['axes.unicode_minus'] = False  # Fix minus sign display
 
         logger.info(f"SystemVisualizer initialized (output: {self.output_dir}, dpi: {self.dpi})")
+
+    # Canonical colours for the four comparison methods
+    METHOD_COLORS = {
+        'ER':          '#3498db',   # blue
+        'GAT':         '#e74c3c',   # red
+        'GAT_TRAINED': '#2ecc71',   # green
+        'MCDA':        '#f39c12',   # orange
+    }
+    _METHOD_LABELS = {
+        'ER':          'Evidential Reasoning (ER)',
+        'GAT':         'Graph Attention Network (GAT)',
+        'GAT_TRAINED': 'GAT Trained',
+        'MCDA':        'MCDA (TOPSIS)',
+    }
 
     def plot_belief_distributions(
         self,
@@ -460,20 +475,35 @@ class SystemVisualizer:
             bottom = bottom + values  # Element-wise addition
 
             # Add value labels on bars if space allows
+            bar_color = self.colors[i % len(self.colors)]
+            # Determine readable text color based on bar background luminance
+            try:
+                import matplotlib.colors as mcolors
+                r, g, b, *_ = mcolors.to_rgba(bar_color)
+                luminance = 0.299 * r + 0.587 * g + 0.114 * b
+                text_color = 'white' if luminance < 0.55 else 'black'
+            except Exception:
+                text_color = 'white'
+
             for j, (bar, val) in enumerate(zip(bars, values)):
                 if val > 0.08:  # Only show label if bar is large enough
                     height = bar.get_height()
                     y_pos = bar.get_y() + height / 2
-                    ax.text(
+                    txt = ax.text(
                         bar.get_x() + bar.get_width() / 2,
                         y_pos,
                         f'{val:.2f}',
                         ha='center',
                         va='center',
-                        fontsize=9,
-                        color='white',
-                        weight='bold'
+                        fontsize=8,
+                        color=text_color,
+                        weight='bold',
                     )
+                    # Thin contrasting outline so text is legible on any background
+                    txt.set_path_effects([
+                        mpe.withStroke(linewidth=2,
+                                       foreground='black' if text_color == 'white' else 'white')
+                    ])
 
         # Customize plot
         ax.set_xlabel('Expert Agent', fontsize=12, weight='bold')
@@ -1163,19 +1193,13 @@ class SystemVisualizer:
         self,
         comparative_results: Dict[str, Any],
         save_path: str = "method_comparison.png",
-        title: str = "ER vs GAT Aggregation Method Comparison"
+        title: str = "Aggregation Method Comparison"
     ) -> str:
         """
-        Plot ER vs GAT method comparison with multiple metrics.
-
-        Creates a comprehensive comparison chart showing:
-        - Decision Quality Score
-        - Consensus Level
-        - Decision Confidence
-        - Processing Time
+        Plot N-method comparison (ER, GAT, GAT_TRAINED, MCDA) across four metrics.
 
         Args:
-            comparative_results: Dictionary with 'methods' containing ER and GAT results
+            comparative_results: Dict with 'methods' keyed by method name
             save_path: Filename to save the plot
             title: Plot title
 
@@ -1188,129 +1212,57 @@ class SystemVisualizer:
             logger.warning("No method comparison data available")
             return ""
 
-        methods = comparative_results['methods']
-        if 'ER' not in methods or 'GAT' not in methods:
-            logger.warning("Missing ER or GAT results for comparison")
+        methods_data = comparative_results['methods']
+        method_names = list(methods_data.keys())
+        if not method_names:
             return ""
 
-        er_data = methods['ER']
-        gat_data = methods['GAT']
+        colors = [self.METHOD_COLORS.get(m, '#95a5a6') for m in method_names]
+        short_labels = [self._METHOD_LABELS.get(m, m) for m in method_names]
 
-        # Create figure with subplots
         fig, axes = plt.subplots(2, 2, figsize=(14, 10))
         fig.suptitle(title, fontsize=16, weight='bold', y=1.02)
 
-        # Color scheme for methods
-        er_color = '#3498db'  # Blue for ER
-        gat_color = '#e74c3c'  # Red for GAT
+        n = len(method_names)
+        x = np.arange(n)
+        bar_w = min(0.6, 3.0 / n)
 
-        # --- Plot 1: Decision Quality Score ---
-        ax1 = axes[0, 0]
-        metrics = ['Decision Quality\nScore']
-        er_vals = [er_data.get('decision_quality_score', 0)]
-        gat_vals = [gat_data.get('decision_quality_score', 0)]
+        def _labelled_bar(ax, values, ylabel, subplot_title, fmt='{:.3f}', ylim=(0, 1.0)):
+            bars = ax.bar(x, values, bar_w, color=colors, edgecolor='black', linewidth=1.2)
+            ax.set_ylabel(ylabel, fontsize=10, weight='bold')
+            ax.set_title(subplot_title, fontsize=11, weight='bold')
+            ax.set_xticks(x)
+            ax.set_xticklabels(short_labels, fontsize=8, rotation=15, ha='right')
+            if ylim:
+                ax.set_ylim(*ylim)
+            ax.grid(axis='y', alpha=0.3, linestyle=':')
+            for bar, val in zip(bars, values):
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.015,
+                        fmt.format(val), ha='center', va='bottom', fontsize=9, weight='bold')
+            return bars
 
-        x = np.arange(len(metrics))
-        width = 0.35
-
-        bars1 = ax1.bar(x - width/2, er_vals, width, label='Evidential Reasoning (ER)',
-                        color=er_color, edgecolor='black', linewidth=1.5)
-        bars2 = ax1.bar(x + width/2, gat_vals, width, label='Graph Attention Network (GAT)',
-                        color=gat_color, edgecolor='black', linewidth=1.5)
-
-        ax1.set_ylabel('Score', fontsize=11, weight='bold')
-        ax1.set_title('Decision Quality Score', fontsize=12, weight='bold')
-        ax1.set_xticks(x)
-        ax1.set_xticklabels(metrics)
-        ax1.set_ylim(0, 1.0)
-        ax1.legend(loc='upper right', fontsize=9)
-        ax1.grid(axis='y', alpha=0.3, linestyle=':')
-
-        # Add value labels
-        for bar, val in zip(bars1, er_vals):
-            ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02,
-                     f'{val:.3f}', ha='center', va='bottom', fontsize=10, weight='bold')
-        for bar, val in zip(bars2, gat_vals):
-            ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02,
-                     f'{val:.3f}', ha='center', va='bottom', fontsize=10, weight='bold')
+        # --- Plot 1: DQS ---
+        dqs_vals = [methods_data[m].get('decision_quality_score', 0) for m in method_names]
+        _labelled_bar(axes[0, 0], dqs_vals, 'Score', 'Decision Quality Score')
 
         # --- Plot 2: Consensus Level ---
-        ax2 = axes[0, 1]
-        er_consensus = er_data.get('consensus_level', 0)
-        gat_consensus = gat_data.get('consensus_level', 0)
+        cons_vals = [methods_data[m].get('consensus_level', 0) for m in method_names]
+        _labelled_bar(axes[0, 1], cons_vals, 'Consensus Level', 'Consensus Level')
+        axes[0, 1].axhline(y=0.75, color='green', linestyle='--', linewidth=1.5,
+                           alpha=0.7, label='Threshold (75%)')
+        axes[0, 1].legend(loc='lower right', fontsize=8)
 
-        bars1 = ax2.bar(['ER'], [er_consensus], width=0.5, color=er_color,
-                        edgecolor='black', linewidth=1.5)
-        bars2 = ax2.bar(['GAT'], [gat_consensus], width=0.5, color=gat_color,
-                        edgecolor='black', linewidth=1.5)
-
-        ax2.set_ylabel('Consensus Level', fontsize=11, weight='bold')
-        ax2.set_title('Consensus Level Comparison', fontsize=12, weight='bold')
-        ax2.set_ylim(0, 1.0)
-        ax2.axhline(y=0.75, color='green', linestyle='--', linewidth=2,
-                    alpha=0.7, label='Threshold (75%)')
-        ax2.legend(loc='lower right', fontsize=9)
-        ax2.grid(axis='y', alpha=0.3, linestyle=':')
-
-        # Add value labels
-        ax2.text(0, er_consensus + 0.02, f'{er_consensus:.1%}',
-                 ha='center', va='bottom', fontsize=11, weight='bold')
-        ax2.text(1, gat_consensus + 0.02, f'{gat_consensus:.1%}',
-                 ha='center', va='bottom', fontsize=11, weight='bold')
-
-        # Delta annotation
-        delta = gat_consensus - er_consensus
-        delta_color = 'green' if delta >= 0 else 'red'
-        ax2.annotate(f'Δ = {delta:+.1%}', xy=(0.5, max(er_consensus, gat_consensus) + 0.08),
-                     ha='center', fontsize=10, weight='bold', color=delta_color)
-
-        # --- Plot 3: Decision Confidence ---
-        ax3 = axes[1, 0]
-        er_conf = er_data.get('confidence', 0)
-        gat_conf = gat_data.get('confidence', 0)
-
-        # Create pie-style confidence display
-        categories = ['Evidential Reasoning\n(ER)', 'Graph Attention\nNetwork (GAT)']
-        confidences = [er_conf, gat_conf]
-        colors = [er_color, gat_color]
-
-        bars = ax3.barh(categories, confidences, color=colors, edgecolor='black', linewidth=1.5)
-        ax3.set_xlim(0, 1.0)
-        ax3.set_xlabel('Confidence Score', fontsize=11, weight='bold')
-        ax3.set_title('Decision Confidence', fontsize=12, weight='bold')
-        ax3.grid(axis='x', alpha=0.3, linestyle=':')
-
-        # Add value labels
-        for bar, val in zip(bars, confidences):
-            ax3.text(val + 0.02, bar.get_y() + bar.get_height()/2,
-                     f'{val:.1%}', ha='left', va='center', fontsize=11, weight='bold')
+        # --- Plot 3: Confidence ---
+        conf_vals = [methods_data[m].get('confidence', 0) for m in method_names]
+        _labelled_bar(axes[1, 0], conf_vals, 'Confidence', 'Decision Confidence',
+                      fmt='{:.1%}')
 
         # --- Plot 4: Processing Time ---
-        ax4 = axes[1, 1]
-        er_time = er_data.get('processing_time_ms', 0) / 1000  # Convert to seconds
-        gat_time = gat_data.get('processing_time_ms', 0) / 1000
-
-        bars = ax4.bar(['ER', 'GAT'], [er_time, gat_time], color=[er_color, gat_color],
-                       edgecolor='black', linewidth=1.5)
-        ax4.set_ylabel('Time (seconds)', fontsize=11, weight='bold')
-        ax4.set_title('Processing Time', fontsize=12, weight='bold')
-        ax4.grid(axis='y', alpha=0.3, linestyle=':')
-
-        # Add value labels
-        for bar, val in zip(bars, [er_time, gat_time]):
-            ax4.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
-                     f'{val:.1f}s', ha='center', va='bottom', fontsize=11, weight='bold')
-
-        # Add overhead annotation
-        overhead = gat_time - er_time
-        ax4.annotate(f'GAT overhead: {overhead:+.1f}s',
-                     xy=(0.5, max(er_time, gat_time) * 1.15),
-                     ha='center', fontsize=10, weight='bold',
-                     color='orange' if overhead > 0 else 'green')
+        time_vals = [methods_data[m].get('processing_time_ms', 0) / 1000.0 for m in method_names]
+        _labelled_bar(axes[1, 1], time_vals, 'Time (s)', 'Processing Time',
+                      fmt='{:.1f}s', ylim=None)
 
         plt.tight_layout()
-
-        # Save figure
         full_path = self.output_dir / save_path
         plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
@@ -1322,15 +1274,16 @@ class SystemVisualizer:
         self,
         comparative_results: Dict[str, Any],
         save_path: str = "recommendation_comparison.png",
-        title: str = "ER vs GAT: Recommended Actions"
+        title: str = "Recommended Actions by Method"
     ) -> str:
         """
-        Plot comparison of recommended actions between ER and GAT.
+        Plot recommended actions for all methods (ER, GAT, GAT_TRAINED, MCDA).
 
-        Shows which action each method recommends and whether they agree.
+        Draws one colour-coded box per method arranged in a grid and shows
+        whether all methods agree on the top recommendation.
 
         Args:
-            comparative_results: Dictionary with method results
+            comparative_results: Dictionary with 'methods' keyed by method name
             save_path: Filename to save the plot
             title: Plot title
 
@@ -1342,64 +1295,79 @@ class SystemVisualizer:
         if 'methods' not in comparative_results:
             return ""
 
-        methods = comparative_results['methods']
-        comparison = comparative_results.get('comparison', {})
+        methods_data = comparative_results['methods']
+        method_names = list(methods_data.keys())
+        if not method_names:
+            return ""
 
-        er_rec = methods['ER'].get('recommended_alternative', 'Unknown')
-        gat_rec = methods['GAT'].get('recommended_alternative', 'Unknown')
-        same = comparison.get('same_recommendation', er_rec == gat_rec)
+        def _short(name: str) -> str:
+            return name.replace('action_', '').replace('_', '\n').title()
 
-        # Create figure
-        fig, ax = plt.subplots(figsize=(12, 6))
+        recommendations = {m: methods_data[m].get('recommended_alternative', 'Unknown')
+                           for m in method_names}
+        all_same = len(set(recommendations.values())) == 1
 
-        # Create comparison visualization
-        er_color = '#3498db'
-        gat_color = '#e74c3c'
-        agree_color = '#27ae60' if same else '#f39c12'
+        n = len(method_names)
+        ncols = min(n, 2)
+        nrows = (n + ncols - 1) // ncols
+        fig_w = 6 * ncols
+        fig_h = 3.5 * nrows + 1.5
 
-        # Draw method boxes
-        er_box = plt.Rectangle((0.1, 0.4), 0.35, 0.4, facecolor=er_color,
-                                edgecolor='black', linewidth=2)
-        gat_box = plt.Rectangle((0.55, 0.4), 0.35, 0.4, facecolor=gat_color,
-                                 edgecolor='black', linewidth=2)
-        ax.add_patch(er_box)
-        ax.add_patch(gat_box)
+        fig, axes = plt.subplots(nrows, ncols, figsize=(fig_w, fig_h))
+        fig.suptitle(title, fontsize=14, weight='bold', y=1.01)
 
-        # Method labels
-        ax.text(0.275, 0.85, 'Evidential Reasoning (ER)', ha='center', va='center',
-                fontsize=14, weight='bold', color=er_color)
-        ax.text(0.725, 0.85, 'Graph Attention Network (GAT)', ha='center', va='center',
-                fontsize=14, weight='bold', color=gat_color)
-
-        # Recommendation text (clean up action IDs for display)
-        er_display = er_rec.replace('action_', '').replace('_', ' ').title()
-        gat_display = gat_rec.replace('action_', '').replace('_', ' ').title()
-
-        ax.text(0.275, 0.6, er_display, ha='center', va='center',
-                fontsize=11, weight='bold', color='white', wrap=True)
-        ax.text(0.725, 0.6, gat_display, ha='center', va='center',
-                fontsize=11, weight='bold', color='white', wrap=True)
-
-        # Agreement indicator
-        if same:
-            ax.annotate('', xy=(0.55, 0.6), xytext=(0.45, 0.6),
-                        arrowprops=dict(arrowstyle='<->', color=agree_color, lw=3))
-            ax.text(0.5, 0.2, '✓ SAME RECOMMENDATION', ha='center', va='center',
-                    fontsize=14, weight='bold', color=agree_color,
-                    bbox=dict(boxstyle='round', facecolor='white', edgecolor=agree_color, linewidth=2))
+        # Flatten axes to 1D for uniform iteration
+        if n == 1:
+            axes = [axes]
+        elif nrows == 1:
+            axes = list(axes)
         else:
-            ax.text(0.5, 0.2, '✗ DIFFERENT RECOMMENDATIONS', ha='center', va='center',
-                    fontsize=14, weight='bold', color=agree_color,
-                    bbox=dict(boxstyle='round', facecolor='white', edgecolor=agree_color, linewidth=2))
+            axes = [ax for row in axes for ax in row]
 
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-        ax.set_title(title, fontsize=16, weight='bold', pad=20)
-        ax.axis('off')
+        for idx, method in enumerate(method_names):
+            ax = axes[idx]
+            color = self.METHOD_COLORS.get(method, '#95a5a6')
+            label = self._METHOD_LABELS.get(method, method)
+            rec = recommendations[method]
+            rec_display = _short(rec)
+
+            # Coloured header bar
+            ax.add_patch(plt.Rectangle((0, 0.65), 1, 0.35,
+                                       facecolor=color, edgecolor='none', transform=ax.transAxes))
+            ax.text(0.5, 0.825, label, ha='center', va='center',
+                    fontsize=11, weight='bold', color='white', transform=ax.transAxes)
+
+            # Recommendation body
+            ax.text(0.5, 0.35, rec_display, ha='center', va='center',
+                    fontsize=10, weight='bold', color='#2c3e50', transform=ax.transAxes,
+                    multialignment='center')
+
+            conf = methods_data[method].get('confidence', None)
+            if conf is not None:
+                ax.text(0.5, 0.08, f'Confidence: {conf:.1%}',
+                        ha='center', va='center', fontsize=9, color='#555555',
+                        transform=ax.transAxes)
+
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+            ax.axis('off')
+            for spine in ax.spines.values():
+                spine.set_edgecolor(color)
+                spine.set_linewidth(2)
+
+        # Hide any surplus axes
+        for idx in range(n, len(axes)):
+            axes[idx].axis('off')
+
+        # Agreement banner
+        agree_text = '✓ ALL METHODS AGREE' if all_same else '✗ METHODS DISAGREE'
+        agree_color = '#27ae60' if all_same else '#e74c3c'
+        fig.text(0.5, 0.01, agree_text, ha='center', fontsize=13, weight='bold',
+                 color=agree_color,
+                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
+                           edgecolor=agree_color, linewidth=2))
 
         plt.tight_layout()
-
-        # Save figure
         full_path = self.output_dir / save_path
         plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
@@ -1413,9 +1381,13 @@ class SystemVisualizer:
         save_path: str = "comparative_summary.png"
     ) -> str:
         """
-        Generate a comprehensive summary visualization of ER vs GAT comparison.
+        Generate a comprehensive N-method summary (ER, GAT, GAT_TRAINED, MCDA).
 
-        Creates a single figure combining all key comparative metrics.
+        Layout:
+          - Top-left (2x2):  radar chart of DQS / Consensus / Confidence
+          - Top-right:       recommendation table
+          - Middle-right:    processing time bars
+          - Bottom row:      delta bars vs ER baseline for each non-ER method
 
         Args:
             comparative_results: Full comparative analysis results
@@ -1429,131 +1401,128 @@ class SystemVisualizer:
         if 'methods' not in comparative_results:
             return ""
 
-        methods = comparative_results['methods']
-        comparison = comparative_results.get('comparison', {})
+        methods_data = comparative_results['methods']
+        method_names = list(methods_data.keys())
+        if not method_names:
+            return ""
+
         scenario = comparative_results.get('scenario', 'Unknown')
         scenario_type = comparative_results.get('scenario_type', 'Unknown')
 
-        er = methods['ER']
-        gat = methods['GAT']
-
-        # Create figure
         fig = plt.figure(figsize=(16, 10))
+        fig.suptitle(
+            f'Multi-Method Comparative Analysis\nScenario: {scenario} ({scenario_type.upper()})',
+            fontsize=15, weight='bold', y=0.99
+        )
 
-        # Title with scenario info
-        fig.suptitle(f'ER vs GAT Comparative Analysis\nScenario: {scenario} ({scenario_type.upper()})',
-                     fontsize=16, weight='bold', y=0.98)
+        gs = fig.add_gridspec(3, 3, hspace=0.45, wspace=0.35)
 
-        # Create grid layout
-        gs = fig.add_gridspec(3, 3, hspace=0.4, wspace=0.3)
-
-        # Colors
-        er_color = '#3498db'
-        gat_color = '#e74c3c'
-
-        # --- Subplot 1: Metrics Radar Chart ---
-        ax1 = fig.add_subplot(gs[0:2, 0:2], projection='polar')
-
+        # --- Radar chart ---
+        ax_radar = fig.add_subplot(gs[0:2, 0:2], projection='polar')
         categories = ['DQS', 'Consensus', 'Confidence']
-        er_vals = [er.get('decision_quality_score', 0),
-                   er.get('consensus_level', 0),
-                   er.get('confidence', 0)]
-        gat_vals = [gat.get('decision_quality_score', 0),
-                    gat.get('consensus_level', 0),
-                    gat.get('confidence', 0)]
-
         angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
-        er_vals_closed = er_vals + er_vals[:1]
-        gat_vals_closed = gat_vals + gat_vals[:1]
         angles_closed = angles + angles[:1]
 
-        ax1.plot(angles_closed, er_vals_closed, 'o-', linewidth=2, color=er_color,
-                 label='ER', markersize=8)
-        ax1.fill(angles_closed, er_vals_closed, alpha=0.25, color=er_color)
-        ax1.plot(angles_closed, gat_vals_closed, 's-', linewidth=2, color=gat_color,
-                 label='GAT', markersize=8)
-        ax1.fill(angles_closed, gat_vals_closed, alpha=0.25, color=gat_color)
+        for method in method_names:
+            d = methods_data[method]
+            vals = [d.get('decision_quality_score', 0),
+                    d.get('consensus_level', 0),
+                    d.get('confidence', 0)]
+            vals_closed = vals + vals[:1]
+            color = self.METHOD_COLORS.get(method, '#95a5a6')
+            short = self._METHOD_LABELS.get(method, method)
+            ax_radar.plot(angles_closed, vals_closed, 'o-', linewidth=2,
+                          color=color, label=short, markersize=7)
+            ax_radar.fill(angles_closed, vals_closed, alpha=0.15, color=color)
 
-        ax1.set_xticks(angles)
-        ax1.set_xticklabels(categories, fontsize=11, weight='bold')
-        ax1.set_ylim(0, 1)
-        ax1.set_title('Performance Metrics', fontsize=12, weight='bold', pad=20)
-        ax1.legend(loc='upper right', bbox_to_anchor=(1.3, 1.0))
+        ax_radar.set_xticks(angles)
+        ax_radar.set_xticklabels(categories, fontsize=10, weight='bold')
+        ax_radar.set_ylim(0, 1)
+        ax_radar.set_title('Performance Metrics', fontsize=12, weight='bold', pad=20)
+        ax_radar.legend(loc='upper right', bbox_to_anchor=(1.35, 1.1), fontsize=8)
 
-        # --- Subplot 2: Recommendations ---
-        ax2 = fig.add_subplot(gs[0, 2])
-        same_rec = comparison.get('same_recommendation', False)
+        # --- Recommendations panel ---
+        ax_rec = fig.add_subplot(gs[0, 2])
+        ax_rec.axis('off')
+        ax_rec.set_title('Recommendations', fontsize=11, weight='bold')
 
-        er_rec = er.get('recommended_alternative', '').replace('action_', '').replace('_', '\n').title()
-        gat_rec = gat.get('recommended_alternative', '').replace('action_', '').replace('_', '\n').title()
+        all_recs = [methods_data[m].get('recommended_alternative', '') for m in method_names]
+        all_same = len(set(all_recs)) == 1
+        y_step = 0.95 / max(len(method_names), 1)
+        for i, method in enumerate(method_names):
+            color = self.METHOD_COLORS.get(method, '#95a5a6')
+            rec = (methods_data[method].get('recommended_alternative', 'Unknown')
+                   .replace('action_', '').replace('_', ' ').title())
+            y = 0.95 - i * y_step
+            ax_rec.text(0.02, y, f'{self._METHOD_LABELS.get(method, method)}:',
+                        fontsize=8, weight='bold', color=color, va='top', transform=ax_rec.transAxes)
+            ax_rec.text(0.02, y - y_step * 0.45, rec,
+                        fontsize=8, va='top', transform=ax_rec.transAxes, color='#2c3e50')
 
-        ax2.text(0.5, 0.8, 'ER Recommends:', ha='center', fontsize=10, weight='bold', color=er_color)
-        ax2.text(0.5, 0.65, er_rec, ha='center', fontsize=9, wrap=True)
-        ax2.text(0.5, 0.4, 'GAT Recommends:', ha='center', fontsize=10, weight='bold', color=gat_color)
-        ax2.text(0.5, 0.25, gat_rec, ha='center', fontsize=9, wrap=True)
+        agree_text = '✓ All agree' if all_same else '✗ Differ'
+        agree_color = '#27ae60' if all_same else '#e74c3c'
+        ax_rec.text(0.5, 0.04, agree_text, ha='center', fontsize=11, weight='bold',
+                    color=agree_color, transform=ax_rec.transAxes)
 
-        status = '✓ AGREE' if same_rec else '✗ DIFFER'
-        status_color = '#27ae60' if same_rec else '#f39c12'
-        ax2.text(0.5, 0.05, status, ha='center', fontsize=12, weight='bold', color=status_color)
+        # --- Processing time ---
+        ax_time = fig.add_subplot(gs[1, 2])
+        time_vals = [methods_data[m].get('processing_time_ms', 0) / 1000.0
+                     for m in method_names]
+        colors_t = [self.METHOD_COLORS.get(m, '#95a5a6') for m in method_names]
+        short_names = [m.replace('_', '\n') for m in method_names]
+        bars = ax_time.bar(range(len(method_names)), time_vals, color=colors_t,
+                           edgecolor='black', linewidth=1.2)
+        for bar, val in zip(bars, time_vals):
+            ax_time.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.1,
+                         f'{val:.1f}s', ha='center', fontsize=8, weight='bold')
+        ax_time.set_xticks(range(len(method_names)))
+        ax_time.set_xticklabels(short_names, fontsize=8)
+        ax_time.set_ylabel('Seconds', fontsize=9)
+        ax_time.set_title('Processing Time', fontsize=11, weight='bold')
 
-        ax2.set_xlim(0, 1)
-        ax2.set_ylim(0, 1)
-        ax2.axis('off')
-        ax2.set_title('Recommendations', fontsize=12, weight='bold')
+        # --- Delta bars vs ER baseline ---
+        ax_delta = fig.add_subplot(gs[2, :])
+        non_er = [m for m in method_names if m != 'ER']
+        if non_er and 'ER' in methods_data:
+            er_base = methods_data['ER']
+            metric_keys = [
+                ('decision_quality_score', 'DQS'),
+                ('consensus_level', 'Consensus'),
+                ('confidence', 'Confidence'),
+            ]
+            n_metrics = len(metric_keys)
+            n_methods = len(non_er)
+            x = np.arange(n_metrics)
+            total_w = 0.7
+            w = total_w / n_methods
 
-        # --- Subplot 3: Processing Time ---
-        ax3 = fig.add_subplot(gs[1, 2])
-        er_time = er.get('processing_time_ms', 0) / 1000
-        gat_time = gat.get('processing_time_ms', 0) / 1000
+            for mi, method in enumerate(non_er):
+                d = methods_data[method]
+                deltas = [d.get(k, 0) - er_base.get(k, 0) for k, _ in metric_keys]
+                offset = (mi - (n_methods - 1) / 2) * w
+                color = self.METHOD_COLORS.get(method, '#95a5a6')
+                short = self._METHOD_LABELS.get(method, method)
+                bars_d = ax_delta.bar(x + offset, deltas, w,
+                                      color=color, alpha=0.85, edgecolor='black',
+                                      linewidth=1.0, label=short)
+                for bar, val in zip(bars_d, deltas):
+                    if abs(val) > 0.002:
+                        ax_delta.text(bar.get_x() + bar.get_width() / 2,
+                                      val + (0.004 if val >= 0 else -0.008),
+                                      f'{val:+.3f}', ha='center', va='bottom' if val >= 0 else 'top',
+                                      fontsize=7)
 
-        bars = ax3.bar(['ER', 'GAT'], [er_time, gat_time], color=[er_color, gat_color],
-                       edgecolor='black', linewidth=1.5)
-        ax3.set_ylabel('Seconds', fontsize=10)
-        ax3.set_title('Processing Time', fontsize=12, weight='bold')
-
-        for bar, val in zip(bars, [er_time, gat_time]):
-            ax3.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
-                     f'{val:.1f}s', ha='center', fontsize=9, weight='bold')
-
-        # --- Subplot 4: Delta Summary ---
-        ax4 = fig.add_subplot(gs[2, :])
-
-        delta_labels = ['DQS Δ', 'Consensus Δ', 'Confidence Δ', 'Time Δ']
-        delta_vals = [
-            comparison.get('decision_quality_delta', 0),
-            comparison.get('consensus_delta', 0),
-            comparison.get('confidence_delta', 0),
-            comparison.get('processing_time_delta_ms', 0) / 1000
-        ]
-
-        # Color bars by direction (green = GAT better for quality metrics, blue for time)
-        colors = []
-        for i, val in enumerate(delta_vals):
-            if i < 3:  # Quality metrics
-                colors.append('#27ae60' if val >= 0 else '#e74c3c')
-            else:  # Time (lower is better)
-                colors.append('#e74c3c' if val > 0 else '#27ae60')
-
-        bars = ax4.barh(delta_labels, delta_vals, color=colors, edgecolor='black', linewidth=1.5)
-
-        # Add zero line
-        ax4.axvline(x=0, color='black', linewidth=2)
-
-        # Add value labels
-        for bar, val in zip(bars, delta_vals):
-            x_pos = val + 0.005 if val >= 0 else val - 0.005
-            ha = 'left' if val >= 0 else 'right'
-            label = f'{val:+.3f}' if abs(val) < 10 else f'{val:+.1f}s'
-            ax4.text(x_pos, bar.get_y() + bar.get_height()/2, label,
-                     ha=ha, va='center', fontsize=10, weight='bold')
-
-        ax4.set_xlabel('GAT - ER (positive = GAT higher)', fontsize=10, weight='bold')
-        ax4.set_title('Difference Analysis (GAT - ER)', fontsize=12, weight='bold')
-        ax4.grid(axis='x', alpha=0.3, linestyle=':')
+            ax_delta.axhline(0, color='black', linewidth=1.2)
+            ax_delta.set_xticks(x)
+            ax_delta.set_xticklabels([lbl for _, lbl in metric_keys], fontsize=10)
+            ax_delta.set_ylabel('Delta vs ER', fontsize=10, weight='bold')
+            ax_delta.set_title('Improvement vs ER Baseline', fontsize=12, weight='bold')
+            ax_delta.legend(fontsize=8, loc='upper right')
+            ax_delta.grid(axis='y', alpha=0.3, linestyle=':')
+        else:
+            ax_delta.axis('off')
 
         plt.tight_layout()
-
-        # Save figure
         full_path = self.output_dir / save_path
         plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
@@ -1565,15 +1534,16 @@ class SystemVisualizer:
         self,
         decision: Dict[str, Any],
         save_path: str,
-        title: str = "Alternative Ranking - DQS Decomposition (60% ER + 40% MCDA)"
+        title: str = "",
+        aggregation_method: Optional[str] = None,
     ) -> str:
         """
         Plot per-alternative DQS decomposition as grouped horizontal bars.
 
         Shows three bars per alternative:
-          - ER belief score (blue)
+          - Aggregated belief score (labelled with the aggregation method name)
           - MCDA score (orange)
-          - Combined DQS = 0.6*ER + 0.4*MCDA (green, bold)
+          - Combined DQS = 0.6*belief + 0.4*MCDA (green, bold)
 
         Alternatives are sorted by combined DQS descending.
         The recommended alternative is highlighted with a gold border.
@@ -1582,7 +1552,9 @@ class SystemVisualizer:
             decision: Decision dict with keys final_scores, er_scores, mcda_scores,
                       recommended_alternative
             save_path: Filename to save the plot
-            title: Plot title
+            title: Plot title (auto-generated from aggregation_method when empty)
+            aggregation_method: Method name shown in labels/title (e.g. 'ER', 'GAT',
+                                'GAT_TRAINED'). Defaults to 'ER' when not provided.
 
         Returns:
             Full path to saved plot
@@ -1591,6 +1563,19 @@ class SystemVisualizer:
         er_scores    = decision.get('er_scores', {})
         mcda_scores  = decision.get('mcda_scores', {})
         recommended  = decision.get('recommended_alternative')
+
+        # Build method-aware labels
+        method_tag = (aggregation_method or 'ER').upper()
+        METHOD_DISPLAY = {
+            'ER':          'Evidential Reasoning (ER)',
+            'GAT':         'GAT Belief Score',
+            'GAT_TRAINED': 'GAT-Trained Belief Score',
+            'MCDA':        'MCDA Score',
+        }
+        belief_label = METHOD_DISPLAY.get(method_tag, f'{method_tag} Belief Score')
+
+        if not title:
+            title = f"Alternative Ranking - DQS Decomposition (60% {method_tag} + 40% MCDA)"
 
         if not final_scores:
             logger.warning("plot_dqs_breakdown: no final_scores in decision, skipping")
@@ -1614,7 +1599,7 @@ class SystemVisualizer:
         y = np.arange(n)
         height = 0.25
 
-        bar_er   = ax.barh(y + height,  er_vals,   height, label='ER Belief Score',  color=self.colors[0], alpha=0.85)
+        bar_er   = ax.barh(y + height,  er_vals,   height, label=belief_label,       color=self.colors[0], alpha=0.85)
         bar_mcda = ax.barh(y,           mcda_vals, height, label='MCDA Score',        color=self.colors[1], alpha=0.85)
         bar_dqs  = ax.barh(y - height,  combined,  height, label='Combined DQS',      color=self.colors[2], alpha=0.95)
 
@@ -1658,44 +1643,54 @@ class SystemVisualizer:
         logger.info(f"DQS breakdown plot saved to {full_path}")
         return full_path
 
-    def plot_dqs_er_gat_deviation(
+    def plot_dqs_method_deviation(
         self,
         comparative_results: Dict[str, Any],
         save_path: str,
-        title: str = "DQS per Alternative - ER vs GAT Deviation"
+        title: str = "DQS per Alternative - Method Comparison"
     ) -> str:
         """
-        Plot per-alternative DQS comparison between ER and GAT methods.
+        Plot per-alternative DQS scores for all methods with deviation vs ER.
 
-        Shows grouped horizontal bars (ER combined score vs GAT combined score)
-        for every alternative, sorted by GAT score descending.
-        Delta (GAT-ER) is annotated on each pair.
-        Recommended alternatives for each method are marked.
+        Left panel: grouped horizontal bars, one bar-group per alternative,
+        one bar per method.  Right panel: delta bars (method - ER) per alternative.
+        Recommended alternatives are highlighted with a gold border.
 
         Args:
-            comparative_results: Dict from run_comparative_analysis containing
-                methods['ER']['decision'] and methods['GAT']['decision']
+            comparative_results: Dict from run_comparative_analysis with
+                methods[name]['decision']['final_scores'] and
+                methods[name]['recommended_alternative']
             save_path: Filename to save the plot
             title: Plot title
 
         Returns:
             Full path to saved plot
         """
-        er_dec  = comparative_results.get('methods', {}).get('ER', {}).get('decision', {})
-        gat_dec = comparative_results.get('methods', {}).get('GAT', {}).get('decision', {})
+        methods_data = comparative_results.get('methods', {})
+        method_names = list(methods_data.keys())
 
-        er_scores  = er_dec.get('final_scores', {})
-        gat_scores = gat_dec.get('final_scores', {})
-        er_rec  = comparative_results.get('methods', {}).get('ER', {}).get('recommended_alternative')
-        gat_rec = comparative_results.get('methods', {}).get('GAT', {}).get('recommended_alternative')
+        # Collect scores and recommendations for every method
+        all_scores: Dict[str, Dict[str, float]] = {}
+        recommendations: Dict[str, str] = {}
+        for m in method_names:
+            dec = methods_data[m].get('decision', {})
+            scores = dec.get('final_scores', {})
+            all_scores[m] = scores
+            recommendations[m] = methods_data[m].get('recommended_alternative', '')
 
-        if not er_scores and not gat_scores:
-            logger.warning("plot_dqs_er_gat_deviation: no final_scores in comparative results, skipping")
+        # Union of all alternatives, sorted by first available method score descending
+        all_alts_set: set = set()
+        for s in all_scores.values():
+            all_alts_set.update(s.keys())
+
+        if not all_alts_set:
+            logger.warning("plot_dqs_method_deviation: no final_scores in results, skipping")
             return ""
 
+        primary = method_names[0] if method_names else None
         all_alts = sorted(
-            set(list(er_scores.keys()) + list(gat_scores.keys())),
-            key=lambda a: gat_scores.get(a, er_scores.get(a, 0.0)),
+            all_alts_set,
+            key=lambda a: all_scores.get(primary, {}).get(a, 0.0),
             reverse=True
         )
         n = len(all_alts)
@@ -1703,84 +1698,253 @@ class SystemVisualizer:
         def _short(name: str) -> str:
             return name.replace('action_', '').replace('_', ' ').title()
 
-        labels    = [_short(a) for a in all_alts]
-        er_vals   = [er_scores.get(a, 0.0) for a in all_alts]
-        gat_vals  = [gat_scores.get(a, 0.0) for a in all_alts]
-        deltas    = [g - e for g, e in zip(gat_vals, er_vals)]
+        labels = [_short(a) for a in all_alts]
+        n_methods = len(method_names)
+        height = min(0.7 / max(n_methods, 1), 0.28)
 
-        fig, axes = plt.subplots(1, 2, figsize=(14, max(4, n * 0.9)),
+        fig, axes = plt.subplots(1, 2, figsize=(14, max(4, n * 0.9 + 1)),
                                  gridspec_kw={'width_ratios': [3, 1]})
 
-        # Left panel: grouped bars ER vs GAT
+        # --- Left panel: grouped bars per alternative ---
         ax = axes[0]
-        y      = np.arange(n)
-        height = 0.35
+        y = np.arange(n)
+        offsets = np.linspace(-(n_methods - 1) / 2, (n_methods - 1) / 2, n_methods) * height
 
-        bar_er  = ax.barh(y + height / 2, er_vals,  height, label='ER',  color=self.colors[0], alpha=0.85)
-        bar_gat = ax.barh(y - height / 2, gat_vals, height, label='GAT', color=self.colors[3], alpha=0.85)
+        for mi, method in enumerate(method_names):
+            scores = all_scores[method]
+            vals = [scores.get(a, 0.0) for a in all_alts]
+            color = self.METHOD_COLORS.get(method, '#95a5a6')
+            short_label = self._METHOD_LABELS.get(method, method)
+            rec = recommendations[method]
 
-        # Highlight recommended bars
-        for bars, rec, alts_list in [(bar_er, er_rec, all_alts), (bar_gat, gat_rec, all_alts)]:
-            if rec and rec in alts_list:
-                idx = alts_list.index(rec)
+            bars = ax.barh(y + offsets[mi], vals, height,
+                           label=short_label, color=color, alpha=0.85)
+
+            # Gold border on recommended alternative
+            if rec in all_alts:
+                idx = all_alts.index(rec)
                 bars[idx].set_edgecolor('goldenrod')
                 bars[idx].set_linewidth(2.0)
 
-        # Score labels on bars
-        for bar, val in zip(bar_er, er_vals):
-            if val > 0.02:
-                ax.text(val + 0.003, bar.get_y() + bar.get_height() / 2,
-                        f'{val:.3f}', va='center', ha='left', fontsize=8)
-        for bar, val in zip(bar_gat, gat_vals):
-            if val > 0.02:
-                ax.text(val + 0.003, bar.get_y() + bar.get_height() / 2,
-                        f'{val:.3f}', va='center', ha='left', fontsize=8)
+            # Score labels
+            for bar, val in zip(bars, vals):
+                if val > 0.02:
+                    ax.text(val + 0.003, bar.get_y() + bar.get_height() / 2,
+                            f'{val:.3f}', va='center', ha='left', fontsize=7)
 
         ax.set_yticks(y)
-        ax.set_yticklabels(labels, fontsize=10)
+        ax.set_yticklabels(labels, fontsize=9)
         ax.set_xlabel('Combined DQS Score', fontsize=11)
         ax.set_title('Score per Alternative', fontsize=11)
-        ax.set_xlim(0, min(1.0, max(er_vals + gat_vals) * 1.35))
-        ax.legend(fontsize=9)
+        all_vals_flat = [v for s in all_scores.values() for v in s.values()]
+        ax.set_xlim(0, min(1.0, (max(all_vals_flat) if all_vals_flat else 1.0) * 1.35))
+        ax.legend(fontsize=8, loc='lower right')
 
-        # Right panel: delta bar chart
+        # --- Right panel: delta vs ER (or first method) ---
         ax2 = axes[1]
-        colors_delta = ['#2ca02c' if d >= 0 else '#d62728' for d in deltas]
-        ax2.barh(y, deltas, height * 0.8, color=colors_delta, alpha=0.85)
+        baseline_method = 'ER' if 'ER' in all_scores else method_names[0]
+        baseline_scores = all_scores[baseline_method]
+
+        for mi, method in enumerate(method_names):
+            if method == baseline_method:
+                continue
+            scores = all_scores[method]
+            deltas = [scores.get(a, 0.0) - baseline_scores.get(a, 0.0) for a in all_alts]
+            color = self.METHOD_COLORS.get(method, '#95a5a6')
+            short_label = self._METHOD_LABELS.get(method, method)
+            ax2.barh(y + offsets[mi], deltas, height,
+                     color=color, alpha=0.75, label=short_label)
+
         ax2.axvline(x=0, color='black', linewidth=1.0)
-        for i, (bar_y, d) in enumerate(zip(y, deltas)):
-            ax2.text(
-                d + (0.001 if d >= 0 else -0.001),
-                bar_y,
-                f'{d:+.4f}',
-                va='center',
-                ha='left' if d >= 0 else 'right',
-                fontsize=8
-            )
         ax2.set_yticks(y)
         ax2.set_yticklabels([])
-        ax2.set_xlabel('Delta (GAT - ER)', fontsize=10)
+        ax2.set_xlabel(f'Delta vs {baseline_method}', fontsize=9)
         ax2.set_title('Deviation', fontsize=11)
+        if n_methods > 2:
+            ax2.legend(fontsize=7)
 
         fig.suptitle(title, fontsize=13, fontweight='bold', y=1.01)
 
-        # Legend markers for recommendations
-        legend_parts = []
-        if er_rec:
-            legend_parts.append(f'ER recommends: {_short(er_rec)}')
-        if gat_rec:
-            legend_parts.append(f'GAT recommends: {_short(gat_rec)}')
-        if legend_parts:
-            fig.text(0.5, -0.03, '  |  '.join(legend_parts) + '   (gold border)',
-                     ha='center', fontsize=9, color='#555555', style='italic')
+        rec_parts = [f'{m}: {_short(r)}' for m, r in recommendations.items() if r]
+        if rec_parts:
+            fig.text(0.5, -0.02, '  |  '.join(rec_parts) + '  (gold border = recommended)',
+                     ha='center', fontsize=8, color='#555555', style='italic')
 
         plt.tight_layout()
-
         full_path = str(self.output_dir / save_path)
         plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
 
-        logger.info(f"DQS ER vs GAT deviation plot saved to {full_path}")
+        logger.info(f"DQS method deviation plot saved to {full_path}")
+        return full_path
+
+    def plot_dqs_er_gat_deviation(
+        self,
+        comparative_results: Dict[str, Any],
+        save_path: str,
+        title: str = "DQS per Alternative - ER vs GAT Deviation"
+    ) -> str:
+        """Backward-compatible alias for plot_dqs_method_deviation."""
+        return self.plot_dqs_method_deviation(comparative_results, save_path, title)
+
+    def plot_gat_training_result(
+        self,
+        weights_path: str = "models/gat_weights/gat_trained_weights.json",
+        save_path: str = "gat_training_result.png"
+    ) -> str:
+        """
+        Visualise GAT training outcome: learned vs prior weights, accuracy metrics,
+        and run metadata.  Designed to be re-generated after each training run so
+        progress can be tracked over time.
+
+        Layout (2 rows):
+          Top:    grouped bar chart - prior vs learned weights for all 4 coefficients
+          Bottom-left:  metric bars (top-1 accuracy, mean rank percentile)
+          Bottom-right: summary table (samples, scenarios, timestamp, convergence status)
+
+        Args:
+            weights_path: Path to gat_trained_weights.json
+            save_path:    Filename to save inside self.output_dir
+
+        Returns:
+            Full path to saved plot, or "" if weights file not found.
+        """
+        import json as _json
+        from pathlib import Path as _Path
+        from datetime import datetime as _dt
+
+        wpath = _Path(weights_path)
+        if not wpath.exists():
+            logger.warning(f"plot_gat_training_result: weights file not found at {wpath}")
+            return ""
+
+        with open(wpath) as f:
+            data = _json.load(f)
+
+        labels   = data.get("labels", ["w_confidence", "w_relevance", "w_certainty", "w_similarity"])
+        learned  = data.get("weights", [0.4, 0.3, 0.3, 0.2])
+        prior    = data.get("prior_weights", [0.4, 0.3, 0.3, 0.2])
+        deltas   = data.get("weight_delta", [w - p for w, p in zip(learned, prior)])
+        metrics  = data.get("training_metrics", {})
+        n_samples = data.get("n_training_samples", 0)
+        scenarios = data.get("training_scenarios", [])
+        timestamp = data.get("timestamp", "")
+        try:
+            ts_str = _dt.fromisoformat(timestamp).strftime("%Y-%m-%d %H:%M")
+        except Exception:
+            ts_str = timestamp[:16] if timestamp else "unknown"
+
+        prior_m   = metrics.get("prior",   {})
+        trained_m = metrics.get("trained", {})
+
+        fig = plt.figure(figsize=(14, 9))
+        fig.suptitle("GAT Attention Weight Training - Result Summary",
+                     fontsize=15, weight='bold', y=0.99)
+
+        gs = fig.add_gridspec(2, 2, hspace=0.45, wspace=0.35)
+
+        er_blue  = self.METHOD_COLORS['ER']
+        gat_green = self.METHOD_COLORS['GAT_TRAINED']
+
+        # ---- Top: grouped bar chart ----
+        ax_w = fig.add_subplot(gs[0, :])
+        x = np.arange(len(labels))
+        w = 0.32
+        short_labels = [l.replace('w_', '').replace('_', ' ').title() for l in labels]
+
+        bars_p = ax_w.bar(x - w / 2, prior,   w, label='Prior (hand-crafted)',
+                          color=er_blue,  alpha=0.85, edgecolor='black', linewidth=1.1)
+        bars_l = ax_w.bar(x + w / 2, learned, w, label='Learned',
+                          color=gat_green, alpha=0.85, edgecolor='black', linewidth=1.1)
+
+        # Value labels
+        for bar, val in zip(bars_p, prior):
+            ax_w.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.008,
+                      f'{val:.4f}', ha='center', va='bottom', fontsize=9, color=er_blue, weight='bold')
+        for bar, val, d in zip(bars_l, learned, deltas):
+            ax_w.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.008,
+                      f'{val:.4f}', ha='center', va='bottom', fontsize=9, color=gat_green, weight='bold')
+            # Delta annotation below bar
+            arrow_col = '#27ae60' if d >= 0 else '#e74c3c'
+            ax_w.text(bar.get_x() + bar.get_width() / 2, -0.025,
+                      f'{d:+.4f}', ha='center', va='top', fontsize=8, color=arrow_col, style='italic')
+
+        ax_w.set_xticks(x)
+        ax_w.set_xticklabels(short_labels, fontsize=11, weight='bold')
+        ax_w.set_ylim(-0.05, max(max(prior), max(learned)) * 1.3)
+        ax_w.set_ylabel('Weight Value', fontsize=10, weight='bold')
+        ax_w.set_title('Attention Weight: Prior vs Learned  (delta shown below bars)', fontsize=11)
+        ax_w.axhline(0, color='grey', linewidth=0.5)
+        ax_w.legend(fontsize=10, loc='upper right')
+        ax_w.grid(axis='y', alpha=0.3, linestyle=':')
+
+        # ---- Bottom-left: metric comparison bars ----
+        ax_m = fig.add_subplot(gs[1, 0])
+        metric_names  = ['Top-1\nAccuracy', 'Mean Rank\nPercentile']
+        prior_vals    = [prior_m.get('top1_accuracy', 0),
+                         prior_m.get('mean_rank_percentile', 0)]
+        trained_vals  = [trained_m.get('top1_accuracy', 0),
+                         trained_m.get('mean_rank_percentile', 0)]
+
+        xm = np.arange(len(metric_names))
+        wm = 0.32
+        bp = ax_m.bar(xm - wm / 2, prior_vals,   wm, label='Prior',   color=er_blue,   alpha=0.85, edgecolor='black')
+        bt = ax_m.bar(xm + wm / 2, trained_vals, wm, label='Learned', color=gat_green, alpha=0.85, edgecolor='black')
+
+        for bar, val in zip(bp, prior_vals):
+            ax_m.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01,
+                      f'{val:.1%}', ha='center', fontsize=9, weight='bold', color=er_blue)
+        for bar, val in zip(bt, trained_vals):
+            ax_m.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01,
+                      f'{val:.1%}', ha='center', fontsize=9, weight='bold', color=gat_green)
+
+        ax_m.set_xticks(xm)
+        ax_m.set_xticklabels(metric_names, fontsize=10)
+        ax_m.set_ylim(0, 1.15)
+        ax_m.set_title('Training Metrics', fontsize=11, weight='bold')
+        ax_m.legend(fontsize=9)
+        ax_m.grid(axis='y', alpha=0.3, linestyle=':')
+
+        # ---- Bottom-right: summary table ----
+        ax_t = fig.add_subplot(gs[1, 1])
+        ax_t.axis('off')
+        ax_t.set_title('Training Run Metadata', fontsize=11, weight='bold')
+
+        n_samp = prior_m.get('n_samples', n_samples)
+        mean_rank_p = prior_m.get('mean_rank', 0)
+        mean_rank_t = trained_m.get('mean_rank', 0)
+
+        table_rows = [
+            ['Training samples',    str(n_samples)],
+            ['Evaluated samples',   str(n_samp)],
+            ['Scenarios',           ', '.join(s.title() for s in scenarios)],
+            ['Timestamp',           ts_str],
+            ['Prior top-1',         f"{prior_m.get('top1_accuracy', 0):.1%}"],
+            ['Learned top-1',       f"{trained_m.get('top1_accuracy', 0):.1%}"],
+            ['Prior mean rank',     f"{mean_rank_p:.3f}"],
+            ['Learned mean rank',   f"{mean_rank_t:.3f}"],
+            ['Improvement (rank)',  f"{mean_rank_p - mean_rank_t:+.3f}"],
+        ]
+
+        y_start = 0.95
+        row_h = 0.105
+        for i, (key, val) in enumerate(table_rows):
+            y = y_start - i * row_h
+            bg = '#f0f0f0' if i % 2 == 0 else 'white'
+            ax_t.add_patch(plt.Rectangle((0, y - row_h * 0.75), 1, row_h * 0.9,
+                                         facecolor=bg, edgecolor='none',
+                                         transform=ax_t.transAxes))
+            ax_t.text(0.03, y - row_h * 0.3, key + ':', fontsize=9, weight='bold',
+                      transform=ax_t.transAxes, va='center', color='#333333')
+            ax_t.text(0.55, y - row_h * 0.3, val, fontsize=9,
+                      transform=ax_t.transAxes, va='center', color='#555555')
+
+        plt.tight_layout()
+        full_path = str(self.output_dir / save_path)
+        plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        logger.info(f"GAT training result plot saved to {full_path}")
         return full_path
 
     def generate_all_plots(
@@ -1907,7 +2071,7 @@ class SystemVisualizer:
                 path = self.plot_dqs_breakdown(
                     results['decision'],
                     "dqs_breakdown.png",
-                    title=f"Alternative Ranking - DQS Decomposition (60% ER + 40% MCDA){method_label}"
+                    aggregation_method=aggregation_method,
                 )
                 if path:
                     saved_paths['dqs_breakdown'] = path

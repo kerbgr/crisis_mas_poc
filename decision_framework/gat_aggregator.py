@@ -283,8 +283,10 @@ COMPARISON WITH FULL GAT:
 | Flexibility | Fixed features | Learns representations |
 """
 
+import json
 import numpy as np
 import logging
+from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 
@@ -313,7 +315,8 @@ class GraphAttentionLayer:
         feature_dim: int = 9,
         attention_heads: int = 4,
         leaky_relu_slope: float = 0.2,
-        dropout: float = 0.1
+        dropout: float = 0.1,
+        learned_weights: Optional[np.ndarray] = None
     ):
         """
         Initialize Graph Attention Layer.
@@ -323,11 +326,14 @@ class GraphAttentionLayer:
             attention_heads: Number of parallel attention heads
             leaky_relu_slope: Negative slope for LeakyReLU activation
             dropout: Dropout probability (for training, not used in inference)
+            learned_weights: Trained attention coefficients [w_conf, w_rel, w_cert, w_sim].
+                If None, uses hand-crafted defaults [0.4, 0.3, 0.3, 0.2].
         """
         self.feature_dim = feature_dim
         self.attention_heads = attention_heads
         self.leaky_relu_slope = leaky_relu_slope
         self.dropout = dropout
+        self.learned_weights = learned_weights
 
         logger.info(
             f"GraphAttentionLayer initialized: "
@@ -475,18 +481,22 @@ class GraphAttentionLayer:
                 relevance_weight = f_j[2]   # Expertise relevance
                 certainty_weight = f_j[1]   # Certainty
 
-                # Attention score combines multiple factors
+                # Attention score: [w_conf, w_rel, w_cert, w_sim]
+                # Uses learned weights if available, else hand-crafted defaults
+                w = (self.learned_weights
+                     if self.learned_weights is not None
+                     else np.array([0.4, 0.3, 0.3, 0.2]))
                 score = (
-                    0.4 * confidence_weight +
-                    0.3 * relevance_weight +
-                    0.3 * certainty_weight
+                    w[0] * confidence_weight +
+                    w[1] * relevance_weight +
+                    w[2] * certainty_weight
                 )
 
                 # Add similarity bonus (cosine similarity of features)
                 similarity = np.dot(f_i, f_j) / (
                     np.linalg.norm(f_i) * np.linalg.norm(f_j) + 1e-10
                 )
-                score += 0.2 * max(similarity, 0)  # Bonus for agreement
+                score += w[3] * max(similarity, 0)
 
                 # LeakyReLU activation
                 if score < 0:
@@ -531,7 +541,8 @@ class GATAggregator:
         self,
         num_attention_heads: int = 4,
         use_multi_head: bool = True,
-        default_trust: float = 0.8
+        default_trust: float = 0.8,
+        learned_weights: Optional[np.ndarray] = None
     ):
         """
         Initialize GAT Aggregator.
@@ -540,24 +551,29 @@ class GATAggregator:
             num_attention_heads: Number of parallel attention mechanisms
             use_multi_head: Whether to use multi-head attention
             default_trust: Default trust value for unspecified relationships
+            learned_weights: Trained attention coefficients [w_conf, w_rel, w_cert, w_sim].
+                If None, uses hand-crafted defaults [0.4, 0.3, 0.3, 0.2].
         """
         self.num_heads = num_attention_heads
         self.use_multi_head = use_multi_head
         self.default_trust = default_trust
+        self.learned_weights = learned_weights
 
-        # Create attention layers
+        # Create attention layers (pass learned weights to each head)
         self.attention_layers = [
             GraphAttentionLayer(
-                feature_dim=9,  # Updated to include historical reliability
-                attention_heads=num_attention_heads
+                feature_dim=9,
+                attention_heads=num_attention_heads,
+                learned_weights=learned_weights
             )
             for _ in range(num_attention_heads if use_multi_head else 1)
         ]
 
         self.aggregation_history: List[Dict[str, Any]] = []
 
+        mode = "trained" if learned_weights is not None else "untrained"
         logger.info(
-            f"GATAggregator initialized: "
+            f"GATAggregator initialized ({mode}): "
             f"heads={num_attention_heads}, multi_head={use_multi_head}"
         )
 
@@ -747,6 +763,41 @@ class GATAggregator:
         except Exception as e:
             logger.error(f"Error in GAT aggregation: {e}", exc_info=True)
             return self._create_empty_result()
+
+    def save_weights(self, path: str) -> None:
+        """Persist learned attention weights to JSON."""
+        w = (self.learned_weights.tolist()
+             if self.learned_weights is not None
+             else [0.4, 0.3, 0.3, 0.2])
+        payload = {
+            "weights": w,
+            "labels": ["w_confidence", "w_relevance", "w_certainty", "w_similarity"],
+            "trained": self.learned_weights is not None,
+            "timestamp": datetime.now().isoformat()
+        }
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(payload, f, indent=2)
+        logger.info(f"GAT weights saved to {path}: {w}")
+
+    def load_weights(self, path: str) -> None:
+        """Load attention weights from a JSON file produced by save_weights()."""
+        with open(path, "r") as f:
+            payload = json.load(f)
+        self.learned_weights = np.array(payload["weights"], dtype=np.float32)
+        for layer in self.attention_layers:
+            layer.learned_weights = self.learned_weights
+        logger.info(f"GAT weights loaded from {path}: {self.learned_weights.tolist()}")
+
+    @classmethod
+    def from_trained(cls, weights_path: str, **kwargs) -> "GATAggregator":
+        """Create a GATAggregator pre-loaded with weights from a training run."""
+        with open(weights_path, "r") as f:
+            payload = json.load(f)
+        learned_weights = np.array(payload["weights"], dtype=np.float32)
+        instance = cls(learned_weights=learned_weights, **kwargs)
+        logger.info(f"GATAggregator.from_trained: weights={learned_weights.tolist()}")
+        return instance
 
     def _generate_explanation(
         self,
