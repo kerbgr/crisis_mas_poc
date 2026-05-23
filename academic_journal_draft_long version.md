@@ -420,14 +420,14 @@ graph LR
         LLM_INT[Provider Abstraction]
 
         subgraph Providers["Supported Providers"]
-            CLAUDE["Claude Sonnet 4\nAnthropic API"]
-            OPENAI["GPT-4o\nOpenAI API"]
-            LMSTUDIO["GPT-OSS 20B\nLM Studio - Local"]
+            CLAUDE["Claude Sonnet 4<br/>Anthropic API"]
+            OPENAI["GPT-4o<br/>OpenAI API"]
+            LMSTUDIO["GPT-OSS 20B<br/>LM Studio - Local"]
         end
 
-        PROMPTS["13 Role-Specific\nPrompt Templates"]
-        PARSER["Response Parser\nPydantic Validation"]
-        RETRY["Retry Logic\nExponential Backoff"]
+        PROMPTS["13 Role-Specific<br/>Prompt Templates"]
+        PARSER["Response Parser<br/>Pydantic Validation"]
+        RETRY["Retry Logic<br/>Exponential Backoff"]
     end
 
     AGENT[Expert Agent] --> LLM_INT
@@ -435,7 +435,7 @@ graph LR
     PROMPTS --> CLAUDE & OPENAI & LMSTUDIO
     CLAUDE & OPENAI & LMSTUDIO --> RETRY
     RETRY --> PARSER
-    PARSER --> RESPONSE["Structured Response:\nbelief_distribution\nconfidence\nreasoning\nkey_concerns"]
+    PARSER --> RESPONSE["Structured Response:<br/>belief_distribution<br/>confidence<br/>reasoning<br/>key_concerns"]
 
     style CLAUDE fill:#f8bbd9,stroke:#c2185b
     style OPENAI fill:#f8bbd9,stroke:#c2185b

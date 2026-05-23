@@ -7,6 +7,17 @@
     <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .slider-row { display: flex; align-items: center; gap: 0.75rem; }
+        .slider-row input[type=range] { flex: 1; }
+        .slider-val { min-width: 3rem; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .wp-sum-badge { font-size: 0.85rem; }
+        .wp-sum-ok { color: #198754; }
+        .wp-sum-warn { color: #dc3545; }
+        .guide-card { border-left: 4px solid #0d6efd; background: #f8f9ff; }
+        .guide-card .guide-title { color: #0d6efd; font-weight: 600; }
+        .section-header { background: #f1f3f5; border-radius: 6px; padding: 0.5rem 0.75rem; margin-bottom: 1rem; }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -20,236 +31,390 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/protocols">Incident Protocols</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/crisis-scenarios">Crisis Scenarios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/experts">Experts</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/protocols">Incident Protocols</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/crisis-scenarios">Crisis Scenarios</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/experts">Experts</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container mt-5">
+    <div class="container mt-4 mb-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
+
                 <!-- Header -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="h3 mb-0">
                         <i class="bi bi-{{ 'pencil' if expert else 'plus-circle' }} text-success"></i>
                         {{ 'Edit' if expert else 'Create New' }} Expert Profile
                     </h1>
-                    <a href="/experts" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i> Back to List
+                    <a href="/experts" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back
                     </a>
                 </div>
 
-                <!-- Form -->
-                <div class="card shadow">
+                <!-- ── REVIEWER / CREATOR GUIDE ── -->
+                <div class="card guide-card mb-4 shadow-sm">
                     <div class="card-body">
-                        <form method="POST">
-                            <h5 class="mb-3"><i class="bi bi-person-circle"></i> Basic Information</h5>
-                            
-                            <div class="row">
-                                <!-- Name -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="name" class="form-label">
-                                        <i class="bi bi-person"></i> Full Name *
-                                    </label>
-                                    <input type="text" class="form-control" id="name" name="name" required
-                                           value="{{ expert.name if expert else '' }}"
-                                           placeholder="John Doe">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="guide-title"><i class="bi bi-lightbulb"></i> Agent Design Guide for Reviewers &amp; Creators</span>
+                            <button class="btn btn-sm btn-outline-primary" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#guideBody">
+                                <i class="bi bi-chevron-down"></i> Toggle
+                            </button>
+                        </div>
+                        <div class="collapse show" id="guideBody">
+                            <hr class="my-2">
+                            <div class="row g-3 mt-0">
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-diagram-3 text-primary"></i> Command Level</p>
+                                    <ul class="small mb-0">
+                                        <li><strong>GOLD</strong> — Strategic command: Civil Protection Director, Police/Fire/Medical/Coast Guard regional commanders. Highest weight in ER aggregation. Use for decision-makers with authority over resource allocation.</li>
+                                        <li><strong>SILVER</strong> — Tactical/Advisory: specialists (meteorologist, physician, logistics). Provide domain knowledge but defer strategy to GOLD.</li>
+                                    </ul>
                                 </div>
-
-                                <!-- Expert ID -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="expert_id" class="form-label">
-                                        <i class="bi bi-hash"></i> Expert ID
-                                    </label>
-                                    <input type="text" class="form-control" id="expert_id" name="expert_id"
-                                           value="{{ expert.id if expert else '' }}"
-                                           placeholder="Leave blank for auto-generation"
-                                           {% if expert %}readonly{% endif %}>
-                                    <div class="form-text">
-                                        {% if expert %}Cannot be changed after creation{% else %}Auto-generated if left blank{% endif %}
-                                    </div>
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-sliders text-success"></i> Risk Tolerance <code>0.0–1.0</code></p>
+                                    <ul class="small mb-0">
+                                        <li><strong>Low (0.1–0.3)</strong>: cautious, prioritises safety over speed. Typical for medical directors, environmental scientists.</li>
+                                        <li><strong>Medium (0.4–0.6)</strong>: balanced. Most tactical commanders.</li>
+                                        <li><strong>High (0.7–0.9)</strong>: willing to accept risk for speed/effectiveness. Fire/Police tactical roles.</li>
+                                    </ul>
                                 </div>
-                            </div>
-
-                            <div class="row">
-                                <!-- Role -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="role" class="form-label">
-                                        <i class="bi bi-briefcase"></i> Role *
-                                    </label>
-                                    <input type="text" class="form-control" id="role" name="role" required
-                                           value="{{ expert.role if expert else '' }}"
-                                           placeholder="Firefighter, Police Officer, Paramedic, etc.">
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-bar-chart text-warning"></i> Weight Preferences <code>sum ≈ 1.0</code></p>
+                                    <ul class="small mb-0">
+                                        <li>These drive the <strong>MCDA scoring</strong> for each alternative. Each value is this agent's relative priority for that criterion.</li>
+                                        <li>Must sum to <strong>1.0</strong> — the form shows a live total and warns if off.</li>
+                                        <li>Example: a Medical Director weighs <em>safety 0.45, effectiveness 0.30, speed 0.15, cost 0.05, public acceptance 0.05</em>.</li>
+                                    </ul>
                                 </div>
-
-                                <!-- Organization -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="organization" class="form-label">
-                                        <i class="bi bi-building"></i> Organization *
-                                    </label>
-                                    <input type="text" class="form-control" id="organization" name="organization" required
-                                           value="{{ expert.organization if expert else '' }}"
-                                           placeholder="Athens Fire Department, EKAB, etc.">
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-graph-up text-info"></i> Confidence Level <code>0.0–1.0</code></p>
+                                    <ul class="small mb-0">
+                                        <li>The agent's self-assessed domain confidence. Used as a feature in <strong>GAT attention scoring</strong> alongside reliability history.</li>
+                                        <li>Higher = stronger voice in GAT aggregation. Keep realistic — overconfidence inflates weight unfairly.</li>
+                                        <li>Typical range: <code>0.75–0.95</code> for senior experts.</li>
+                                    </ul>
                                 </div>
-                            </div>
-
-                            <div class="row">
-                                <!-- Location -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="location" class="form-label">
-                                        <i class="bi bi-geo-alt"></i> Location
-                                    </label>
-                                    <input type="text" class="form-control" id="location" name="location"
-                                           value="{{ expert.location if expert else '' }}"
-                                           placeholder="Athens, Greece">
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-tags text-secondary"></i> Expertise Tags</p>
+                                    <ul class="small mb-0">
+                                        <li>Machine-readable keywords used by the <strong>automatic expert selector</strong> (<code>expert_selector.py</code>) to match agents to scenario types.</li>
+                                        <li>Use snake_case, comma-separated. E.g. <code>wildfire_meteorology, flash_flood_forecasting</code>.</li>
+                                        <li>More relevant tags → more likely to be selected for appropriate scenarios.</li>
+                                    </ul>
                                 </div>
-
-                                <!-- Experience Years -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="experience_years" class="form-label">
-                                        <i class="bi bi-calendar-check"></i> Years of Experience *
-                                    </label>
-                                    <input type="number" class="form-control" id="experience_years" name="experience_years" required
-                                           value="{{ expert.experience_years if expert else '0' }}"
-                                           min="0" max="50">
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-pencil-square text-danger"></i> Decision Style &amp; Expertise Field</p>
+                                    <ul class="small mb-0">
+                                        <li><strong>Expertise</strong> (<code>expertise</code> field): single snake_case domain key, e.g. <code>severe_weather_forecasting</code>. Used programmatically.</li>
+                                        <li><strong>Decision Style</strong>: narrative description injected into the LLM system prompt to shape the agent's reasoning persona.</li>
+                                        <li><strong>Notable Experience</strong>: one entry per line — each becomes a bullet in the LLM prompt context.</li>
+                                    </ul>
                                 </div>
                             </div>
-
-                            <hr class="my-4">
-                            <h5 class="mb-3"><i class="bi bi-award"></i> Skills & Expertise</h5>
-
-                            <!-- Specializations -->
-                            <div class="mb-3">
-                                <label for="specializations" class="form-label">
-                                    <i class="bi bi-star"></i> Specializations
-                                </label>
-                                <input type="text" class="form-control" id="specializations" name="specializations"
-                                       value="{{ expert.specializations | join(', ') if expert and expert.specializations else '' }}"
-                                       placeholder="Wildfire, Urban Fire, Hazmat, etc. (comma-separated)">
-                                <div class="form-text">
-                                    Comma-separated list of specializations.
-                                </div>
-                            </div>
-
-                            <!-- Certifications -->
-                            <div class="mb-3">
-                                <label for="certifications" class="form-label">
-                                    <i class="bi bi-patch-check"></i> Certifications
-                                </label>
-                                <input type="text" class="form-control" id="certifications" name="certifications"
-                                       value="{{ expert.certifications | join(', ') if expert and expert.certifications else '' }}"
-                                       placeholder="CPR, Advanced Life Support, etc. (comma-separated)">
-                                <div class="form-text">
-                                    Comma-separated list of certifications.
-                                </div>
-                            </div>
-
-                            <!-- Languages -->
-                            <div class="mb-3">
-                                <label for="languages" class="form-label">
-                                    <i class="bi bi-translate"></i> Languages Spoken
-                                </label>
-                                <input type="text" class="form-control" id="languages" name="languages"
-                                       value="{{ expert.languages | join(', ') if expert and expert.languages else '' }}"
-                                       placeholder="Greek, English, etc. (comma-separated)">
-                            </div>
-
-                            <hr class="my-4">
-                            <h5 class="mb-3"><i class="bi bi-telephone"></i> Contact Information</h5>
-
-                            <div class="row">
-                                <!-- Email -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="email" class="form-label">
-                                        <i class="bi bi-envelope"></i> Email
-                                    </label>
-                                    <input type="email" class="form-control" id="email" name="email"
-                                           value="{{ expert.email if expert else '' }}"
-                                           placeholder="expert@example.com">
-                                </div>
-
-                                <!-- Phone -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="phone" class="form-label">
-                                        <i class="bi bi-phone"></i> Phone
-                                    </label>
-                                    <input type="tel" class="form-control" id="phone" name="phone"
-                                           value="{{ expert.phone if expert else '' }}"
-                                           placeholder="+30 123 456 7890">
-                                </div>
-                            </div>
-
-                            <!-- Availability -->
-                            <div class="mb-3">
-                                <label for="availability" class="form-label">
-                                    <i class="bi bi-circle-fill"></i> Availability Status
-                                </label>
-                                <select class="form-select" id="availability" name="availability">
-                                    <option value="available" {{ 'selected' if expert and expert.availability == 'available' else '' }}>Available</option>
-                                    <option value="limited" {{ 'selected' if expert and expert.availability == 'limited' else '' }}>Limited Availability</option>
-                                    <option value="unavailable" {{ 'selected' if expert and expert.availability == 'unavailable' else '' }}>Unavailable</option>
-                                </select>
-                            </div>
-
-                            <!-- Bio -->
-                            <div class="mb-3">
-                                <label for="bio" class="form-label">
-                                    <i class="bi bi-file-text"></i> Biography
-                                </label>
-                                <textarea class="form-control" id="bio" name="bio" rows="4"
-                                          placeholder="Brief biography or additional notes about this expert...">{{ expert.bio if expert else '' }}</textarea>
-                            </div>
-
-                            <!-- Submit Buttons -->
-                            <div class="d-flex justify-content-between mt-4">
-                                <a href="/experts" class="btn btn-secondary">
-                                    <i class="bi bi-x-circle"></i> Cancel
-                                </a>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-{{ 'save' if expert else 'plus-circle' }}"></i>
-                                    {{ 'Update' if expert else 'Create' }} Expert
-                                </button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Help Text -->
-                <div class="alert alert-info mt-4">
-                    <i class="bi bi-info-circle"></i> <strong>Tips:</strong>
-                    <ul class="mb-0 mt-2">
-                        <li>Provide detailed information about the expert's background and experience</li>
-                        <li>Specializations help match experts to appropriate scenarios</li>
-                        <li>Contact information is optional but useful for coordination</li>
-                        <li>Track availability to manage expert workload</li>
-                    </ul>
-                </div>
+                <!-- ── MAIN FORM ── -->
+                <form method="POST" id="expertForm">
+
+                    <!-- 1. Basic Information -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="section-header mb-3">
+                                <h5 class="mb-0"><i class="bi bi-person-circle text-primary"></i> Basic Information</h5>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required
+                                           value="{{ expert.name if expert else '' }}"
+                                           placeholder="e.g. Dr. Ioannis Papadopoulos">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="expert_id" class="form-label">Agent ID</label>
+                                    <input type="text" class="form-control" id="expert_id" name="expert_id"
+                                           value="{{ expert.agent_id if expert else '' }}"
+                                           placeholder="e.g. meteorology_silver_advisory"
+                                           {% if expert %}readonly{% endif %}>
+                                    <div class="form-text">
+                                        {% if expert %}Cannot be changed after creation.{% else %}Use snake_case. Auto-generated if blank.{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="command_level" class="form-label">Command Level *</label>
+                                    <select class="form-select" id="command_level" name="command_level">
+                                        <option value="GOLD" {{ 'selected' if expert and expert.get('command_level') == 'GOLD' else '' }}>GOLD — Strategic Command</option>
+                                        <option value="SILVER" {{ 'selected' if not expert or expert.get('command_level', 'SILVER') == 'SILVER' else '' }}>SILVER — Tactical / Advisory</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <label for="command_level_description" class="form-label">Command Level Description</label>
+                                    <input type="text" class="form-control" id="command_level_description" name="command_level_description"
+                                           value="{{ expert.get('command_level_description', '') if expert else '' }}"
+                                           placeholder="e.g. Advisory role providing specialist meteorological expertise to all command levels">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="role" class="form-label">Role / Title *</label>
+                                    <input type="text" class="form-control" id="role" name="role" required
+                                           value="{{ expert.role if expert else '' }}"
+                                           placeholder="e.g. Senior Meteorologist - Severe Weather Forecasting">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="expertise" class="form-label">Expertise Domain Key</label>
+                                    <input type="text" class="form-control" id="expertise" name="expertise"
+                                           value="{{ expert.get('expertise', '') if expert else '' }}"
+                                           placeholder="e.g. severe_weather_forecasting">
+                                    <div class="form-text">Single snake_case key — used programmatically by the agent selector.</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="experience_years" class="form-label">Years of Experience *</label>
+                                    <input type="number" class="form-control" id="experience_years" name="experience_years" required
+                                           value="{{ expert.experience_years if expert else '0' }}" min="0" max="60">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="availability" class="form-label">Availability Status</label>
+                                    <select class="form-select" id="availability" name="availability">
+                                        <option value="available" {{ 'selected' if not expert or expert.get('availability') == 'available' else '' }}>Available</option>
+                                        <option value="limited" {{ 'selected' if expert and expert.get('availability') == 'limited' else '' }}>Limited</option>
+                                        <option value="unavailable" {{ 'selected' if expert and expert.get('availability') == 'unavailable' else '' }}>Unavailable</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="education" class="form-label">Education</label>
+                                <input type="text" class="form-control" id="education" name="education"
+                                       value="{{ expert.get('education', '') if expert else '' }}"
+                                       placeholder="e.g. Ph.D. in Atmospheric Sciences, NKUA (2010); M.S. in Meteorology, University of Reading (2006)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. MAS Decision Parameters -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="section-header mb-3">
+                                <h5 class="mb-0"><i class="bi bi-sliders text-success"></i> MAS Decision Parameters</h5>
+                            </div>
+
+                            <!-- Risk Tolerance -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">
+                                    Risk Tolerance
+                                    <span class="text-muted fw-normal small ms-1">— how willing this agent is to accept risk for speed/effectiveness</span>
+                                </label>
+                                <div class="slider-row">
+                                    <span class="small text-muted">Risk-averse</span>
+                                    <input type="range" class="form-range" id="risk_tolerance" name="risk_tolerance"
+                                           min="0" max="1" step="0.05"
+                                           title="Risk tolerance: 0.0 = risk-averse, 1.0 = risk-seeking"
+                                           value="{{ expert.get('risk_tolerance', 0.5) if expert else 0.5 }}"
+                                           oninput="document.getElementById('risk_val').textContent = parseFloat(this.value).toFixed(2)">
+                                    <span class="small text-muted">Risk-seeking</span>
+                                    <span class="slider-val text-success" id="risk_val">{{ "%.2f"|format(expert.get('risk_tolerance', 0.5)) if expert else "0.50" }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Confidence Level -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">
+                                    Confidence Level
+                                    <span class="text-muted fw-normal small ms-1">— self-assessed domain expertise confidence (feeds GAT attention)</span>
+                                </label>
+                                <div class="slider-row">
+                                    <span class="small text-muted">Low</span>
+                                    <input type="range" class="form-range" id="confidence_level" name="confidence_level"
+                                           min="0" max="1" step="0.05"
+                                           title="Confidence level: 0.0 = low confidence, 1.0 = high confidence"
+                                           value="{{ expert.get('confidence_level', 0.8) if expert else 0.8 }}"
+                                           oninput="document.getElementById('conf_val').textContent = parseFloat(this.value).toFixed(2)">
+                                    <span class="small text-muted">High</span>
+                                    <span class="slider-val text-info" id="conf_val">{{ "%.2f"|format(expert.get('confidence_level', 0.8)) if expert else "0.80" }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Weight Preferences -->
+                            <div>
+                                <label class="form-label fw-semibold">
+                                    MCDA Weight Preferences
+                                    <span class="text-muted fw-normal small ms-1">— must sum to 1.0</span>
+                                    <span class="ms-2 wp-sum-badge" id="wpSumDisplay"></span>
+                                </label>
+                                {% set wp = expert.get('weight_preferences', {}) if expert else {} %}
+                                <div class="row g-2">
+                                    {% set criteria = [
+                                        ('wp_effectiveness', 'Effectiveness', wp.get('effectiveness', 0.25), 'How well the action solves the crisis'),
+                                        ('wp_safety',        'Safety',        wp.get('safety', 0.25),        'Protection of lives and minimising casualties'),
+                                        ('wp_speed',         'Speed',         wp.get('speed', 0.2),          'Time to implement and achieve effect'),
+                                        ('wp_cost',          'Cost',          wp.get('cost', 0.15),          'Resource and financial expenditure'),
+                                        ('wp_public_acceptance', 'Public Acceptance', wp.get('public_acceptance', 0.15), 'Societal acceptance of the action')
+                                    ] %}
+                                    {% for field, label, default_val, hint in criteria %}
+                                    <div class="col-md-12 mb-1">
+                                        <div class="slider-row">
+                                            <span class="small wp-criterion-label" title="{{ hint }}">{{ label }}</span>
+                                            <input type="range" class="form-range wp-slider" id="{{ field }}" name="{{ field }}"
+                                                   min="0" max="1" step="0.01"
+                                                   title="{{ hint }}"
+                                                   value="{{ "%.2f"|format(default_val) }}"
+                                                   oninput="updateWpSlider('{{ field }}_val', this.value); updateWpSum()">
+                                            <span class="slider-val text-primary" id="{{ field }}_val">{{ "%.2f"|format(default_val) }}</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Skills & Expertise -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="section-header mb-3">
+                                <h5 class="mb-0"><i class="bi bi-award text-warning"></i> Skills &amp; Expertise</h5>
+                            </div>
+                            <div class="mb-3">
+                                <label for="specializations" class="form-label">Specializations</label>
+                                <input type="text" class="form-control" id="specializations" name="specializations"
+                                       value="{{ expert.specializations | join(', ') if expert and expert.get('specializations') else '' }}"
+                                       placeholder="e.g. Wildfire, Urban Fire, Hazmat (comma-separated)">
+                            </div>
+                            <div class="mb-3">
+                                <label for="expertise_tags" class="form-label">Expertise Tags <span class="text-muted small">(used by auto expert-selector)</span></label>
+                                <input type="text" class="form-control" id="expertise_tags" name="expertise_tags"
+                                       value="{{ expert.get('expertise_tags', []) | join(', ') if expert else '' }}"
+                                       placeholder="e.g. wildfire_meteorology, flash_flood_forecasting, atmospheric_modeling (comma-separated, snake_case)">
+                            </div>
+                            <div class="mb-3">
+                                <label for="certifications" class="form-label">Certifications</label>
+                                <input type="text" class="form-control" id="certifications" name="certifications"
+                                       value="{{ expert.certifications | join(', ') if expert and expert.get('certifications') else '' }}"
+                                       placeholder="e.g. CCM - AMS, Advanced Weather Forecaster - EUMETSAT (comma-separated)">
+                            </div>
+                            <div class="mb-3">
+                                <label for="languages" class="form-label">Languages</label>
+                                <input type="text" class="form-control" id="languages" name="languages"
+                                       value="{{ expert.get('languages', []) | join(', ') if expert else '' }}"
+                                       placeholder="e.g. Greek, English (comma-separated)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Profile & Persona -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="section-header mb-3">
+                                <h5 class="mb-0"><i class="bi bi-person-lines-fill text-info"></i> Profile &amp; Persona</h5>
+                            </div>
+                            <div class="mb-3">
+                                <label for="decision_style" class="form-label">
+                                    Decision Style
+                                    <span class="text-muted small">— injected into LLM system prompt to shape reasoning persona</span>
+                                </label>
+                                <textarea class="form-control" id="decision_style" name="decision_style" rows="2"
+                                          placeholder="e.g. data-driven and analytical, emphasises probabilistic forecasting and early warning lead time, prioritises public safety over economic considerations">{{ expert.get('decision_style', '') if expert else '' }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="communication_preference" class="form-label">Communication Preference</label>
+                                <textarea class="form-control" id="communication_preference" name="communication_preference" rows="2"
+                                          placeholder="e.g. technical precision balanced with clear public messaging, uses visual aids and probability language">{{ expert.get('communication_preference', '') if expert else '' }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="notable_experience" class="form-label">
+                                    Notable Experience
+                                    <span class="text-muted small">— one entry per line; each becomes a bullet in the LLM prompt context</span>
+                                </label>
+                                <textarea class="form-control" id="notable_experience" name="notable_experience" rows="5"
+                                          placeholder="Lead meteorologist for 2018 Attica wildfires emergency response&#10;Developed early warning system for Thessaly region flash floods (2020–2023)&#10;Published 23 peer-reviewed papers on Mediterranean weather patterns">{{ (expert.get('notable_experience', []) | join('\n')) if expert else '' }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description <span class="text-muted small">(summary shown in UI)</span></label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                          placeholder="Short paragraph summarising this agent's role and value to the MAS.">{{ expert.get('description', expert.get('bio', '')) if expert else '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Contact -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="section-header mb-3">
+                                <h5 class="mb-0"><i class="bi bi-telephone text-secondary"></i> Contact <span class="text-muted fw-normal small">(optional)</span></h5>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                           value="{{ expert.get('email', '') if expert else '' }}"
+                                           placeholder="expert@example.com">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone"
+                                           value="{{ expert.get('phone', '') if expert else '' }}"
+                                           placeholder="+30 123 456 7890">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="d-flex justify-content-between">
+                        <a href="/experts" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-{{ 'save' if expert else 'plus-circle' }}"></i>
+                            {{ 'Update' if expert else 'Create' }} Expert
+                        </button>
+                    </div>
+
+                </form>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-light py-4 mt-5">
-        <div class="container text-center text-muted">
-            <p class="mb-0">
-                <i class="bi bi-shield-fill-check"></i> Crisis MAS - LLM Training Web Tools
-            </p>
+    <footer class="bg-light py-3 mt-4">
+        <div class="container text-center text-muted small">
+            <i class="bi bi-shield-fill-check"></i> Crisis MAS - Web Tools
         </div>
     </footer>
 
     <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        function updateWpSlider(valId, value) {
+            document.getElementById(valId).textContent = parseFloat(value).toFixed(2);
+        }
+
+        function updateWpSum() {
+            const sliders = document.querySelectorAll('.wp-slider');
+            let total = 0;
+            sliders.forEach(s => total += parseFloat(s.value));
+            const display = document.getElementById('wpSumDisplay');
+            const rounded = total.toFixed(2);
+            if (Math.abs(total - 1.0) < 0.02) {
+                display.textContent = '✓ Sum = ' + rounded;
+                display.className = 'ms-2 wp-sum-badge wp-sum-ok';
+            } else {
+                display.textContent = '⚠ Sum = ' + rounded + ' (should be 1.00)';
+                display.className = 'ms-2 wp-sum-badge wp-sum-warn';
+            }
+        }
+
+        // Init on load
+        document.addEventListener('DOMContentLoaded', updateWpSum);
+    </script>
 </body>
 </html>

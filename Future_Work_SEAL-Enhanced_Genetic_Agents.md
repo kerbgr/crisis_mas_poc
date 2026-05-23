@@ -666,7 +666,7 @@ stateDiagram-v2
     state Initialization {
         [*] --> CreatePopulation
         CreatePopulation --> RandomGenomes: 50 agents
-        RandomGenomes --> SEALParameters: Each with unique\nSEAL configs
+        RandomGenomes --> SEALParameters: Each with unique SEAL configs
         SEALParameters --> BaselineMetrics
         BaselineMetrics --> [*]
     }
@@ -676,7 +676,7 @@ stateDiagram-v2
     state RealTimeOperation {
         [*] --> ReceiveCrisis
         ReceiveCrisis --> MakeDecision: Use current weights
-        MakeDecision --> LogOutcome: No adaptation\nduring crisis
+        MakeDecision --> LogOutcome: No adaptation during crisis
         LogOutcome --> [*]
     }
 

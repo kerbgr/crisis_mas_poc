@@ -543,19 +543,19 @@ an internationally recognized incident command structure used across emergency s
     # Agent role to protocol category mapping
     # Maps agent IDs to relevant protocol categories from web_tools/data/scenarios.json
     AGENT_PROTOCOL_CATEGORIES = {
-        "meteorology_silver_advisory": ["disaster"],
-        "logistics_silver_tactical": ["disaster"],
+        "meteorology_silver_advisory": ["disaster", "general"],
+        "logistics_silver_tactical": ["logistics", "disaster"],
         "medical_bronze_operational": ["medical", "disaster"],
-        "psap_gold_strategic": ["disaster"],
+        "psap_gold_strategic": ["communications", "disaster"],
         "police_silver_tactical": ["police", "disaster"],
         "police_gold_strategic": ["police", "disaster"],
         "fire_silver_tactical": ["firefighting", "hazmat"],
         "fire_gold_strategic": ["firefighting", "disaster"],
         "medical_gold_strategic": ["medical", "disaster"],
-        "coastguard_silver_tactical": ["search_rescue", "disaster"],
-        "coastguard_gold_strategic": ["search_rescue", "disaster"],
-        "civilprotection_gold_strategic": ["disaster", "firefighting", "medical"],
-        "environment_silver_advisory": ["hazmat", "disaster"],
+        "coastguard_silver_tactical": ["maritime", "search_rescue", "disaster"],
+        "coastguard_gold_strategic": ["maritime", "search_rescue", "disaster"],
+        "civilprotection_gold_strategic": ["civil_protection", "evacuation", "disaster"],
+        "environment_silver_advisory": ["environmental", "hazmat", "disaster"],
     }
 
     def __init__(self, enable_protocols: bool = True):

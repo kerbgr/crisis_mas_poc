@@ -353,6 +353,8 @@ function populateFormWithScenario(scenario) {
     if (scenario.id) document.getElementById('id').value = scenario.id;
     if (scenario.type) document.getElementById('type').value = scenario.type;
     if (scenario.name) document.getElementById('name').value = scenario.name;
+    if (scenario.name_greek) document.getElementById('name_greek').value = scenario.name_greek;
+    if (scenario.event_reference) document.getElementById('event_reference').value = scenario.event_reference;
     if (scenario.description) document.getElementById('description').value = scenario.description;
     if (scenario.severity !== undefined) document.getElementById('severity').value = scenario.severity;
     if (scenario.affected_population) document.getElementById('affected_population').value = scenario.affected_population;
@@ -364,13 +366,40 @@ function populateFormWithScenario(scenario) {
 
     // Location
     if (scenario.location) {
-        if (scenario.location.region) document.getElementById('location_region').value = scenario.location.region;
-        if (scenario.location.coordinates) {
-            document.getElementById('lat').value = scenario.location.coordinates.lat;
-            document.getElementById('lon').value = scenario.location.coordinates.lon;
-            updateMarkerPosition(scenario.location.coordinates.lat, scenario.location.coordinates.lon);
-            map.setView([scenario.location.coordinates.lat, scenario.location.coordinates.lon], 10);
+        const loc = scenario.location;
+        if (loc.region) document.getElementById('location_region').value = loc.region;
+        if (loc.coordinates) {
+            document.getElementById('lat').value = loc.coordinates.lat;
+            document.getElementById('lon').value = loc.coordinates.lon;
+            updateMarkerPosition(loc.coordinates.lat, loc.coordinates.lon);
+            map.setView([loc.coordinates.lat, loc.coordinates.lon], 10);
         }
+        if (loc.affected_area_km2 !== undefined) document.getElementById('affected_area_km2').value = loc.affected_area_km2;
+        if (loc.affected_area_description) document.getElementById('affected_area_description').value = loc.affected_area_description;
+    }
+
+    // Constraints
+    if (scenario.constraints) {
+        const c = scenario.constraints;
+        document.getElementById('time_critical').checked = c.time_critical || false;
+        if (c.weather_conditions) document.getElementById('weather_conditions').value = c.weather_conditions;
+        if (c.accessibility) document.getElementById('accessibility').value = c.accessibility;
+        if (c.resource_limitations) document.getElementById('resource_limitations').value = c.resource_limitations.join(', ');
+        if (c.additional_concerns) document.getElementById('additional_concerns').value = c.additional_concerns.join('\n');
+    }
+
+    // Real-time factors
+    if (scenario.real_time_factors) {
+        const rt = scenario.real_time_factors;
+        const knownKeys = ['missing_persons', 'current_evacuations', 'casualties_reported', 'forecast'];
+        if (rt.missing_persons !== undefined) document.getElementById('missing_persons').value = rt.missing_persons;
+        if (rt.current_evacuations) document.getElementById('current_evacuations_pct').value = rt.current_evacuations;
+        if (rt.forecast) document.getElementById('forecast').value = rt.forecast;
+        // Remaining dynamic factors
+        const dynamicLines = Object.entries(rt)
+            .filter(([k]) => !knownKeys.includes(k))
+            .map(([k, v]) => `${k}: ${v}`);
+        if (dynamicLines.length > 0) document.getElementById('dynamic_factors').value = dynamicLines.join('\n');
     }
 
     // Expert selection
@@ -378,6 +407,8 @@ function populateFormWithScenario(scenario) {
         const es = scenario.expert_selection;
         if (es.geographic_scope) document.getElementById('geographic_scope').value = es.geographic_scope;
         if (es.geographic_location) document.getElementById('geographic_location').value = es.geographic_location;
+        if (es.crisis_subtypes) document.getElementById('crisis_subtypes').value = es.crisis_subtypes.join(', ');
+        if (es.duration_estimated_hours !== undefined) document.getElementById('duration_estimated_hours').value = es.duration_estimated_hours;
         if (es.affected_domains) document.getElementById('affected_domains').value = es.affected_domains.join(', ');
         if (es.infrastructure_systems) document.getElementById('infrastructure_systems').value = es.infrastructure_systems.join(', ');
         if (es.command_structure_needed) {
@@ -387,22 +418,28 @@ function populateFormWithScenario(scenario) {
         }
     }
 
-    // Import actions
-    if (scenario.available_actions && scenario.available_actions.length > 0) {
-        // Clear existing actions
-        document.getElementById('actionsContainer').innerHTML = '';
+    // Metadata
+    if (scenario.metadata) {
+        const m = scenario.metadata;
+        if (m.author) document.getElementById('meta_author').value = m.author;
+        if (m.version) document.getElementById('meta_version').value = m.version;
+        if (m.scenario_complexity) document.getElementById('scenario_complexity').value = m.scenario_complexity;
+        if (m.recommended_expert_domains) document.getElementById('recommended_expert_domains').value = m.recommended_expert_domains.join(', ');
+        if (m.version_notes) document.getElementById('version_notes').value = m.version_notes;
+    }
 
+    // Actions
+    if (scenario.available_actions && scenario.available_actions.length > 0) {
+        document.getElementById('actionsContainer').innerHTML = '';
         scenario.available_actions.forEach(action => {
             addAction();
             const actionNum = actionCounter;
-
             if (action.id) document.querySelector(`[name="action_${actionNum}_id"]`).value = action.id;
             if (action.name) document.querySelector(`[name="action_${actionNum}_name"]`).value = action.name;
             if (action.description) document.querySelector(`[name="action_${actionNum}_description"]`).value = action.description;
             if (action.required_resources) document.querySelector(`[name="action_${actionNum}_resources"]`).value = action.required_resources.join(', ');
             if (action.estimated_duration) document.querySelector(`[name="action_${actionNum}_duration"]`).value = action.estimated_duration;
             if (action.risk_level !== undefined) document.querySelector(`[name="action_${actionNum}_risk"]`).value = action.risk_level;
-
             if (action.criteria_scores) {
                 const cs = action.criteria_scores;
                 if (cs.effectiveness !== undefined) document.querySelector(`[name="action_${actionNum}_effectiveness"]`).value = cs.effectiveness;
@@ -440,11 +477,38 @@ function buildScenarioObject() {
         .split(',').map(s => s.trim()).filter(s => s);
     const tags = document.getElementById('tags').value
         .split(',').map(t => t.trim()).filter(t => t);
+    const crisisSubtypes = document.getElementById('crisis_subtypes').value
+        .split(',').map(s => s.trim()).filter(s => s);
+    const resourceLimitations = document.getElementById('resource_limitations').value
+        .split(',').map(s => s.trim()).filter(s => s);
+    const additionalConcerns = document.getElementById('additional_concerns').value
+        .split('\n').map(s => s.trim()).filter(s => s);
+    const recommendedDomains = document.getElementById('recommended_expert_domains').value
+        .split(',').map(s => s.trim()).filter(s => s);
+
+    // Parse dynamic real-time factors (key: value lines)
+    const dynamicFactors = {};
+    document.getElementById('dynamic_factors').value.split('\n').forEach(line => {
+        const sep = line.indexOf(':');
+        if (sep > 0) {
+            const k = line.slice(0, sep).trim();
+            let v = line.slice(sep + 1).trim();
+            if (v === 'true') v = true;
+            else if (v === 'false') v = false;
+            else if (!isNaN(v) && v !== '') v = parseFloat(v);
+            if (k) dynamicFactors[k] = v;
+        }
+    });
+
+    const areakm2 = document.getElementById('affected_area_km2').value;
+    const durationHrs = document.getElementById('duration_estimated_hours').value;
 
     const scenario = {
         id: document.getElementById('id').value,
         type: document.getElementById('type').value,
         name: document.getElementById('name').value,
+        name_greek: document.getElementById('name_greek').value || undefined,
+        event_reference: document.getElementById('event_reference').value || undefined,
         description: document.getElementById('description').value,
         severity: parseFloat(document.getElementById('severity').value),
         affected_population: parseInt(document.getElementById('affected_population').value) || 0,
@@ -455,16 +519,33 @@ function buildScenarioObject() {
             coordinates: {
                 lat: parseFloat(document.getElementById('lat').value),
                 lon: parseFloat(document.getElementById('lon').value)
-            }
+            },
+            ...(areakm2 ? { affected_area_km2: parseFloat(areakm2) } : {}),
+            ...(document.getElementById('affected_area_description').value ? { affected_area_description: document.getElementById('affected_area_description').value } : {})
         },
         tags: tags.length > 0 ? tags : [document.getElementById('type').value, "emergency"],
         available_actions: getActionsData(),
+        constraints: {
+            time_critical: document.getElementById('time_critical').checked,
+            resource_limitations: resourceLimitations,
+            weather_conditions: document.getElementById('weather_conditions').value || undefined,
+            accessibility: document.getElementById('accessibility').value,
+            additional_concerns: additionalConcerns
+        },
+        real_time_factors: {
+            ...(document.getElementById('missing_persons').value ? { missing_persons: parseInt(document.getElementById('missing_persons').value) } : {}),
+            ...(document.getElementById('current_evacuations_pct').value ? { current_evacuations: document.getElementById('current_evacuations_pct').value } : {}),
+            ...(document.getElementById('forecast').value ? { forecast: document.getElementById('forecast').value } : {}),
+            ...dynamicFactors
+        },
         expert_selection: {
             crisis_type: document.getElementById('type').value,
+            crisis_subtypes: crisisSubtypes,
             severity: parseFloat(document.getElementById('severity').value),
             geographic_scope: document.getElementById('geographic_scope').value,
             geographic_location: document.getElementById('geographic_location').value,
             affected_populations: parseInt(document.getElementById('affected_population').value) || 0,
+            ...(durationHrs ? { duration_estimated_hours: parseInt(durationHrs) } : {}),
             affected_domains: affectedDomains,
             command_structure_needed: {
                 tactical: document.getElementById('tactical').checked,
@@ -475,8 +556,11 @@ function buildScenarioObject() {
         },
         metadata: {
             created_date: new Date().toISOString().split('T')[0],
-            author: "Crisis MAS Web Tools",
-            version: "1.0"
+            author: document.getElementById('meta_author').value || "Crisis MAS Web Tools",
+            version: document.getElementById('meta_version').value || "1.0",
+            scenario_complexity: document.getElementById('scenario_complexity').value,
+            ...(recommendedDomains.length > 0 ? { recommended_expert_domains: recommendedDomains } : {}),
+            ...(document.getElementById('version_notes').value ? { version_notes: document.getElementById('version_notes').value } : {})
         },
         _save_location: document.getElementById('save_location').value || undefined,
         _filename: document.getElementById('filename').value || undefined

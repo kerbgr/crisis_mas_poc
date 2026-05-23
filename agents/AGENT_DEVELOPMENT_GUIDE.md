@@ -21,7 +21,7 @@ This guide explains how to create custom agents for the Crisis MAS using the pro
 
 ## Quick Start
 
-### Current Expert Roles (v0.8)
+### Current Expert Roles (v0.9.1)
 
 The Crisis MAS currently includes **13 expert agents** organized in a two-level Gold-Silver command structure:
 
@@ -45,6 +45,33 @@ The Crisis MAS currently includes **13 expert agents** organized in a two-level 
 8. **Coast Guard Tactical Commander** (`coastguard_silver_tactical`) - Maritime tactical authority
 
 See `agents/agent_profiles.json` for complete agent configurations.
+
+```mermaid
+graph TD
+    C["Coordinator Agent<br/>(Orchestration + Aggregation)"]
+
+    subgraph GOLD["GOLD - Strategic Command"]
+        G1["Civil Protection<br/>Director"]
+        G2["Police Regional<br/>Commander"]
+        G3["Fire Regional<br/>Commander"]
+        G4["Medical Infrastructure<br/>Director"]
+        G5["Coast Guard<br/>National Director"]
+    end
+
+    subgraph SILVER["SILVER - Tactical / Advisory"]
+        S1["Meteorologist"]
+        S2["Logistics<br/>Coordinator"]
+        S3["Environmental<br/>Scientist"]
+        S4["PSAP<br/>Coordinator"]
+        S5["Police Tactical<br/>Commander"]
+        S6["Fire Tactical<br/>Commander"]
+        S7["Emergency<br/>Physician"]
+        S8["Coast Guard<br/>Tactical Commander"]
+    end
+
+    C --> GOLD
+    C --> SILVER
+```
 
 ### 1. Copy the Template
 
@@ -190,7 +217,7 @@ Multi-agent coordination is critical for crisis management. The system implement
 
 **Coordinator Agent**:
 - Orchestrates expert agent deliberation
-- Aggregates beliefs using Evidential Reasoning or GAT
+- Aggregates beliefs using ER, GAT, GAT-Trained, or MCDA
 - Resolves conflicts and builds consensus
 - Generates unified recommendations
 
@@ -201,8 +228,16 @@ Multi-agent coordination is critical for crisis management. The system implement
 - Maintain historical reliability scores
 
 **Coordination Flow**:
-```
-Scenario → Coordinator → Parallel Expert Evaluation → Belief Aggregation → Consensus Building → Final Decision
+
+```mermaid
+flowchart LR
+    SC([Scenario<br/>Input]) --> CO["Coordinator<br/>Agent"]
+    CO --> E1["Expert 1<br/>(GOLD)"]
+    CO --> E2["Expert 2<br/>(GOLD)"]
+    CO --> EN["Expert N<br/>(SILVER)"]
+    E1 & E2 & EN --> BA["Belief Aggregation<br/>ER / GAT / GAT-Trained / MCDA"]
+    BA --> CB["Consensus<br/>Building"]
+    CB --> FD(["Final<br/>Decision"])
 ```
 
 This architecture balances **agent autonomy** (independent expert reasoning) with **collective intelligence** (aggregated decision-making).
@@ -211,36 +246,52 @@ This architecture balances **agent autonomy** (independent expert reasoning) wit
 
 Following Yang & Xu (2013) on Evidential Reasoning, each agent has two critical parameters:
 
-1. **Weight (w_i)**: Static importance based on expertise relevance
+1. **Weight** $w_i \in [0,1]$: Static importance based on expertise relevance
    - Determined by agent profile's domain expertise match to scenario type
    - Example: Meteorologist has high weight for flood scenarios
-   - Range: [0, 1], typically 0.3-0.9 for relevant experts
+   - Typically $0.3 \le w_i \le 0.9$ for relevant experts
 
-2. **Reliability (r_i)**: Dynamic trustworthiness based on historical performance
+2. **Reliability** $r_i \in [0,1]$: Dynamic trustworthiness based on historical performance
    - Computed from past prediction accuracy and consistency
-   - Updated after each scenario with temporal decay factor (γ = 0.95)
-   - Range: [0, 1], starts at default (0.8), adjusts with experience
+   - Starts at default $r_i^{(0)} = 0.8$; adjusts with accumulated experience
+   - Updated after each scenario using exponential moving average with decay $\gamma = 0.95$:
 
-**Combined Influence**: Agent influence = w_i × r_i × belief distribution
+$$r_i^{(t+1)} = \gamma \cdot r_i^{(t)} + (1 - \gamma) \cdot \text{acc}_i^{(t)}$$
+
+**Combined Influence**: The effective contribution of agent $i$ to alternative $a_k$ is:
+
+$$\text{Influence}_i(a_k) = w_i \cdot r_i \cdot P_i(a_k)$$
+
+where $P_i(a_k)$ is agent $i$'s belief assigned to alternative $a_k$, normalised so $\sum_k P_i(a_k) = 1$.
+
+**GAT Attention Score** (parameterised, trained on 46 historical runs):
+
+$$e_i = w_0 \, c_i + w_1 \, \rho_i + w_2 \, \kappa_i + w_3 \max(\sigma_i, 0)$$
+
+$$\alpha_i = \frac{\exp(e_i)}{\displaystyle\sum_{j} \exp(e_j)}$$
+
+where $c_i$ = confidence, $\rho_i$ = relevance, $\kappa_i$ = certainty, $\sigma_i$ = cross-agent belief similarity, and $[w_0, w_1, w_2, w_3]$ are the learned weights (trained defaults: $[0.400, 0.286, 0.313, 0.201]$).
 
 This dynamic weighting mechanism ensures that:
-- Relevant experts have greater influence (high weight)
-- Consistently accurate agents are trusted more (high reliability)
-- Poor performers gradually lose influence (reliability decay)
+
+- Relevant experts have greater influence (high $w_i$)
+- Consistently accurate agents are trusted more (high $r_i$)
+- Poor performers gradually lose influence (reliability decay via $\gamma$)
 - System adapts to changing agent performance over time
 
 ### LLM-Enhanced Cognitive Architecture
 
 Our implementation extends classical cognitive agents with Large Language Models:
 
-**Traditional BDI Agent**:
-```
-Beliefs (symbolic) → Reasoning Engine (logic) → Intentions (plan) → Actions
-```
+```mermaid
+graph LR
+    subgraph BDI["Traditional BDI Agent"]
+        B["Beliefs<br/>(symbolic)"] --> RE["Reasoning Engine<br/>(logic)"] --> I["Intentions<br/>(plan)"] --> A["Actions"]
+    end
 
-**LLM-Enhanced Agent**:
-```
-Scenario (natural language) → LLM (contextual reasoning) → Structured Assessment → Belief Distribution
+    subgraph LLM["LLM-Enhanced Agent"]
+        SC["Scenario<br/>(natural language)"] --> LM["LLM<br/>(contextual reasoning)"] --> AS["Structured<br/>Assessment"] --> BD["Belief<br/>Distribution"]
+    end
 ```
 
 **Key Advantages**:
@@ -275,6 +326,19 @@ Output: Beliefs: {Immediate: 0.7, Shelter: 0.2, Hybrid: 0.1}, Confidence: 0.85
 ---
 
 ## Step-by-Step Development
+
+```mermaid
+flowchart TD
+    S1["Step 1<br/>Define Agent Purpose"] --> S2["Step 2<br/>Configure Profile<br/>agent_profiles.json"]
+    S2 --> S3["Step 3<br/>Implement evaluate_scenario()"]
+    S3 --> S4["Step 4<br/>Implement propose_action()"]
+    S4 --> S5["Step 5<br/>Add Helper Methods"]
+    S5 --> S6["Step 6<br/>Customize LLM Prompts"]
+    S6 --> T["Testing<br/>Unit + Integration"]
+    T --> D{Pass?}
+    D -- Yes --> R["Register & Deploy"]
+    D -- No --> S3
+```
 
 ### Step 1: Define Agent Purpose
 
@@ -360,7 +424,7 @@ def _evaluate_rule_based(self, scenario, alternatives):
         cost_score = alt.get('cost', 0.5)
         effectiveness_score = alt.get('effectiveness', 0.5)
 
-        # Economic utility function
+        # Economic utility: CE(a_k) = effectiveness / cost  (scaled by risk tolerance)
         utility = (effectiveness_score / cost_score) * self.risk_tolerance
         belief_dist[alt['id']] = utility
 
@@ -481,11 +545,10 @@ def _assess_cost_effectiveness(
     alternative: Dict[str, Any],
     scenario: Dict[str, Any]
 ) -> float:
-    """Calculate cost-effectiveness ratio for an alternative."""
+    """Cost-effectiveness ratio: CE(a_k) = effectiveness(a_k) / cost(a_k)."""
     cost = alternative.get('estimated_cost', 1)
     effectiveness = alternative.get('effectiveness', 0)
 
-    # Prevent division by zero
     if cost == 0:
         cost = 1
 
@@ -859,23 +922,28 @@ print(f"Consensus: {decision['consensus_level']:.2%}")
 
 ### Example 1: Simple Rule-Based Agent
 
+Raw scores are normalised into a proper belief distribution via:
+
+$$\hat{P}(a_k) = \frac{s_k}{\displaystyle\sum_{j} s_j}$$
+
+where $s_k$ is the raw score for alternative $a_k$.
+
 ```python
 class SimpleEconomicAgent(BaseAgent):
     """Simple economic agent using only rule-based logic."""
 
     def evaluate_scenario(self, scenario, alternatives=None, **kwargs):
-        """Evaluate based on cost-effectiveness."""
+        """Score alternatives by CE(a_k) = effectiveness / (cost + 1), then normalise."""
         belief_dist = {}
 
         for alt in alternatives:
             cost = alt.get('estimated_cost', 1)
             effectiveness = alt.get('effectiveness', 0.5)
 
-            # Simple cost-effectiveness ratio
-            score = effectiveness / (cost + 1)  # +1 to avoid division by zero
+            score = effectiveness / (cost + 1)  # +1 to guard against zero cost
             belief_dist[alt['id']] = score
 
-        # Normalize
+        # Normalise to sum to 1.0
         total = sum(belief_dist.values())
         belief_dist = {k: v/total for k, v in belief_dist.items()}
 
@@ -996,11 +1064,10 @@ class HybridPsychologicalAgent(BaseAgent):
         }
 
     def _calculate_population_stress(self, scenario):
-        """Psychological stress model."""
+        """Stress model: S = min(1, severity * (1 + log10(max(1, N/1000))))  where N = affected population."""
         severity = scenario.get('severity', 0.5)
         affected = scenario.get('affected_population', 0)
 
-        # Simple psychological stress model
         stress = severity * (1 + math.log10(max(1, affected / 1000)))
         return min(1.0, stress)
 ```
@@ -1059,6 +1126,6 @@ For questions or issues:
 
 ---
 
-**Version:** 1.0
-**Last Updated:** November 2025
+**Version:** 1.1
+**Last Updated:** May 2026
 **Status:** Production Ready

@@ -19,6 +19,16 @@ from decision_framework.consensus_model import ConsensusModel
 from decision_framework.gat_aggregator import GATAggregator
 from models.data_models import BeliefDistribution, AgentAssessment
 
+# Vision subsystem — optional; imported lazily so missing deps don't break the pipeline
+try:
+    from agents.geospatial_agent import GeospatialContextAgent
+    from agents.camera_feed_agent import CameraFeedAgent
+    _VISION_AVAILABLE = True
+except ImportError:
+    GeospatialContextAgent = None  # type: ignore
+    CameraFeedAgent = None  # type: ignore
+    _VISION_AVAILABLE = False
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -59,7 +69,9 @@ class CoordinatorAgent:
         parallel_assessment: bool = True,
         max_parallel_workers: int = 4,
         gat_aggregator: Optional[GATAggregator] = None,
-        aggregation_method: str = "ER"
+        aggregation_method: str = "ER",
+        vision_agent=None,
+        camera_agent=None,
     ):
         """
         Initialize the Coordinator Agent.
@@ -117,6 +129,10 @@ class CoordinatorAgent:
                 num_attention_heads=4,
                 use_multi_head=True
             )
+
+        # Vision subsystem (optional — gracefully absent when not provided)
+        self.vision_agent = vision_agent
+        self.camera_agent = camera_agent
 
         # Set up agent weights (equal weights if not provided)
         if agent_weights is None:
@@ -189,7 +205,8 @@ class CoordinatorAgent:
         self,
         scenario: Dict[str, Any],
         alternatives: List[Dict[str, Any]],
-        criteria: Optional[List[str]] = None
+        criteria: Optional[List[str]] = None,
+        agents: Optional[List[ExpertAgent]] = None,
     ) -> Dict[str, Any]:
         """
         Collect assessments from all expert agents.
@@ -214,8 +231,9 @@ class CoordinatorAgent:
             >>> for agent_id, assessment in results['assessments'].items():
             ...     print(f"{agent_id}: {assessment['belief_distribution']}")
         """
+        active_agents = agents if agents is not None else self.expert_agents
         logger.info(
-            f"Collecting assessments from {len(self.expert_agents)} agents "
+            f"Collecting assessments from {len(active_agents)} agents "
             f"(parallel={self.parallel_assessment})"
         )
 
@@ -227,12 +245,12 @@ class CoordinatorAgent:
             # Parallel collection using ThreadPoolExecutor.
             # max_parallel_workers caps concurrent API calls to avoid TPM bursts
             # on cloud providers (e.g. OpenAI 30k TPM limit).
-            workers = min(self.max_parallel_workers, len(self.expert_agents))
+            workers = min(self.max_parallel_workers, len(active_agents))
             with ThreadPoolExecutor(max_workers=workers) as executor:
                 # Submit tasks with a small stagger so the first batch doesn't
                 # all fire at exactly the same millisecond
                 future_to_agent = {}
-                for i, agent in enumerate(self.expert_agents):
+                for i, agent in enumerate(active_agents):
                     future_to_agent[executor.submit(
                         agent.evaluate_scenario,
                         scenario,
@@ -261,7 +279,7 @@ class CoordinatorAgent:
 
         else:
             # Sequential collection
-            for agent in self.expert_agents:
+            for agent in active_agents:
                 try:
                     assessment = agent.evaluate_scenario(scenario, alternatives, criteria)
                     assessments[agent.agent_id] = assessment
@@ -280,7 +298,7 @@ class CoordinatorAgent:
         collection_time = (end_time - start_time).total_seconds()
 
         logger.info(
-            f"Assessment collection completed: {len(assessments)}/{len(self.expert_agents)} "
+            f"Assessment collection completed: {len(assessments)}/{len(active_agents)} "
             f"agents responded in {collection_time:.2f}s"
         )
 
@@ -826,9 +844,60 @@ class CoordinatorAgent:
 
         start_time = datetime.now()
 
+        # Step 0: Vision pre-assessment (optional — skipped when agents not configured)
+        geospatial_context = None
+        camera_reports = []
+        eligible_agents = self.expert_agents  # default: all agents participate
+
+        if self.vision_agent is not None:
+            logger.info("Step 0/6: Geospatial terrain analysis")
+            try:
+                geospatial_context = self.vision_agent.analyze(scenario, self.expert_agents)
+                eligible_ids = set(geospatial_context.get("eligible_agent_ids", []))
+                ineligible = geospatial_context.get("ineligible_agent_ids", [])
+                if ineligible:
+                    logger.info(
+                        "GeospatialContextAgent excluded %d agent(s): %s "
+                        "(terrain=%s)",
+                        len(ineligible),
+                        ineligible,
+                        geospatial_context.get("terrain_type"),
+                    )
+                    eligible_agents = [
+                        a for a in self.expert_agents if a.agent_id in eligible_ids
+                    ]
+                    if not eligible_agents:
+                        logger.warning(
+                            "All agents excluded by geospatial filter — "
+                            "reverting to full agent set"
+                        )
+                        eligible_agents = self.expert_agents
+            except Exception as e:
+                logger.warning("GeospatialContextAgent failed: %s — using all agents", e)
+
+        if self.camera_agent is not None:
+            camera_feeds = scenario.get("camera_feeds", [])
+            if camera_feeds:
+                logger.info("Step 0/6: Analyzing %d camera feed(s)", len(camera_feeds))
+                try:
+                    camera_reports = self.camera_agent.analyze_feeds(camera_feeds)
+                    camera_context = self.camera_agent.to_scenario_context(camera_reports)
+                    if camera_context:
+                        # Inject camera intelligence into scenario context
+                        existing = scenario.get("additional_context", "")
+                        scenario = dict(scenario)  # shallow copy — don't mutate caller's dict
+                        scenario["additional_context"] = (
+                            f"{existing}\n\n{camera_context}".strip()
+                        )
+                        logger.info("Camera feed intelligence injected into scenario context")
+                except Exception as e:
+                    logger.warning("CameraFeedAgent failed: %s — continuing without camera data", e)
+
         # Step 1: Collect assessments from all expert agents
         logger.info("Step 1/6: Collecting expert assessments")
-        collection_results = self.collect_assessments(scenario, alternatives, criteria)
+        collection_results = self.collect_assessments(
+            scenario, alternatives, criteria, agents=eligible_agents
+        )
         agent_assessments = collection_results['assessments']
 
         if not agent_assessments:
@@ -948,8 +1017,26 @@ class CoordinatorAgent:
             'scenario_id': scenario.get('scenario_id') or scenario.get('id', 'unknown'),
             'decision_time_seconds': (datetime.now() - start_time).total_seconds(),
             'agents_participated': len(agent_assessments),
-            'collection_info': collection_results
+            'collection_info': collection_results,
+            'agents_excluded_by_terrain': (
+                geospatial_context.get("ineligible_agent_ids", [])
+                if geospatial_context else []
+            ),
         }
+
+        # Attach vision subsystem outputs when available
+        if geospatial_context:
+            decision['geospatial_context'] = {
+                'terrain_type': geospatial_context.get('terrain_type'),
+                'is_island': geospatial_context.get('is_island'),
+                'island_name': geospatial_context.get('island_name'),
+                'has_water_access': geospatial_context.get('has_water_access'),
+                'method_used': geospatial_context.get('method_used'),
+                'coordinates': geospatial_context.get('coordinates'),
+                'ineligible_agents': geospatial_context.get('ineligible_agent_ids', []),
+            }
+        if camera_reports:
+            decision['camera_feed_reports'] = camera_reports
 
         # Attach GAT attention analysis when GAT was used
         if self.aggregation_method == 'GAT':

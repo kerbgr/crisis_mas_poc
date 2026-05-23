@@ -1,5 +1,11 @@
 /* Crisis MAS Web Tools - Custom Styles */
 
+/* Expert form – weight preference criterion label */
+.wp-criterion-label { min-width: 130px; }
+
+/* Protocol card – reference citation line */
+.protocol-ref-line { font-size: 0.75rem; }
+
 :root {
     --primary-color: #0d6efd;
     --success-color: #198754;

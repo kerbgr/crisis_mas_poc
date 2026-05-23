@@ -70,15 +70,20 @@ class ProtocolIntegration:
 
         # Map crisis types to protocol categories
         type_to_category = {
-            'wildfire': ['firefighting', 'disaster'],
-            'flood': ['disaster', 'search_rescue'],
-            'earthquake': ['disaster', 'search_rescue', 'medical'],
-            'hazmat': ['firefighting', 'disaster'],
-            'mass_casualty': ['medical', 'disaster'],
-            'explosion': ['firefighting', 'medical', 'disaster'],
+            'wildfire': ['firefighting', 'disaster', 'evacuation', 'environmental'],
+            'flood': ['disaster', 'search_rescue', 'evacuation', 'maritime'],
+            'earthquake': ['disaster', 'search_rescue', 'medical', 'evacuation', 'civil_protection'],
+            'hazmat': ['hazmat', 'environmental', 'medical', 'evacuation'],
+            'mass_casualty': ['medical', 'disaster', 'search_rescue'],
+            'explosion': ['firefighting', 'hazmat', 'medical', 'disaster'],
             'pandemic': ['medical', 'disaster'],
-            'civil_unrest': ['police', 'disaster'],
-            'terrorist': ['police', 'medical', 'disaster']
+            'civil_unrest': ['police', 'civil_protection', 'disaster'],
+            'terrorist': ['police', 'hazmat', 'medical', 'disaster'],
+            'tsunami': ['maritime', 'evacuation', 'disaster', 'search_rescue'],
+            'hurricane': ['disaster', 'evacuation', 'maritime', 'search_rescue'],
+            'tornado': ['disaster', 'evacuation', 'search_rescue'],
+            'volcanic_seismic': ['civil_protection', 'disaster', 'maritime', 'evacuation', 'search_rescue', 'medical'],
+            'industrial': ['hazmat', 'environmental', 'medical', 'evacuation'],
         }
 
         # Get relevant categories for this crisis type
@@ -86,17 +91,28 @@ class ProtocolIntegration:
         if category:
             relevant_categories = [category]
 
-        # Filter protocols by category and tags
+        category_filtered = bool(category)
+
+        # Filter protocols by category, applicable_crisis_types, and tags
         for protocol in self.protocols:
             # Check category match
             if protocol.get('category') in relevant_categories:
                 relevant.append(protocol)
                 continue
 
-            # Check tags for crisis type
-            tags = protocol.get('tags', [])
-            if crisis_type.lower() in [tag.lower() for tag in tags]:
-                relevant.append(protocol)
+            # Check applicable_crisis_types structured field (always checked)
+            applicable_types = protocol.get('applicable_crisis_types', [])
+            if crisis_type.lower() in [t.lower() for t in applicable_types]:
+                # When a category filter is active, only accept if category also matches
+                if not category_filtered or protocol.get('category') in relevant_categories:
+                    relevant.append(protocol)
+                continue
+
+            # Tag fallback: only when no explicit category filter is active
+            if not category_filtered:
+                tags = protocol.get('tags', [])
+                if crisis_type.lower() in [tag.lower() for tag in tags]:
+                    relevant.append(protocol)
 
         return relevant[:limit]
 
@@ -116,6 +132,21 @@ class ProtocolIntegration:
         Returns:
             List of extracted action suggestions
         """
+        # Prefer structured procedure_steps if available
+        procedure_steps = protocol.get('procedure_steps', [])
+        if procedure_steps:
+            actions = []
+            for step in procedure_steps:
+                step = step.strip()
+                if step and len(step) > 10:
+                    actions.append({
+                        'name': step[:100],
+                        'description': step,
+                        'source': 'procedure_steps'
+                    })
+            return actions[:10]
+
+        # Fall back to regex parsing of answer text
         answer = protocol.get('answer', '')
         if not answer:
             return []

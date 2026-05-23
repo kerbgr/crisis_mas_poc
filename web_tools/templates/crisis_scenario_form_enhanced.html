@@ -163,6 +163,30 @@
                         </div>
                     </div>
 
+                    <!-- Event Context -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0"><i class="bi bi-bookmark-star"></i> Event Context</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="event_reference" class="form-label">Real Event Reference</label>
+                                    <input type="text" class="form-control" id="event_reference" name="event_reference"
+                                           value="{{ scenario.event_reference if scenario else '' }}"
+                                           placeholder="e.g., Storm Daniel (September 2023)">
+                                    <div class="form-text">Historical event this scenario is inspired by (for transparency).</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="name_greek" class="form-label">Greek Name</label>
+                                    <input type="text" class="form-control" id="name_greek" name="name_greek"
+                                           value="{{ scenario.name_greek if scenario else '' }}"
+                                           placeholder="e.g., Πλημμύρα Θεσσαλίας">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Location & Map -->
                     <div class="card shadow mb-4">
                         <div class="card-header bg-info text-white">
@@ -196,6 +220,20 @@
                             <div id="map"></div>
                             <div class="form-text mt-2">
                                 <i class="bi bi-hand-index"></i> Click anywhere on the map to set the crisis location
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-4 mb-3">
+                                    <label for="affected_area_km2" class="form-label">Affected Area (km²)</label>
+                                    <input type="number" class="form-control" id="affected_area_km2" name="affected_area_km2"
+                                           value="{{ scenario.location.affected_area_km2 if scenario and scenario.location else '' }}"
+                                           min="0" step="0.1" placeholder="e.g., 45">
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <label for="affected_area_description" class="form-label">Area Description</label>
+                                    <input type="text" class="form-control" id="affected_area_description" name="affected_area_description"
+                                           value="{{ scenario.location.affected_area_description if scenario and scenario.location else '' }}"
+                                           placeholder="e.g., 45 km² of agricultural plain and urban areas along the Pineios River basin">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -249,6 +287,22 @@
                                 </div>
                             </div>
 
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label for="crisis_subtypes" class="form-label">Crisis Subtypes (comma-separated)</label>
+                                    <input type="text" class="form-control" id="crisis_subtypes" name="crisis_subtypes"
+                                           value="{{ scenario.expert_selection.crisis_subtypes | join(', ') if scenario and scenario.get('expert_selection', {}).get('crisis_subtypes') else '' }}"
+                                           placeholder="e.g., urban, evacuation, infrastructure_damage, rescue">
+                                    <div class="form-text">Refines expert matching within the crisis type.</div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="duration_estimated_hours" class="form-label">Estimated Duration (hours)</label>
+                                    <input type="number" class="form-control" id="duration_estimated_hours" name="duration_estimated_hours"
+                                           value="{{ scenario.expert_selection.duration_estimated_hours if scenario and scenario.get('expert_selection', {}).get('duration_estimated_hours') else '' }}"
+                                           min="0" step="1" placeholder="e.g., 12">
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="affected_domains" class="form-label">Affected Domains (comma-separated)</label>
                                 <input type="text" class="form-control" id="affected_domains" name="affected_domains"
@@ -288,6 +342,130 @@
                                 <div class="form-text">
                                     Options: hospitals, healthcare, transportation, communications, power, water, ports, emergency_services
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Constraints -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Operational Constraints</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="time_critical" name="time_critical"
+                                               {{ 'checked' if scenario and scenario.get('constraints', {}).get('time_critical') else '' }}>
+                                        <label class="form-check-label" for="time_critical">Time Critical</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="weather_conditions" class="form-label">Weather Conditions</label>
+                                    <input type="text" class="form-control" id="weather_conditions" name="weather_conditions"
+                                           value="{{ scenario.constraints.weather_conditions if scenario and scenario.get('constraints', {}).get('weather_conditions') else '' }}"
+                                           placeholder="e.g., heavy_rain_continuing">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="accessibility" class="form-label">Accessibility</label>
+                                    <select class="form-select" id="accessibility" name="accessibility">
+                                        {% set acc = scenario.get('constraints', {}).get('accessibility', '') if scenario else '' %}
+                                        <option value="normal" {{ 'selected' if acc == 'normal' else '' }}>Normal</option>
+                                        <option value="limited" {{ 'selected' if acc == 'limited' else '' }}>Limited</option>
+                                        <option value="severely_limited" {{ 'selected' if acc == 'severely_limited' else '' }}>Severely Limited</option>
+                                        <option value="cut_off" {{ 'selected' if acc == 'cut_off' else '' }}>Cut Off</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="resource_limitations" class="form-label">Resource Limitations (comma-separated)</label>
+                                <input type="text" class="form-control" id="resource_limitations" name="resource_limitations"
+                                       value="{{ scenario.constraints.resource_limitations | join(', ') if scenario and scenario.get('constraints', {}).get('resource_limitations') else '' }}"
+                                       placeholder="e.g., limited_rescue_personnel, limited_shelters, limited_transportation">
+                            </div>
+                            <div class="mb-3">
+                                <label for="additional_concerns" class="form-label">Additional Concerns (one per line)</label>
+                                <textarea class="form-control" id="additional_concerns" name="additional_concerns" rows="3"
+                                          placeholder="Power outages in affected areas&#10;Contaminated water supply&#10;Hospital evacuation may be necessary">{{ (scenario.get('constraints', {}).get('additional_concerns', []) | join('\n')) if scenario else '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Factors -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="bi bi-activity"></i> Real-time Situation Factors</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="missing_persons" class="form-label">Missing Persons</label>
+                                    <input type="number" class="form-control" id="missing_persons" name="missing_persons"
+                                           value="{{ scenario.real_time_factors.missing_persons if scenario and scenario.get('real_time_factors', {}).get('missing_persons') else '' }}"
+                                           min="0" placeholder="e.g., 12">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="current_evacuations_pct" class="form-label">Current Evacuations</label>
+                                    <input type="text" class="form-control" id="current_evacuations_pct" name="current_evacuations_pct"
+                                           value="{{ scenario.real_time_factors.current_evacuations if scenario and scenario.get('real_time_factors', {}).get('current_evacuations') else '' }}"
+                                           placeholder="e.g., Partial - 30% of affected">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="forecast" class="form-label">Meteorological Forecast</label>
+                                    <input type="text" class="form-control" id="forecast" name="forecast"
+                                           value="{{ scenario.real_time_factors.forecast if scenario and scenario.get('real_time_factors', {}).get('forecast') else '' }}"
+                                           placeholder="e.g., Rain expected to continue for 6 more hours">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="dynamic_factors" class="form-label">Other Dynamic Factors (one per line, format: key: value)</label>
+                                <textarea class="form-control" id="dynamic_factors" name="dynamic_factors" rows="3"
+                                          placeholder="water_level_rising: true&#10;rate_of_rise: 5cm per hour&#10;levee_integrity: compromised">{% if scenario and scenario.get('real_time_factors') %}{% for k, v in scenario.real_time_factors.items() %}{% if k not in ['missing_persons', 'current_evacuations', 'casualties_reported', 'forecast'] %}{{ k }}: {{ v }}
+{% endif %}{% endfor %}{% endif %}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0"><i class="bi bi-info-square"></i> Scenario Metadata</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="meta_author" class="form-label">Author</label>
+                                    <input type="text" class="form-control" id="meta_author" name="meta_author"
+                                           value="{{ scenario.metadata.author if scenario and scenario.get('metadata', {}).get('author') else '' }}"
+                                           placeholder="e.g., Crisis MAS Research Team">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="meta_version" class="form-label">Version</label>
+                                    <input type="text" class="form-control" id="meta_version" name="meta_version"
+                                           value="{{ scenario.metadata.version if scenario and scenario.get('metadata', {}).get('version') else '1.0' }}"
+                                           placeholder="e.g., 2.1">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="scenario_complexity" class="form-label">Scenario Complexity</label>
+                                    <select class="form-select" id="scenario_complexity" name="scenario_complexity">
+                                        {% set comp = scenario.get('metadata', {}).get('scenario_complexity', 'medium') if scenario else 'medium' %}
+                                        <option value="low" {{ 'selected' if comp == 'low' else '' }}>Low</option>
+                                        <option value="medium" {{ 'selected' if comp == 'medium' else '' }}>Medium</option>
+                                        <option value="high" {{ 'selected' if comp == 'high' else '' }}>High</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="recommended_expert_domains" class="form-label">Recommended Expert Domains (comma-separated)</label>
+                                <input type="text" class="form-control" id="recommended_expert_domains" name="recommended_expert_domains"
+                                       value="{{ scenario.metadata.recommended_expert_domains | join(', ') if scenario and scenario.get('metadata', {}).get('recommended_expert_domains') else '' }}"
+                                       placeholder="e.g., medical, logistics, public_safety, environmental">
+                            </div>
+                            <div class="mb-3">
+                                <label for="version_notes" class="form-label">Version Notes</label>
+                                <input type="text" class="form-control" id="version_notes" name="version_notes"
+                                       value="{{ scenario.metadata.version_notes if scenario and scenario.get('metadata', {}).get('version_notes') else '' }}"
+                                       placeholder="e.g., v2.1: Corrected river name, added Greek terminology">
                             </div>
                         </div>
                     </div>

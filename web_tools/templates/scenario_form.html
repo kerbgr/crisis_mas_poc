@@ -7,6 +7,11 @@
     <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/font/bootstrap-icons.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .guide-card { border-left: 4px solid #0d6efd; background: #f8f9ff; }
+        .guide-title { color: #0d6efd; font-weight: 600; }
+        .section-header { background: #f1f3f5; border-radius: 6px; padding: 0.5rem 0.75rem; margin-bottom: 1rem; }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -20,197 +25,253 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/protocols">Incident Protocols</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/crisis-scenarios">Crisis Scenarios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/experts">Experts</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/protocols">Incident Protocols</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/crisis-scenarios">Crisis Scenarios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/experts">Experts</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container mt-5">
+    <div class="container mt-4 mb-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
+
                 <!-- Header -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="h3 mb-0">
                         <i class="bi bi-{{ 'pencil' if protocol else 'plus-circle' }} text-primary"></i>
-                        {{ 'Edit' if protocol else 'Create New' }} Protocol
+                        {{ 'Edit' if protocol else 'Create New' }} Incident Protocol
                     </h1>
-                    <a href="/protocols" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i> Back to List
+                    <a href="/protocols" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back
                     </a>
                 </div>
 
-                <!-- Form -->
-                <div class="card shadow">
+                <!-- ── CREATOR / REVIEWER GUIDE ── -->
+                <div class="card guide-card mb-4 shadow-sm">
                     <div class="card-body">
-                        <form method="POST">
-                            <!-- Question -->
-                            <div class="mb-3">
-                                <label for="question" class="form-label">
-                                    <i class="bi bi-question-circle"></i> Question *
-                                </label>
-                                <textarea class="form-control" id="question" name="question" rows="3" required
-                                          placeholder="Enter the emergency scenario question...">{{ protocol.question if protocol else '' }}</textarea>
-                                <div class="form-text">
-                                    The question that will be asked to the LLM. Can be in Greek or English.
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="guide-title"><i class="bi bi-lightbulb"></i> Protocol Design Guide for Creators &amp; Reviewers</span>
+                            <button class="btn btn-sm btn-outline-primary" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#guideBody">
+                                <i class="bi bi-chevron-down"></i> Toggle
+                            </button>
+                        </div>
+                        <div class="collapse show" id="guideBody">
+                            <hr class="my-2">
+                            <div class="row g-3 mt-0">
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-question-circle text-primary"></i> Question Quality</p>
+                                    <ul class="small mb-0">
+                                        <li>Phrase as a realistic operational question an incident commander would ask.</li>
+                                        <li>Be specific — include crisis type, phase, and context (e.g. <em>"What is the initial attack protocol for a wildland fire in the first hour?"</em>).</li>
+                                        <li>Avoid overly generic questions ("What do you do in a fire?").</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-chat-right-text text-success"></i> Expert Answer Quality</p>
+                                    <ul class="small mb-0">
+                                        <li>Answers are injected into LLM prompts — write as a domain expert would speak.</li>
+                                        <li>Include numbered procedures, priorities, and safety considerations.</li>
+                                        <li>Reference real standards where applicable (ICS, LCES, NIMS, WHO, etc.).</li>
+                                        <li>Aim for 3–8 sentences. Too short = weak training signal; too long = diluted context.</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-list-ol text-warning"></i> Procedure Steps</p>
+                                    <ul class="small mb-0">
+                                        <li>One step per line — the scenario builder extracts these as discrete <strong>available actions</strong>.</li>
+                                        <li>Start each step with an action verb: <em>Deploy, Establish, Notify, Assess, Coordinate.</em></li>
+                                        <li>These steps can be directly imported into a Crisis Scenario's action list via "AI Suggest from Protocols".</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="fw-semibold mb-1"><i class="bi bi-geo text-info"></i> Applicable Crisis Types</p>
+                                    <ul class="small mb-0">
+                                        <li>Controls which scenarios the "AI Suggest from Protocols" feature will surface this protocol for.</li>
+                                        <li>Be generous — a flood protocol may also apply to earthquake (rescue, evacuation overlap).</li>
+                                        <li>Use the same type keys as scenario types: <code>flood</code>, <code>wildfire</code>, <code>earthquake</code>, <code>hazmat</code>, <code>tsunami</code>, etc.</li>
+                                    </ul>
                                 </div>
                             </div>
-
-                            <!-- Answer -->
-                            <div class="mb-3">
-                                <label for="answer" class="form-label">
-                                    <i class="bi bi-chat-right-text"></i> Expert Answer *
-                                </label>
-                                <textarea class="form-control" id="answer" name="answer" rows="5" required
-                                          placeholder="Enter the expert's detailed answer...">{{ protocol.answer if protocol else '' }}</textarea>
-                                <div class="form-text">
-                                    The expert's detailed response to the scenario.
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <!-- Category -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="category" class="form-label">
-                                        <i class="bi bi-tag"></i> Category *
-                                    </label>
-                                    <select class="form-select" id="category" name="category" required>
-                                        <option value="firefighting" {{ 'selected' if protocol and protocol.category == 'firefighting' else '' }}>Firefighting</option>
-                                        <option value="police" {{ 'selected' if protocol and protocol.category == 'police' else '' }}>Police</option>
-                                        <option value="medical" {{ 'selected' if protocol and protocol.category == 'medical' else '' }}>Medical/EMS</option>
-                                        <option value="search_rescue" {{ 'selected' if protocol and protocol.category == 'search_rescue' else '' }}>Search & Rescue</option>
-                                        <option value="disaster" {{ 'selected' if protocol and protocol.category == 'disaster' else '' }}>Disaster Response</option>
-                                        <option value="general" {{ 'selected' if protocol and protocol.category == 'general' else '' }}>General</option>
-                                    </select>
-                                </div>
-
-                                <!-- Severity -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="severity" class="form-label">
-                                        <i class="bi bi-exclamation-triangle"></i> Severity *
-                                    </label>
-                                    <select class="form-select" id="severity" name="severity" required>
-                                        <option value="low" {{ 'selected' if protocol and protocol.severity == 'low' else '' }}>Low</option>
-                                        <option value="medium" {{ 'selected' if protocol and protocol.severity == 'medium' else '' }}>Medium</option>
-                                        <option value="high" {{ 'selected' if protocol and protocol.severity == 'high' else '' }}>High</option>
-                                        <option value="critical" {{ 'selected' if protocol and protocol.severity == 'critical' else '' }}>Critical</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <!-- Location -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="location" class="form-label">
-                                        <i class="bi bi-geo-alt"></i> Location
-                                    </label>
-                                    <input type="text" class="form-control" id="location" name="location"
-                                           value="{{ protocol.location if protocol else '' }}"
-                                           placeholder="Athens, Thessaloniki, etc.">
-                                </div>
-
-                                <!-- Language -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="language" class="form-label">
-                                        <i class="bi bi-translate"></i> Language *
-                                    </label>
-                                    <select class="form-select" id="language" name="language" required>
-                                        <option value="en" {{ 'selected' if protocol and protocol.language == 'en' else '' }}>🇬🇧 English</option>
-                                        <option value="el" {{ 'selected' if protocol and protocol.language == 'el' else '' }}>🇬🇷 Greek</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Resources Required -->
-                            <div class="mb-3">
-                                <label for="resources_required" class="form-label">
-                                    <i class="bi bi-tools"></i> Resources Required
-                                </label>
-                                <input type="text" class="form-control" id="resources_required" name="resources_required"
-                                       value="{{ protocol.resources_required if protocol else '' }}"
-                                       placeholder="Fire trucks, ambulances, police units, etc.">
-                                <div class="form-text">
-                                    Equipment or personnel needed for this scenario.
-                                </div>
-                            </div>
-
-                            <!-- Expert ID -->
-                            <div class="mb-3">
-                                <label for="expert_id" class="form-label">
-                                    <i class="bi bi-person-badge"></i> Expert
-                                </label>
-                                <select class="form-select" id="expert_id" name="expert_id">
-                                    <option value="">-- No expert assigned --</option>
-                                    {% for expert in experts %}
-                                        <option value="{{ expert.id }}" {{ 'selected' if protocol and protocol.expert_id == expert.id else '' }}>
-                                            {{ expert.name }} ({{ expert.role }})
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">
-                                    The expert who provided this answer.
-                                </div>
-                            </div>
-
-                            <!-- Tags -->
-                            <div class="mb-3">
-                                <label for="tags" class="form-label">
-                                    <i class="bi bi-tags"></i> Tags
-                                </label>
-                                <input type="text" class="form-control" id="tags" name="tags"
-                                       value="{{ protocol.tags | join(', ') if protocol and protocol.tags else '' }}"
-                                       placeholder="fire, emergency, urban, etc. (comma-separated)">
-                                <div class="form-text">
-                                    Keywords for categorization (comma-separated).
-                                </div>
-                            </div>
-
-                            <!-- Submit Buttons -->
-                            <div class="d-flex justify-content-between mt-4">
-                                <a href="/protocols" class="btn btn-secondary">
-                                    <i class="bi bi-x-circle"></i> Cancel
-                                </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-{{ 'save' if protocol else 'plus-circle' }}"></i>
-                                    {{ 'Update' if protocol else 'Create' }} Protocol
-                                </button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Help Text -->
-                <div class="alert alert-info mt-4">
-                    <i class="bi bi-info-circle"></i> <strong>Tips:</strong>
-                    <ul class="mb-0 mt-2">
-                        <li>Use clear, specific questions that emergency personnel might encounter</li>
-                        <li>Expert answers should be detailed and actionable</li>
-                        <li>Include bilingual scenarios (Greek and English) for better coverage</li>
-                        <li>Tags help with filtering and organization</li>
-                    </ul>
-                </div>
+                <!-- ── FORM ── -->
+                <form method="POST">
+
+                    <!-- 1. Core Q&A -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="section-header">
+                                <h5 class="mb-0"><i class="bi bi-chat-dots text-primary"></i> Core Question &amp; Answer</h5>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="question" class="form-label">Question <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="question" name="question" rows="3" required
+                                          placeholder="e.g. What is the initial attack protocol for a wildland fire reported within the first hour?">{{ protocol.question if protocol else '' }}</textarea>
+                                <div class="form-text">Phrase as a real operational question. Can be in Greek or English.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="answer" class="form-label">Expert Answer <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="answer" name="answer" rows="6" required
+                                          placeholder="Detailed expert response referencing relevant standards and procedures...">{{ protocol.answer if protocol else '' }}</textarea>
+                                <div class="form-text">This is injected directly into LLM prompts — write as a domain expert. Reference standards where applicable (ICS, LCES, NIMS, WHO).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="procedure_steps" class="form-label">
+                                    Procedure Steps
+                                    <span class="text-muted small fw-normal">— one step per line; used by "AI Suggest from Protocols" to populate scenario actions</span>
+                                </label>
+                                <textarea class="form-control" id="procedure_steps" name="procedure_steps" rows="5"
+                                          placeholder="Deploy first-response crews immediately to assess fire behavior&#10;Establish incident command structure using ICS protocols&#10;Request air support if conditions allow (wind &lt;25mph, visibility &gt;3 miles)&#10;Establish safety zones and escape routes per LCES protocol&#10;Begin community notification and potential evacuation warnings">{{ (protocol.procedure_steps | join('\n')) if protocol and protocol.get('procedure_steps') else '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Classification -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="section-header">
+                                <h5 class="mb-0"><i class="bi bi-tags text-warning"></i> Classification</h5>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="category" name="category" required>
+                                        {% set cat = protocol.category if protocol else '' %}
+                                        <option value="firefighting"      {{ 'selected' if cat == 'firefighting' }}>Firefighting</option>
+                                        <option value="police"            {{ 'selected' if cat == 'police' }}>Police / Law Enforcement</option>
+                                        <option value="medical"           {{ 'selected' if cat == 'medical' }}>Medical / EMS</option>
+                                        <option value="search_rescue"     {{ 'selected' if cat == 'search_rescue' }}>Search &amp; Rescue</option>
+                                        <option value="hazmat"            {{ 'selected' if cat == 'hazmat' }}>Hazmat / CBRN</option>
+                                        <option value="maritime"          {{ 'selected' if cat == 'maritime' }}>Maritime / Coastal</option>
+                                        <option value="evacuation"        {{ 'selected' if cat == 'evacuation' }}>Evacuation &amp; Sheltering</option>
+                                        <option value="environmental"     {{ 'selected' if cat == 'environmental' }}>Environmental Response</option>
+                                        <option value="communications"    {{ 'selected' if cat == 'communications' }}>Emergency Communications</option>
+                                        <option value="logistics"         {{ 'selected' if cat == 'logistics' }}>Logistics &amp; Supply Chain</option>
+                                        <option value="civil_protection"  {{ 'selected' if cat == 'civil_protection' }}>Civil Protection</option>
+                                        <option value="disaster"          {{ 'selected' if cat == 'disaster' }}>Disaster Response (General)</option>
+                                        <option value="general"           {{ 'selected' if cat == 'general' or not cat }}>General</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="severity" class="form-label">Severity <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="severity" name="severity" required>
+                                        {% set sev = protocol.severity if protocol else '' %}
+                                        <option value="low"      {{ 'selected' if sev == 'low' }}>Low</option>
+                                        <option value="medium"   {{ 'selected' if sev == 'medium' or not sev }}>Medium</option>
+                                        <option value="high"     {{ 'selected' if sev == 'high' }}>High</option>
+                                        <option value="critical" {{ 'selected' if sev == 'critical' }}>Critical</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="language" class="form-label">Language <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="language" name="language" required>
+                                        <option value="en" {{ 'selected' if not protocol or protocol.language == 'en' }}>English</option>
+                                        <option value="el" {{ 'selected' if protocol and protocol.language == 'el' }}>Greek</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="applicable_crisis_types" class="form-label">
+                                    Applicable Crisis Types
+                                    <span class="text-muted small fw-normal">— comma-separated; controls which scenarios surface this protocol in "AI Suggest"</span>
+                                </label>
+                                <input type="text" class="form-control" id="applicable_crisis_types" name="applicable_crisis_types"
+                                       value="{{ protocol.get('applicable_crisis_types', []) | join(', ') if protocol else '' }}"
+                                       placeholder="e.g. wildfire, flood, earthquake, hazmat, mass_casualty">
+                                <div class="form-text">
+                                    Available types: <code>wildfire flood earthquake hazmat hurricane tornado tsunami explosion pandemic civil_unrest terrorist mass_casualty</code>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="tags" class="form-label">Tags <span class="text-muted small fw-normal">(comma-separated)</span></label>
+                                <input type="text" class="form-control" id="tags" name="tags"
+                                       value="{{ protocol.tags | join(', ') if protocol and protocol.tags else '' }}"
+                                       placeholder="e.g. initial_attack, ICS, LCES, suppression, evacuation">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Context & Resources -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="section-header">
+                                <h5 class="mb-0"><i class="bi bi-geo-alt text-info"></i> Context &amp; Resources</h5>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="location" class="form-label">Location / Geographic Scope</label>
+                                    <input type="text" class="form-control" id="location" name="location"
+                                           value="{{ protocol.location if protocol else '' }}"
+                                           placeholder="e.g. Wildland Areas, Athens Metropolitan, Coastal Greece">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="expert_id" class="form-label">Assigned Expert</label>
+                                    <select class="form-select" id="expert_id" name="expert_id">
+                                        <option value="">-- No expert assigned --</option>
+                                        {% for expert in experts %}
+                                            <option value="{{ expert.id }}" {{ 'selected' if protocol and protocol.expert_id == expert.id else '' }}>
+                                                {{ expert.name }} &mdash; {{ expert.role }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">The domain expert whose knowledge this protocol represents.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="resources_required" class="form-label">Resources Required</label>
+                                <input type="text" class="form-control" id="resources_required" name="resources_required"
+                                       value="{{ protocol.resources_required if protocol else '' }}"
+                                       placeholder="e.g. Type 3 engine crews, hand crews, air tankers, incident commander, safety officer">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="references" class="form-label">
+                                    References
+                                    <span class="text-muted small fw-normal">— one per line; cite the official standard, regulation, or publication this protocol is based on</span>
+                                </label>
+                                <textarea class="form-control" id="references" name="references" rows="4"
+                                          placeholder="e.g. NWCG Incident Response Pocket Guide (IRPG), PMS 461 (2023 ed.)&#10;OSHA 29 CFR 1910.120 — HAZWOPER&#10;IMO/ICAO IAMSAR Manual, Volume II (2022 ed.)">{{ (protocol.references | join('\n')) if protocol and protocol.get('references') else '' }}</textarea>
+                                <div class="form-text">These citations appear on the protocol card and establish the authoritative source for the guidance.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="d-flex justify-content-between">
+                        <a href="/protocols" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-{{ 'save' if protocol else 'plus-circle' }}"></i>
+                            {{ 'Update' if protocol else 'Create' }} Protocol
+                        </button>
+                    </div>
+
+                </form>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-light py-4 mt-5">
-        <div class="container text-center text-muted">
-            <p class="mb-0">
-                <i class="bi bi-shield-fill-check"></i> Crisis MAS - LLM Training Web Tools
-            </p>
+    <footer class="bg-light py-3 mt-4">
+        <div class="container text-center text-muted small">
+            <i class="bi bi-shield-fill-check"></i> Crisis MAS - Web Tools
         </div>
     </footer>
 

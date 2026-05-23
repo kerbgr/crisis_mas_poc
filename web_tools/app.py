@@ -222,13 +222,16 @@ def protocol_new():
             'id': generate_id(protocols, 'protocol'),
             'question': request.form.get('question', '').strip(),
             'answer': request.form.get('answer', '').strip(),
+            'procedure_steps': [s.strip() for s in request.form.get('procedure_steps', '').splitlines() if s.strip()],
             'category': request.form.get('category', 'general'),
+            'applicable_crisis_types': [t.strip() for t in request.form.get('applicable_crisis_types', '').split(',') if t.strip()],
             'location': request.form.get('location', '').strip(),
             'severity': request.form.get('severity', 'medium'),
             'resources_required': request.form.get('resources_required', '').strip(),
             'expert_id': request.form.get('expert_id', '').strip(),
             'language': request.form.get('language', 'en'),
             'tags': [tag.strip() for tag in request.form.get('tags', '').split(',') if tag.strip()],
+            'references': [r.strip() for r in request.form.get('references', '').splitlines() if r.strip()],
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat()
         }
@@ -257,13 +260,16 @@ def protocol_edit(protocol_id):
         # Update protocol with form data
         protocol['question'] = request.form.get('question', '').strip()
         protocol['answer'] = request.form.get('answer', '').strip()
+        protocol['procedure_steps'] = [s.strip() for s in request.form.get('procedure_steps', '').splitlines() if s.strip()]
         protocol['category'] = request.form.get('category', 'general')
+        protocol['applicable_crisis_types'] = [t.strip() for t in request.form.get('applicable_crisis_types', '').split(',') if t.strip()]
         protocol['location'] = request.form.get('location', '').strip()
         protocol['severity'] = request.form.get('severity', 'medium')
         protocol['resources_required'] = request.form.get('resources_required', '').strip()
         protocol['expert_id'] = request.form.get('expert_id', '').strip()
         protocol['language'] = request.form.get('language', 'en')
         protocol['tags'] = [tag.strip() for tag in request.form.get('tags', '').split(',') if tag.strip()]
+        protocol['references'] = [r.strip() for r in request.form.get('references', '').splitlines() if r.strip()]
         protocol['updated_at'] = datetime.now().isoformat()
 
         save_protocols(protocols)
@@ -383,22 +389,39 @@ def expert_new():
     """Create new expert profile."""
     if request.method == 'POST':
         experts = load_experts()
-        
+
+        agent_id = request.form.get('expert_id', '').strip() or generate_id(experts, 'expert')
         # Create new expert from form data
         new_expert = {
-            'id': request.form.get('expert_id', '').strip() or generate_id(experts, 'expert'),
+            'agent_id': agent_id,
+            'id': agent_id,
             'name': request.form.get('name', '').strip(),
+            'command_level': request.form.get('command_level', 'SILVER'),
+            'command_level_description': request.form.get('command_level_description', '').strip(),
             'role': request.form.get('role', '').strip(),
-            'organization': request.form.get('organization', '').strip(),
-            'location': request.form.get('location', '').strip(),
+            'expertise': request.form.get('expertise', '').strip(),
             'experience_years': int(request.form.get('experience_years', 0)),
-            'specializations': [spec.strip() for spec in request.form.get('specializations', '').split(',') if spec.strip()],
-            'certifications': [cert.strip() for cert in request.form.get('certifications', '').split(',') if cert.strip()],
+            'education': request.form.get('education', '').strip(),
+            'certifications': [c.strip() for c in request.form.get('certifications', '').split(',') if c.strip()],
+            'specializations': [s.strip() for s in request.form.get('specializations', '').split(',') if s.strip()],
+            'expertise_tags': [t.strip() for t in request.form.get('expertise_tags', '').split(',') if t.strip()],
+            'notable_experience': [l.strip() for l in request.form.get('notable_experience', '').splitlines() if l.strip()],
+            'decision_style': request.form.get('decision_style', '').strip(),
+            'communication_preference': request.form.get('communication_preference', '').strip(),
+            'risk_tolerance': float(request.form.get('risk_tolerance', 0.5)),
+            'confidence_level': float(request.form.get('confidence_level', 0.8)),
+            'weight_preferences': {
+                'effectiveness': float(request.form.get('wp_effectiveness', 0.25)),
+                'safety': float(request.form.get('wp_safety', 0.25)),
+                'speed': float(request.form.get('wp_speed', 0.2)),
+                'cost': float(request.form.get('wp_cost', 0.15)),
+                'public_acceptance': float(request.form.get('wp_public_acceptance', 0.15)),
+            },
             'email': request.form.get('email', '').strip(),
             'phone': request.form.get('phone', '').strip(),
             'languages': [lang.strip() for lang in request.form.get('languages', '').split(',') if lang.strip()],
             'availability': request.form.get('availability', 'available'),
-            'bio': request.form.get('bio', '').strip(),
+            'description': request.form.get('description', '').strip(),
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat()
         }
@@ -425,17 +448,32 @@ def expert_edit(expert_id):
     if request.method == 'POST':
         # Update expert with form data
         expert['name'] = request.form.get('name', '').strip()
+        expert['command_level'] = request.form.get('command_level', 'SILVER')
+        expert['command_level_description'] = request.form.get('command_level_description', '').strip()
         expert['role'] = request.form.get('role', '').strip()
-        expert['organization'] = request.form.get('organization', '').strip()
-        expert['location'] = request.form.get('location', '').strip()
+        expert['expertise'] = request.form.get('expertise', '').strip()
         expert['experience_years'] = int(request.form.get('experience_years', 0))
-        expert['specializations'] = [spec.strip() for spec in request.form.get('specializations', '').split(',') if spec.strip()]
-        expert['certifications'] = [cert.strip() for cert in request.form.get('certifications', '').split(',') if cert.strip()]
+        expert['education'] = request.form.get('education', '').strip()
+        expert['certifications'] = [c.strip() for c in request.form.get('certifications', '').split(',') if c.strip()]
+        expert['specializations'] = [s.strip() for s in request.form.get('specializations', '').split(',') if s.strip()]
+        expert['expertise_tags'] = [t.strip() for t in request.form.get('expertise_tags', '').split(',') if t.strip()]
+        expert['notable_experience'] = [l.strip() for l in request.form.get('notable_experience', '').splitlines() if l.strip()]
+        expert['decision_style'] = request.form.get('decision_style', '').strip()
+        expert['communication_preference'] = request.form.get('communication_preference', '').strip()
+        expert['risk_tolerance'] = float(request.form.get('risk_tolerance', 0.5))
+        expert['confidence_level'] = float(request.form.get('confidence_level', 0.8))
+        expert['weight_preferences'] = {
+            'effectiveness': float(request.form.get('wp_effectiveness', 0.25)),
+            'safety': float(request.form.get('wp_safety', 0.25)),
+            'speed': float(request.form.get('wp_speed', 0.2)),
+            'cost': float(request.form.get('wp_cost', 0.15)),
+            'public_acceptance': float(request.form.get('wp_public_acceptance', 0.15)),
+        }
         expert['email'] = request.form.get('email', '').strip()
         expert['phone'] = request.form.get('phone', '').strip()
         expert['languages'] = [lang.strip() for lang in request.form.get('languages', '').split(',') if lang.strip()]
         expert['availability'] = request.form.get('availability', 'available')
-        expert['bio'] = request.form.get('bio', '').strip()
+        expert['description'] = request.form.get('description', '').strip()
         expert['updated_at'] = datetime.now().isoformat()
         
         save_experts(experts)

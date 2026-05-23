@@ -9,9 +9,21 @@
     "resources_required": "Type 3 engine crews, hand crews, air tankers, incident commander, safety officer",
     "expert_id": "fire_onscene_01",
     "language": "en",
-    "tags": ["wildfire", "initial_attack", "ICS", "LCES", "suppression"],
+    "tags": [
+      "wildfire",
+      "initial_attack",
+      "ICS",
+      "LCES",
+      "suppression"
+    ],
     "created_at": "2025-01-17T10:00:00",
-    "updated_at": "2025-01-17T10:00:00"
+    "updated_at": "2025-01-17T10:00:00",
+    "references": [
+      "NWCG Incident Response Pocket Guide (IRPG), PMS 461 (2023 ed.)",
+      "NIFC Initial Attack Guide, USDA Forest Service",
+      "ICS-200: Basic Incident Command System for Initial Response, FEMA/USFA",
+      "LCES Wildfire Safety Protocol — National Wildfire Coordinating Group (NWCG)"
+    ]
   },
   {
     "id": "protocol_wildfire_002",
@@ -23,9 +35,20 @@
     "resources_required": "Firing Boss, qualified crews, drip torches, drones, thermal imaging, weather monitoring",
     "expert_id": "fire_regional_01",
     "language": "en",
-    "tags": ["wildfire", "strategic_firing", "burnout", "drone_technology", "tactics"],
+    "tags": [
+      "wildfire",
+      "strategic_firing",
+      "burnout",
+      "drone_technology",
+      "tactics"
+    ],
     "created_at": "2025-01-17T10:05:00",
-    "updated_at": "2025-01-17T10:05:00"
+    "updated_at": "2025-01-17T10:05:00",
+    "references": [
+      "NWCG Incident Response Pocket Guide (IRPG), PMS 461 (2023 ed.)",
+      "Hellenic Fire Service (HFS) Operational Directive — Wildfire Suppression",
+      "ICS-300: Intermediate ICS for Expanding Incidents, FEMA EMI"
+    ]
   },
   {
     "id": "protocol_wildfire_003",
@@ -37,9 +60,20 @@
     "resources_required": "Emergency management, law enforcement, transportation, shelters, EAS system, traffic management",
     "expert_id": "psap_commander_01",
     "language": "en",
-    "tags": ["wildfire", "evacuation", "ready_set_go", "public_safety", "timing"],
+    "tags": [
+      "wildfire",
+      "evacuation",
+      "ready_set_go",
+      "public_safety",
+      "timing"
+    ],
     "created_at": "2025-01-17T10:10:00",
-    "updated_at": "2025-01-17T10:10:00"
+    "updated_at": "2025-01-17T10:10:00",
+    "references": [
+      "NWCG Standards for Interagency Incident Business Management (SIIBM), PMS 902",
+      "FEMA IS-200.C: Basic ICS for Initial Response",
+      "Hellenic Fire Service Operational Procedures — Extended Attack"
+    ]
   },
   {
     "id": "protocol_wildfire_004",
@@ -51,9 +85,19 @@
     "resources_required": "Structure protection teams, water tenders, fire-resistant materials, generators, engineering assessment",
     "expert_id": "fire_regional_01",
     "language": "en",
-    "tags": ["wildfire", "infrastructure_protection", "defensible_space", "critical_assets"],
+    "tags": [
+      "wildfire",
+      "infrastructure_protection",
+      "defensible_space",
+      "critical_assets"
+    ],
     "created_at": "2025-01-17T10:15:00",
-    "updated_at": "2025-01-17T10:15:00"
+    "updated_at": "2025-01-17T10:15:00",
+    "references": [
+      "NWCG Fire Behavior Field Reference Guide, PMS 437",
+      "Firescope ICS Field Operations Guide (FOG), ICS 420-1",
+      "NWCG Standards for Survival, PMS 414"
+    ]
   },
   {
     "id": "protocol_wildfire_005",
@@ -65,9 +109,20 @@
     "resources_required": "Assessment teams, drones, erosion control materials, water quality labs, environmental specialists",
     "expert_id": "environmental_expert_01",
     "language": "en",
-    "tags": ["wildfire", "post_fire", "BAER", "rehabilitation", "erosion_control"],
+    "tags": [
+      "wildfire",
+      "post_fire",
+      "BAER",
+      "rehabilitation",
+      "erosion_control"
+    ],
     "created_at": "2025-01-17T10:20:00",
-    "updated_at": "2025-01-17T10:20:00"
+    "updated_at": "2025-01-17T10:20:00",
+    "references": [
+      "NWCG Standards for Interagency Incident Business Management (SIIBM), PMS 902",
+      "Greek General Secretariat for Civil Protection — IOLAOS Wildfire Plan",
+      "FEMA IS-300: Intermediate ICS for Expanding Incidents"
+    ]
   },
   {
     "id": "protocol_flood_001",
@@ -79,9 +134,20 @@
     "resources_required": "NOAA monitoring, EAS, swift-water rescue teams, high-water vehicles, boats, evacuation routes",
     "expert_id": "psap_commander_01",
     "language": "en",
-    "tags": ["flood", "flash_flood", "warning", "evacuation", "swift_water"],
+    "tags": [
+      "flood",
+      "flash_flood",
+      "warning",
+      "evacuation",
+      "swift_water"
+    ],
     "created_at": "2025-01-17T10:25:00",
-    "updated_at": "2025-01-17T10:25:00"
+    "updated_at": "2025-01-17T10:25:00",
+    "references": [
+      "FEMA Planning Considerations: Evacuation and Shelter-in-Place (2019)",
+      "WMO Flood Forecasting and Early Warning Systems Guidelines (2011)",
+      "Greek Civil Protection Plan DARDANOS 2 — Flood Response"
+    ]
   },
   {
     "id": "protocol_flood_002",
@@ -93,9 +159,20 @@
     "resources_required": "Special needs registry, accessible transport, medical personnel, accessible shelters, assistive equipment",
     "expert_id": "public_safety_expert_01",
     "language": "en",
-    "tags": ["flood", "evacuation", "accessibility", "special_needs", "inclusive_planning"],
+    "tags": [
+      "flood",
+      "evacuation",
+      "accessibility",
+      "special_needs",
+      "inclusive_planning"
+    ],
     "created_at": "2025-01-17T10:30:00",
-    "updated_at": "2025-01-17T10:30:00"
+    "updated_at": "2025-01-17T10:30:00",
+    "references": [
+      "FEMA Access and Functional Needs (AFN) Evacuation Planning Guide",
+      "Greek Civil Protection Plan DARDANOS 2 — Flood Response",
+      "ADA Compliance Guidelines for Emergency Planning, U.S. Dept of Justice"
+    ]
   },
   {
     "id": "protocol_flood_003",
@@ -107,9 +184,20 @@
     "resources_required": "Water quality labs, sampling equipment, protective equipment, vaccination teams, public health officers",
     "expert_id": "medical_expert_01",
     "language": "en",
-    "tags": ["flood", "water_quality", "public_health", "contamination", "disease_prevention"],
+    "tags": [
+      "flood",
+      "water_quality",
+      "public_health",
+      "contamination",
+      "disease_prevention"
+    ],
     "created_at": "2025-01-17T10:35:00",
-    "updated_at": "2025-01-17T10:35:00"
+    "updated_at": "2025-01-17T10:35:00",
+    "references": [
+      "WHO Technical Note: Water Safety in Emergencies (2011)",
+      "CDC Guidelines for Environmental Health in Flood Disasters",
+      "ECDC Guidance on Communicable Disease Risks in Floods (2014)"
+    ]
   },
   {
     "id": "protocol_flood_004",
@@ -121,9 +209,20 @@
     "resources_required": "Dam operators, hydrologists, flood modeling, emergency management, evacuation resources, water sensors",
     "expert_id": "environmental_expert_01",
     "language": "en",
-    "tags": ["flood", "dam_operations", "water_management", "coordination", "EAP"],
+    "tags": [
+      "flood",
+      "dam_operations",
+      "water_management",
+      "coordination",
+      "EAP"
+    ],
     "created_at": "2025-01-17T10:40:00",
-    "updated_at": "2025-01-17T10:40:00"
+    "updated_at": "2025-01-17T10:40:00",
+    "references": [
+      "FEMA Dam Safety Emergency Action Plan (EAP) Guidelines",
+      "ICOLD (International Commission on Large Dams) Bulletin 138 — Dam Surveillance",
+      "Greek Ministry of Infrastructure — Dam Safety Regulation"
+    ]
   },
   {
     "id": "protocol_flood_005",
@@ -135,9 +234,20 @@
     "resources_required": "Shelter facilities, staff, food service, medical support, security, bedding, hygiene supplies",
     "expert_id": "public_safety_expert_01",
     "language": "en",
-    "tags": ["flood", "shelter_operations", "mass_care", "evacuation", "facility_management"],
+    "tags": [
+      "flood",
+      "shelter_operations",
+      "mass_care",
+      "evacuation",
+      "facility_management"
+    ],
     "created_at": "2025-01-17T10:45:00",
-    "updated_at": "2025-01-17T10:45:00"
+    "updated_at": "2025-01-17T10:45:00",
+    "references": [
+      "FEMA Shelter Field Guide (2013)",
+      "American Red Cross Shelter Standards and Procedures",
+      "SPHERE Humanitarian Standards — Shelter and Settlement (2018 ed.)"
+    ]
   },
   {
     "id": "protocol_hazmat_001",
@@ -149,9 +259,19 @@
     "resources_required": "Emergency services, HAZMAT team, PPE, SDS, CHEMTREC access, containment materials",
     "expert_id": "environmental_expert_01",
     "language": "en",
-    "tags": ["hazmat", "chemical_spill", "emergency_protocol", "RESCUE_CONFINE_REPORT_SECURE"],
+    "tags": [
+      "hazmat",
+      "chemical_spill",
+      "emergency_protocol",
+      "RESCUE_CONFINE_REPORT_SECURE"
+    ],
     "created_at": "2025-01-17T10:50:00",
-    "updated_at": "2025-01-17T10:50:00"
+    "updated_at": "2025-01-17T10:50:00",
+    "references": [
+      "OSHA 29 CFR 1910.120 — Hazardous Waste Operations and Emergency Response (HAZWOPER)",
+      "NFPA 472: Standard for Competence of Responders to Hazardous Materials Incidents (2018 ed.)",
+      "DOT Emergency Response Guidebook (ERG 2024), PHMSA"
+    ]
   },
   {
     "id": "protocol_hazmat_002",
@@ -163,9 +283,20 @@
     "resources_required": "Decon equipment, water supply, PPE, collection systems, medical support, hazardous waste containers",
     "expert_id": "fire_onscene_01",
     "language": "en",
-    "tags": ["hazmat", "decontamination", "PPE", "contamination_control", "three_zone"],
+    "tags": [
+      "hazmat",
+      "decontamination",
+      "PPE",
+      "contamination_control",
+      "three_zone"
+    ],
     "created_at": "2025-01-17T10:55:00",
-    "updated_at": "2025-01-17T10:55:00"
+    "updated_at": "2025-01-17T10:55:00",
+    "references": [
+      "OSHA 29 CFR 1910.120 — HAZWOPER",
+      "NFPA 1: Fire Code, Chapter 60 — Hazardous Materials",
+      "EPA National Response Team (NRT) Hazmat Response Guidelines"
+    ]
   },
   {
     "id": "protocol_hazmat_003",
@@ -177,9 +308,20 @@
     "resources_required": "ERG, detection equipment, SDS database, CHEMTREC, specialized HAZMAT team, analytical lab",
     "expert_id": "fire_regional_01",
     "language": "en",
-    "tags": ["hazmat", "chemical_identification", "ERG", "detection", "risk_assessment"],
+    "tags": [
+      "hazmat",
+      "chemical_identification",
+      "ERG",
+      "detection",
+      "risk_assessment"
+    ],
     "created_at": "2025-01-17T11:00:00",
-    "updated_at": "2025-01-17T11:00:00"
+    "updated_at": "2025-01-17T11:00:00",
+    "references": [
+      "OSHA Hazardous Waste Operations and Emergency Response Standard (1910.120)",
+      "NFPA 472: Standard for Competence of Responders to Hazardous Materials Incidents",
+      "CHEMTREC Emergency Response Protocol — Chemical Transportation Emergency Center"
+    ]
   },
   {
     "id": "protocol_hazmat_004",
@@ -191,9 +333,20 @@
     "resources_required": "Decon facilities, water, medical supplies, oxygen, poison control access, SDS, ambulance",
     "expert_id": "medical_expert_01",
     "language": "en",
-    "tags": ["hazmat", "exposure", "decontamination", "first_aid", "chemical_burns"],
+    "tags": [
+      "hazmat",
+      "exposure",
+      "decontamination",
+      "first_aid",
+      "chemical_burns"
+    ],
     "created_at": "2025-01-17T11:05:00",
-    "updated_at": "2025-01-17T11:05:00"
+    "updated_at": "2025-01-17T11:05:00",
+    "references": [
+      "NIOSH Pocket Guide to Chemical Hazards (NPG), CDC",
+      "ATSDR Medical Management Guidelines for Acute Chemical Exposures",
+      "WHO Guidelines for Drinking-Water Quality (4th ed., 2011)"
+    ]
   },
   {
     "id": "protocol_hazmat_005",
@@ -205,9 +358,20 @@
     "resources_required": "Gas detection equipment, CAMEO/ALOHA software, meteorological data, calibration gases, data logging",
     "expert_id": "environmental_expert_01",
     "language": "en",
-    "tags": ["hazmat", "air_monitoring", "vapor_dispersion", "toxic_gases", "public_protection"],
+    "tags": [
+      "hazmat",
+      "air_monitoring",
+      "vapor_dispersion",
+      "toxic_gases",
+      "public_protection"
+    ],
     "created_at": "2025-01-17T11:10:00",
-    "updated_at": "2025-01-17T11:10:00"
+    "updated_at": "2025-01-17T11:10:00",
+    "references": [
+      "NFPA 471: Recommended Practice for Responding to Hazardous Materials Incidents (2018 ed.)",
+      "EPA/OSHA/USCG/NIOSH — Occupational Safety and Health Guidance Manual for Hazardous Waste Site Activities",
+      "DOT Emergency Response Guidebook (ERG 2024)"
+    ]
   },
   {
     "id": "protocol_mci_001",
@@ -219,9 +383,20 @@
     "resources_required": "Triage tags, medical personnel, treatment areas, transportation resources, incident command",
     "expert_id": "medical_expert_01",
     "language": "en",
-    "tags": ["MCI", "triage", "START", "mass_casualty", "emergency_medical"],
+    "tags": [
+      "MCI",
+      "triage",
+      "START",
+      "mass_casualty",
+      "emergency_medical"
+    ],
     "created_at": "2025-01-17T11:15:00",
-    "updated_at": "2025-01-17T11:15:00"
+    "updated_at": "2025-01-17T11:15:00",
+    "references": [
+      "MIMMS: Major Incident Medical Management and Support (3rd ed., Advanced Life Support Group, 2011)",
+      "START Triage Protocol — Newport Beach Fire Department / CHEMTREC",
+      "WHO Emergency Care System Framework — Mass Casualty Response"
+    ]
   },
   {
     "id": "protocol_mci_002",
@@ -233,9 +408,20 @@
     "resources_required": "Hospital coalition, communication systems, transportation coordination, medical coordination center",
     "expert_id": "medical_infrastructure_01",
     "language": "en",
-    "tags": ["MCI", "hospital_coordination", "patient_distribution", "healthcare_system", "surge_capacity"],
+    "tags": [
+      "MCI",
+      "hospital_coordination",
+      "patient_distribution",
+      "healthcare_system",
+      "surge_capacity"
+    ],
     "created_at": "2025-01-17T11:20:00",
-    "updated_at": "2025-01-17T11:20:00"
+    "updated_at": "2025-01-17T11:20:00",
+    "references": [
+      "MIMMS: Major Incident Medical Management and Support (3rd ed., 2011)",
+      "NIMS Mass Casualty Incident Management: ICS Integration",
+      "American College of Surgeons — ATLS (Advanced Trauma Life Support), 10th ed."
+    ]
   },
   {
     "id": "protocol_mci_003",
@@ -247,9 +433,20 @@
     "resources_required": "FAC facility, crisis counselors, victim advocates, information systems, support services, interpreters",
     "expert_id": "public_safety_expert_01",
     "language": "en",
-    "tags": ["MCI", "family_reunification", "victim_assistance", "crisis_counseling", "mass_casualty"],
+    "tags": [
+      "MCI",
+      "family_reunification",
+      "victim_assistance",
+      "crisis_counseling",
+      "mass_casualty"
+    ],
     "created_at": "2025-01-17T11:25:00",
-    "updated_at": "2025-01-17T11:25:00"
+    "updated_at": "2025-01-17T11:25:00",
+    "references": [
+      "FEMA Incident Command System (ICS) 300/400 Training",
+      "NIMS: National Incident Management System (3rd ed., FEMA, 2017)",
+      "APCO/NENA Incident Handling Standard 1.107"
+    ]
   },
   {
     "id": "protocol_mci_004",
@@ -261,9 +458,21 @@
     "resources_required": "CISM team, peer support, mental health professionals, EAP, resilience training programs",
     "expert_id": "public_safety_expert_01",
     "language": "en",
-    "tags": ["MCI", "CISM", "responder_wellness", "PTSD", "mental_health", "peer_support"],
+    "tags": [
+      "MCI",
+      "CISM",
+      "responder_wellness",
+      "PTSD",
+      "mental_health",
+      "peer_support"
+    ],
     "created_at": "2025-01-17T11:30:00",
-    "updated_at": "2025-01-17T11:30:00"
+    "updated_at": "2025-01-17T11:30:00",
+    "references": [
+      "CDC Mass Casualty Event Preparedness Guidelines",
+      "Joint Commission: Emergency Management Standards for Hospitals",
+      "WHO Hospital Emergency Response Checklist (2011)"
+    ]
   },
   {
     "id": "protocol_earthquake_001",
@@ -275,9 +484,20 @@
     "resources_required": "Emergency supplies, first aid, communication systems, assembly areas, utility shut-off tools",
     "expert_id": "public_safety_expert_01",
     "language": "en",
-    "tags": ["earthquake", "drop_cover_hold", "evacuation", "immediate_response", "safety"],
+    "tags": [
+      "earthquake",
+      "drop_cover_hold",
+      "evacuation",
+      "immediate_response",
+      "safety"
+    ],
     "created_at": "2025-01-17T11:35:00",
-    "updated_at": "2025-01-17T11:35:00"
+    "updated_at": "2025-01-17T11:35:00",
+    "references": [
+      "Greek Civil Protection Plan ENGLADOS 2 — Earthquake Response",
+      "OASP (Hellenic Organization for Earthquake Planning and Protection) — Post-Earthquake Procedures",
+      "FEMA P-154: Rapid Visual Screening of Buildings for Potential Seismic Hazards (3rd ed.)"
+    ]
   },
   {
     "id": "protocol_earthquake_002",
@@ -289,9 +509,20 @@
     "resources_required": "Structural engineers, ATC-20 evaluators, safety equipment, placards, documentation systems",
     "expert_id": "environmental_expert_01",
     "language": "en",
-    "tags": ["earthquake", "structural_assessment", "ATC20", "building_safety", "placarding"],
+    "tags": [
+      "earthquake",
+      "structural_assessment",
+      "ATC20",
+      "building_safety",
+      "placarding"
+    ],
     "created_at": "2025-01-17T11:40:00",
-    "updated_at": "2025-01-17T11:40:00"
+    "updated_at": "2025-01-17T11:40:00",
+    "references": [
+      "INSARAG Guidelines and Methodology, OCHA (2020 ed.)",
+      "OASP Post-Earthquake Rapid Assessment Procedures (EMS-98 scale)",
+      "Greek Civil Protection Plan ENGLADOS 2"
+    ]
   },
   {
     "id": "protocol_earthquake_003",
@@ -303,23 +534,45 @@
     "resources_required": "USAR teams, search dogs, detection equipment, shoring materials, medical support, heavy equipment",
     "expert_id": "fire_regional_01",
     "language": "en",
-    "tags": ["earthquake", "USAR", "search_rescue", "structural_collapse", "victim_extrication"],
+    "tags": [
+      "earthquake",
+      "USAR",
+      "search_rescue",
+      "structural_collapse",
+      "victim_extrication"
+    ],
     "created_at": "2025-01-17T11:45:00",
-    "updated_at": "2025-01-17T11:45:00"
+    "updated_at": "2025-01-17T11:45:00",
+    "references": [
+      "INSARAG Guidelines Volume II — Preparedness and Response (2020 ed.)",
+      "NFPA 1006: Standard for Technical Rescuer Professional Qualifications (2021 ed.)",
+      "FEMA USAR Response System Guidelines"
+    ]
   },
   {
     "id": "protocol_active_shooter_001",
     "question": "What is the RUN-HIDE-FIGHT protocol for active shooter situations?",
     "answer": "Active shooter events require immediate protective action. RUN: If there is an accessible escape path: (1) Leave belongings behind, (2) Help others escape if possible but don't delay your own escape, (3) Run in zigzag pattern if in line of sight, (4) Keep hands visible when encountering law enforcement, (5) Follow officer instructions exactly, (6) Call 911 once safe. Do not stop running until completely out of building and far from scene. HIDE: If evacuation not possible: (1) Find hiding place out of shooter's view, (2) Lock and barricade doors with heavy furniture, (3) Silence cell phones (not vibrate - completely silent), (4) Hide behind solid objects, not just visual cover, (5) Spread out if in group, (6) Remain quiet and still, (7) Don't come out until positively identified law enforcement gives all clear. Ideal hiding: locked room, heavy barricade, solid walls, no windows, communication capability. FIGHT: As absolute last resort when life in imminent danger: (1) Act with complete aggression, (2) Improvise weapons: fire extinguisher, scissors, chairs, belts, (3) Commit fully - this is survival, (4) Aim for head and eyes, (5) Work as group to overwhelm, (6) Create noise and confusion, (7) Do not stop until threat neutralized. Police response: (1) First officers will bypass victims to locate and stop shooter, (2) Rescue teams will follow to evacuate victims, (3) Keep hands visible, don't make sudden movements, (4) Expect to be treated as potential suspect until identified. Information for 911: (1) Location of shooter(s), (2) Number of shooters, (3) Physical description and clothing, (4) Weapons observed, (5) Number of victims if known. Evacuation: (1) Don't touch anything for evidence preservation, (2) Leave in direction away from shooting, (3) Expect long detention for interviews, (4) Mental health support will be available. Warning signs ignored in 80% of school shootings - report concerning behavior before incidents occur.",
-    "category": "law_enforcement",
+    "category": "police",
     "location": "Public Spaces",
     "severity": "critical",
     "resources_required": "Law enforcement, emergency medical, crisis counseling, communication systems",
     "expert_id": "police_regional_01",
     "language": "en",
-    "tags": ["active_shooter", "run_hide_fight", "public_safety", "emergency_response"],
+    "tags": [
+      "active_shooter",
+      "run_hide_fight",
+      "public_safety",
+      "emergency_response"
+    ],
     "created_at": "2025-01-17T11:50:00",
-    "updated_at": "2025-01-17T11:50:00"
+    "updated_at": "2025-01-17T11:50:00",
+    "references": [
+      "FBI Active Shooter Resources and Pre-Attack Indicators (2021)",
+      "ALERRT (Advanced Law Enforcement Rapid Response Training) Active Shooter Protocol",
+      "NIMS Law Enforcement Integration — ICS-LE",
+      "Hellenic Police Special Operations Unit — Critical Incident Response Guidelines"
+    ]
   },
   {
     "id": "protocol_pandemic_001",
@@ -331,8 +584,1734 @@
     "resources_required": "Public health infrastructure, surveillance systems, healthcare capacity, PPE, vaccines, communication systems",
     "expert_id": "medical_infrastructure_01",
     "language": "en",
-    "tags": ["pandemic", "infectious_disease", "public_health", "surge_capacity", "outbreak"],
+    "tags": [
+      "pandemic",
+      "infectious_disease",
+      "public_health",
+      "surge_capacity",
+      "outbreak"
+    ],
     "created_at": "2025-01-17T11:55:00",
-    "updated_at": "2025-01-17T11:55:00"
+    "updated_at": "2025-01-17T11:55:00",
+    "references": [
+      "WHO Pandemic Influenza Risk Management Guidance (2017)",
+      "WHO International Health Regulations (IHR 2005)",
+      "ECDC Pandemic Influenza Preparedness Plan for Europe",
+      "Greek National Pandemic Plan — EODY (Hellenic National Public Health Organization)"
+    ]
+  },
+  {
+    "id": "protocol_maritime_001",
+    "question": "What is the initial response protocol when a maritime distress signal (Mayday) is received by a Coast Guard MRCC?",
+    "answer": "Per IAMSAR Volume II (IMO/ICAO): Upon receiving a Mayday or distress signal via GMDSS (DSC Channel 70 / VHF Channel 16 / COSPAS-SARSAT), the Maritime Rescue Coordination Centre (MRCC) must: (1) Acknowledge immediately on Channel 16 and obtain vessel name, position (lat/long), nature of distress, number of persons on board, and vessel description; (2) Assign a SAR Mission Coordinator (SMC) and On-Scene Coordinator (OSC); (3) Broadcast PAN-PAN urgency message to all vessels in the area and direct nearby ships to assist; (4) Alert all available SAR assets (patrol vessels, helicopters, aircraft) and dispatch closest unit; (5) Determine optimal search pattern based on position certainty: expanding square (precise position), sector search (small area), or parallel track (large area with drift); (6) Establish SITREP schedule with search units every 30 minutes; (7) Activate COSPAS-SARSAT tracking if EPIRB or PLB beacon signal is detected; (8) Coordinate with adjacent JRCC/MRCC for cross-boundary operations. Document all actions in SAR Log from first contact.",
+    "category": "maritime",
+    "location": "Maritime / Coastal Greece",
+    "severity": "critical",
+    "resources_required": "MRCC staff, patrol vessels, SAR helicopters, GMDSS radio, COSPAS-SARSAT terminal, adjacent vessel coordination",
+    "expert_id": "coastguard_gold_01",
+    "language": "en",
+    "tags": [
+      "maritime",
+      "SAR",
+      "IAMSAR",
+      "GMDSS",
+      "MRCC",
+      "Mayday",
+      "coast_guard"
+    ],
+    "applicable_crisis_types": [
+      "tsunami",
+      "flood",
+      "mass_casualty"
+    ],
+    "procedure_steps": [
+      "Acknowledge distress on VHF Channel 16 and DSC Channel 70",
+      "Record vessel name, position, distress nature, POB, and vessel description",
+      "Assign SAR Mission Coordinator (SMC) and On-Scene Coordinator (OSC)",
+      "Broadcast PAN-PAN urgency message to all vessels in the area",
+      "Dispatch nearest SAR assets (vessel and helicopter)",
+      "Determine and assign search pattern based on position certainty",
+      "Establish SITREP schedule every 30 minutes with all search units",
+      "Activate COSPAS-SARSAT tracking if EPIRB/PLB beacon detected",
+      "Coordinate with adjacent JRCC/MRCC for cross-boundary support",
+      "Document all actions in SAR Log from first contact"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "IMO/ICAO International Aeronautical and Maritime Search and Rescue (IAMSAR) Manual, Volume II — Mission Co-ordination (2022 ed.)",
+      "SOLAS (Safety of Life at Sea) Convention, Chapter V — Safety of Navigation",
+      "ITU Radio Regulations — Global Maritime Distress and Safety System (GMDSS)",
+      "Hellenic Coast Guard MRCC Athens — SAR Operations Procedures"
+    ]
+  },
+  {
+    "id": "protocol_maritime_002",
+    "question": "What is the Mass Rescue Operation (MRO) protocol when a passenger vessel disaster involves 500+ persons in the water?",
+    "answer": "IAMSAR Volume II defines Mass Rescue Operations (MRO) as incidents requiring urgent assistance to a large number of persons where normal SAR resources are inadequate. Protocol: (1) Declare MRO immediately — notify all adjacent MRCC/JRCC, National Emergency Operations Center, and civil protection authorities; (2) Appoint a dedicated MRO Coordinator separate from the SAR Mission Coordinator to handle resource coordination; (3) Request all available SAR resources and broadcast via VHF Ch 16 directing all nearby vessels to assist as On-Scene Coordinator; (4) Designate survivor reception points at nearest ports/beaches with triage and medical staging areas; (5) Coordinate helicopters in sectors to avoid mid-air conflict — assign altitude bands and approach corridors; (6) Implement survivor tracking: photograph survivors, record manifest data, establish family reunification register; (7) Request international assistance through IAMSAR coordination networks and EU Civil Protection Mechanism if domestic resources insufficient; (8) Activate mass casualty plan with local hospitals — expected intake by injury type; (9) Maintain continuous broadcast of survivor locations to recovery vessels using Datum Marker Buoys.",
+    "category": "maritime",
+    "location": "Open Sea / Coastal Waters",
+    "severity": "critical",
+    "resources_required": "Multiple SAR vessels, helicopters, medical teams, reception areas, triage capacity, adjacent MRCC coordination",
+    "expert_id": "coastguard_gold_01",
+    "language": "en",
+    "tags": [
+      "maritime",
+      "MRO",
+      "IAMSAR",
+      "mass_casualty",
+      "passenger_vessel",
+      "coast_guard"
+    ],
+    "applicable_crisis_types": [
+      "mass_casualty",
+      "tsunami",
+      "flood"
+    ],
+    "procedure_steps": [
+      "Declare Mass Rescue Operation (MRO) and notify all adjacent MRCC/JRCC",
+      "Appoint dedicated MRO Coordinator separate from the SAR Mission Coordinator",
+      "Broadcast VHF Ch 16 directing all nearby vessels to assist as On-Scene Coordinator",
+      "Designate survivor reception points at nearest ports and beaches",
+      "Establish medical triage and staging areas at each reception point",
+      "Assign helicopter sectors with altitude bands and approach corridors to prevent conflict",
+      "Deploy Datum Marker Buoys at survivor concentration areas",
+      "Activate mass casualty plan and notify receiving hospitals of expected intake",
+      "Establish survivor tracking: photograph, manifest data, family reunification register",
+      "Request international assistance via IAMSAR networks and EU Civil Protection Mechanism if needed"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "IMO/ICAO IAMSAR Manual, Volume II — Mission Co-ordination (2022 ed.), Section on Mass Rescue Operations",
+      "IMO MSC.1/Circ.1267 — Guidance on Mass Rescue Operations",
+      "Hellenic Coast Guard SAR Coordination Guidelines"
+    ]
+  },
+  {
+    "id": "protocol_maritime_003",
+    "question": "What is the maritime protocol for coastal evacuation support during a tsunami warning?",
+    "answer": "Per IAMSAR Volume III and Hellenic Coast Guard tsunami protocols: Upon tsunami warning activation: (1) Immediately broadcast URGENT MARINE INFORMATION BROADCAST on VHF Ch 16 and Ch 72 warning all vessels to move to deep water (>200m depth) or evacuate port immediately; (2) Prohibit all vessel movements in shallow coastal areas and harbors; (3) Deploy coast guard vessels to support shore-side evacuation of coastal communities — transport vulnerable persons unable to reach high ground; (4) Establish sea-based evacuation corridors from low-lying coastal areas to safe embarkation points on higher ground or islands; (5) Coordinate with port authorities to remove vessels from harbors to prevent debris hazards post-wave; (6) Establish helicopter operations for evacuation of isolated coastal communities with no road escape; (7) Pre-position SAR assets at safe distance (>200m depth) ready to conduct rescue operations immediately after wave passes; (8) Report all coastal impacts to MRCC for coordination with civil protection authorities.",
+    "category": "maritime",
+    "location": "Coastal Greece / Island Communities",
+    "severity": "critical",
+    "resources_required": "Coast guard vessels, helicopters, GMDSS, port authority coordination, civil protection liaison",
+    "expert_id": "coastguard_gold_01",
+    "language": "en",
+    "tags": [
+      "maritime",
+      "tsunami",
+      "coastal_evacuation",
+      "coast_guard",
+      "IAMSAR"
+    ],
+    "applicable_crisis_types": [
+      "tsunami",
+      "flood",
+      "earthquake"
+    ],
+    "procedure_steps": [
+      "Broadcast URGENT MARINE INFORMATION BROADCAST on VHF Ch 16 and Ch 72",
+      "Warn all vessels to move to deep water (>200m) or evacuate port immediately",
+      "Prohibit vessel movements in shallow coastal areas and harbors",
+      "Deploy coast guard vessels to support shore-side evacuation of coastal communities",
+      "Establish sea-based evacuation corridors from low-lying areas to safe points",
+      "Coordinate port authority to remove vessels from harbors to reduce debris hazard",
+      "Establish helicopter operations for isolated coastal communities with no road escape",
+      "Pre-position SAR assets at >200m depth ready to respond after wave passes",
+      "Report all coastal impacts to MRCC and civil protection authorities"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "IMO/ICAO IAMSAR Manual, Volume III — Mobile Facilities (2025 ed.)",
+      "Hellenic Coast Guard Tsunami Response Procedures",
+      "Greek Civil Protection Plan ACTEON — Tsunami Response",
+      "IOC/UNESCO NEAMTWS (NE Atlantic, Mediterranean, Connected Seas Tsunami Warning System) Procedures"
+    ]
+  },
+  {
+    "id": "protocol_evacuation_001",
+    "question": "What are the FEMA/ICS procedures for issuing and executing a mandatory evacuation order?",
+    "answer": "Per FEMA Planning Considerations: Evacuation and Shelter-in-Place (CPG 101): (1) DECISION: Protective action decision by Incident Commander or Emergency Manager based on hazard timing, intensity, and population vulnerability — document rationale; (2) NOTIFICATION: Issue Wireless Emergency Alert (WEA) to all mobile devices in affected zones; activate Emergency Alert System (EAS) on all broadcast media; deploy door-to-door notification teams for non-English speakers and hearing-impaired; (3) ZONING: Designate evacuation zones (A/B/C or color-coded) with staged departure timing (Zone A first) to prevent route gridlock; (4) ROUTING: Open designated evacuation routes; implement contraflow on highways if needed — coordinate with state DOT; establish fuel resupply points every 50 miles; (5) TRANSPORTATION: Provide buses, trains, and paratransit for vehicle-free residents; coordinate with transit agencies and school districts; (6) SHELTERING: Open reception centers and shelters at predetermined locations outside hazard zone; activate Red Cross/NGO support; (7) ENFORCEMENT: Deploy law enforcement at checkpoints — mandatory evacuation is legally enforceable; (8) ACCOUNTABILITY: Maintain population registry at shelter intake; establish family reunification system; (9) RE-ENTRY: Establish and communicate re-entry criteria and timeline in advance.",
+    "category": "evacuation",
+    "location": "All Jurisdictions",
+    "severity": "critical",
+    "resources_required": "Emergency alert systems (WEA/EAS), evacuation buses, law enforcement, shelter facilities, Red Cross/NGO support, traffic management",
+    "expert_id": "civilprotection_gold_01",
+    "language": "en",
+    "tags": [
+      "evacuation",
+      "FEMA",
+      "ICS",
+      "WEA",
+      "EAS",
+      "shelter",
+      "CPG_101"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "tsunami",
+      "hurricane",
+      "hazmat",
+      "tornado"
+    ],
+    "procedure_steps": [
+      "Document protective action decision rationale (evacuation vs. shelter-in-place)",
+      "Issue Wireless Emergency Alert (WEA) to all mobile devices in affected zones",
+      "Activate Emergency Alert System (EAS) on all broadcast media",
+      "Deploy door-to-door notification for non-English speakers and hearing-impaired",
+      "Designate and announce evacuation zones with staged departure timing",
+      "Open designated evacuation routes; implement contraflow if needed",
+      "Establish fuel resupply points every 50 miles along evacuation routes",
+      "Activate buses, trains, and paratransit for vehicle-free residents",
+      "Open reception centers and shelters outside the hazard zone",
+      "Deploy law enforcement at checkpoints to enforce mandatory evacuation",
+      "Activate population registry and family reunification system at shelter intake",
+      "Communicate re-entry criteria and timeline to public"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "FEMA Planning Considerations: Evacuation and Shelter-in-Place, CPG 101 (2019)",
+      "FEMA Comprehensive Preparedness Guide (CPG) 101 v2",
+      "FCC Wireless Emergency Alerts (WEA) Technical Requirements",
+      "FEMA IPAWS (Integrated Public Alert and Warning System) Operational Guidelines"
+    ]
+  },
+  {
+    "id": "protocol_evacuation_002",
+    "question": "How do emergency managers decide between shelter-in-place and evacuation for different hazard types?",
+    "answer": "Per FEMA Protective Action Decision Guide (PADG): The shelter-in-place vs. evacuation decision depends on: FACTORS FAVORING SHELTER-IN-PLACE: hazmat plume passage time <2 hours, building provides chemical protection, roads are gridlocked or compromised, hazard is highly localized, outdoor exposure exceeds indoor risk. FACTORS FAVORING EVACUATION: fire/flood/tsunami with guaranteed inundation zone, exposure time >4 hours, structural failure risk, wildfire direct flame threat, sustained toxic release. HAZARD-SPECIFIC RULES: (1) Wildfire: ALWAYS evacuate from projected fire path — shelter-in-place is rarely survivable inside structure; (2) Flood: Evacuate from inundation zones, shelter-in-place if in upper floors of sturdy building and rescue is imminent; (3) Earthquake: Shelter-in-place immediately during shaking (DROP-COVER-HOLD), then evaluate structural damage before evacuating; (4) Hazmat/CBRN: Shelter-in-place for short-duration plumes (seal building, turn off HVAC), evacuate for persistent or escalating releases; (5) Tsunami: ALWAYS evacuate from coastal zones immediately — no structure is tsunami-safe at sea level. Document decision and communicate rationale to public immediately.",
+    "category": "evacuation",
+    "location": "All Jurisdictions",
+    "severity": "critical",
+    "resources_required": "Emergency management decision authority, public communication systems, hazard modeling data",
+    "expert_id": "civilprotection_gold_01",
+    "language": "en",
+    "tags": [
+      "evacuation",
+      "shelter_in_place",
+      "FEMA",
+      "PADG",
+      "protective_action",
+      "decision_making"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "tsunami",
+      "hazmat",
+      "hurricane",
+      "tornado"
+    ],
+    "procedure_steps": [
+      "Assess hazard type, intensity, duration, and inundation/path projections",
+      "Evaluate road network status and population mobility",
+      "Apply hazard-specific rule (tsunami/wildfire → always evacuate; earthquake → shelter during shaking)",
+      "Estimate exposure duration: >4 hours outdoors favors evacuation",
+      "For hazmat: assess plume passage time — <2 hours favors shelter-in-place",
+      "Assess building structural integrity for shelter suitability",
+      "Document decision rationale with supporting data",
+      "Communicate decision and rationale immediately to public and responders",
+      "Reassess every 30 minutes as hazard conditions evolve"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "FEMA Protective Action Decision Guide (PADG)",
+      "EPA Chemical Emergency Preparedness and Prevention — Shelter-in-Place Guidelines",
+      "FEMA CPG 101: Developing and Maintaining Emergency Operations Plans",
+      "ALOHA (Areal Locations of Hazardous Atmospheres) Decision Support, CAMEO System — NOAA/EPA"
+    ]
+  },
+  {
+    "id": "protocol_evacuation_003",
+    "question": "What is the protocol for evacuating special needs populations (medical dependents, mobility-impaired, non-English speakers)?",
+    "answer": "Per FEMA Access and Functional Needs (AFN) evacuation guidelines: (1) REGISTRATION: Maintain Special Needs Registry — pre-identify persons dependent on electricity (home oxygen, dialysis, ventilator), mobility-impaired, and non-English speakers; (2) EARLY WARNING: Notify registered AFN individuals 12–24 hours before general public during phased evacuations; (3) TRANSPORTATION: Pre-position accessible buses, wheelchair-accessible vans, and medical transport (BLS/ALS ambulances for medical-device-dependent persons); (4) MEDICAL CONTINUITY: Coordinate with hospitals and dialysis centers for patient care transfers; carry medication lists and care plans; identify receiving medical facilities; (5) SHELTERING: Designate Medical Needs Shelters (MNS) staffed with nurses for medically fragile evacuees — separate from general population shelters; (6) LANGUAGE ACCESS: Deploy interpreters and provide translated materials in top languages; use visual/pictographic communication; (7) PETS/SERVICE ANIMALS: Provide pet-friendly shelters or co-located pet care to prevent evacuee non-compliance; (8) TRACKING: Implement individual tracking from evacuation through reunification; (9) COMPLIANCE: Never forcibly separate individuals from caregivers or service animals.",
+    "category": "evacuation",
+    "location": "All Jurisdictions",
+    "severity": "high",
+    "resources_required": "Special needs registry, accessible transport, medical transport, Medical Needs Shelters, interpreters, social services",
+    "expert_id": "civilprotection_gold_01",
+    "language": "en",
+    "tags": [
+      "evacuation",
+      "special_needs",
+      "AFN",
+      "FEMA",
+      "medical_transport",
+      "accessibility"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "tsunami",
+      "hurricane",
+      "hazmat"
+    ],
+    "procedure_steps": [
+      "Access Special Needs Registry to identify all AFN individuals in affected zone",
+      "Notify registered AFN individuals 12-24 hours before general public",
+      "Pre-position accessible buses, wheelchair-accessible vans, and BLS/ALS ambulances",
+      "Coordinate hospital and dialysis center transfers for medical-device-dependent persons",
+      "Carry medication lists and care plans for each medical evacuee",
+      "Open Medical Needs Shelters (MNS) staffed with nurses, separate from general shelters",
+      "Deploy interpreters and provide translated materials in all major local languages",
+      "Activate pet-friendly shelters or co-located pet care facilities",
+      "Implement individual tracking from evacuation through family reunification",
+      "Document all AFN individuals transported and receiving facilities"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "FEMA Access and Functional Needs (AFN) in Emergency Planning Guide",
+      "ADA National Network — Emergency Preparedness for People with Disabilities",
+      "SPHERE Humanitarian Standards — Essential Services (2018 ed.)",
+      "Greek Civil Protection Law 4662/2020 — Special Needs Population Provisions"
+    ]
+  },
+  {
+    "id": "protocol_environmental_001",
+    "question": "What is the HAZWOPER site safety assessment protocol for hazmat spill response per OSHA 1910.120?",
+    "answer": "Per OSHA HAZWOPER standard (29 CFR 1910.120) and EPA/NIOSH/OSHA guidance: (1) PRELIMINARY ASSESSMENT: Review SDS/MSDS, incident reports, aerial/satellite imagery before approaching site; (2) CONTROL ZONES: Establish Hot Zone (contamination area — entry requires Level A/B PPE), Warm Zone (decontamination corridor), Cold Zone (support area, command post) — mark all boundaries with hazard tape and signs; (3) AIR MONITORING: Deploy calibrated instruments: PID (VOCs), 4-gas meter (O2 >19.5%, LEL <10%, CO <35ppm, H2S <1ppm), substance-specific detectors; conduct continuous monitoring; (4) PPE SELECTION: Level A (SCBA + fully encapsulated suit): unknown vapors or IDLH concentrations; Level B (SCBA + chemical-resistant suit): identified chemicals, high splash risk; Level C (APF respirator): known lower-concentration chemicals; (5) SITE SAFETY PLAN (SSP): Appoint Site Safety Officer (SSO), document all personnel entries, establish decon procedures, identify emergency exits; (6) DECONTAMINATION LINE: Establish 7-station minimum decon in warm zone — gross decon, formal decon, PPE inspection, PPE removal, personnel shower, medical monitoring exit; (7) ENVIRONMENTAL SAMPLING: Collect soil, water, and air samples for lab analysis — document chain of custody; (8) INCIDENT DOCUMENTATION: All exposures, personnel entries, and monitoring readings logged continuously.",
+    "category": "environmental",
+    "location": "Industrial / Chemical Release Sites",
+    "severity": "critical",
+    "resources_required": "HAZMAT team, PID/4-gas monitors, Level A/B/C PPE, decon equipment, Site Safety Officer, environmental sampling kits",
+    "expert_id": "environmental_expert_01",
+    "language": "en",
+    "tags": [
+      "environmental",
+      "hazmat",
+      "HAZWOPER",
+      "OSHA",
+      "EPA",
+      "site_safety",
+      "decontamination",
+      "air_monitoring"
+    ],
+    "applicable_crisis_types": [
+      "hazmat",
+      "explosion",
+      "wildfire",
+      "flood"
+    ],
+    "procedure_steps": [
+      "Review SDS/MSDS and aerial/satellite imagery before approaching site",
+      "Establish Hot Zone, Warm Zone, and Cold Zone boundaries with hazard tape",
+      "Deploy calibrated air monitoring instruments (PID, 4-gas meter, substance-specific detectors)",
+      "Select appropriate PPE level based on atmospheric hazard assessment",
+      "Appoint Site Safety Officer (SSO) and document all personnel entries",
+      "Establish 7-station decontamination line in the Warm Zone",
+      "Collect environmental samples (soil, water, air) with chain of custody documentation",
+      "Conduct continuous air monitoring throughout operations",
+      "Log all exposures, personnel entries, and monitoring readings continuously",
+      "Conduct post-entry medical monitoring at decon exit"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "OSHA 29 CFR 1910.120 — Hazardous Waste Operations and Emergency Response (HAZWOPER)",
+      "EPA/NIOSH/OSHA/USCG — Occupational Safety and Health Guidance Manual for Hazardous Waste Site Activities (1985, updated)",
+      "NFPA 472: Standard for Competence of Responders to Hazardous Materials Incidents (2018 ed.)",
+      "AIHA Emergency Response Planning Guidelines (ERPG) — Level 1/2/3 Definitions"
+    ]
+  },
+  {
+    "id": "protocol_environmental_002",
+    "question": "What is the environmental monitoring protocol for assessing toxic air quality during a chemical fire or industrial accident?",
+    "answer": "Per EPA National Response Team (NRT) and NIOSH guidelines: (1) INITIAL PLUME ASSESSMENT: Use meteorological data (wind speed, direction, stability class) and CAMEO/ALOHA or PHAST plume modeling to predict toxic cloud extent and drift; (2) MONITORING NETWORK: Deploy stationary air monitoring stations at perimeter, downwind 500m, 1km, and 2km from source; establish real-time telemetry to Incident Command; (3) SUBSTANCE-SPECIFIC INSTRUMENTS: Identify target chemicals and deploy appropriate sensors — ammonia (electrochemical), chlorine (photoionization), benzene (PID), particulates (optical particle counter); (4) EVACUATION THRESHOLDS: Compare readings against ERPG-2 (Acute Exposure Guideline Level 2) — values exceeding ERPG-2 require evacuation; shelter-in-place at ERPG-1; (5) SHELTER-IN-PLACE GUIDANCE: Instruct affected population to seal buildings: turn off HVAC, seal gaps with wet towels, monitor on VHF radio; (6) ALL-CLEAR CRITERIA: Consecutive readings below ERPG-1 for 30 minutes at all monitoring stations before lifting shelter/evacuation order; (7) ENVIRONMENTAL SAMPLING: Collect deposition and water samples downwind and in surface water drainage within 24 hours for regulatory reporting; (8) REPORT: Notify EPA/regional authority and EFEP (Greek Environmental Protection) within 24 hours.",
+    "category": "environmental",
+    "location": "Industrial Areas / Urban Environments",
+    "severity": "critical",
+    "resources_required": "Air monitoring sensors, CAMEO/ALOHA modeling software, meteorological station, PPE, evacuation resources, EPA reporting system",
+    "expert_id": "environmental_expert_01",
+    "language": "en",
+    "tags": [
+      "environmental",
+      "air_quality",
+      "toxic_plume",
+      "NIOSH",
+      "EPA",
+      "ERPG",
+      "CAMEO",
+      "ALOHA"
+    ],
+    "applicable_crisis_types": [
+      "hazmat",
+      "explosion",
+      "wildfire",
+      "industrial"
+    ],
+    "procedure_steps": [
+      "Obtain current meteorological data (wind speed, direction, stability class)",
+      "Run CAMEO/ALOHA or PHAST plume modeling to estimate toxic cloud extent",
+      "Deploy stationary monitoring stations at perimeter, 500m, 1km, and 2km downwind",
+      "Identify target chemicals and deploy substance-specific sensors",
+      "Compare readings against ERPG-2 thresholds for evacuation decisions",
+      "Issue shelter-in-place guidance for ERPG-1 exceedances (seal buildings, turn off HVAC)",
+      "Maintain real-time telemetry from all monitoring stations to Incident Command",
+      "Issue all-clear only after consecutive below-ERPG-1 readings for 30 minutes at all stations",
+      "Collect environmental deposition and water samples within 24 hours for regulatory reporting",
+      "Notify EPA/national environmental authority within 24 hours"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "EPA/NOAA CAMEO/ALOHA Chemical Plume Modeling System",
+      "AIHA Emergency Response Planning Guidelines (ERPG)",
+      "NIOSH Pocket Guide to Chemical Hazards — Immediately Dangerous to Life or Health (IDLH) Values",
+      "EPA National Response Team (NRT) — Acute Exposure Guideline Levels (AEGLs)"
+    ]
+  },
+  {
+    "id": "protocol_environmental_003",
+    "question": "What is the initial environmental response protocol for a marine oil spill in coastal waters?",
+    "answer": "Per IMO OPRC Convention and Hellenic Coast Guard/REMPEC Mediterranean procedures: (1) NOTIFICATION: Immediately notify MRCC, Port Authority, REMPEC (Regional Marine Pollution Emergency Response Centre), and national environmental authority (YPEN in Greece); (2) SOURCE IDENTIFICATION: Identify vessel, oil type (use OSRL reference), quantity spilled, and rate of spread using aerial/satellite surveillance; (3) CONTAINMENT: Deploy oil containment booms around the spill perimeter and around ecologically sensitive areas (ports, beaches, fish farms) within 2 hours; (4) RECOVERY: Deploy oil skimmers and vacuum tankers for mechanical recovery while oil is concentrated; (5) DISPERSANT DECISION: Assess use of chemical dispersants only if mechanical recovery insufficient — requires environmental authority approval; prohibited in water depths <10m; (6) SHORELINE PROTECTION: Pre-boom sensitive shorelines (Blue Flag beaches, marine protected areas, shellfish beds); prepare shoreline cleanup teams (OSR manual methods for sensitive habitats); (7) WILDLIFE: Alert wildlife rescue teams; establish bird/sea turtle decontamination stations; (8) TRAJECTORY MODELLING: Run POSEIDON oil spill model for 24/48/72 hour drift prediction to prioritize resource deployment; (9) MONITORING: Daily aerial surveillance; collect water/sediment samples for hydrocarbon analysis.",
+    "category": "environmental",
+    "location": "Coastal Waters / Aegean Sea",
+    "severity": "high",
+    "resources_required": "Containment booms, oil skimmers, vacuum tankers, aerial surveillance, REMPEC coordination, wildlife rescue teams",
+    "expert_id": "environmental_expert_01",
+    "language": "en",
+    "tags": [
+      "environmental",
+      "oil_spill",
+      "marine_pollution",
+      "OPRC",
+      "REMPEC",
+      "maritime",
+      "coastal"
+    ],
+    "applicable_crisis_types": [
+      "flood",
+      "tsunami",
+      "hazmat"
+    ],
+    "procedure_steps": [
+      "Notify MRCC, Port Authority, REMPEC, and national environmental authority immediately",
+      "Identify vessel, oil type, quantity spilled, and rate of spread",
+      "Deploy oil containment booms around the spill perimeter within 2 hours",
+      "Pre-boom ecologically sensitive areas (beaches, fish farms, marine protected areas)",
+      "Deploy oil skimmers and vacuum tankers for mechanical recovery",
+      "Assess dispersant use with environmental authority approval (prohibited in <10m depth)",
+      "Prepare shoreline cleanup teams for sensitive habitat manual recovery",
+      "Alert wildlife rescue teams; establish bird and sea turtle decontamination stations",
+      "Run POSEIDON oil spill trajectory model for 24/48/72-hour drift prediction",
+      "Conduct daily aerial surveillance and collect water/sediment samples for hydrocarbon analysis"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "IMO International Convention on Oil Pollution Preparedness, Response and Co-operation (OPRC 1990)",
+      "REMPEC (Regional Marine Pollution Emergency Response Centre) Mediterranean Action Plan",
+      "Hellenic Ministry of the Environment and Energy — National Marine Pollution Response Plan",
+      "POSEIDON Operational Oceanographic System — Oil Spill Trajectory Modelling (HCMR)"
+    ]
+  },
+  {
+    "id": "protocol_communications_001",
+    "question": "What is the APCO/NENA protocol for managing extreme call surge at a PSAP during a major disaster?",
+    "answer": "Per APCO Standard 1.107 and NENA 56-001 Major Incident Protocol: (1) SURGE DECLARATION: Activate major incident call-handling protocol when incoming calls exceed 3× normal volume for >5 minutes — notify supervisor immediately; (2) CALL TRIAGE: Implement priority queuing — life-threatening (Code 1): dispatch immediately; property/non-life-threatening (Code 2): hold with recorded message providing safety guidance; (3) CALL OVERFLOW: Route overflow to partner PSAPs via PSAP-to-PSAP transfer agreements (mutual aid); activate secondary PSAP if available; (4) STAFFING SURGE: Recall off-duty telecommunicators per emergency staffing plan; request mutual aid dispatchers from adjacent PSAPs; (5) RADIO CHANNELS: Assign dedicated radio channels per agency/function — avoid channel congestion; designate command channel for IC communications only; (6) CAD CONFIGURATION: Switch CAD to mass-casualty event template; enable geographic batch dispatching for incidents in same sector; (7) INFORMATION MANAGEMENT: Designate one dispatcher as Intelligence Coordinator to consolidate incident picture for IC; push SITREP updates every 15 minutes to all agencies; (8) DOCUMENTATION: All calls and dispatches time-stamped and recorded — do not pause recordings during major incident.",
+    "category": "communications",
+    "location": "PSAP / Emergency Communications Centre",
+    "severity": "critical",
+    "resources_required": "PSAP backup systems, mutual aid dispatch agreements, CAD system, radio channel management, recall rosters",
+    "expert_id": "psap_commander_01",
+    "language": "en",
+    "tags": [
+      "communications",
+      "PSAP",
+      "APCO",
+      "NENA",
+      "call_surge",
+      "dispatch",
+      "major_incident"
+    ],
+    "applicable_crisis_types": [
+      "earthquake",
+      "wildfire",
+      "flood",
+      "mass_casualty",
+      "terrorist",
+      "explosion",
+      "tsunami"
+    ],
+    "procedure_steps": [
+      "Declare major incident call-handling protocol when calls exceed 3× normal volume",
+      "Implement priority queuing: life-threatening (Code 1) dispatch immediately; others hold",
+      "Route overflow calls to partner PSAPs via mutual aid transfer agreements",
+      "Recall off-duty telecommunicators per emergency staffing plan",
+      "Assign dedicated radio channels per agency/function; protect command channel",
+      "Switch CAD to mass-casualty event template with geographic batch dispatching",
+      "Designate one dispatcher as Intelligence Coordinator to consolidate incident picture",
+      "Push SITREP updates every 15 minutes to all responding agencies",
+      "Ensure all calls and dispatches are time-stamped and continuously recorded"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "APCO International Standard 1.107.2 — Public Safety Communications Incident Handling (2024 ed.)",
+      "NENA 56-001 — PSAP Major Incident Operations Standard",
+      "NIMS: National Incident Management System, Communications and Information Management (FEMA, 2017)",
+      "FEMA IS-242.C: Effective Communication Training"
+    ]
+  },
+  {
+    "id": "protocol_communications_002",
+    "question": "What is the procedure for activating Wireless Emergency Alerts (WEA) and the Emergency Alert System (EAS) during a mass emergency?",
+    "answer": "Per FCC WEA rules and FEMA IPAWS (Integrated Public Alert and Warning System) procedures — applicable also to EU Cell Broadcast (EU-Alert) and Greek 112 Emergency Alert System: (1) AUTHORIZATION: Alerts may be issued only by authorized government officials with pre-registered IPAWS/EU-Alert credentials — verify authority level for alert type (Imminent Threat vs. Presidential only for extreme events); (2) MESSAGE COMPOSITION: WEA messages are limited to 360 characters (English) — include: (a) threat description, (b) affected area, (c) immediate protective action, (d) source agency; avoid technical jargon; include Greek/English bilingual text as applicable; (3) GEOGRAPHIC TARGETING: Define alert polygon precisely to minimize over-alerting while ensuring all at-risk persons receive notification — over-large polygons cause alert fatigue; (4) BROADCAST: Issue WEA via IPAWS/EU-Alert to all compatible mobile devices in target area (broadcast automatically within ~1–2 minutes); simultaneously activate EAS on all broadcast TV and radio via EAS encoder; (5) SOCIAL MEDIA: Push identical alert to official social media accounts and government website; (6) FOLLOW-UP: Issue update alerts every 30 minutes or when conditions change; issue ALL-CLEAR alert when hazard passes; (7) POST-INCIDENT: Document all alerts issued, geographic coverage, and time to public receipt for after-action review.",
+    "category": "communications",
+    "location": "National / Regional Emergency Operations",
+    "severity": "critical",
+    "resources_required": "IPAWS/EU-Alert authorized access, EAS encoder, government alert credentials, social media channels",
+    "expert_id": "psap_commander_01",
+    "language": "en",
+    "tags": [
+      "communications",
+      "WEA",
+      "EAS",
+      "IPAWS",
+      "EU_Alert",
+      "112",
+      "public_warning",
+      "cell_broadcast"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "tsunami",
+      "hurricane",
+      "tornado",
+      "hazmat",
+      "terrorist",
+      "mass_casualty"
+    ],
+    "procedure_steps": [
+      "Verify authorization credentials for WEA/EU-Alert issuance",
+      "Compose WEA message: threat, affected area, protective action, source agency (≤360 chars)",
+      "Include bilingual text (Greek/English) as applicable",
+      "Define precise geographic polygon to target affected area only",
+      "Broadcast WEA via IPAWS/EU-Alert to all compatible mobile devices in target area",
+      "Simultaneously activate EAS on all broadcast TV and radio via EAS encoder",
+      "Push identical alert to official social media accounts and government website",
+      "Issue follow-up alerts every 30 minutes or when conditions change",
+      "Issue ALL-CLEAR alert when hazard passes and it is safe",
+      "Document all alerts issued, coverage, and time to receipt for after-action review"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "FCC Part 10 — Wireless Emergency Alerts (WEA) Rules and Requirements",
+      "FEMA IPAWS (Integrated Public Alert and Warning System) Operational Guidelines",
+      "European Commission — EU-Alert Cell Broadcast Standard (ETSI TS 102 900)",
+      "Greek Ministry of Digital Governance — 112 Emergency Alert System Procedures"
+    ]
+  },
+  {
+    "id": "protocol_communications_003",
+    "question": "How should radio spectrum and communication channels be managed across multiple agencies during a major incident?",
+    "answer": "Per NIMS Communications and Information Management guidelines (ICS 205 — Incident Radio Communications Plan): (1) CHANNEL ASSIGNMENT: Assign dedicated channels per agency branch — never mix operational traffic with command traffic; designate: (a) IC Command channel (Gold/strategic level only), (b) Operations channels per discipline (fire, police, EMS, coast guard), (c) Tactical channels for sector/division use, (d) Logistics/support channel, (e) Air-to-ground channel for aviation; (2) INTEROPERABILITY: Establish interoperability channels (ISSI or shared talkgroup) for cross-agency communications at unified command level; (3) RADIO DISCIPLINE: Enforce strict radio discipline — no personal communications, use of phonetic alphabet mandatory, 3-second pause before transmitting; (4) REPEATER PRIORITY: Prioritize primary repeater access for command and life-safety traffic; switch secondary agencies to portable/simplex if congestion occurs; (5) BACKUP SYSTEMS: Maintain satellite phone, cell-over-satellite, and HF radio as backup systems when primary channels fail; (6) ICS 205: Complete and distribute ICS 205 Incident Radio Communications Plan at each Operational Period Briefing; (7) DOCUMENTATION: Communications Unit Leader (COML) logs all channel changes, outages, and inter-agency communications.",
+    "category": "communications",
+    "location": "Incident Command Post / Emergency Operations Center",
+    "severity": "high",
+    "resources_required": "Radio systems, repeater infrastructure, interoperability channels (ISSI), ICS 205 plan, Communications Unit Leader",
+    "expert_id": "psap_commander_01",
+    "language": "en",
+    "tags": [
+      "communications",
+      "radio",
+      "ICS_205",
+      "NIMS",
+      "interoperability",
+      "channel_management"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "mass_casualty",
+      "hazmat",
+      "terrorist"
+    ],
+    "procedure_steps": [
+      "Assign dedicated radio channels per agency branch (IC command, operations, tactical, logistics, air-to-ground)",
+      "Establish interoperability channel (ISSI or shared talkgroup) for unified command cross-agency comms",
+      "Enforce radio discipline: phonetic alphabet, 3-second pause before transmitting, no personal traffic",
+      "Prioritize primary repeater for command and life-safety traffic",
+      "Switch non-critical agencies to portable/simplex if channel congestion occurs",
+      "Activate backup systems (satellite phone, HF radio) when primary channels fail",
+      "Complete and distribute ICS 205 Incident Radio Communications Plan at each Operational Period Briefing",
+      "Log all channel changes, outages, and inter-agency communications continuously"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "NIMS: Communications and Information Management (ICS Form 205 — Incident Radio Communications Plan)",
+      "APCO/NENA ANS 1.107.1 — Standards for Public Safety Answering Points",
+      "FEMA IS-700.B: An Introduction to the National Incident Management System",
+      "Project 25 (P25) ISSI (Inter-RF Subsystem Interface) Standards — TIA-102"
+    ]
+  },
+  {
+    "id": "protocol_logistics_001",
+    "question": "What is the ICS protocol for establishing a Logistics Staging Area (LSA) and Base Camp for extended incident operations?",
+    "answer": "Per FEMA ICS 300/400 and National Incident Management System logistics guidance: (1) SITE SELECTION: Choose staging area ≥5km from active hazard zone, accessible by heavy vehicles (2-lane paved road minimum), with flat terrain, drainage, and utility access; avoid flood plains and fire-prone vegetation; (2) LAYOUT: Establish distinct areas within LSA: (a) Vehicle marshalling/check-in, (b) Equipment cache and supply area, (c) Fuel station (supply tender or contracted fuel), (d) Food/water service area, (e) Medical evaluation station, (f) Sanitation facilities (1 toilet per 10 persons), (g) Briefing area; (3) LOGISTICS SECTION CHIEF: Assign Logistics Section Chief to manage: Supply Unit (procurement), Facilities Unit, Ground Support Unit (fuel, vehicles), Food Unit, Medical Unit; (4) RESOURCE TRACKING: Implement T-card or electronic resource tracking for all personnel and equipment — status: available, assigned, out-of-service; (5) SUPPLY CHAIN: Establish procurement authority via ICS 213RR (Resource Request) — all requests through Logistics Section, not field units; coordinate with state emergency management for mutual aid resources; (6) RESUPPLY CYCLE: Establish 12-hour resupply cycle for consumables; pre-position 72-hour cache of critical supplies (fuel, water, MRE rations, medical supplies).",
+    "category": "logistics",
+    "location": "Incident Base / Forward Staging Area",
+    "severity": "high",
+    "resources_required": "Logistics Section Chief, supply tenders, fuel trucks, food unit, medical station, T-card or electronic resource tracking system",
+    "expert_id": "logistics_coordinator_01",
+    "language": "en",
+    "tags": [
+      "logistics",
+      "ICS",
+      "staging_area",
+      "NIMS",
+      "supply_chain",
+      "base_camp",
+      "resource_tracking"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "mass_casualty",
+      "hazmat",
+      "hurricane"
+    ],
+    "procedure_steps": [
+      "Select staging area site ≥5km from hazard zone, accessible by heavy vehicles, outside flood plain",
+      "Establish distinct zones: marshalling, equipment cache, fuel, food, medical, sanitation, briefing",
+      "Assign Logistics Section Chief to manage Supply, Facilities, Ground Support, Food, and Medical Units",
+      "Implement T-card or electronic resource tracking for all personnel and equipment",
+      "Establish ICS 213RR resource request process — all requests through Logistics Section only",
+      "Coordinate with state/regional emergency management for mutual aid resources",
+      "Pre-position 72-hour cache of critical supplies (fuel, water, MREs, medical supplies)",
+      "Establish 12-hour resupply cycle for all consumables",
+      "Set up fuel station with supply tender or contracted fuel delivery"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "FEMA ICS-300: Intermediate ICS for Expanding Incidents — Logistics Section",
+      "FEMA ICS-400: Advanced ICS — Logistics Section Chief Functions",
+      "NIMS Resource Management — Typing, Credentialing, Inventorying (FEMA, 2017)",
+      "FEMA Logistics Management Field Guide"
+    ]
+  },
+  {
+    "id": "protocol_logistics_002",
+    "question": "What is the OCHA Cluster Approach protocol for coordinating humanitarian logistics in a major disaster response?",
+    "answer": "Per OCHA Cluster Approach guidelines and WFP Global Logistics Cluster standard: (1) ACTIVATION: The Resident/Humanitarian Coordinator (RC/HC) activates the Cluster System in consultation with national authorities when a major disaster exceeds national response capacity; Logistics Cluster is led by WFP; (2) LOGISTICS CLUSTER FUNCTIONS: (a) Coordinate transport, storage, and cargo tracking for all humanitarian actors; (b) Provide common pipeline/stock information to avoid duplication; (c) Negotiate and manage shared trucking/aviation contracts; (d) Establish common warehousing at hub locations; (3) COORDINATION MEETINGS: Weekly logistics cluster coordination meetings — all humanitarian actors invited; minutes and decisions published on OCHA ReliefWeb within 24 hours; (4) LAST MILE DELIVERY: Assess road/bridge damage and alternative route planning; coordinate military/commercial assets for inaccessible areas; use helicopters only as last resort (high cost); (5) CUSTOMS AND CLEARANCE: Liaison with customs authorities to fast-track humanitarian cargo using OCHA Humanitarian Exemption procedures; (6) INFORMATION MANAGEMENT: Maintain Logistics Capacity Assessment (LCA) database — updated after each major disaster; share 3W matrix (Who, What, Where) for all actors; (7) EXIT STRATEGY: Plan for cluster deactivation 3–6 months post-disaster — transition coordination to national authorities.",
+    "category": "logistics",
+    "location": "Humanitarian Response Operations",
+    "severity": "high",
+    "resources_required": "WFP Logistics Cluster, common warehousing, transport contracts, customs liaison, information management system",
+    "expert_id": "logistics_coordinator_01",
+    "language": "en",
+    "tags": [
+      "logistics",
+      "OCHA",
+      "cluster_approach",
+      "WFP",
+      "humanitarian",
+      "supply_chain",
+      "coordination"
+    ],
+    "applicable_crisis_types": [
+      "flood",
+      "earthquake",
+      "tsunami",
+      "hurricane",
+      "pandemic"
+    ],
+    "procedure_steps": [
+      "Activate Logistics Cluster via RC/HC decision in consultation with national authorities",
+      "Establish WFP-led Logistics Cluster coordination meeting schedule (weekly minimum)",
+      "Inventory available transport assets, warehousing, and common pipeline stocks",
+      "Assess road and bridge damage; identify alternative delivery routes",
+      "Negotiate shared trucking and aviation contracts for all humanitarian actors",
+      "Establish common warehousing at hub locations accessible to all cluster members",
+      "Coordinate customs fast-track procedures for humanitarian cargo",
+      "Publish 3W matrix (Who, What, Where) updated daily on OCHA ReliefWeb",
+      "Identify last-mile delivery gaps; deploy helicopters only when road access impossible",
+      "Develop exit strategy for cluster deactivation 3-6 months post-disaster"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "OCHA Cluster Approach Policy Paper (2010)",
+      "WFP Global Logistics Cluster — Coordination Manual",
+      "IASC (Inter-Agency Standing Committee) Guidelines on the Humanitarian Cluster System (2015)",
+      "OCHA ReliefWeb — 3W Matrix (Who, What, Where) Reporting Standards"
+    ]
+  },
+  {
+    "id": "protocol_civil_protection_001",
+    "question": "What is the activation procedure for the Greek National Civil Protection Plan 'Xenokrates' during a major disaster?",
+    "answer": "Per Ministerial Decision 1299/2003 'Xenokrates' and subsequent amendments by GSCP (General Secretariat for Civil Protection): (1) ALERT LEVELS: Xenokrates defines three operational levels — Level 1: Local emergency (municipality/region handles); Level 2: Regional emergency (Regional Governor activates regional response plan, GSCP monitors); Level 3: National emergency (Minister of Climate Crisis and Civil Protection activates Xenokrates national response, coordinates all national resources); (2) NATIONAL ACTIVATION: Minister activates Xenokrates upon: declaration of state of emergency, impact exceeding regional response capacity, cross-regional disaster, or international request for assistance; (3) NATIONAL COORDINATION CENTER (KSPP): GSCP activates the National Coordination Center for Civil Protection (KSPP) as central EOC — 24/7 operations, representatives from all ministries, fire service, police, military, health, armed forces; (4) HAZARD-SPECIFIC PLANS: Xenokrates triggers subordinate plans: IOLAOS (forest fires), ENGLADOS 2 (earthquakes), DARDANOS 2 (floods), ACTEON (tsunami), AIOLOS (CBRN), DIKAIOSINI (floods in urban areas); (5) RESOURCE MOBILIZATION: National resource database (EMVOLOS) used to identify and mobilize available national equipment and personnel by category; (6) MUTUAL AID: Activate bilateral agreements with neighboring countries; notify EU Civil Protection Mechanism ERCC if international assistance needed.",
+    "category": "civil_protection",
+    "location": "Greece — National Level",
+    "severity": "critical",
+    "resources_required": "GSCP national coordination, KSPP EOC, EMVOLOS resource database, interministerial coordination, military support",
+    "expert_id": "civilprotection_gold_01",
+    "language": "en",
+    "tags": [
+      "civil_protection",
+      "Xenokrates",
+      "GSCP",
+      "Greece",
+      "national_plan",
+      "EOC",
+      "KSPP"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "tsunami",
+      "hazmat",
+      "hurricane",
+      "mass_casualty"
+    ],
+    "procedure_steps": [
+      "Assess disaster scale against Xenokrates Level 1/2/3 criteria",
+      "If Level 3 (national): Minister of Climate Crisis and Civil Protection formally activates Xenokrates",
+      "Activate National Coordination Center (KSPP) as central EOC with 24/7 operations",
+      "Convene interministerial coordination with all national agencies represented",
+      "Activate hazard-specific subordinate plan (IOLAOS, ENGLADOS 2, DARDANOS 2, ACTEON, AIOLOS)",
+      "Query EMVOLOS national resource database to mobilize equipment and personnel",
+      "Declare state of emergency if required to release emergency funding",
+      "Activate bilateral mutual aid agreements with neighboring countries if needed",
+      "Notify EU Civil Protection Mechanism ERCC if international assistance required",
+      "Establish operational period schedule (12-hour shifts) and produce IAP (Incident Action Plan)"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "Ministerial Decision 1299/2003 (GEK B' 423/07-04-2003) — Greek National Civil Protection Plan 'Xenokrates'",
+      "Greek Law 3013/2002 — Civil Protection Organisation",
+      "Greek Law 4662/2020 — National Crisis and Risk Management Framework",
+      "General Secretariat for Civil Protection (GSCP) — KSPP National Coordination Centre Procedures"
+    ]
+  },
+  {
+    "id": "protocol_civil_protection_002",
+    "question": "What is the procedure for requesting international assistance through the EU Civil Protection Mechanism (UCPM)?",
+    "answer": "Per EU Decision 1313/2013/EU as amended (UCPM) and ERCC activation procedures: (1) ELIGIBILITY: Any country participating in the EU Civil Protection Mechanism may request assistance when a disaster exceeds national response capacity — 36 EU/EEA member states participate; (2) REQUEST: National authority (Greece: GSCP) contacts the Emergency Response Coordination Centre (ERCC) in Brussels 24/7 via the CECIS web platform — provide: hazard type, affected area, population, specific needs (modules, experts, equipment), national resources already deployed; (3) ERCC COORDINATION: ERCC immediately forwards the request to all participating states; initiates voluntary offers of assistance; activates EU pre-positioned assets (Emergency Support Teams, EUTF, EU Civil Protection Pool modules if available); (4) COPERNICUS ACTIVATION: Request Copernicus Emergency Management Service mapping (gratis) — crisis maps, damage assessments, and population exposure data available within 12–24 hours; (5) COMMUNICATION: ERCC provides coordination and host nation support guidance; deploying teams use EUCPT (EU Civil Protection Team) unified coordination structure; (6) EUROPEAN CIVIL PROTECTION POOL: Modules available include urban search and rescue (MUSAR), water purification, field hospital, aerial forest fire fighting (ERCC aerial assets), pumping, and CBRN detection; (7) COST-SHARING: Deploying nations bear their own costs; EU may co-finance transport costs through Emergency Support Instrument.",
+    "category": "civil_protection",
+    "location": "European Union / International",
+    "severity": "critical",
+    "resources_required": "CECIS platform access, ERCC contact, Copernicus EMS access, national liaison to EU mechanism",
+    "expert_id": "civilprotection_gold_01",
+    "language": "en",
+    "tags": [
+      "civil_protection",
+      "EU_CPM",
+      "ERCC",
+      "UCPM",
+      "Copernicus",
+      "international_assistance",
+      "CECIS"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "tsunami",
+      "mass_casualty",
+      "hazmat"
+    ],
+    "procedure_steps": [
+      "Confirm national capacity is exceeded and international assistance is needed",
+      "Log into CECIS platform and submit formal request to ERCC in Brussels",
+      "Specify hazard type, affected area, population, and specific module/resource needs",
+      "Request Copernicus Emergency Management Service crisis mapping immediately",
+      "ERCC forwards request to all 36 participating states and activates pre-positioned assets",
+      "Evaluate offers of assistance received through CECIS within 6-12 hours",
+      "Coordinate host nation support for incoming EU Civil Protection Teams (EUCPT)",
+      "Integrate EU modules (MUSAR, field hospital, aerial firefighting) into national ICS structure",
+      "Establish shared communications and logistics framework with deployed international teams",
+      "Report operational updates to ERCC every 12 hours via CECIS"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "EU Decision 1313/2013/EU on a Union Civil Protection Mechanism (as amended by Decision 2019/420/EU)",
+      "European Commission — EU Civil Protection Mechanism Operational Guidelines",
+      "CECIS (Common Emergency Communication and Information System) — User Guide",
+      "Copernicus Emergency Management Service (CEMS) — Activation and Mapping Procedures"
+    ]
+  },
+  {
+    "id": "protocol_civil_protection_003",
+    "question": "What is the protocol for activating and operating a Multi-Agency Coordination Centre (MACC) during a major disaster?",
+    "answer": "Per NIMS/ICS Area Command principles and EU Civil Protection best practices: (1) ACTIVATION TRIGGER: MACC is activated when: (a) multiple incidents require unified resource coordination, (b) EOC is overwhelmed, or (c) strategic-level decisions require multi-agency authority; (2) LOCATION: Pre-selected secure facility with: redundant communications (landline, satellite, radio), backup power (minimum 72-hour generator), internet connectivity, large situation display; (3) STRUCTURE: MACC Director (senior official) chairs; core functions: (a) Situation Awareness (GIS/common operating picture), (b) Resource Coordination (cross-agency allocation), (c) Liaison (NGO, military, international), (d) Public Information (Joint Information Centre — JIC); (4) COMMON OPERATING PICTURE (COP): Establish single shared GIS platform — all agencies input real-time incident locations, resource positions, and population data; WebEOC or ArcGIS Online recommended; (5) OPERATIONAL RHYTHM: Operational Period Briefing every 8–12 hours; produce Incident Action Plan (IAP) per period; standardize SITREPs and distribute to all agencies; (6) DECISIONS: MACC does not replace Incident Commanders — it supports them through resource allocation, policy decisions, and cross-agency conflict resolution; (7) DEACTIVATION: Begin transition to normal operations as incident stabilizes — transfer coordination to lead agency.",
+    "category": "civil_protection",
+    "location": "Emergency Operations Centre",
+    "severity": "high",
+    "resources_required": "Pre-designated EOC facility, redundant communications, GIS platform, backup power, multi-agency liaison officers",
+    "expert_id": "civilprotection_gold_01",
+    "language": "en",
+    "tags": [
+      "civil_protection",
+      "MACC",
+      "EOC",
+      "ICS",
+      "NIMS",
+      "COP",
+      "multi_agency",
+      "coordination"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "tsunami",
+      "mass_casualty",
+      "hazmat",
+      "terrorist"
+    ],
+    "procedure_steps": [
+      "Activate MACC at pre-designated secure facility with redundant communications and backup power",
+      "Appoint MACC Director and assign core functions: Situation Awareness, Resources, Liaison, Public Info",
+      "Establish Common Operating Picture (COP) on shared GIS platform (WebEOC or ArcGIS Online)",
+      "Request all agencies to input real-time incident locations and resource positions into COP",
+      "Establish Joint Information Centre (JIC) for coordinated public messaging",
+      "Conduct Operational Period Briefing every 8-12 hours; produce Incident Action Plan (IAP)",
+      "Standardize SITREP format and distribution to all agencies every hour",
+      "Resolve inter-agency resource conflicts at MACC level, not field level",
+      "Coordinate with NGOs, military, and international partners through Liaison function",
+      "Begin deactivation planning when incident is stabilized; transfer coordination to lead agency"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "NIMS: Multiagency Coordination System (MACS) — FEMA (2017)",
+      "FEMA IS-701.A: NIMS Multiagency Coordination System (MACS)",
+      "EU Civil Protection Mechanism — Host Nation Support Guidelines",
+      "UNOCHA INSARAG — Multi-Agency Coordination Guidelines"
+    ]
+  },
+  {
+    "id": "protocol_police_001",
+    "question": "What is the law enforcement protocol for establishing scene perimeter and access control at a major incident?",
+    "answer": "Per NIMS/ICS law enforcement integration and UK Gold-Silver-Bronze command doctrine: (1) INITIAL PERIMETER: Arriving first units establish inner perimeter at minimum safe distance: structural collapse/explosion — 300m; active shooter — cover + distance; hazmat — upwind/uphill; wildfire — minimum road-width clearance; (2) ACCESS CONTROL POINTS (ACP): Establish 2-3 ACPs for each perimeter ring — one entry, one exit per ring; all access logged (name, agency, time in/out, reason); (3) CREDENTIALING: Only authorize entry to: credentialed emergency responders (display vest/badge), authorized media (media staging area only — 500m from inner perimeter), critical infrastructure workers (escorted); (4) INNER/OUTER PERIMETER: Inner perimeter (crime/scene integrity) — law enforcement only; Outer perimeter (public safety cordon) — may include traffic management volunteers; (5) TRAFFIC MANAGEMENT: Designate clear emergency vehicle lane on all access routes — minimum one lane reserved; coordinate with traffic management/DOT for diversions; (6) DOCUMENTATION: Photograph and document all unusual activities near perimeter; record all vehicles attempting unauthorized access; (7) MUTUAL AID: Request additional officers for perimeter relief if incident extends beyond 4 hours — rotate officers every 2 hours in hazardous conditions.",
+    "category": "police",
+    "location": "All Incident Types",
+    "severity": "high",
+    "resources_required": "First responder law enforcement units, access control barriers, credentialing system, traffic management, mutual aid officers",
+    "expert_id": "police_tactical_01",
+    "language": "en",
+    "tags": [
+      "police",
+      "perimeter",
+      "access_control",
+      "ICS",
+      "scene_security",
+      "law_enforcement"
+    ],
+    "applicable_crisis_types": [
+      "terrorist",
+      "mass_casualty",
+      "explosion",
+      "hazmat",
+      "earthquake",
+      "wildfire",
+      "flood"
+    ],
+    "procedure_steps": [
+      "Establish initial inner perimeter at minimum safe distance (300m explosion/collapse, upwind/uphill hazmat)",
+      "Designate 2-3 Access Control Points per perimeter ring (one entry, one exit)",
+      "Implement access log: name, agency, time in/out, purpose for all personnel",
+      "Authorize entry only to credentialed emergency responders and escorted critical workers",
+      "Establish media staging area ≥500m from inner perimeter",
+      "Reserve minimum one emergency vehicle lane on all access routes",
+      "Coordinate traffic diversions with traffic management authority",
+      "Photograph and document all suspicious activities near the perimeter",
+      "Request mutual aid officers if incident extends beyond 4 hours",
+      "Rotate perimeter officers every 2 hours in hazardous or extreme weather conditions"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "NIMS: National Incident Management System — Law Enforcement Integration (FEMA, 2017)",
+      "UK Cabinet Office — Emergency Response and Recovery (UK Gold-Silver-Bronze Doctrine)",
+      "Hellenic Police — Emergency Response Procedures Manual",
+      "FEMA IS-700.B: Introduction to NIMS"
+    ]
+  },
+  {
+    "id": "protocol_police_002",
+    "question": "What is the police protocol for public order management and crowd control during a mass disaster evacuation?",
+    "answer": "Per Hellenic Police emergency response protocols and NIMS law enforcement integration guidance: (1) MISSION SHIFT: During natural disasters, law enforcement priority shifts from enforcement to LIFE SAFETY — facilitate evacuation, prevent looting, support vulnerable populations; (2) DEPLOYMENT: Establish police presence at: (a) key evacuation route intersections (traffic direction), (b) critical infrastructure (hospitals, shelters, fuel stations — prevent hoarding), (c) evacuated neighborhoods (anti-looting patrols), (d) evacuation shelters (order, registration assistance); (3) CROWD MANAGEMENT: For large gatherings or panic situations — use MOAB (Management of Actual or Imminent Threats to life, Open display of force/numbers, Actions, Back to safety) sequence; maintain visible but non-aggressive presence; (4) ANTI-LOOTING: Establish rolling patrols in evacuated zones every 30 minutes; coordinate with prosecutors for expedited charging authority during declared emergencies; (5) VULNERABLE PERSON WELFARE CHECKS: Proactively check on elderly, disabled, and isolated persons who may not have self-evacuated; (6) COMMUNICATIONS: Maintain radio contact with EOC/MACC every 15 minutes; report all critical intelligence (road blocks, injured civilians, looting) immediately; (7) USE OF FORCE: Follow standard use-of-force continuum — de-escalation is always the first option in disaster contexts.",
+    "category": "police",
+    "location": "All Affected Areas",
+    "severity": "high",
+    "resources_required": "Police patrol units, traffic management, anti-looting units, welfare check teams, EOC liaison",
+    "expert_id": "police_tactical_01",
+    "language": "en",
+    "tags": [
+      "police",
+      "crowd_control",
+      "evacuation",
+      "public_order",
+      "anti_looting",
+      "law_enforcement"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "tsunami",
+      "mass_casualty",
+      "civil_unrest"
+    ],
+    "procedure_steps": [
+      "Shift operational priority to life safety: facilitate evacuation above all enforcement functions",
+      "Deploy officers to evacuation route intersections for traffic direction",
+      "Secure critical infrastructure: hospitals, fuel stations, water supply, shelters",
+      "Establish anti-looting rolling patrols in evacuated zones every 30 minutes",
+      "Apply MOAB crowd management sequence for panic or crowd control situations",
+      "Conduct proactive welfare checks on elderly, disabled, and isolated non-evacuees",
+      "Coordinate with shelter staff to assist registration and order at reception centers",
+      "Report all critical intelligence (road blocks, injuries, looting) to EOC every 15 minutes",
+      "Use de-escalation as primary approach; use of force continuum applies throughout"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "NIMS Law Enforcement Integration in Emergency Management (FEMA)",
+      "Hellenic Police General Police Directorate — Civil Protection Operations Manual",
+      "IACP (International Association of Chiefs of Police) — Disaster Response Guidelines",
+      "MOAB: Management of Actual or Imminent Threats (UK College of Policing Guidance)"
+    ]
+  },
+  {
+    "id": "protocol_search_rescue_001",
+    "question": "What is the INSARAG Urban Search and Rescue (USAR) protocol for a collapsed building following an earthquake?",
+    "answer": "Per INSARAG Guidelines (2020 edition) and IEC-certified USAR team protocols: (1) ARRIVAL AND SIZE-UP: USAR team leader conducts rapid visual assessment — identify structural type, collapse pattern (pancake, lean-to, V-shaped, cantilever), likely void spaces, hazards (gas leak, electrical, secondary collapse risk); (2) RECONNAISSANCE: Deploy search dogs (K-9) and acoustic/optical search devices in listening phases — announce 'quiet time' periods of 3 minutes for victim detection; (3) SEARCH SECTORS: Divide structure into sectors (A=street frontage, B=right side, C=rear, D=left side); assign sector team and document all areas systematically; (4) VICTIM LOCATION: Upon detection, mark with INSARAG marker (orange X with live victim indication) and establish voice contact; assign rescue team and medical officer; (5) RESCUE: Shoring and breaching operations using hydraulic spreaders, rams, and cutting equipment; maintain structural monitoring (inclinometer) during operations; (6) MEDICAL: Immediate medical treatment at point of rescue — crush syndrome protocol (IV fluid loading before extrication to prevent reperfusion injury); (7) ACCOUNTABILITY: All search areas marked on sector map; 'cleared' areas marked with INSARAG 'All Searched' symbol; (8) SAFETY: Continuous structural stability monitoring; evacuation signal (3 short horn blasts) drill with all personnel.",
+    "category": "search_rescue",
+    "location": "Urban Areas / Collapsed Structures",
+    "severity": "critical",
+    "resources_required": "USAR team, K-9 search dogs, acoustic/optical search devices, hydraulic rescue tools, shoring equipment, medical officer",
+    "expert_id": "fire_onscene_01",
+    "language": "en",
+    "tags": [
+      "search_rescue",
+      "USAR",
+      "INSARAG",
+      "earthquake",
+      "collapse",
+      "structural",
+      "K9"
+    ],
+    "applicable_crisis_types": [
+      "earthquake",
+      "explosion",
+      "terrorist",
+      "flood",
+      "hurricane"
+    ],
+    "procedure_steps": [
+      "Conduct rapid visual size-up: structural type, collapse pattern, void spaces, hazards",
+      "Shut off utilities (gas, electrical) before entry operations",
+      "Divide structure into sectors (A/B/C/D) and assign sector teams",
+      "Conduct K-9 and acoustic/optical search with 3-minute 'quiet time' listening phases",
+      "Mark victim locations with INSARAG orange X marker upon detection",
+      "Establish voice contact with victim and assign dedicated rescue team and medical officer",
+      "Begin shoring and breaching using hydraulic spreaders, rams, and cutting equipment",
+      "Maintain structural stability monitoring (inclinometer) throughout rescue operations",
+      "Apply crush syndrome protocol (IV fluid loading) before victim extrication",
+      "Mark all cleared areas with INSARAG 'All Searched' symbol on sector map",
+      "Drill evacuation signal (3 short horn blasts) with all personnel before operations begin"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "INSARAG Guidelines Volume II — Preparedness and Response (OCHA, 2020 ed.)",
+      "INSARAG Methodology — IEC Classification Standard for USAR Teams",
+      "NFPA 1006: Standard for Technical Rescuer Professional Qualifications (2021 ed.)",
+      "FEMA USAR Response System — Operational Procedures"
+    ]
+  },
+  {
+    "id": "protocol_search_rescue_002",
+    "question": "What is the swift water rescue protocol for flood victims trapped in moving or rising water?",
+    "answer": "Per NFPA 1006 Swift Water Rescue standard and Hellenic Fire Service swiftwater protocols: (1) SCENE ASSESSMENT: Evaluate water speed (walking pace = 1–2 m/s manageable; running = >2 m/s high risk), water temperature (hypothermia risk <15°C), debris, and victim location; never enter moving water without swift water technician qualification; (2) REACH-THROW-ROW-GO hierarchy: (a) REACH: Extend pole, rope, or ladder from bank — safest option; (b) THROW: Deploy throw bag (coiled rope 15–20m) upstream of victim — victim grabs and holds; (c) ROW: Deploy rescue boat — inflatable or rigid hull depending on conditions; (d) GO: Only technician-qualified rescuers enter water with tethered lifeline; (3) RESCUE BOAT DEPLOYMENT: Use inflatable rescue boat (IRB) in fast water — approach victim from downstream; never approach from upstream (risk of pinning); deploy boat crew with PPE: PFD, helmet, dry suit, knife; (4) HELICOPTER RESCUE: For victims in mid-current or inaccessible locations — hoist rescue by qualified HEMS crew; lower at 45° upstream angle; (5) VICTIM MANAGEMENT: On extraction — assess for hypothermia (warm horizontally, remove wet clothing, foil blanket), near-drowning (immediate oxygen, monitor for secondary drowning 24 hours), traumatic injuries; (6) PERSONNEL SAFETY: All rescuers wear Type III PFD minimum; establish downstream safety swimmers as last-resort backup.",
+    "category": "search_rescue",
+    "location": "Flooded Areas / River Systems / Urban Flooding",
+    "severity": "critical",
+    "resources_required": "Swift water rescue team, rescue boats, throw bags, PFD/helmets/dry suits, helicopter HEMS, medical team",
+    "expert_id": "fire_onscene_01",
+    "language": "en",
+    "tags": [
+      "search_rescue",
+      "swift_water",
+      "flood",
+      "NFPA_1006",
+      "rescue_boat",
+      "swiftwater"
+    ],
+    "applicable_crisis_types": [
+      "flood",
+      "tsunami",
+      "hurricane"
+    ],
+    "procedure_steps": [
+      "Assess water speed, temperature, debris hazard, and victim location before entry",
+      "Apply REACH: extend pole, rope, or ladder from bank as first option",
+      "Apply THROW: deploy throw bag upstream of victim if reach is insufficient",
+      "Deploy IRB rescue boat if throw is insufficient — approach from downstream only",
+      "Ensure all boat crew have PFD, helmet, dry suit, and rescue knife",
+      "For mid-current victims: request helicopter HEMS hoist rescue at 45° upstream angle",
+      "Ensure all rescuers wear Type III PFD minimum; establish downstream safety swimmers",
+      "On extraction: assess for hypothermia, apply foil blanket, remove wet clothing",
+      "Administer oxygen to all near-drowning victims; monitor for secondary drowning for 24 hours",
+      "Document all rescue operations and victim condition at extraction for medical handover"
+    ],
+    "created_at": "2026-05-22T12:00:00",
+    "updated_at": "2026-05-22T12:00:00",
+    "references": [
+      "NFPA 1006: Standard for Technical Rescuer Professional Qualifications, Chapter 10 — Water Rescue (2021 ed.)",
+      "Hellenic Fire Service — Swiftwater Rescue Operational Procedures",
+      "NWCG Standards for Helicopter Operations, PMS 510 (2019 ed.)",
+      "European Technical Rescue Organisation — Swiftwater/Flood Rescue Standards"
+    ]
+  },
+  {
+    "id": "protocol_volcanic_001",
+    "question": "What is the volcanic alert level escalation protocol and the civil protection response actions for each alert level during seismic-volcanic unrest?",
+    "answer": "Per USGS Volcanic Alert Level system and Greek GSCP 'Talos' plan (volcanic hazard management): ALERT LEVELS and required actions — GREEN (normal): routine monitoring, no special action; YELLOW (advisory / volcanic unrest): (1) Convene scientific advisory committee (OASP, EVIGO, NKUA seismology lab), (2) Notify GSCP and regional governor, (3) Alert regional hospital surge capacity, (4) Brief port and airport authorities; ORANGE (watch / eruption likely): (1) Activate regional EOC, (2) Begin voluntary evacuation of highest-risk zones (caldera rim, lava flow paths), (3) Pre-position evacuation assets (ferries, helicopters, buses), (4) Issue public alert via WEA/EU-Alert 112, (5) Activate Talos plan nationwide, (6) Request EU Civil Protection pre-positioning of MUSAR/field hospital modules; RED (warning / eruption imminent or underway): (1) Mandatory evacuation of all zones at risk, (2) Close airspace to all non-emergency aircraft (volcanic ash hazard), (3) Deploy coast guard vessels for sea evacuation, (4) Activate national crisis management (KSPP), (5) Notify ICAO of volcanic ash cloud (VAAC Athens), (6) Request full EU Civil Protection Mechanism activation. CRITICAL: Alert level changes must be communicated to public within 15 minutes of scientific determination.",
+    "category": "civil_protection",
+    "location": "Volcanic / Seismic Risk Areas — Greece",
+    "severity": "critical",
+    "resources_required": "OASP/EVIGO scientific committee, GSCP national coordination, ferry fleet, coast guard, VAAC Athens, EU CPM liaison",
+    "expert_id": "civilprotection_gold_01",
+    "language": "en",
+    "tags": [
+      "volcanic",
+      "seismic",
+      "alert_levels",
+      "Talos",
+      "GSCP",
+      "OASP",
+      "EVIGO",
+      "evacuation"
+    ],
+    "applicable_crisis_types": [
+      "volcanic_seismic",
+      "earthquake",
+      "tsunami"
+    ],
+    "procedure_steps": [
+      "Convene OASP/EVIGO/NKUA scientific advisory committee upon any escalation signal",
+      "Classify activity against USGS/Talos alert level criteria (Green/Yellow/Orange/Red)",
+      "Notify GSCP national coordination and regional governor of current alert level",
+      "At Yellow: alert hospital surge capacity and brief port/airport authorities",
+      "At Orange: activate regional EOC and begin voluntary evacuation of highest-risk zones",
+      "At Orange: pre-position evacuation assets (ferries, helicopters, buses) at departure points",
+      "At Orange: issue WEA/EU-Alert 112 public notification within 15 minutes",
+      "At Red: mandate full evacuation of all at-risk zones; close airspace to non-emergency aircraft",
+      "At Red: notify ICAO VAAC Athens of volcanic ash cloud for aviation safety",
+      "At Red: activate full EU Civil Protection Mechanism (ERCC/CECIS)"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "USGS Volcanic Alert Level System — Volcano Hazards Program (VHP)",
+      "IAVCEI (International Association of Volcanology and Chemistry of the Earth's Interior) — Volcanic Alert Level Working Group Guidelines",
+      "Greek General Secretariat for Civil Protection — Talos Plan (Volcanic Hazard Management)",
+      "Greek Ministry of Climate Crisis and Civil Protection — State of Emergency Procedures (Santorini 2025)"
+    ]
+  },
+  {
+    "id": "protocol_volcanic_002",
+    "question": "What is the island-wide maritime evacuation protocol for a volcanic emergency when road infrastructure is unavailable or overwhelmed?",
+    "answer": "Per Hellenic Coast Guard volcanic emergency procedures and IAMSAR MRO guidelines, applied to island communities such as Santorini: (1) FERRY FLEET MOBILIZATION: Hellenic Ministry of Shipping orders all passenger ferry operators to redirect available vessels to the affected island immediately — no commercial schedule takes priority over civil protection order; coordinate with ANEN, Seajets, Blue Star for vessel positions and passenger capacity; (2) PORT MANAGEMENT: Designate primary embarkation ports (highest capacity, lowest risk) and secondary ports — do NOT use caldera-rim ports during active volcanic/seismic unrest (landslide risk); (3) PRIORITY LOADING: Strict priority boarding: P1 = mobility-impaired, medical-dependent, unaccompanied minors; P2 = tourists (hotels coordinate list with port police); P3 = permanent residents with vehicles; (4) FLOW CONTROL: Port police manage crowd flow — 500 persons per boarding batch; avoid simultaneous boarding at adjacent gangways; (5) PASSENGER MANIFEST: All vessels complete passenger manifest before departure — electronic submission to MRCC within 30 minutes of departure; (6) RECEIVING PORTS: Designate mainland receiving ports (Piraeus, Rafina) with reception centers pre-activated; coordinate with GSCP for onward transport; (7) HELICOPTER AIRLIFT: For caldera rim communities (Oia, Fira, Imerovigli) cut off by infrastructure damage — helicopter airlift to ferry meeting point or airport; (8) CRUISE SHIPS: Direct all vessels in caldera to immediately weigh anchor and proceed to open water (>5nm from Nea Kameni) — do not attempt passenger disembarkation at caldera ports.",
+    "category": "maritime",
+    "location": "Santorini / Greek Islands",
+    "severity": "critical",
+    "resources_required": "Ferry fleet, coast guard coordination, port police, helicopter assets, MRCC, receiving port infrastructure, reception centers",
+    "expert_id": "coastguard_gold_01",
+    "language": "en",
+    "tags": [
+      "volcanic",
+      "seismic",
+      "maritime_evacuation",
+      "ferry",
+      "island_evacuation",
+      "Santorini",
+      "coast_guard"
+    ],
+    "applicable_crisis_types": [
+      "volcanic_seismic",
+      "earthquake",
+      "tsunami"
+    ],
+    "procedure_steps": [
+      "Issue Ministry of Shipping civil protection order directing all ferry operators to the island",
+      "Designate primary and secondary embarkation ports (avoid caldera-rim ports)",
+      "Direct all cruise ships in caldera to weigh anchor and move to open water (>5nm from Nea Kameni)",
+      "Implement priority boarding: P1=medical/mobility, P2=tourists, P3=residents with vehicles",
+      "Deploy port police for crowd flow management (500 persons per boarding batch)",
+      "Require electronic passenger manifest submission to MRCC within 30 minutes of departure",
+      "Activate receiving ports (Piraeus, Rafina) with reception centers and onward transport",
+      "Dispatch helicopters for caldera rim communities (Oia, Fira, Imerovigli) cut off by damage",
+      "Maintain continuous vessel tracking via MRCC for all evacuation ferries"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "IMO/ICAO IAMSAR Manual — Mass Rescue Operations Guidelines",
+      "Hellenic Coast Guard — Island Emergency Evacuation by Sea Procedures",
+      "Greek Ministry of Shipping and Island Policy — Civil Protection Maritime Directive",
+      "Hellenic Ports Organization — Emergency Embarkation Management Guidelines"
+    ]
+  },
+  {
+    "id": "protocol_volcanic_003",
+    "question": "What is the scientific monitoring and assessment protocol during a seismic swarm associated with submarine volcanic activity (e.g., Kolumbo-type event)?",
+    "answer": "Per IAVCEI monitoring best practices, USGS VDAP guidelines, and OASP/EVIGO procedures used during the 2025 Santorini-Amorgos crisis: (1) SEISMIC NETWORK: Activate all available seismograph stations (HLNTWC, NKUA network, GEOFON) — target real-time magnitude, depth, and focal mechanism for each event; flag any M≥4.0 event immediately to GSCP; (2) VOLCANIC GAS: Deploy continuous SO2 monitoring at fumarole sites and via TROPOMI satellite (Copernicus) — SO2 flux >1000 t/day indicates significant magmatic input; (3) GROUND DEFORMATION: Activate continuous GNSS/GPS baselines and InSAR analysis (Copernicus Sentinel-1) — uplift >2cm/week at caldera requires Orange alert escalation; (4) SEAWATER CHEMISTRY: Deploy oceanographic buoy for pH, temperature, and dissolved gas measurement at Kolumbo crater — acidification and CO2 outgassing indicate submarine hydrothermal activity; (5) TSUNAMI WATCH: Any M≥5.5 submarine earthquake triggers automatic NEAMTWS (North-East Atlantic, Mediterranean and connected seas Tsunami Warning System) assessment — notify GSCP within 3 minutes; (6) SCIENTIFIC ADVISORY BULLETINS: Issue public scientific bulletins every 6 hours during active swarms — plain language, specify what is known/unknown, avoid overstatement; (7) EVACUATION TRIGGER THRESHOLDS: Pre-define quantitative thresholds (e.g., M≥6.0 submarine, SO2 >5000 t/day, ground uplift >5cm/day) that automatically trigger alert level escalation.",
+    "category": "disaster",
+    "location": "Kolumbo / Santorini Volcanic Complex",
+    "severity": "critical",
+    "resources_required": "OASP seismic network, EVIGO volcanological observatory, TROPOMI satellite access, Copernicus Sentinel InSAR, NEAMTWS connection, oceanographic buoy",
+    "expert_id": "civilprotection_gold_01",
+    "language": "en",
+    "tags": [
+      "volcanic",
+      "seismic",
+      "Kolumbo",
+      "Santorini",
+      "OASP",
+      "EVIGO",
+      "monitoring",
+      "SO2",
+      "GNSS",
+      "tsunami_watch",
+      "NEAMTWS"
+    ],
+    "applicable_crisis_types": [
+      "volcanic_seismic",
+      "earthquake",
+      "tsunami"
+    ],
+    "procedure_steps": [
+      "Activate all seismograph stations; flag any M≥4.0 event immediately to GSCP",
+      "Deploy continuous SO2 monitoring at fumaroles and via TROPOMI satellite",
+      "Activate GNSS/GPS and Copernicus InSAR for continuous ground deformation monitoring",
+      "Deploy oceanographic buoy at Kolumbo crater for pH, temperature, and dissolved gas",
+      "Trigger NEAMTWS tsunami watch assessment for any M≥5.5 submarine earthquake within 3 minutes",
+      "Issue public scientific bulletins in plain language every 6 hours during active swarms",
+      "Apply pre-defined quantitative escalation thresholds (M≥6.0, SO2>5000 t/day, uplift>5cm/day)",
+      "Coordinate data sharing between OASP, EVIGO, NKUA, and international networks (GEOFON, EMSC)"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "IAVCEI/WOVO Volcanic Alert Level Systems — Working Group Publications",
+      "USGS VDAP (Volcano Disaster Assistance Program) — Seismic Monitoring Procedures",
+      "OASP (Hellenic Organization for Earthquake Planning and Protection) — Monitoring Protocols",
+      "EVIGO Volcanological Observatory — Kolumbo Submarine Volcano Monitoring Procedures",
+      "IOC/UNESCO NEAMTWS — Tsunami Watch Notification Procedures",
+      "Papageorgiou et al. (2025): 'Increased Preparedness During the 2025 Santorini-Amorgos Earthquake Swarm', MDPI Geosciences"
+    ]
+  },
+  {
+    "id": "protocol_volcanic_004",
+    "question": "What are the structural safety assessment and access restriction protocols following earthquake damage in a volcanic-seismic crisis?",
+    "answer": "Per OASP post-earthquake rapid assessment procedures (EMS-98) and Hellenic Ministry of Infrastructure guidelines: (1) RAPID VISUAL SCREENING (RVS): Trained engineers conduct drive-by or walk-by inspection of all structures — classify as Green (inspected/safe), Yellow (restricted use), Red (unsafe/do not enter) using FEMA P-154 methodology; (2) INSPECTION PRIORITY: P1=public buildings (hospitals, schools, EOC), P2=critical infrastructure (ports, airports, utilities), P3=hotels and tourist accommodation, P4=residential; (3) CALDERA RIM AREAS: Enhanced monitoring of caldera cliff stability — any new crack formation (>5cm width) or ground settlement triggers immediate Red exclusion zone for that section; coordinate with EKPA geotechnical engineers; (4) OLD/TRADITIONAL BUILDINGS: All pre-1960 unreinforced masonry buildings in affected area automatically restricted until inspected — post-1985 seismically designed RC structures assessed individually; (5) AFTERSHOCK PROTOCOL: After any M≥4.5 aftershock — all Yellow-rated buildings re-inspected before re-entry; all Red exclusion zones maintained; (6) TEMPORARY HOUSING: Red-rated residents directed to pre-designated reception centers (sports halls, hotel complexes in unaffected areas); (7) UTILITY DISCONNECTION: DEDDIE (Greek electricity distributor) disconnects power to all Red-rated buildings; EYDAP water supply checked for damage in affected zones; (8) RE-INSPECTION: Yellow buildings re-assessed after 72 hours of reduced seismicity (<M3.5).",
+    "category": "disaster",
+    "location": "Post-Earthquake Urban Areas",
+    "severity": "high",
+    "resources_required": "Structural engineers (OASP rapid assessment teams), EKPA geotechnical experts, DEDDIE, EYDAP, temporary housing capacity",
+    "expert_id": "civilprotection_gold_01",
+    "language": "en",
+    "tags": [
+      "volcanic",
+      "seismic",
+      "earthquake",
+      "structural_assessment",
+      "OASP",
+      "building_safety",
+      "EMS98"
+    ],
+    "applicable_crisis_types": [
+      "volcanic_seismic",
+      "earthquake"
+    ],
+    "procedure_steps": [
+      "Deploy OASP rapid assessment teams for Rapid Visual Screening (RVS) using FEMA P-154 methodology",
+      "Prioritize inspection: hospitals/EOC first, then critical infrastructure, hotels, residential",
+      "Classify buildings as Green (safe), Yellow (restricted use), Red (unsafe/do not enter)",
+      "Restrict all pre-1960 unreinforced masonry buildings until individually inspected",
+      "Apply enhanced caldera cliff stability monitoring; any crack >5cm triggers Red exclusion",
+      "Re-inspect all Yellow-rated buildings after any M≥4.5 aftershock before re-entry",
+      "Direct DEDDIE to disconnect power to all Red-rated buildings immediately",
+      "Direct Red-rated residents to pre-designated reception centers",
+      "Re-assess Yellow buildings after 72 hours of reduced seismicity (<M3.5)"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "OASP — Post-Earthquake Rapid Assessment Procedures (EMS-98 Macroseismic Scale)",
+      "FEMA P-154: Rapid Visual Screening of Buildings for Potential Seismic Hazards (3rd ed., 2015)",
+      "Greek Ministry of Infrastructure and Transport — Structural Assessment Post-Earthquake Decree",
+      "EMS-98: European Macroseismic Scale 1998 (Grünthal et al., European Seismological Commission)"
+    ]
+  },
+  {
+    "id": "protocol_wildfire_aerial_001",
+    "question": "What is the aerial firefighting coordination protocol for managing air tankers and helicopters over an active wildfire?",
+    "answer": "Per NWCG Airspace Coordination procedures (PMS 515) and USFS Aviation Procedures Manual: (1) AIR TACTICAL GROUP SUPERVISOR (ATGS): All aerial operations are supervised by the ATGS ('Air Attack') flying overhead — ATGS has authority over all aircraft in the Fire Traffic Area (FTA); no aircraft enters FTA without ATGS authorization; (2) FIRE TRAFFIC AREA (FTA): Established immediately upon aviation deployment — extends 5nm radius, surface to 3,000ft AGL (or as designated); all aircraft report to designated air-to-ground frequency on entry; (3) AIRCRAFT SEPARATION: Minimum 500ft vertical separation between fixed-wing and rotary-wing; airtankers make drops at <150 knots to minimize retardant scatter; helicopters operate in designated altitude bands (below 1,500ft); (4) DROP COORDINATION: ATGS directs each drop via radio — specifies target, approach heading, and retardant coverage level (CL-1 to CL-5); Leadplane leads first airtanker drop in unfamiliar terrain; (5) SAFETY: Crew-carrying helicopters must be grounded before airtanker makes drop in same sector; no drops within 300ft of ground personnel without explicit ground unit approval; (6) NIGHT OPERATIONS: Fixed-wing airtankers grounded 30 minutes after sunset unless Night Air Attack (NAAS) certified; FLIR-equipped helicopters may continue with ATGS coordination; (7) PILOT WEATHER MINIMUMS: Fixed-wing — 500ft ceiling, 1 mile visibility; helicopters — 300ft ceiling, 0.5 mile; suspend all operations below minimums.",
+    "category": "firefighting",
+    "location": "Wildfire Operations — Airspace",
+    "severity": "critical",
+    "resources_required": "Air Tactical Group Supervisor (ATGS) aircraft, air tankers, helicopters, FLIR capability, air-to-ground frequency management",
+    "expert_id": "fire_gold_01",
+    "language": "en",
+    "tags": [
+      "wildfire",
+      "aerial_operations",
+      "ATGS",
+      "FTA",
+      "air_tanker",
+      "helicopter",
+      "NWCG",
+      "airspace"
+    ],
+    "applicable_crisis_types": [
+      "wildfire"
+    ],
+    "procedure_steps": [
+      "Designate Air Tactical Group Supervisor (ATGS) and establish air-to-ground frequency",
+      "Define Fire Traffic Area (FTA): 5nm radius, surface to 3,000ft AGL",
+      "Require all aircraft to check in with ATGS on entry to FTA",
+      "Assign altitude bands: airtankers >1,500ft; helicopters <1,500ft; ATGS overhead",
+      "Direct each drop via radio specifying target, approach heading, and retardant coverage level",
+      "Ground all crew-carrying helicopters before airtanker drop in the same sector",
+      "Enforce no-drop exclusion zone of 300ft around all ground personnel without explicit approval",
+      "Ground fixed-wing aircraft 30 minutes after sunset unless NAAS certified",
+      "Suspend all operations when visibility drops below weather minimums",
+      "Log all air operations (aircraft, drop location, volume, time) in Aviation Log"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "NWCG Airspace Coordination, PMS 515 (2019 ed.)",
+      "Oregon Department of Forestry — Aviation Procedures Manual",
+      "USFS Aviation Management — Interagency Airtanker Operations Guidelines",
+      "NWCG Standards for Aerial Supervision, PMS 505 (2020 ed.)"
+    ]
+  },
+  {
+    "id": "protocol_wildfire_structure_001",
+    "question": "What is the structure defense and wildland-urban interface (WUI) protocol when wildfire threatens residential areas?",
+    "answer": "Per NFPA 1144, NFPA 1 Chapter 38 (WUI), and Hellenic Fire Service WUI guidance: (1) THREAT ASSESSMENT: Evaluate structure ignitability — assess 0-30ft zone (immediate zone: remove combustibles, propane, wood piles from structure), 30-100ft zone (intermediate: reduce fuel density, create defensible space), 100-200ft zone (outer: reduce fuel continuity); (2) STRUCTURE TRIAGE: With limited resources, apply LCES and triage structures: SAVE (defensible, prepared, low-slope terrain), MONITOR (partially prepared, assess during attack), LEAVE (unprepared, poor access/egress, high-fuel density, indefensible); (3) PREPARATION: For SAVE structures — close all windows/vents, remove patio furniture/doormats, connect garden hoses and fill any pools/tanks, shut off gas at meter, leave lights on for visibility in smoke; (4) STRUCTURE DEFENSE TACTICS: Engine crew at structure — use foam or water to wet combustibles in 0-30ft zone; protect eaves, vents, and wooden decks (primary ignition points); never allow crew to be surrounded by fire without safe exit; (5) EGRESS: Every crew must have two identified escape routes and safety zone; pull out if fire reaches property line with <5 minutes remaining; (6) BURNOVER: If entrapped — deploy fire shelter in pre-cleared area, never in drainage or chimney terrain; (7) POST-FIRE: Patrol for hot spots, re-ignition from retained ember loads in wood structural members.",
+    "category": "firefighting",
+    "location": "Wildland-Urban Interface",
+    "severity": "critical",
+    "resources_required": "Engine crews with structure protection equipment, foam unit, garden hoses, portable pumps, LCES compliance tools",
+    "expert_id": "fire_gold_01",
+    "language": "en",
+    "tags": [
+      "wildfire",
+      "WUI",
+      "structure_defense",
+      "NFPA_1144",
+      "LCES",
+      "defensible_space"
+    ],
+    "applicable_crisis_types": [
+      "wildfire"
+    ],
+    "procedure_steps": [
+      "Assess structure ignitability across 0-30ft, 30-100ft, and 100-200ft zones",
+      "Triage structures: SAVE (defensible), MONITOR (partial), LEAVE (indefensible)",
+      "Remove combustibles, propane tanks, and wood piles from 0-30ft immediate zone",
+      "For SAVE structures: close windows/vents, connect hoses, fill pools/tanks, shut gas at meter",
+      "Wet combustibles in 0-30ft zone using engine crew foam or water",
+      "Protect eaves, vents, and wooden decks as primary ignition points",
+      "Identify and brief crew on two escape routes and designated safety zone before attack",
+      "Pull out if fire reaches property line with less than 5 minutes remaining",
+      "Deploy fire shelter in pre-cleared area (never in drainage or chimney terrain) if entrapped",
+      "Conduct post-fire patrol for hot spots and ember-retained re-ignition in structural members"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "NFPA 1144: Standard for Reducing Structure Ignition Hazards from Wildland Fire (2018 ed.)",
+      "NFPA 1: Fire Code, Chapter 38 — Wildland-Urban Interface",
+      "NWCG Structure Protection Guidelines, PMS 209 (2021 ed.)",
+      "Hellenic Fire Service — Wildland-Urban Interface Operational Directive"
+    ]
+  },
+  {
+    "id": "protocol_wildfire_night_001",
+    "question": "What is the overnight operational period protocol for managing a large wildfire from dusk to dawn?",
+    "answer": "Per NWCG Incident Management principles and ICS Operational Period Briefing procedures: (1) OPERATIONAL PERIOD TRANSITION: Outgoing Operations Section Chief briefs incoming night OSC at 1800 using ICS 204 Assignment Lists — covers current fire perimeter, suppression objectives, active threats, crew positions, and pending resource arrivals; (2) NIGHT FIRE BEHAVIOR: Generally lower ROS (Rate of Spread) due to higher relative humidity and lower temperatures — use night hours for: firing operations (burnout along fireline), structure prep (WUI), direct attack on weakened flanks, and fireline construction in safer sectors; (3) AVIATION: Fixed-wing tankers grounded at sunset (unless NAAS); FLIR helicopters continue night reconnaissance — report hot spots to OSC every hour; (4) CREW SAFETY: All crews must remain on assigned sectors — no cross-sector movement without OSC approval; vehicle lights required on all roads; 2-hour rest (8-hour off) minimum per NWCG work/rest ratio policy; (5) WEATHER: Night weather observation every 2 hours from assigned FBAN (Fire Behavior Analyst) — alert OSC of any humidity recovery failure (<50% RH by 0300 indicates dangerous morning conditions); (6) MORNING TRANSITION: Full Operational Period Briefing at 0600 — incorporate overnight FBAN spot forecast for diurnal wind shift timing; pre-position airtankers for early morning window; (7) DAWN PATROL: Aviation reconnaissance of entire perimeter at first light to identify overnight escapes before full crew deployment.",
+    "category": "firefighting",
+    "location": "Extended Wildfire Operations",
+    "severity": "high",
+    "resources_required": "Night OSC, FLIR helicopter, FBAN, ICS 204 Assignment Lists, crew rest facilities, transport",
+    "expert_id": "fire_gold_01",
+    "language": "en",
+    "tags": [
+      "wildfire",
+      "night_operations",
+      "ICS",
+      "FBAN",
+      "NWCG",
+      "operational_period",
+      "fire_behavior"
+    ],
+    "applicable_crisis_types": [
+      "wildfire"
+    ],
+    "procedure_steps": [
+      "Conduct ICS 204 transition briefing between outgoing and incoming Operations Section Chiefs at 1800",
+      "Brief night crew on current fire perimeter, threats, suppression objectives, and crew positions",
+      "Ground all fixed-wing tankers at sunset; continue FLIR helicopter night reconnaissance",
+      "Request FBAN hourly FLIR hot spot reports and 2-hour weather observations",
+      "Use night hours for burnout operations, structure prep, and direct attack on weakened flanks",
+      "Enforce 2-hour rest / 8-hour off work-rest ratio per NWCG policy",
+      "Alert OSC immediately if humidity recovery fails (<50% RH by 0300 — dangerous morning conditions)",
+      "Conduct dawn patrol aviation reconnaissance of full perimeter at first light before crew deployment",
+      "Pre-position airtankers for early morning suppression window",
+      "Conduct full Operational Period Briefing at 0600 incorporating overnight FBAN spot forecast"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "NWCG Incident Response Pocket Guide (IRPG), PMS 461 (2023 ed.) — Night Operations",
+      "FEMA ICS-300: Intermediate ICS — Operational Period Briefing Procedures",
+      "NWCG Standards for Interagency Incident Business Management (SIIBM) — Work/Rest Ratio Policy",
+      "NWCG Fire Behavior Field Reference Guide, PMS 437 — Diurnal Fire Behavior Patterns"
+    ]
+  },
+  {
+    "id": "protocol_hazmat_ammonia_001",
+    "question": "What is the specific emergency response protocol for a large-scale anhydrous ammonia (NH3) industrial release per NIOSH and NRT guidance?",
+    "answer": "Per NIOSH Emergency Response Card for Ammonia (UN 1005) and NRT Anhydrous Ammonia Quick Reference Guide: PROPERTIES: Ammonia (NH3) — colorless gas, pungent odor detectable at 5 ppm; IDLH = 300 ppm; ERPG-2 = 150 ppm (1 hour); ERPG-3 = 750 ppm. Heavier than air at low temperatures, lighter above 15°C — check ambient temperature; (1) PPE: Level A (pressure-demand SCBA + fully encapsulating suit) for hot zone; Level B downwind in warm zone; Level C (ammonia-specific APF >25 cartridge) only when concentration confirmed <50 ppm; (2) ISOLATION: Initial isolation radius 100m all directions; protective action distance downwind depends on release size — for large spill (>1 ton), protective action distances extend to 1.1 km downwind in day, 4.4 km at night (cooler air, worse dispersion); (3) DECONTAMINATION: Emergency decon — copious water flush for minimum 15 minutes; remove ALL contaminated clothing; ammonia is highly water-soluble (flush is effective); (4) MEDICAL: Respiratory: 100% O2 immediately; bronchospasm — nebulized bronchodilator (salbutamol); pulmonary edema may be delayed 24 hours — ALL exposed persons observed minimum 12 hours; Eye: irrigate continuously with normal saline for minimum 30 minutes; (5) FIRE: Ammonia is flammable at 15–28% concentration — LEL = 15%; avoid sparks; use fog water to knock down vapors; (6) LEAK CONTROL: Only HAZMAT-trained personnel with Level A PPE may approach leak source; use water spray to disperse ammonia vapors but avoid directing at liquid ammonia (aerosol risk).",
+    "category": "hazmat",
+    "location": "Industrial / Chemical Storage Facilities",
+    "severity": "critical",
+    "resources_required": "Level A/B PPE, SCBA, ammonia-specific gas monitors (electrochemical), decon corridor, medical team, nebulized bronchodilators, ophthalmology support",
+    "expert_id": "environmental_expert_01",
+    "language": "en",
+    "tags": [
+      "hazmat",
+      "ammonia",
+      "NH3",
+      "IDLH",
+      "NIOSH",
+      "NRT",
+      "industrial_accident",
+      "CBRN",
+      "decontamination"
+    ],
+    "applicable_crisis_types": [
+      "hazmat",
+      "explosion",
+      "industrial"
+    ],
+    "procedure_steps": [
+      "Establish initial isolation radius of 100m all directions from release point",
+      "Determine protective action distance: day = 1.1km downwind; night = 4.4km downwind for large spill",
+      "Deploy Level A PPE for hot zone entry; Level B for warm zone operations",
+      "Position decon corridor upwind and uphill of hot zone",
+      "Deploy electrochemical ammonia-specific gas monitors at all zone boundaries",
+      "Conduct emergency decontamination: copious water flush for minimum 15 minutes; remove all clothing",
+      "Administer 100% O2 to all exposed persons; apply nebulized salbutamol for bronchospasm",
+      "Irrigate exposed eyes with normal saline continuously for minimum 30 minutes",
+      "Observe all exposed persons for minimum 12 hours (delayed pulmonary edema risk)",
+      "Apply water fog to disperse ammonia vapors; do not direct water at liquid ammonia source",
+      "Only Level A HAZMAT personnel approach leak source for control operations"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "NIOSH Emergency Response Card: Ammonia Solution / Ammonia Anhydrous (UN 1005/UN 3318) — CDC",
+      "NRT (National Response Team) Anhydrous Ammonia Quick Reference Guide (2020)",
+      "NIOSH Pocket Guide to Chemical Hazards — Ammonia (NPG)",
+      "OSHA 29 CFR 1910.120 — HAZWOPER Standard",
+      "DOT Emergency Response Guidebook (ERG 2024) — Guide 125 (Anhydrous Ammonia)"
+    ]
+  },
+  {
+    "id": "protocol_hazmat_cbrn_001",
+    "question": "What is the CBRN mass decontamination corridor protocol for large numbers of potentially contaminated civilians?",
+    "answer": "Per NATO STANAG 2083 CBRN doctrine and CDC CHEMPACK Mass Casualty Decontamination guidelines: TRIGGER: Mass decontamination is activated when >10 symptomatic or potentially contaminated civilians present simultaneously. (1) SITE SELECTION: Establish decontamination corridor: upwind and uphill of contamination zone, accessible by ambulances, minimum 150m from release point, large open space for throughput; (2) CORRIDOR STRUCTURE: Lane 1 (ambulatory): Self-undress tent → dry decon (brush-off solids) → wet decon (emergency shower, cold/warm water) → towel dry → disposable clothing → medical triage exit; Lane 2 (non-ambulatory): Stretcher-carried through same stages with medic support; (3) THROUGHPUT: Each lane targets 200 persons/hour minimum; staffing ratio = 1 trained decon staff : 10 persons; (4) WATER MANAGEMENT: Collect runoff to prevent environmental contamination — berm decon area, pump to holding tank for disposal per EPA RCRA; (5) PPE: Decon staff in Level B minimum; Level A for non-ambulatory lane if substance unidentified; (6) SECONDARY CONTAMINATION PREVENTION: Victims' clothing and personal effects double-bagged and labeled; restrict exit from decon until cleared by HAZMAT assessment; (7) MEDICAL TRIAGE: Medical officer at exit triage — S1 (immediate), S2 (delayed), S3 (minor), S4 (expectant); administer antidotes at triage (atropine/2-PAM for organophosphate, hydroxocobalamin for cyanide); (8) DOCUMENTATION: Photo ID and medical record for each person through decon.",
+    "category": "hazmat",
+    "location": "Mass Casualty Decontamination Site",
+    "severity": "critical",
+    "resources_required": "Mass decon equipment, emergency shower units, PPE (Level A/B), holding tanks, medical antidotes, documentation system, ambulances",
+    "expert_id": "environmental_expert_01",
+    "language": "en",
+    "tags": [
+      "hazmat",
+      "CBRN",
+      "decontamination",
+      "mass_decon",
+      "NATO_STANAG",
+      "CDC",
+      "mass_casualty"
+    ],
+    "applicable_crisis_types": [
+      "hazmat",
+      "terrorist",
+      "explosion",
+      "mass_casualty"
+    ],
+    "procedure_steps": [
+      "Activate mass decontamination when >10 symptomatic or potentially contaminated civilians present",
+      "Select decon site: upwind/uphill of contamination, >150m from release, accessible by ambulances",
+      "Establish Lane 1 (ambulatory) and Lane 2 (non-ambulatory) decontamination corridors",
+      "Set up stages: undress tent → dry decon (brush-off) → wet decon (emergency shower) → towel dry → disposable clothing",
+      "Target throughput of 200 persons per lane per hour; maintain 1:10 staff to victim ratio",
+      "Berm decon area and pump runoff to holding tank to prevent environmental contamination",
+      "Equip decon staff with Level B minimum PPE; Level A for non-ambulatory lane if substance unknown",
+      "Double-bag and label all victims' clothing and personal effects",
+      "Administer antidotes at medical triage exit (atropine/2-PAM for organophosphate, hydroxocobalamin for cyanide)",
+      "Photograph and create medical record for each person exiting decontamination"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "NATO STANAG 2083 — CBRN Defence Doctrine",
+      "CDC CHEMPACK — Mass Casualty Decontamination Guidelines",
+      "DHS/FEMA — Mass Casualty Decontamination Guidance and Standards for the CBRN Environment",
+      "NFPA 472: Standard for Competence of Responders to Hazardous Materials/WMD Incidents (2018 ed.)"
+    ]
+  },
+  {
+    "id": "protocol_medical_crush_001",
+    "question": "What is the crush syndrome and traumatic arrest protocol for victims extracted from collapsed buildings or prolonged entrapment?",
+    "answer": "Per ATACC (Advanced Trauma Care for Combat) and WHO Earthquake Medical Response guidelines: Crush syndrome (rhabdomyolysis) occurs when compressive force is released after >1 hour entrapment — released myoglobin causes acute renal failure and cardiac arrhythmia. (1) PRE-EXTRICATION FLUID LOADING: Begin IV normal saline 1 litre/hour BEFORE releasing compression — target minimum 1 litre infused before extrication; (2) MONITORING: Attach cardiac monitor before extrication — potassium release on decompression can cause immediate VF/VT; have defibrillator ready; (3) FIELD TOURNIQUET: Apply tourniquet to crushed limb 5 minutes before release if amputation is planned or limb is non-viable — reduces systemic toxin load; (4) POST-EXTRICATION FLUID RESUSCITATION: Target urine output 200-300 mL/hour (vs. normal 50 mL/hr) — aggressive fluid loading; urinary catheter mandatory; (5) ALKALINIZATION: Sodium bicarbonate IV (1 mEq/kg) to alkalinize urine — prevents myoglobin precipitation in renal tubules; (6) HYPERKALEMIA: Treat potassium >6.0 mEq/L with: IV calcium gluconate (cardiac membrane stabilization), insulin + glucose (drive K into cells), salbutamol nebulization; (7) HOSPITAL: All crush syndrome patients require ICU — anticipate dialysis within 24-72 hours; avoid NSAIDs and nephrotoxic agents; (8) TRIAGE: In MCI setting — crush syndrome patients are S2 (delayed) if haemodynamically stable but require definitive hospital care urgently.",
+    "category": "medical",
+    "location": "Collapsed Structure / Earthquake Sites",
+    "severity": "critical",
+    "resources_required": "IV fluids (NS, sodium bicarbonate), cardiac monitor, defibrillator, urinary catheter, ICU capacity, dialysis availability",
+    "expert_id": "medical_director_01",
+    "language": "en",
+    "tags": [
+      "medical",
+      "crush_syndrome",
+      "rhabdomyolysis",
+      "earthquake",
+      "building_collapse",
+      "USAR",
+      "ICU"
+    ],
+    "applicable_crisis_types": [
+      "earthquake",
+      "explosion",
+      "volcanic_seismic",
+      "terrorist"
+    ],
+    "procedure_steps": [
+      "Begin IV normal saline 1 litre/hour BEFORE releasing compression (minimum 1 litre pre-extrication)",
+      "Attach cardiac monitor before extrication; have defibrillator ready for VF/VT on decompression",
+      "Apply tourniquet to non-viable crushed limb 5 minutes before release if amputation planned",
+      "Insert urinary catheter immediately post-extrication; target urine output 200-300 mL/hour",
+      "Administer IV sodium bicarbonate (1 mEq/kg) to alkalinize urine",
+      "Monitor potassium every 30 minutes; treat K>6.0 mEq/L with calcium gluconate, insulin/glucose, salbutamol",
+      "Classify as S2 (delayed) in MCI triage if haemodynamically stable; prioritize ICU transfer",
+      "Avoid NSAIDs and nephrotoxic agents throughout management",
+      "Alert receiving hospital ICU and nephrology for anticipated dialysis within 24-72 hours"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "ATACC (Advanced Trauma Care for Combat) — Crush Injury and Rhabdomyolysis Protocol",
+      "WHO Disaster Preparedness: Medical Response to Earthquakes (2013)",
+      "Sever MS et al. (2006): 'Disasters and mass casualties: I. Recommendations for the management of crush victims in mass disasters', Kidney Int.",
+      "ATLS (Advanced Trauma Life Support), 10th ed. — American College of Surgeons (2018)"
+    ]
+  },
+  {
+    "id": "protocol_pandemic_002",
+    "question": "What is the WHO IHR 2005 protocol for declaring and responding to a Public Health Emergency of International Concern (PHEIC)?",
+    "answer": "Per WHO International Health Regulations (2005) and WHO Pandemic Influenza Risk Management guidance: (1) NATIONAL NOTIFICATION: Under IHR Article 6, States Parties must notify WHO within 24 hours of assessing an event that may constitute a PHEIC using the Decision Instrument (Annex 2) — based on: impact severity, unusual/unexpected nature, potential for international spread, and risk of travel/trade restrictions; (2) WHO ASSESSMENT: WHO Director-General convenes Emergency Committee of international experts to assess PHEIC criteria — committee may request additional information from affected state; (3) PHEIC DECLARATION: If DG declares PHEIC, issues Temporary Recommendations to all States Parties — may include: travel/trade measures, health measures at points of entry, surveillance requirements; (4) NATIONAL RESPONSE ACTIVATION: PHEIC triggers national pandemic plan activation (Greece: ΕΟΔΥ/EODY National Pandemic Plan): (a) Activate Health Emergency Operations Centre (HEOC); (b) Surge healthcare capacity — postpone elective procedures, discharge stable patients; (c) Activate PPE stockpiles and pre-pandemic antiviral reserves; (d) Initiate contact tracing for initial cases; (5) RISK COMMUNICATION: WHO issues public risk communication within 24 hours of PHEIC — coordinated national messaging to prevent panic/misinformation; (6) INTERNATIONAL COORDINATION: IHR Emergency Committee issues recommendations on laboratory sharing, vaccine development, and case definitions — all WHO Member States report case data weekly.",
+    "category": "medical",
+    "location": "National / International",
+    "severity": "critical",
+    "resources_required": "EODY Health Emergency Operations Centre, PPE stockpiles, antiviral reserves, contact tracing systems, surge hospital capacity, WHO coordination",
+    "expert_id": "medical_director_01",
+    "language": "en",
+    "tags": [
+      "pandemic",
+      "WHO",
+      "IHR_2005",
+      "PHEIC",
+      "EODY",
+      "public_health",
+      "HEOC",
+      "surveillance"
+    ],
+    "applicable_crisis_types": [
+      "pandemic"
+    ],
+    "procedure_steps": [
+      "Assess event against WHO IHR Annex 2 Decision Instrument (severity, spread, unexpectedness)",
+      "Notify WHO within 24 hours if PHEIC assessment criteria are met (IHR Article 6)",
+      "Activate national Health Emergency Operations Centre (HEOC/EODY) immediately",
+      "Surge healthcare capacity: postpone elective procedures, discharge stable patients",
+      "Activate national PPE stockpiles and pre-pandemic antiviral (oseltamivir) reserves",
+      "Initiate contact tracing for all confirmed cases using standardized case definition",
+      "Implement health screening at all international points of entry per IHR requirements",
+      "Coordinate national risk communication to prevent panic and counter misinformation",
+      "Report case data to WHO weekly minimum; share viral isolates and laboratory data",
+      "Implement WHO Temporary Recommendations on travel, trade, and health measures"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "WHO International Health Regulations (IHR 2005), 3rd ed. — World Health Organization (2016)",
+      "WHO Pandemic Influenza Risk Management — Interim Guidance (WHO/HSE/GIP/2013.2)",
+      "Greek National Pandemic Plan — EODY (Hellenic National Public Health Organization)",
+      "European Commission — EU Health Security Framework for Cross-Border Health Threats (Decision 1082/2013/EU)"
+    ]
+  },
+  {
+    "id": "protocol_pandemic_003",
+    "question": "What is the hospital surge capacity protocol for managing a mass influx of infectious disease patients during a pandemic?",
+    "answer": "Per WHO Hospital Preparedness Checklist for Pandemics and CDC Healthcare Coalition Surge guidance: SURGE LEVELS — Level 1 (Conventional): routine operations within existing capacity; Level 2 (Contingency): crisis standards implemented, non-critical services postponed; Level 3 (Crisis): standards of care altered, scarce resource allocation protocols activated. (1) SPACE SURGE: Convert non-clinical areas to patient care: conference rooms, cafeterias, parking structures — pre-identify conversion plans with engineering support; establish field hospitals in liaison with military or civil protection; (2) STAFF SURGE: Recall retired staff; cross-train non-critical care nurses for respiratory support; waive non-essential regulatory barriers (as per national emergency authority); establish staggered shift patterns to limit cross-exposure; (3) SUPPLY SURGE: Activate emergency procurement (PPE, ventilators, O2 supply, antiviral medications); join national/regional consortium purchasing; (4) COHORTING: Cohort infectious patients by pathogen/stage — separate confirmed, suspected, and clean zones with directional airflow where possible; (5) TRIAGE PROTOCOL: Implement mSTaRT or similar triage sieve for infectious disease severity — priority for ventilator allocation in Crisis Level per SOFA score or validated triage tool; (6) DISCHARGE: Accelerate discharge of stable patients to community care — activate home monitoring (pulse oximetry, remote check-in) for lower-acuity cases; (7) STAFF PROTECTION: N95/FFP2 for all respiratory care; powered air-purifying respirator (PAPR) for aerosol-generating procedures; test-to-return protocol for exposed staff.",
+    "category": "medical",
+    "location": "Hospital / Healthcare Facilities",
+    "severity": "critical",
+    "resources_required": "Hospital surge plan, field hospital capacity, ventilators, O2 supply, PPE (N95/FFP2/PAPR), antiviral stockpile, remote monitoring equipment",
+    "expert_id": "medical_director_01",
+    "language": "en",
+    "tags": [
+      "pandemic",
+      "hospital_surge",
+      "WHO",
+      "CDC",
+      "ventilator_allocation",
+      "cohorting",
+      "PPE"
+    ],
+    "applicable_crisis_types": [
+      "pandemic",
+      "mass_casualty"
+    ],
+    "procedure_steps": [
+      "Assess current surge level (Conventional / Contingency / Crisis) against real-time bed occupancy",
+      "At Contingency: postpone all non-critical elective procedures and accelerate discharges",
+      "Convert non-clinical spaces (conference rooms, cafeterias) to patient care areas per pre-developed plans",
+      "Cohort confirmed, suspected, and clean patient zones with directional airflow separation",
+      "Recall retired clinical staff and cross-train non-critical staff for respiratory support roles",
+      "Activate emergency procurement of ventilators, O2, PPE, and antiviral medications",
+      "Implement remote home monitoring (pulse oximetry, daily check-in) for lower-acuity discharges",
+      "Apply validated scarce resource triage tool (SOFA score) for ventilator allocation in Crisis level",
+      "Equip all respiratory care staff with N95/FFP2; PAPR for aerosol-generating procedures",
+      "Implement test-to-return protocol for all staff with confirmed or suspected exposure"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "WHO Hospital Preparedness Checklist for Pandemics (2021 ed.)",
+      "CDC Healthcare Coalition Surge Capacity Guidance — Crisis Standards of Care",
+      "SPHERE Project — Humanitarian Standards in Health (2018 ed.)",
+      "Greek Ministry of Health — Hospital Surge Capacity Protocol (EODY Guidelines)"
+    ]
+  },
+  {
+    "id": "protocol_civil_unrest_001",
+    "question": "What is the law enforcement protocol for managing large-scale civil unrest and public disorder during or after a major disaster?",
+    "answer": "Per Hellenic Police civil unrest protocols and NIMS law enforcement integration guidelines: (1) INTELLIGENCE: Gather real-time intelligence on crowd size, mood, flashpoints, and organizer contacts — assign plain-clothes liaison officers to protest areas; brief Police Silver Tactical Commander every 30 minutes; (2) COMMUNICATION FIRST: Designated Liaison Officer makes immediate verbal contact with crowd leaders — communicate police intent, offer dialogue, explain safety boundaries; this step is mandatory before any physical measures; (3) GRADUATED RESPONSE (MOAB): Management → Open display of numbers → Actions → Back to safety: Stage 1 (M): dialogue and negotiation; Stage 2 (O): visible police presence in full protective equipment; Stage 3 (A): targeted arrest of instigators; Stage 4: retreat to safety lines if violence escalates beyond control; (4) MUTUAL AID: Request reinforcements when crowd >police ratio exceeds 15:1 — coordinate through GOLD commander for regional deployment; (5) USE OF FORCE CONTINUUM: Verbal commands → Physical presence → Soft empty-hand control → Hard empty-hand control → Less-lethal (water cannon, CS, rubber baton rounds) → Lethal force only when life threatened; all use-of-force justified, proportionate, and documented immediately; (6) MEDIA: Designate media liaison — pre-brief accredited journalists on safety zones; prevent unauthorized filming of police tactical positions; (7) ARRESTS: Field Processing Units established at outer perimeter — process, medically screen, and transport arrestees within 4 hours; (8) POST-INCIDENT: Full review within 48 hours — document all use-of-force incidents for accountability.",
+    "category": "police",
+    "location": "Urban Areas / Disaster-Affected Zones",
+    "severity": "high",
+    "resources_required": "Police Silver commander, plain-clothes liaison, protective equipment, mutual aid units, Field Processing Units, media liaison",
+    "expert_id": "police_tactical_01",
+    "language": "en",
+    "tags": [
+      "police",
+      "civil_unrest",
+      "crowd_control",
+      "public_order",
+      "MOAB",
+      "use_of_force"
+    ],
+    "applicable_crisis_types": [
+      "civil_unrest",
+      "terrorist",
+      "mass_casualty",
+      "earthquake",
+      "flood"
+    ],
+    "procedure_steps": [
+      "Deploy intelligence officers to assess crowd size, mood, flashpoints, and organizer contacts",
+      "Brief Police Silver Tactical Commander every 30 minutes on crowd intelligence updates",
+      "Deploy designated Liaison Officer for mandatory verbal contact with crowd leaders before any action",
+      "Apply MOAB graduated response: Management → Open display → Actions → Back to safety",
+      "Request mutual aid reinforcements when crowd:police ratio exceeds 15:1",
+      "Apply use-of-force continuum: verbal → physical presence → soft control → less-lethal → lethal",
+      "Document all use-of-force applications immediately with justification and proportionality assessment",
+      "Establish Field Processing Units at outer perimeter for arrestee processing within 4 hours",
+      "Designate media liaison and brief accredited journalists on safety zones",
+      "Conduct full post-incident review within 48 hours documenting all use-of-force incidents"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "Hellenic Police General Police Directorate — Civil Unrest and Public Order Operations Manual",
+      "UK College of Policing — Public Order Operational Guidance (2020 ed.)",
+      "MOAB Framework: Management of Actual or Imminent Threats to Life (UK College of Policing)",
+      "NIMS: National Incident Management System — Law Enforcement Integration (FEMA, 2017)"
+    ]
+  },
+  {
+    "id": "protocol_civil_unrest_002",
+    "question": "What is the protocol for managing looting, anti-social behaviour, and security enforcement in a post-disaster environment?",
+    "answer": "Per NIMS law enforcement integration and post-disaster security guidelines: (1) LEGAL FRAMEWORK: Confirm declaration of state of emergency which may grant additional law enforcement powers — consult with legal counsel before implementing enhanced enforcement measures; (2) PRIORITY CRIME PREVENTION: P1 = violent crimes, looting in progress; P2 = property crime, burglary of disaster-affected premises; P3 = curfew/access zone violations; maintain proportionality — disaster victims who take food/water in survival context should not be criminally charged; (3) PATROL STRATEGY: Rolling vehicle patrols in evacuated zones every 30 minutes; foot patrols in densely populated shelter areas; static posts at critical facilities (hospitals, fuel depots, pharmacies, ATMs); (4) CURFEW ENFORCEMENT: Issue curfew via official government channels (WEA/EAS) — post multilingual signage at all entry points; first encounter = warning and identity check; repeat = citation or arrest; (5) COMMUNITY LIAISON: Establish police community liaison at each major shelter — take crime reports, address community concerns, build trust to encourage self-policing; (6) INTELLIGENCE: Coordinate with fire and utility crews working in affected areas — they observe suspicious activity and report to police; (7) DOCUMENTATION: All patrol encounters documented — supports post-disaster criminal prosecutions; photograph all looted premises for insurance and prosecution; (8) MUTUAL AID: Augment local police with Hellenic Police rapid deployment units and National Guard if needed.",
+    "category": "police",
+    "location": "Post-Disaster Affected Areas",
+    "severity": "high",
+    "resources_required": "Police patrol units, rapid deployment units, static posts, community liaison officers, documentation/camera equipment",
+    "expert_id": "police_tactical_01",
+    "language": "en",
+    "tags": [
+      "police",
+      "post_disaster",
+      "looting",
+      "security",
+      "curfew",
+      "anti_social_behaviour"
+    ],
+    "applicable_crisis_types": [
+      "earthquake",
+      "flood",
+      "wildfire",
+      "civil_unrest",
+      "tsunami"
+    ],
+    "procedure_steps": [
+      "Confirm legal authority under state of emergency declaration before enhanced enforcement",
+      "Establish patrol priority: P1=violence/active looting, P2=property crime, P3=curfew violations",
+      "Deploy rolling vehicle patrols in evacuated zones every 30 minutes",
+      "Position static posts at critical facilities: hospitals, fuel depots, pharmacies, ATMs",
+      "Issue and enforce curfew via official channels (WEA/EAS) with multilingual signage",
+      "First curfew encounter: warning and identity check; repeat encounter: citation or arrest",
+      "Establish community liaison officer at each major shelter for crime reporting and trust-building",
+      "Brief utility and fire crews on reporting suspicious activity observed during operations",
+      "Photograph all looted premises for criminal prosecution and insurance purposes",
+      "Request Hellenic Police rapid deployment units and National Guard if local capacity is exceeded"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "NIMS Law Enforcement Integration in Emergency Management (FEMA, 2017)",
+      "Hellenic Police — Post-Disaster Security Operations Guidelines",
+      "IACP (International Association of Chiefs of Police) — After-Action Review Guidelines",
+      "Greek Law 4662/2020 — State of Emergency Powers for Law Enforcement"
+    ]
+  },
+  {
+    "id": "protocol_search_rescue_003",
+    "question": "What is the helicopter search and rescue (HEMS) protocol for evacuating injured victims from remote or inaccessible terrain?",
+    "answer": "Per EASA HEMS operations rules (EU 965/2012) and Hellenic Air Force/Coast Guard SAR helicopter procedures: (1) MISSION AUTHORIZATION: Helicopter Emergency Medical Service (HEMS) activation requires: patient requiring urgent care, ground access impossible or too slow, adequate landing zone (LZ) available or hoisting conditions acceptable; (2) LZ SELECTION: Clear area minimum 30×30m; slope <10°; clear approach path 150m minimum; surface suitable for helicopter skids (grass, compacted soil); mark LZ centre with H in high-contrast colour; signal with smoke grenade (smoke deployed 30 seconds before helicopter arrival, deployed upwind); (3) LZ SAFETY: Ground crews face away from landing helicopter; remove all loose material (dust, leaves, tarps); bystanders minimum 60m from LZ; (4) HOIST OPERATIONS: When LZ impossible — patient secured in rescue harness or basket; helicopter approaches to hover 50–70m above victim; paramedic lowered via hoist; victim packaged and raised (max 250 kg total including paramedic); (5) NIGHT HOIST: FLIR/NVG equipped helicopter required; mark victim location with infrared strobe (visible to NVG but not visible to eye); (6) HANDOVER: Helicopter paramedic completes verbal handover to receiving emergency department: mechanism of injury, vital signs trends, interventions, allergies, medications; (7) SAFETY: Never approach helicopter from rear (tail rotor); always approach from front in full view of pilot; ducking mandatory under low main rotor.",
+    "category": "search_rescue",
+    "location": "Remote / Mountainous / Inaccessible Terrain",
+    "severity": "critical",
+    "resources_required": "HEMS helicopter, trained paramedic, hoist equipment, LZ marking materials, smoke grenades, IR strobes for night operations",
+    "expert_id": "fire_onscene_01",
+    "language": "en",
+    "tags": [
+      "search_rescue",
+      "helicopter",
+      "HEMS",
+      "hoist",
+      "LZ",
+      "EASA",
+      "remote_rescue"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "earthquake",
+      "flood",
+      "tsunami",
+      "volcanic_seismic",
+      "mass_casualty"
+    ],
+    "procedure_steps": [
+      "Confirm HEMS activation criteria: urgent care need, ground access impossible, LZ or hoist feasible",
+      "Select LZ: minimum 30×30m flat area, slope <10°, 150m clear approach path",
+      "Mark LZ centre with H in high-contrast colour; prepare smoke grenade for wind indication",
+      "Deploy smoke grenade 30 seconds before helicopter arrival, upwind of LZ",
+      "Face all ground crews away from helicopter on landing; remove all loose material from LZ",
+      "Keep all bystanders minimum 60m from LZ perimeter",
+      "For hoist operations: package victim in rescue harness/basket before helicopter arrival",
+      "For night operations: use infrared strobe to mark victim location for NVG-equipped crew",
+      "Approach helicopter from front only, in full view of pilot; duck under low main rotor",
+      "Conduct verbal handover to receiving ED: mechanism, vitals trend, interventions, medications"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "EASA Part-SPA / EU 965/2012 — HEMS (Helicopter Emergency Medical Service) Operations Rules",
+      "ICAO Doc 9731 — IAMSAR Manual, Volume III — Mobile Facilities (Rescue Hoist Procedures)",
+      "Hellenic Air Force SAR Wing — Search and Rescue Procedures Manual",
+      "Hellenic Coast Guard Aviation — HEMS Hoist Operations Standard Operating Procedures"
+    ]
+  },
+  {
+    "id": "protocol_logistics_003",
+    "question": "What is the emergency supply chain and mutual aid resource mobilization protocol under NIMS/ICS?",
+    "answer": "Per FEMA NIMS Resource Management doctrine and Emergency Management Assistance Compact (EMAC) procedures: (1) RESOURCE REQUEST: All resource requests submitted via ICS 213RR (Resource Request Message) through the Logistics Section — no direct field-to-field requests; specifies: resource type, quantity, reporting location, date/time needed, estimated duration, ordering unit contact; (2) LOCAL FIRST: Exhaust local resources before requesting mutual aid — check county and regional caches; (3) INTRASTATE MUTUAL AID: Submit request to State Emergency Management Agency (GSCP in Greece) via EMVOLOS system — state coordinates deployment from nearest available source; (4) INTERSTATE/INTERNATIONAL MUTUAL AID: Request through EMAC (US) or EU Civil Protection Mechanism (EU) for cross-border resources — 24–48 hour delivery timeline; (5) CREDENTIALING: All incoming mutual aid resources must be credentialed before deployment — verify training, experience, and equipment certification; deploy to appropriate position per competence; (6) DEMOBILIZATION: Plan demobilization from incident start — track all resources with expected release date; notify home jurisdiction 24 hours before demobilization; complete all paperwork before departure; (7) COST DOCUMENTATION: Track all expenditures with receipts, timesheets, and equipment usage logs from day one — required for FEMA disaster declaration reimbursement or EU Solidarity Fund claims; (8) REIMBURSEMENT TIMELINE: Compile cost documentation within 30 days for preliminary submission; final audit within 90 days.",
+    "category": "logistics",
+    "location": "Emergency Operations / Logistics Section",
+    "severity": "high",
+    "resources_required": "ICS 213RR forms, EMVOLOS database access, EMAC/EU CPM liaison, credentialing system, cost tracking system",
+    "expert_id": "logistics_coordinator_01",
+    "language": "en",
+    "tags": [
+      "logistics",
+      "mutual_aid",
+      "ICS",
+      "NIMS",
+      "EMAC",
+      "EMVOLOS",
+      "resource_management",
+      "demobilization"
+    ],
+    "applicable_crisis_types": [
+      "wildfire",
+      "flood",
+      "earthquake",
+      "mass_casualty",
+      "tsunami",
+      "volcanic_seismic"
+    ],
+    "procedure_steps": [
+      "Submit all resource requests via ICS 213RR through Logistics Section only",
+      "Verify local and regional cache availability before initiating mutual aid request",
+      "Submit intrastate mutual aid request to GSCP via EMVOLOS system",
+      "For international resources: activate EU Civil Protection Mechanism via CECIS",
+      "Credential all incoming mutual aid resources before deployment (verify training and certification)",
+      "Deploy mutual aid resources to appropriate ICS positions matching their competence level",
+      "Establish demobilization plan from day one; track all resources with expected release dates",
+      "Notify home jurisdiction 24 hours before demobilization; complete all paperwork before departure",
+      "Track all expenditures with receipts, timesheets, and equipment logs from day one",
+      "Compile cost documentation within 30 days for disaster declaration reimbursement submission"
+    ],
+    "created_at": "2026-05-22T14:00:00",
+    "updated_at": "2026-05-22T14:00:00",
+    "references": [
+      "FEMA NIMS Resource Management Doctrine (2017)",
+      "Emergency Management Assistance Compact (EMAC) — Operational Manual",
+      "Greek Ministry of Civil Protection — EMVOLOS National Resource Database",
+      "EU Solidarity Fund Regulation (EC) No 2012/2002 — Cost Documentation Requirements"
+    ]
   }
 ]

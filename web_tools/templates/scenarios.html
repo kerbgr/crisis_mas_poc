@@ -9,46 +9,29 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-shield-fill-check"></i> Crisis MAS - Web Tools
-            </a>
+            <a class="navbar-brand" href="/"><i class="bi bi-shield-fill-check"></i> Crisis MAS - Web Tools</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/protocols">Incident Protocols</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/crisis-scenarios">Crisis Scenarios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/experts">Experts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/api/export" target="_blank">
-                            <i class="bi bi-download"></i> Export
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/protocols">Incident Protocols</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/crisis-scenarios">Crisis Scenarios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/experts">Experts</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/api/export" target="_blank"><i class="bi bi-download"></i> Export</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container mt-5">
-        <!-- Flash Messages -->
+    <div class="container mt-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
@@ -57,117 +40,237 @@
         {% endwith %}
 
         <!-- Header -->
-        <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1>
-                    <i class="bi bi-book-fill text-primary"></i> Incident Handling Protocols
-                </h1>
-                <a href="/protocols/new" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Create New Protocol
-                </a>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h1 class="h3 mb-0"><i class="bi bi-book-fill text-primary"></i> Incident Handling Protocols</h1>
+                <p class="text-muted small mb-0 mt-1">
+                    {{ protocols | length }} protocol{{ 's' if protocols | length != 1 else '' }} &mdash;
+                    LLM training Q&amp;A pairs for emergency response agents
+                </p>
             </div>
-            <div class="alert alert-info mt-3">
-                <i class="bi bi-info-circle-fill"></i>
-                <strong>Purpose:</strong> This section manages <strong>LLM Training Data</strong> - Question & Answer pairs for training emergency response AI systems.
-                Each protocol contains an incident question and expert answer for various emergency scenarios.
-                <hr class="my-2">
-                <small class="d-block mt-2">
-                    <i class="bi bi-link-45deg"></i>
-                    <a href="https://github.com/kerbgr/crisis_mas_poc/tree/main/LLM%20Training" target="_blank" class="alert-link">
-                        View Training Methodology Documentation
-                    </a>
-                </small>
+            <a href="/protocols/new" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> New Protocol
+            </a>
+        </div>
+
+        <!-- Filter bar -->
+        {% if protocols %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body py-2">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control form-control-sm" id="searchInput"
+                               placeholder="Search question, answer, tags...">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" id="categoryFilter" title="Filter by category">
+                            <option value="">All categories</option>
+                            <option value="firefighting">Firefighting</option>
+                            <option value="police">Police / Law Enforcement</option>
+                            <option value="medical">Medical / EMS</option>
+                            <option value="search_rescue">Search &amp; Rescue</option>
+                            <option value="hazmat">Hazmat / CBRN</option>
+                            <option value="maritime">Maritime / Coastal</option>
+                            <option value="evacuation">Evacuation &amp; Sheltering</option>
+                            <option value="environmental">Environmental Response</option>
+                            <option value="communications">Emergency Communications</option>
+                            <option value="logistics">Logistics &amp; Supply Chain</option>
+                            <option value="civil_protection">Civil Protection</option>
+                            <option value="disaster">Disaster Response</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select form-select-sm" id="severityFilter" title="Filter by severity">
+                            <option value="">All severities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select form-select-sm" id="crisisTypeFilter" title="Filter by crisis type">
+                            <option value="">All crisis types</option>
+                            <option value="wildfire">Wildfire</option>
+                            <option value="flood">Flood</option>
+                            <option value="earthquake">Earthquake</option>
+                            <option value="hazmat">Hazmat</option>
+                            <option value="tsunami">Tsunami</option>
+                            <option value="hurricane">Hurricane</option>
+                            <option value="mass_casualty">Mass Casualty</option>
+                            <option value="terrorist">Terrorist</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearFilters()" title="Clear filters">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Protocols List -->
-        {% if protocols %}
-            <div class="row">
-                {% for protocol in protocols %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-header bg-light">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <strong>{{ protocol.id }}</strong>
-                                    <span class="badge bg-{{
-                                        'danger' if protocol.severity == 'critical' else
-                                        'warning' if protocol.severity == 'high' else
-                                        'info' if protocol.severity == 'medium' else
-                                        'secondary'
-                                    }}">
-                                        {{ protocol.severity | upper }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <span class="badge bg-primary me-2">{{ protocol.category }}</span>
-                                    {% if protocol.language == 'el' %}
-                                        <span class="badge bg-info">🇬🇷 Greek</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">🇬🇧 English</span>
-                                    {% endif %}
-                                </h5>
-                                <p class="card-text"><strong>Question:</strong><br>
-                                    {{ protocol.question[:150] }}{% if protocol.question|length > 150 %}...{% endif %}
-                                </p>
-                                <p class="card-text"><strong>Answer:</strong><br>
-                                    {{ protocol.answer[:200] }}{% if protocol.answer|length > 200 %}...{% endif %}
-                                </p>
-                                <hr>
-                                <div class="small text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ protocol.location or 'No location' }}<br>
-                                    <i class="bi bi-person"></i> {{ protocol.expert_id or 'No expert assigned' }}<br>
-                                    {% if protocol.tags %}
-                                        <i class="bi bi-tags"></i> {{ protocol.tags | join(', ') }}
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="card-footer bg-light">
-                                <div class="btn-group w-100" role="group">
-                                    <a href="/protocols/{{ protocol.id }}/edit" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-pencil"></i> Edit
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-outline-danger"
-                                            onclick="deleteProtocol('{{ protocol.id }}')">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </button>
-                                </div>
+        <div id="noResultsMsg" class="alert alert-warning d-none">
+            <i class="bi bi-search"></i> No protocols match the current filters.
+        </div>
+
+        <div class="row" id="protocolsGrid">
+            {% for protocol in protocols %}
+            <div class="col-md-6 mb-4 protocol-card"
+                 data-category="{{ protocol.category }}"
+                 data-severity="{{ protocol.severity }}"
+                 data-crisis-types="{{ protocol.get('applicable_crisis_types', []) | join(',') }}"
+                 data-search="{{ (protocol.question + ' ' + protocol.answer + ' ' + (protocol.tags | join(' '))) | lower }}">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <code class="small text-muted">{{ protocol.id }}</code>
+                            <div class="d-flex gap-1">
+                                <span class="badge bg-{{
+                                    'danger' if protocol.severity == 'critical' else
+                                    'warning text-dark' if protocol.severity == 'high' else
+                                    'info text-dark' if protocol.severity == 'medium' else
+                                    'secondary' }}">
+                                    {{ protocol.severity | upper }}
+                                </span>
+                                {% if protocol.language == 'el' %}
+                                    <span class="badge bg-light text-dark border">GR</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark border">EN</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
-                {% endfor %}
+
+                    <div class="card-body">
+                        <!-- Category + step count -->
+                        <div class="mb-2">
+                            <span class="badge bg-primary me-1">{{ protocol.category }}</span>
+                            {% if protocol.get('procedure_steps') %}
+                                <span class="badge bg-success me-1">
+                                    <i class="bi bi-list-ol"></i> {{ protocol.procedure_steps | length }} steps
+                                </span>
+                            {% endif %}
+                            {% for ct in protocol.get('applicable_crisis_types', []) %}
+                                <span class="badge bg-secondary me-1">{{ ct }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Question -->
+                        <p class="card-text mb-1">
+                            <strong>Q:</strong>
+                            {{ protocol.question[:160] }}{% if protocol.question | length > 160 %}...{% endif %}
+                        </p>
+
+                        <!-- Answer preview -->
+                        <p class="card-text text-muted small">
+                            {{ protocol.answer[:180] }}{% if protocol.answer | length > 180 %}...{% endif %}
+                        </p>
+
+                        <hr class="my-2">
+                        <div class="small text-muted">
+                            {% if protocol.location %}
+                                <i class="bi bi-geo-alt"></i> {{ protocol.location }}&nbsp;
+                            {% endif %}
+                            {% if protocol.expert_id %}
+                                <i class="bi bi-person"></i> {{ protocol.expert_id }}&nbsp;
+                            {% endif %}
+                            {% if protocol.get('resources_required') %}
+                                <span class="d-block mt-1"><i class="bi bi-tools"></i> {{ protocol.resources_required[:80] }}{% if protocol.resources_required | length > 80 %}...{% endif %}</span>
+                            {% endif %}
+                            {% if protocol.tags %}
+                                <span class="d-block mt-1">
+                                    {% for tag in protocol.tags[:5] %}
+                                        <span class="badge bg-light text-secondary border me-1">{{ tag }}</span>
+                                    {% endfor %}
+                                </span>
+                            {% endif %}
+                            {% if protocol.get('references') %}
+                                <span class="d-block mt-1 text-muted protocol-ref-line">
+                                    <i class="bi bi-journal-bookmark"></i>
+                                    {{ protocol.references[0][:70] }}{% if protocol.references[0]|length > 70 %}…{% endif %}
+                                    {% if protocol.references|length > 1 %}
+                                        <span class="text-muted"> +{{ protocol.references|length - 1 }} more</span>
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-light">
+                        <div class="btn-group w-100">
+                            <a href="/protocols/{{ protocol.id }}/edit" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    onclick="deleteProtocol('{{ protocol.id }}')">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
+            {% endfor %}
+        </div>
+
         {% else %}
-            <div class="alert alert-info text-center">
-                <i class="bi bi-info-circle"></i> No incident handling protocols yet.
-                <a href="/protocols/new" class="alert-link">Create your first protocol</a>!
-            </div>
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> No protocols yet.
+            <a href="/protocols/new" class="alert-link">Create your first protocol</a>.
+        </div>
         {% endif %}
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-light py-4 mt-5">
-        <div class="container text-center text-muted">
-            <p class="mb-0">
-                <i class="bi bi-shield-fill-check"></i> Crisis MAS - LLM Training Web Tools
-            </p>
+    <footer class="bg-light py-3 mt-5">
+        <div class="container text-center text-muted small">
+            <i class="bi bi-shield-fill-check"></i> Crisis MAS - Web Tools
         </div>
     </footer>
 
-    <!-- Delete Form (hidden) -->
-    <form id="deleteForm" method="POST" style="display: none;">
-    </form>
+    <form id="deleteForm" method="POST" style="display:none;"></form>
 
     <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script>
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const severity = document.getElementById('severityFilter').value;
+            const crisisType = document.getElementById('crisisTypeFilter').value;
+
+            let visible = 0;
+            document.querySelectorAll('.protocol-card').forEach(card => {
+                const matchSearch   = !search   || card.dataset.search.includes(search);
+                const matchCat      = !category || card.dataset.category === category;
+                const matchSev      = !severity || card.dataset.severity === severity;
+                const matchCrisis   = !crisisType || card.dataset.crisisTypes.split(',').includes(crisisType);
+                const show = matchSearch && matchCat && matchSev && matchCrisis;
+                card.classList.toggle('d-none', !show);
+                if (show) visible++;
+            });
+            document.getElementById('noResultsMsg').classList.toggle('d-none', visible > 0);
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('severityFilter').value = '';
+            document.getElementById('crisisTypeFilter').value = '';
+            applyFilters();
+        }
+
         function deleteProtocol(protocolId) {
-            if (confirm('Are you sure you want to delete protocol "' + protocolId + '"?')) {
+            if (confirm('Delete protocol "' + protocolId + '"?')) {
                 const form = document.getElementById('deleteForm');
                 form.action = '/protocols/' + protocolId + '/delete';
                 form.submit();
             }
         }
+
+        ['searchInput', 'categoryFilter', 'severityFilter', 'crisisTypeFilter'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', applyFilters);
+        });
     </script>
 </body>
 </html>

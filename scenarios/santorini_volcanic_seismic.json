@@ -17,6 +17,28 @@
     "affected_area_description": "76 km² island of Santorini including caldera rim settlements (Fira, Oia, Imerovigli, Firostefani), inland villages (Pyrgos, Messaria, Emporio), port facilities (Athinios car ferry port, Fira Skala cable-car port), and Santorini JTR airport. Six cruise ships with 12,000 passengers anchored in the caldera. No road or rail connection to mainland Greece."
   },
   "tags": ["volcanic_seismic", "tsunami_risk", "multi_hazard", "island_evacuation", "mass_tourism", "caldera", "natural_disaster", "maritime_emergency"],
+  "camera_feeds": [
+    {
+      "url": "https://www.santoriniwebcam.gr/webcam/athinios-port.jpg",
+      "mode": "tsunami",
+      "label": "Athinios Car-Ferry Port — harbor wave and sea-level monitoring"
+    },
+    {
+      "url": "https://www.santoriniwebcam.gr/webcam/fira-skala.jpg",
+      "mode": "tsunami",
+      "label": "Fira Skala Cable-Car Port — caldera-side crowd and wave monitoring"
+    },
+    {
+      "url": "https://www.santoriniwebcam.gr/webcam/oia-village.jpg",
+      "mode": "crowd",
+      "label": "Oia Village — caldera rim evacuation crowd density"
+    },
+    {
+      "url": "https://www.santoriniwebcam.gr/webcam/fira-main-square.jpg",
+      "mode": "crowd",
+      "label": "Fira Main Square — assembly point crowd density and panic indicators"
+    }
+  ],
   "available_actions": [
     {
       "id": "action_total_island_evacuation",
