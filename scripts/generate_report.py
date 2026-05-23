@@ -681,10 +681,17 @@ def _section_vision_subsystem(run_dir: Path) -> str:
         status = feed.get("status", "unknown")
         label = feed.get("label", feed.get("url", "Camera"))
         mode = feed.get("mode", "general")
+        url = feed.get("url", "")
         s_color, s_icon, s_label = status_meta.get(status, ("secondary", "bi-camera", status))
         sev = feed.get("situation_severity", "")
         sev_color = severity_colors.get(sev, "secondary")
         summary = feed.get("situation_summary", "")
+
+        # Embed image — works for local file paths (absolute or relative to project root)
+        img_src = ""
+        if url and not url.startswith(("http://", "https://", "rtsp://")):
+            img_path = Path(url) if Path(url).is_absolute() else _ROOT / url
+            img_src = _b64_img(img_path)
 
         # Critical indicator pills
         indicators = []
@@ -704,8 +711,14 @@ def _section_vision_subsystem(run_dir: Path) -> str:
             wl_color = {"watch": "warning", "warning": "danger", "emergency": "danger"}.get(warning_level, "secondary")
             ind_html += f'<span class="badge bg-{wl_color} me-1">WARNING LEVEL: {warning_level.upper()}</span>'
 
+        img_html = (
+            f'<img src="{img_src}" class="img-fluid rounded mb-2" '
+            f'style="width:100%;max-height:180px;object-fit:cover;" alt="{label}">'
+            if img_src else ""
+        )
+
         feed_cards += f"""
-    <div class="col-md-4">
+    <div class="col-md-6 col-xl-3">
       <div class="card h-100 shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-start py-2">
           <span class="small fw-semibold text-truncate me-2" title="{label}">{label[:60]}</span>
@@ -714,6 +727,7 @@ def _section_vision_subsystem(run_dir: Path) -> str:
           </span>
         </div>
         <div class="card-body py-2">
+          {img_html}
           <div class="d-flex gap-1 mb-2 flex-wrap">
             <span class="badge bg-light text-dark border"><i class="bi bi-eye me-1"></i>{mode}</span>
             {f'<span class="badge bg-{sev_color}">{sev}</span>' if sev else ''}

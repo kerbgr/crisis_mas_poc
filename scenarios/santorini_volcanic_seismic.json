@@ -19,22 +19,22 @@
   "tags": ["volcanic_seismic", "tsunami_risk", "multi_hazard", "island_evacuation", "mass_tourism", "caldera", "natural_disaster", "maritime_emergency"],
   "camera_feeds": [
     {
-      "url": "https://www.santoriniwebcam.gr/webcam/athinios-port.jpg",
+      "url": "scenarios/camera_feeds/santorini/athinios_port.png",
       "mode": "tsunami",
       "label": "Athinios Car-Ferry Port — harbor wave and sea-level monitoring"
     },
     {
-      "url": "https://www.santoriniwebcam.gr/webcam/fira-skala.jpg",
+      "url": "scenarios/camera_feeds/santorini/fira_skala.png",
       "mode": "tsunami",
       "label": "Fira Skala Cable-Car Port — caldera-side crowd and wave monitoring"
     },
     {
-      "url": "https://www.santoriniwebcam.gr/webcam/oia-village.jpg",
+      "url": "scenarios/camera_feeds/santorini/oia_village.png",
       "mode": "crowd",
       "label": "Oia Village — caldera rim evacuation crowd density"
     },
     {
-      "url": "https://www.santoriniwebcam.gr/webcam/fira-main-square.jpg",
+      "url": "scenarios/camera_feeds/santorini/fira_main_square.png",
       "mode": "crowd",
       "label": "Fira Main Square — assembly point crowd density and panic indicators"
     }

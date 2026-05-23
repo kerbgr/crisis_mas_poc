@@ -267,7 +267,8 @@ class CameraFeedAgent:
         prompt = _PROMPTS.get(effective_mode, _GENERAL_PROMPT).format(
             context=context or "emergency monitoring camera"
         )
-        raw = vc.analyze_image(image_bytes, prompt, max_tokens=512, mime_type="image/jpeg")
+        mime_type = "image/png" if str(source).lower().endswith(".png") else "image/jpeg"
+        raw = vc.analyze_image(image_bytes, prompt, max_tokens=512, mime_type=mime_type)
         parsed = vc.parse_json_response(raw)
 
         if parsed:
