@@ -593,6 +593,153 @@ LEVEL_META = {
 }
 
 
+def _section_vision_subsystem(run_dir: Path) -> str:
+    """Geospatial terrain analysis + camera feed reports from the vision subsystem."""
+    # Pull vision data from the first available method result
+    decision = {}
+    for method_dir in ("er", "gat", "gat_trained"):
+        result_path = run_dir / method_dir / "results.json"
+        if result_path.exists():
+            raw = _load_json(result_path)
+            decision = raw.get("decision", {})
+            if "geospatial_context" in decision or "camera_feed_reports" in decision:
+                break
+
+    geo = decision.get("geospatial_context")
+    feeds = decision.get("camera_feed_reports", [])
+    excluded = decision.get("agents_excluded_by_terrain", [])
+
+    if not geo and not feeds:
+        return ""
+
+    # --- Geospatial card ---
+    terrain_icons = {
+        "island":           ("bi-water",         "primary"),
+        "coastal_mainland": ("bi-tsunami",        "info"),
+        "inland":           ("bi-mountains",      "secondary"),
+        "unknown":          ("bi-question-circle","secondary"),
+    }
+    terrain_type = geo.get("terrain_type", "unknown") if geo else "unknown"
+    t_icon, t_color = terrain_icons.get(terrain_type, ("bi-geo", "secondary"))
+    island_name = (geo.get("island_name") or "").replace("_", " ").title() if geo else ""
+    water_access = geo.get("has_water_access", True) if geo else True
+    method_used = (geo.get("method_used") or "—") if geo else "—"
+    coords = geo.get("coordinates", {}) if geo else {}
+    lat = coords.get("lat", "—")
+    lon = coords.get("lon", "—")
+
+    water_badge = (
+        '<span class="badge bg-success"><i class="bi bi-water me-1"></i>Maritime access</span>'
+        if water_access else
+        '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>No maritime access</span>'
+    )
+    excl_html = ""
+    if excluded:
+        excl_html = (
+            '<div class="mt-2"><span class="text-danger small fw-semibold">'
+            '<i class="bi bi-slash-circle me-1"></i>Excluded by terrain:</span> '
+            + " ".join(f'<code class="small">{a}</code>' for a in excluded)
+            + "</div>"
+        )
+
+    geo_html = f"""
+    <div class="col-md-4">
+      <div class="card border-{t_color} h-100 shadow-sm">
+        <div class="card-header bg-{t_color} {'text-dark' if t_color == 'info' else 'text-white'} py-2">
+          <i class="bi {t_icon} me-2"></i><strong>Terrain Classification</strong>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-{t_color} fs-6">{terrain_type.replace('_',' ').title()}</span>
+            {water_badge}
+          </div>
+          {'<div class="small text-muted mb-1"><i class="bi bi-geo-alt me-1"></i><strong>Island:</strong> '+island_name+'</div>' if island_name else ''}
+          <div class="small text-muted mb-1">
+            <i class="bi bi-crosshair me-1"></i>
+            <strong>Coordinates:</strong> {lat}, {lon}
+          </div>
+          <div class="small text-muted mb-1">
+            <i class="bi bi-cpu me-1"></i>
+            <strong>Method:</strong> <code>{method_used}</code>
+          </div>
+          {excl_html}
+        </div>
+      </div>
+    </div>""" if geo else ""
+
+    # --- Camera feed cards ---
+    status_meta = {
+        "ok":                      ("success",   "bi-camera-video-fill",  "Online"),
+        "feed_unavailable":        ("secondary", "bi-camera-video-off",   "Unavailable"),
+        "vision_model_unavailable":("warning",   "bi-cpu-fill",           "Vision offline"),
+        "parse_failed":            ("danger",    "bi-exclamation-circle", "Parse error"),
+    }
+    severity_colors = {"normal": "success", "elevated": "warning", "high": "danger", "critical": "danger"}
+
+    feed_cards = ""
+    for feed in feeds:
+        status = feed.get("status", "unknown")
+        label = feed.get("label", feed.get("url", "Camera"))
+        mode = feed.get("mode", "general")
+        s_color, s_icon, s_label = status_meta.get(status, ("secondary", "bi-camera", status))
+        sev = feed.get("situation_severity", "")
+        sev_color = severity_colors.get(sev, "secondary")
+        summary = feed.get("situation_summary", "")
+
+        # Critical indicator pills
+        indicators = []
+        if feed.get("tsunami_indicators_present"):   indicators.append(("danger",  "bi-exclamation-triangle-fill", "TSUNAMI"))
+        if feed.get("water_withdrawal_observed"):    indicators.append(("danger",  "bi-arrow-down-circle-fill",    "Sea withdrawal"))
+        if feed.get("wave_detected"):                indicators.append(("danger",  "bi-water",                    "Wave detected"))
+        if feed.get("panic_indicators"):             indicators.append(("danger",  "bi-person-exclamation",       "Panic"))
+        if feed.get("stampede_risk"):                indicators.append(("danger",  "bi-people-fill",              "Stampede risk"))
+        if feed.get("fire_visible"):                 indicators.append(("danger",  "bi-fire",                     "Fire visible"))
+        if feed.get("smoke_visible"):                indicators.append(("warning", "bi-cloud-haze-fill",          "Smoke"))
+        ind_html = "".join(
+            f'<span class="badge bg-{c} me-1"><i class="bi {i} me-1"></i>{t}</span>'
+            for c, i, t in indicators
+        )
+        warning_level = feed.get("warning_level", "")
+        if warning_level and warning_level != "none":
+            wl_color = {"watch": "warning", "warning": "danger", "emergency": "danger"}.get(warning_level, "secondary")
+            ind_html += f'<span class="badge bg-{wl_color} me-1">WARNING LEVEL: {warning_level.upper()}</span>'
+
+        feed_cards += f"""
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-start py-2">
+          <span class="small fw-semibold text-truncate me-2" title="{label}">{label[:60]}</span>
+          <span class="badge bg-{s_color} text-nowrap">
+            <i class="bi {s_icon} me-1"></i>{s_label}
+          </span>
+        </div>
+        <div class="card-body py-2">
+          <div class="d-flex gap-1 mb-2 flex-wrap">
+            <span class="badge bg-light text-dark border"><i class="bi bi-eye me-1"></i>{mode}</span>
+            {f'<span class="badge bg-{sev_color}">{sev}</span>' if sev else ''}
+          </div>
+          {f'<div class="alert alert-danger py-1 px-2 mb-2 small">{ind_html}</div>' if ind_html else ''}
+          {f'<p class="small text-muted mb-0">{summary}</p>' if summary else '<p class="small text-muted mb-0 fst-italic">No data</p>'}
+        </div>
+      </div>
+    </div>"""
+
+    feeds_html = f"""
+    <div class="row g-3 mt-0">
+      {feed_cards}
+    </div>""" if feed_cards else ""
+
+    return f"""
+<section id="vision" class="mb-5">
+  <h4 class="section-title"><i class="bi bi-camera-fill me-2"></i>Vision Subsystem — Pre-Assessment Layer</h4>
+  <div class="row g-3">
+    {geo_html}
+    {'<div class="col-md-8"><h6 class="text-muted mb-2"><i class="bi bi-camera-video me-1"></i>Camera Feed Intelligence</h6>' + feeds_html + '</div>' if feeds_html else ''}
+  </div>
+</section>
+"""
+
+
 def _section_agent_reliability(run_dir: Path) -> str:
     """Per-agent reliability from results/reliability/ JSON files."""
     rel_dir = _ROOT / "results" / "reliability"
@@ -744,6 +891,7 @@ def generate_html(scenario_path: Path, run_dir: Path) -> str:
 
     s_scenario, map_js = _section_scenario(sc)
     s_alts        = _section_alternatives(sc)
+    s_vision      = _section_vision_subsystem(run_dir)
     s_run_results = _section_run_results(run_dir, comp) if comp else ""
     s_comparison  = _section_comparison(run_dir, comp) if comp else ""
     s_agents      = _section_agent_reliability(run_dir)
@@ -829,6 +977,7 @@ def generate_html(scenario_path: Path, run_dir: Path) -> str:
             <i class="bi bi-map-fill me-1"></i>Scenario</a></li>
           <li class="nav-item"><a class="nav-link" href="#alternatives">
             <i class="bi bi-list-check me-1"></i>Alternatives</a></li>
+          {"<li class='nav-item'><a class='nav-link' href='#vision'><i class='bi bi-camera-fill me-1'></i>Vision</a></li>" if s_vision else ""}
           {"<li class='nav-item'><a class='nav-link' href='#run-results'><i class='bi bi-activity me-1'></i>Run Results</a></li>" if s_run_results else ""}
           {"<li class='nav-item'><a class='nav-link' href='#comparison'><i class='bi bi-columns-gap me-1'></i>Comparison</a></li>" if s_comparison else ""}
           {"<li class='nav-item'><a class='nav-link' href='#agents'><i class='bi bi-people-fill me-1'></i>Agent Panel</a></li>" if s_agents else ""}
@@ -848,6 +997,8 @@ def generate_html(scenario_path: Path, run_dir: Path) -> str:
       {s_scenario}
 
       {s_alts}
+
+      {s_vision}
 
       {"<section id='run-results' class='mb-5'><h4 class='section-title'><i class='bi bi-activity me-2'></i>Aggregation Method Results</h4>" + s_run_results + "</section>" if s_run_results else ""}
 

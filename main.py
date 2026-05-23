@@ -40,6 +40,21 @@ from decision_framework.consensus_model import ConsensusModel
 from evaluation.metrics import MetricsEvaluator
 from evaluation.visualizations import SystemVisualizer
 from scenarios.expert_selector import ExpertSelector
+from agents.geospatial_agent import GeospatialContextAgent
+from agents.camera_feed_agent import CameraFeedAgent
+
+# HTML report generator (scripts/generate_report.py)
+try:
+    import importlib.util as _ilu
+    _gr_spec = _ilu.spec_from_file_location(
+        "generate_report",
+        Path(__file__).parent / "scripts" / "generate_report.py",
+    )
+    _gr_mod = _ilu.module_from_spec(_gr_spec)
+    _gr_spec.loader.exec_module(_gr_mod)
+    _generate_html_report = _gr_mod.generate_html
+except Exception:
+    _generate_html_report = None
 
 
 # ============================================================================
@@ -361,7 +376,9 @@ def initialize_coordinator(
         mcda_engine=framework['mcda_engine'],
         consensus_model=framework['consensus_model'],
         parallel_assessment=True,
-        aggregation_method=aggregation_method.upper()
+        aggregation_method=aggregation_method.upper(),
+        vision_agent=GeospatialContextAgent(),
+        camera_agent=CameraFeedAgent(),
     )
 
     logger.info(f"Initialized coordinator with {len(expert_agents)} agents (aggregation={aggregation_method.upper()})")
@@ -1310,7 +1327,9 @@ def run_comparative_analysis(
                 mcda_engine=framework['mcda_engine'],
                 consensus_model=framework['consensus_model'],
                 parallel_assessment=True,
-                aggregation_method=method
+                aggregation_method=method,
+                vision_agent=GeospatialContextAgent(),
+                camera_agent=CameraFeedAgent(),
             )
             decision = method_coordinator.make_final_decision(scenario, alternatives)
 
@@ -1866,6 +1885,17 @@ For more information, see README.md
         with open(report_path, 'w') as f:
             f.write(report)
         logger.info(f"Report saved to: {report_path}")
+
+        # Generate HTML report
+        if _generate_html_report is not None:
+            try:
+                sc_path = Path("scenarios") / f"{args.scenario}.json"
+                html = _generate_html_report(sc_path, output_dir)
+                html_path = output_dir / "report.html"
+                html_path.write_text(html, encoding="utf-8")
+                logger.info(f"HTML report saved to: {html_path}")
+            except Exception as e:
+                logger.warning(f"HTML report generation failed: {e}")
 
         # ===== 6. SUMMARY =====
         print_summary(decision, metrics, output_dir)
