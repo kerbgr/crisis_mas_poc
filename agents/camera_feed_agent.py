@@ -78,7 +78,8 @@ _CROWD_PROMPT = (
     "You are analyzing a surveillance camera for crowd monitoring during an emergency.\n"
     "Context: {context}\n\n"
     "Assess crowd size, movement, and safety indicators.\n"
-    "Return ONLY valid JSON:\n"
+    "IMPORTANT: Respond with ONLY a raw JSON object. No markdown, no headers, no bullet points, "
+    "no explanation. Start your response with {{ and end with }}.\n\n"
     "{{\n"
     '  "crowd_density": "none|low|medium|high|critical",\n'
     '  "crowd_count_estimate": 0,\n'

@@ -679,9 +679,9 @@ def _section_vision_subsystem(run_dir: Path) -> str:
     feed_cards = ""
     for feed in feeds:
         status = feed.get("status", "unknown")
-        label = feed.get("label", feed.get("url", "Camera"))
+        source = feed.get("source", feed.get("url", ""))
+        label = feed.get("label", source or "Camera")
         mode = feed.get("mode", "general")
-        url = feed.get("url", "")
         s_color, s_icon, s_label = status_meta.get(status, ("secondary", "bi-camera", status))
         sev = feed.get("situation_severity", "")
         sev_color = severity_colors.get(sev, "secondary")
@@ -689,8 +689,8 @@ def _section_vision_subsystem(run_dir: Path) -> str:
 
         # Embed image — works for local file paths (absolute or relative to project root)
         img_src = ""
-        if url and not url.startswith(("http://", "https://", "rtsp://")):
-            img_path = Path(url) if Path(url).is_absolute() else _ROOT / url
+        if source and not source.startswith(("http://", "https://", "rtsp://")):
+            img_path = Path(source) if Path(source).is_absolute() else _ROOT / source
             img_src = _b64_img(img_path)
 
         # Critical indicator pills
