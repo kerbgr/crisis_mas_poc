@@ -42,6 +42,18 @@ logs/
 test_*.json/
 test_enriched_data.json
 
+# Generated run outputs — never commit
+results/
+reliability/
+
+# Claude Code session files
+.claude/
+
+# Media / recordings
+*.mp4
+*.mov
+*.avi
+
 # Thesis / sensitive documents — keep locally, never push to remote
 *.docx
 *.doc
