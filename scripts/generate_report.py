@@ -899,9 +899,43 @@ def _section_agent_reliability(run_dir: Path) -> str:
 # Full HTML assembly
 # ---------------------------------------------------------------------------
 
+def _build_comp_from_single_run(run_dir: Path) -> dict:
+    """Build a minimal comparative_analysis-style dict from a single-method results.json."""
+    raw = _load_json(run_dir / "results.json")
+    if not raw:
+        return {}
+    decision = raw.get("decision", {})
+    method = raw.get("aggregation_method", "ER").upper()
+    metrics = raw.get("metrics", {})
+    consensus = metrics.get("consensus", {})
+    confidence_m = metrics.get("confidence", {})
+    dq = metrics.get("decision_quality", {})
+    return {
+        "scenario": raw.get("scenario", ""),
+        "scenario_type": raw.get("scenario_type", ""),
+        "methods": {
+            method: {
+                "recommended_alternative": decision.get("recommended_alternative", ""),
+                "confidence": decision.get("confidence", confidence_m.get("decision_confidence", 0.0)),
+                "consensus_level": decision.get("consensus_level", consensus.get("consensus_level", 0.0)),
+                "decision_quality_score": decision.get("decision_quality_score", dq.get("weighted_score", 0.0)),
+                "processing_time_ms": decision.get("decision_time_seconds", 0) * 1000,
+                "decision": decision,
+                "metrics": metrics,
+            }
+        },
+        "comparison": {"same_recommendation_all": True},
+        "_single_method": True,
+    }
+
+
 def generate_html(scenario_path: Path, run_dir: Path) -> str:
     sc  = _load_json(scenario_path)
     comp = _load_json(run_dir / "comparative_analysis.json")
+
+    # Fall back to single-method results when no comparative_analysis.json exists
+    if not comp and (run_dir / "results.json").exists():
+        comp = _build_comp_from_single_run(run_dir)
 
     run_label = run_dir.name
     provider  = run_label.split("_")[-1].upper() if "_" in run_label else run_label
