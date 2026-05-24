@@ -715,8 +715,9 @@ def _section_vision_subsystem(run_dir: Path) -> str:
             ind_html += f'<span class="badge bg-{wl_color} me-1">WARNING LEVEL: {warning_level.upper()}</span>'
 
         img_html = (
-            f'<img src="{img_src}" class="img-fluid rounded mb-2" '
-            f'style="width:100%;max-height:180px;object-fit:cover;" alt="{label}">'
+            f'<img src="{img_src}" class="img-fluid rounded mb-2 feed-thumb" '
+            f'style="width:100%;max-height:180px;object-fit:cover;cursor:zoom-in;" '
+            f'alt="{label}" title="Click to enlarge">'
             if img_src else ""
         )
 
@@ -1027,6 +1028,21 @@ def generate_html(scenario_path: Path, run_dir: Path) -> str:
   </div>
 </div>
 
+<!-- Image lightbox modal -->
+<div class="modal fade" id="imgLightbox" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content bg-dark border-0">
+      <div class="modal-header border-0 py-2">
+        <span class="text-white small" id="imgLightboxLabel"></span>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-2">
+        <img id="imgLightboxImg" src="" alt="" style="max-height:85vh;max-width:100%;object-fit:contain;">
+      </div>
+    </div>
+  </div>
+</div>
+
 {foot_libs}
 <script>{map_js}</script>
 
@@ -1047,6 +1063,23 @@ window.addEventListener('scroll', function() {{
     l.classList.toggle('active', l.getAttribute('href') === '#' + cur);
   }});
 }});
+</script>
+
+<!-- Camera feed image lightbox -->
+<script>
+(function() {{
+  var modal = new bootstrap.Modal(document.getElementById('imgLightbox'));
+  var modalImg = document.getElementById('imgLightboxImg');
+  var modalLabel = document.getElementById('imgLightboxLabel');
+  document.querySelectorAll('.feed-thumb').forEach(function(img) {{
+    img.addEventListener('click', function() {{
+      modalImg.src = this.src;
+      modalImg.alt = this.alt;
+      modalLabel.textContent = this.alt;
+      modal.show();
+    }});
+  }});
+}})();
 </script>
 
 </body>
