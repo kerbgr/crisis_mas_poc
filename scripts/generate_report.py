@@ -595,10 +595,13 @@ LEVEL_META = {
 
 def _section_vision_subsystem(run_dir: Path) -> str:
     """Geospatial terrain analysis + camera feed reports from the vision subsystem."""
-    # Pull vision data from the first available method result
+    # Pull vision data — single-method runs store results.json in the run root;
+    # compare-methods runs store them in er/, gat/, gat_trained/ subdirectories.
     decision = {}
-    for method_dir in ("er", "gat", "gat_trained"):
-        result_path = run_dir / method_dir / "results.json"
+    candidates = [run_dir / "results.json"] + [
+        run_dir / m / "results.json" for m in ("er", "gat", "gat_trained")
+    ]
+    for result_path in candidates:
         if result_path.exists():
             raw = _load_json(result_path)
             decision = raw.get("decision", {})
