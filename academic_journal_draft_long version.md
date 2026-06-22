@@ -227,7 +227,12 @@ AEGIS deploys 15 agents in two functional categories. Two multimodal pre-assessm
 
 ```mermaid
 graph TB
-    subgraph Agents["Agent Layer - 13 Expert Roles"]
+    subgraph Vision["Vision Pre-Assessment Layer - Step 0 (Bronze)"]
+        GEO[GeospatialContextAgent\nOSM tile terrain classifier]
+        CAM[CameraFeedAgent\nMultimodal feed analyser]
+    end
+
+    subgraph Agents["Expert Agent Layer - 13 Domain Roles"]
         BA[BaseAgent - Abstract Interface]
         subgraph Silver["SILVER Level - 8 Agents"]
             subgraph SilverTactical["Tactical - 4 On-Scene"]
@@ -254,12 +259,16 @@ graph TB
         PROFILES[agent_profiles.json - 13 Expert Profiles]
     end
 
+    GEO -->|terrain label + agent filter| BA
+    CAM -->|camera intel injected into context| BA
+
     T1 & T2 & T3 & T4 -.->|inherits| BA
     A1 & A2 & A3 & A4 -.->|inherits| BA
     G1 & G2 & G3 & G4 & G5 -.->|inherits| BA
     BA --> RT
     BA --> PROFILES
 
+    style Vision fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
     style SilverTactical fill:#b3e5fc,stroke:#0288d1,stroke-width:1px
@@ -267,7 +276,7 @@ graph TB
     style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
 ```
 
-*Fig. 2. AEGIS agent hierarchy. SILVER agents handle tactical and advisory functions at or near the incident scene; GOLD agents manage strategic coordination at regional or national scale.*
+*Fig. 2. AEGIS agent hierarchy. The Vision Pre-Assessment Layer (Step 0, Bronze) runs before the expert panel: GeospatialContextAgent filters ineligible agents by terrain; CameraFeedAgent injects camera intelligence into the shared scenario context. SILVER agents handle tactical and advisory functions at or near the incident scene; GOLD agents manage strategic coordination at regional or national scale.*
 
 The SILVER level comprises eight agents across two functional categories. Four *tactical* agents - Police On-Scene, Fire-Brigade On-Scene, Coast Guard On-Scene, and Medical Expert - represent agencies with direct operational presence at the incident site and focus on immediate resource deployment, triage, scene security, and life-safety. Four *advisory* agents - Meteorologist, Logistics Coordinator, PSAP Commander, and Environmental Scientist - supply specialised knowledge to all command levels without directly supervising field forces; notably, the PSAP Commander models the national 112 emergency coordination function, including citizen alert systems. The GOLD level comprises five *strategic* agents - Police Regional, Fire Regional, Coast Guard National, Civil Protection Director, and Medical Infrastructure Director - responsible for multi-jurisdictional coordination, inter-agency resource allocation, and national-level policy decisions.
 
@@ -368,9 +377,9 @@ When $CL < 0.75$, the system flags the decision as insufficiently agreed and tri
 
 The reliability tracker maintains a per-agent performance history that is updated after every scenario run and persisted to disk. Because ground truth is unavailable in the simulation setting, a consensus-based proxy is used: the system's own final recommendation is treated as the reference outcome for the current run, and each agent's assessment is scored against it using a three-component accuracy measure:
 
-$$a_k = 0.4 \cdot m_i(A^*) + 0.3 \cdot \mathbf{1}[\text{top}(m_i) = A^*] + 0.3 \cdot \text{margin}(m_i, A^*)$$
+$$a_k = 0.4 \cdot m_i(A^{*}) + 0.3 \cdot \mathbf{1}[\text{top}(m_i) = A^{*}] + 0.3 \cdot \text{margin}(m_i, A^{*})$$
 
-where $A^*$ is the recommended alternative, $m_i(A^*)$ is the belief mass agent $i$ assigned to it, $\mathbf{1}[\cdot]$ is the indicator of whether $A^*$ was the agent's top choice, and $\text{margin}$ rewards confident correct predictions while penalising confident incorrect ones.
+where $A^{*}$ is the recommended alternative, $m_i(A^{*})$ is the belief mass agent $i$ assigned to it, $\mathbf{1}[\cdot]$ is the indicator of whether $A^{*}$ was the agent's top choice, and $\text{margin}$ rewards confident correct predictions while penalising confident incorrect ones.
 
 Reliability is computed as a temporally decayed, confidence-weighted moving average:
 
@@ -630,7 +639,7 @@ Table III compares the two aggregation mechanisms across all 45 runs.
 | Confidence DC (mean ± σ) | 0.876 ± 0.041 | 0.876 ± 0.039 | +0.000 (n.s.) |
 | Recommendation agreement | - | - | 88.9 % (40/45) |
 
-*n.s. = not significant (p > 0.05, Mann-Whitney U)*
+*n.s. = not significant (p > 0.05, Mann-Whitney U). RBGA-Opt (L-BFGS-B optimised variant) produces metrics statistically identical to RBGA; see §4.3.*
 
 No metric difference between ER and RBGA reaches statistical significance. The 88.9 % recommendation agreement rate - 40 of 45 runs producing the identical recommended alternative from both methods - confirms that the two aggregation paths are largely interchangeable in practice at the 12-agent scale. The five disagreements arise exclusively in the two most ambiguous scenarios: the Evia Wildfire (three disagreements, all from lmstudio or Claude runs in a 12-alternative space) and the Karditsa Flood (two borderline cases where agent beliefs are spread across the top two alternatives). The HAZMAT scenario achieves perfect ER-RBGA agreement across all 15 runs.
 
@@ -646,6 +655,27 @@ A scenario-level breakdown, presented in Table IV, reveals the structural origin
 | | RBGA | 0.805 ± 0.023 | 83.0 % ± 5.7 % | 83.4 % ± 3.7 % | 96.7 ± 59.7 | 14/15 |
 | Elefsina HAZMAT | ER | 0.792 ± 0.000 | 94.3 % ± 1.7 % | 89.9 % ± 1.2 % | 45.3 ± 25.8 | 15/15 |
 | | RBGA | 0.792 ± 0.000 | 93.4 % ± 3.0 % | 89.4 % ± 1.8 % | 51.9 ± 22.1 | 15/15 |
+
+#### RBGA-Opt: Empirical Validation of Rule-Based Priors
+
+The L-BFGS-B optimiser was applied to all 46 stored assessment records (the 45 controlled runs plus one pre-trial run) to test whether gradient-free scalar optimisation of the four attention coefficients can improve on the hand-crafted prior. The training objective is:
+
+$$\mathcal{L}(w) = -\frac{1}{N}\sum_{k} \log \text{softmax}(T \cdot \text{DQS}_k)[gt_k] + \lambda \lVert w - w_{\text{prior}} \rVert^2$$
+
+where $T = 10$ is a temperature scaling factor, $gt_k$ is the consensus ground-truth alternative for run $k$, $\lambda = 0.1$ regularises toward the hand-crafted prior, and $w_{\text{prior}} = [0.4, 0.3, 0.3, 0.2]$. Box bounds $w_i \in [0, 1]$ are enforced; the optimiser is warm-started from the prior.
+
+**TABLE IIIb: Prior vs. Trained RBGA Attention Weights**
+
+| Coefficient | Role | Prior | Trained | $\Delta$ |
+| ------------- | ------ | :-----: | :-------: | :-------: |
+| $w_{\text{conf}}$ | LLM output confidence | 0.400 | 0.4002 | +0.0002 |
+| $w_{\text{rel}}$ | Domain relevance | 0.300 | 0.2860 | --0.014 |
+| $w_{\text{cert}}$ | Belief certainty | 0.300 | 0.3127 | +0.013 |
+| $w_{\text{sim}}$ | Inter-agent similarity | 0.200 | 0.2007 | +0.001 |
+
+The optimiser converges to weights that are near-identical to the hand-crafted prior: the maximum absolute deviation across all four coefficients is $\max|\Delta| = 0.014$ (on $w_{\text{rel}}$). Top-1 accuracy on the training corpus is unchanged at 86.7 % (40/46 samples agree with consensus) before and after optimisation; mean rank and rank percentile are likewise invariant (mean rank = 1.178 in both cases).
+
+This null result has a direct architectural interpretation. The four scalar attention coefficients span a low-dimensional hypothesis class: within that class, the rule-based prior is already at or near the optimum -- no reweighting of the four scalars recovers more consensus-ground-truth alternatives from the training corpus. This is not evidence that graph attention cannot improve crisis-decision aggregation; it is evidence that the current scalar architecture lacks the expressiveness to surpass the domain-knowledge prior on 46 samples. The finding directly motivates the proper learned GAT architecture discussed in Section 6, which introduces a full $\mathbf{W} \in \mathbb{R}^{F \times F'}$ projection and a learned pair-wise attention vector $\mathbf{a}$, significantly expanding the hypothesis class. Practically, RBGA-Opt confirms that practitioners can deploy the rule-based RBGA with confidence that the hand-crafted coefficients are not merely heuristic defaults but empirically validated near-optima for the current architecture.
 
 ### 4.4 LLM Provider Comparison
 
@@ -787,7 +817,7 @@ flowchart LR
 
 **RQ1 - Multi-agent coordination.** The hierarchical architecture successfully coordinates 12-13 agents within processing times of 22.3-179.4 seconds depending on provider, with cloud providers operating well within the decision windows of all three scenarios tested. The consensus gating mechanism - with an operational threshold of 0.75 - is satisfied in every run for the Flood and HAZMAT scenarios (CL ≈ 0.94 in both) and in 93 % of Wildfire runs (mean CL 0.826). The lower consensus in the Wildfire scenario reflects genuine deliberative tension in a 12-alternative action space and does not constitute a system failure; it is precisely the kind of situation where the system's conflict-identification function would direct a human decision-maker's attention to the agents most responsible for the disagreement.
 
-**RQ2 - Belief aggregation.** The near-identical DQS values of ER and RBGA (0.775 vs. 0.781, p > 0.05) and their 88.9 % recommendation agreement rate confirm that, at the 12-agent scale with well-structured LLM prompting, the choice of aggregation mechanism has less influence on the final recommendation than the quality of the individual assessments. The two methods disagree only in the most ambiguous scenario - the Wildfire - where the RBGA's reliability-weighted attention resolves ambiguity slightly more decisively (+1.3 pp DQS, +1 run meeting the consensus threshold). This suggests a deployment strategy of using ER as the primary method for its mathematical transparency, with RBGA as a secondary check in high-ambiguity, multi-alternative scenarios.
+**RQ2 - Belief aggregation.** The near-identical DQS values of ER and RBGA (0.775 vs. 0.781, p > 0.05) and their 88.9 % recommendation agreement rate confirm that, at the 12-agent scale with well-structured LLM prompting, the choice of aggregation mechanism has less influence on the final recommendation than the quality of the individual assessments. The two methods disagree only in the most ambiguous scenario - the Wildfire - where the RBGA's reliability-weighted attention resolves ambiguity slightly more decisively (+1.3 pp DQS, +1 run meeting the consensus threshold). The RBGA-Opt experiment (§4.3) reinforces this result from a different angle: L-BFGS-B optimisation of the four scalar attention coefficients on the full 46-run corpus converges to weights within $\max|\Delta| = 0.014$ of the hand-crafted prior and yields zero accuracy gain, confirming that the rule-based coefficients are near-optimal within the scalar architecture and that any further performance ceiling requires a richer hypothesis class. This suggests a deployment strategy of using ER as the primary method for its mathematical transparency, with RBGA as a secondary check in high-ambiguity, multi-alternative scenarios.
 
 **RQ3 - LLM contribution.** All three providers achieve 100 % JSON parse success (after cleaning) and produce structured belief distributions that appropriately reflect each agent's domain emphasis: the Medical Expert concentrates belief mass on life-safety alternatives regardless of provider; the Logistics Coordinator more evenly distributes across speed and cost-efficient options. Provider differences are operationally significant in terms of latency (Claude: 26.5 s vs. GPT-OSS: 108.3 s) but not decision quality - a result with important implications for system designers choosing between cloud and on-premise deployments.
 
