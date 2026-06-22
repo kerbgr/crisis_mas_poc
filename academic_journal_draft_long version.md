@@ -198,7 +198,7 @@ flowchart TD
     UI -->|Load Scenario| Coord
     Coord -->|Step 0 - Pre-assess| Vision
     Vision -->|Terrain type + eligible agents| Coord
-    Vision -->|Camera intelligence → additional_context| Agents
+    Vision -->|Camera intel injected into additional_context| Agents
     Coord -->|Dispatch Tasks| Agents
     Agents <-->|LLM Requests / Responses| LLM
     Agents -->|Expert Assessments| DF
@@ -311,18 +311,18 @@ flowchart TB
     START[Agent Assessment + Scenario Context] --> EXTRACT[Extract Features per Agent]
 
     subgraph "9-Dimensional Feature Vector"
-        EXTRACT --> F1["f¹: Confidence Score - self-reported certainty ∈ [0,1]"]
-        EXTRACT --> F2["f²: Belief Certainty - 1 - normalised Shannon entropy"]
-        EXTRACT --> F3["f³: Expertise Relevance - keyword match to scenario type"]
-        EXTRACT --> F4["f⁴: Risk Tolerance - conservative vs. aggressive stance ∈ [0,1]"]
-        EXTRACT --> F5["f⁵: Severity Awareness - scenario severity parameter ∈ [0,1]"]
-        EXTRACT --> F6["f⁶: Top-Choice Strength - gap between 1st and 2nd belief mass"]
-        EXTRACT --> F7["f⁷: Thoroughness - normalised count of key concerns raised"]
-        EXTRACT --> F8["f⁸: Reasoning Quality - normalised length of natural-language justification"]
-        EXTRACT --> F9["f⁹: Historical Reliability - time-decayed accuracy from ReliabilityTracker ⭐"]
+        EXTRACT --> F1["f1: Confidence Score - self-reported certainty, range 0..1"]
+        EXTRACT --> F2["f2: Belief Certainty - 1 minus normalised Shannon entropy"]
+        EXTRACT --> F3["f3: Expertise Relevance - keyword match to scenario type"]
+        EXTRACT --> F4["f4: Risk Tolerance - conservative vs. aggressive stance, range 0..1"]
+        EXTRACT --> F5["f5: Severity Awareness - scenario severity parameter, range 0..1"]
+        EXTRACT --> F6["f6: Top-Choice Strength - gap between 1st and 2nd belief mass"]
+        EXTRACT --> F7["f7: Thoroughness - normalised count of key concerns raised"]
+        EXTRACT --> F8["f8: Reasoning Quality - normalised length of natural-language justification"]
+        EXTRACT --> F9["f9: Historical Reliability - time-decayed accuracy from ReliabilityTracker *"]
     end
 
-    F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 --> VECTOR["Feature vector f_i ∈ ℝ⁹"]
+    F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 --> VECTOR["Feature vector f_i in R9"]
     VECTOR --> ATTENTION[Multi-Head Attention - H=4]
     ATTENTION --> AGGREGATE[Weighted Belief Aggregation]
     AGGREGATE --> OUTPUT[Aggregated Beliefs + Attention Weights + Uncertainty]
@@ -377,11 +377,11 @@ When $CL < 0.75$, the system flags the decision as insufficiently agreed and tri
 
 The reliability tracker maintains a per-agent performance history that is updated after every scenario run and persisted to disk. Because ground truth is unavailable in the simulation setting, a consensus-based proxy is used: the system's own final recommendation is treated as the reference outcome for the current run, and each agent's assessment is scored against it using a three-component accuracy measure:
 
-$$a_k = 0.4 \cdot m_i(A^{\ast}) + 0.3 \cdot \mathbf{1}[\text{top}(m_i) = A^{\ast}] + 0.3 \cdot \text{margin}(m_i, A^{\ast})$$
+$$a_k = 0.4 \cdot m_i(A^{*}) + 0.3 \cdot \mathbf{1}[\text{top}(m_i) = A^{*}] + 0.3 \cdot \text{margin}(m_i, A^{*})$$
 
-where $A^{\ast}$ is the recommended alternative, $m_i(A^{\ast})$ is the belief mass agent $i$ assigned to it, $\mathbf{1}[\cdot]$ is the indicator of whether $A^{\ast}$ was the agent's top choice, and $\text{margin}$ is defined as:
+where $A^{*}$ is the recommended alternative, $m_i(A^{*})$ is the belief mass agent $i$ assigned to it, $\mathbf{1}[\cdot]$ is the indicator of whether $A^{*}$ was the agent's top choice, and $\text{margin}$ is defined as:
 
-$$\text{margin}(m_i, A^{\ast}) = \begin{cases} 0.5 + 0.5\,c_i & \text{if } \operatorname{top}(m_i) = A^{\ast} \\ 0.5 - 0.5\,c_i & \text{otherwise} \end{cases}$$
+$$\text{margin}(m_i, A^{*}) = \begin{cases} 0.5 + 0.5\,c_i & \text{if } \operatorname{top}(m_i) = A^{*} \\ 0.5 - 0.5\,c_i & \text{otherwise} \end{cases}$$
 
 with $c_i \in [0,1]$ the agent's self-reported LLM confidence. This formulation rewards agents that were both correct and confident (maximum $= 1.0$), penalises agents that were wrong and confident (minimum $= 0.0$), and treats uncertain agents symmetrically regardless of outcome (both cases approach $0.5$ as $c_i \to 0$).
 
@@ -397,7 +397,7 @@ flowchart TB
         LOAD[Load reliability JSON from disk]
         CHECK{File exists?}
         RESTORE[Restore history + recompute metrics]
-        FRESH[Initialise at default ρ = 0.80]
+        FRESH[Initialise at default rho = 0.80]
         LOAD --> CHECK
         CHECK -->|Yes| RESTORE
         CHECK -->|No| FRESH
@@ -411,9 +411,9 @@ flowchart TB
     end
 
     subgraph DECIDE["Aggregation"]
-        ER_W[ER path: use ρ as normalised weights]
-        GAT_F[RBGA path: inject ρ as feature f⁹]
-        FINAL[make_final_decision → A*]
+        ER_W[ER path: use rho as normalised weights]
+        GAT_F[RBGA path: inject rho as feature f9]
+        FINAL[make_final_decision - returns recommended A-star]
         ER_W & GAT_F --> FINAL
     end
 
@@ -503,21 +503,21 @@ sequenceDiagram
     Note over Coordinator: Step 0 - Multimodal Pre-Assessment
 
     Coordinator->>Geo: analyze(scenario, all_agents)
-    Geo->>Geo: Fetch OSM tile → vision model → terrain type
+    Geo->>Geo: Fetch OSM tile, run vision model, return terrain type
     Geo-->>Coordinator: terrain_type + eligible_agent_ids
 
     Coordinator->>Cam: analyze_feeds(camera_feeds)
-    Cam->>Cam: Fetch frames → vision model → structured reports
+    Cam->>Cam: Fetch frames, run vision model, structured reports
     Cam-->>Coordinator: Camera intelligence (crowd/tsunami/fire)
-    Note over Coordinator: Inject camera intel into scenario[additional_context]
+    Note over Coordinator: Inject camera intel into scenario context
 
     par Step 1 - Parallel Assessment (enriched context)
         Coordinator->>Silver: evaluate_scenario()
-        Silver->>Silver: LLM Reasoning → Belief Distribution
+        Silver->>Silver: LLM Reasoning to Belief Distribution
         Silver-->>Coordinator: {belief, confidence, reasoning, key_concerns}
     and
         Coordinator->>Gold: evaluate_scenario()
-        Gold->>Gold: LLM Reasoning → Belief Distribution
+        Gold->>Gold: LLM Reasoning to Belief Distribution
         Gold-->>Coordinator: {belief, confidence, reasoning, key_concerns}
     end
 
@@ -534,13 +534,13 @@ sequenceDiagram
     Note over Coordinator: Step 3 - MCDA Scoring (independent of aggregation)
 
     Coordinator->>MCDA: rank_alternatives(criterion_scores, weights)
-    MCDA->>MCDA: TOPSIS: normalise → ideal solutions → closeness coefficients
+    MCDA->>MCDA: TOPSIS: normalise, compute ideal solutions, closeness coefficients
     MCDA-->>Coordinator: TOPSIS scores per alternative
 
     Note over Coordinator: Step 4 - Consensus Check
 
     Coordinator->>Consensus: check_consensus(agent_beliefs)
-    Consensus->>Consensus: Pairwise cosine similarity → CL
+    Consensus->>Consensus: Pairwise cosine similarity to CL
     Consensus-->>Coordinator: Consensus Level + Conflict List
 
     alt CL < 0.75 - Conflict Resolution
@@ -550,7 +550,7 @@ sequenceDiagram
     end
 
     Note over Coordinator: Step 5 - Final Decision
-    Note over Coordinator: Score(A_k) = 0.6 × belief_agg(A_k) + 0.4 × TOPSIS(A_k)
+    Note over Coordinator: Score(A_k) = 0.6 x belief_agg(A_k) + 0.4 x TOPSIS(A_k)
 
     Coordinator-->>User: Recommended Alternative + Reasoning + Metrics (JSON)
 ```
@@ -610,7 +610,7 @@ Both effects are structurally invisible to the 13 expert agents without Step 0, 
 
 **Experimental configuration.** Each scenario was run 5 times per LLM provider (15 runs per scenario, 45 total). Every run executed both ER and RBGA aggregation concurrently using the `--compare-methods` flag, ensuring that both mechanisms operated on identical agent assessments and that aggregation effects were fully isolated from LLM-provider variance. Each run involved 12 active agents (auto-selection excluded one peripherally relevant agent per scenario) with 1 LLM call per agent, totalling 12 API calls per run and 540 calls across the full experiment. Because both ER and RBGA paths consume the same cached assessments, running both methods concurrently incurs no additional LLM cost. Results were stored as structured JSON in the repository at `results/{scenario}/{run_id}/er/results.json` and `results/{scenario}/{run_id}/rbga/results.json`.
 
-**Metrics.** Four primary metrics are reported. The *Decision Quality Score* (DQS) is the weighted criterion-satisfaction value produced by the TOPSIS ranker for the recommended alternative. *Consensus Level* (CL) is the mean pairwise cosine similarity of agent belief vectors before aggregation. *Decision Confidence* (DC) is an exploratory composite metric that blends consensus and mean agent confidence as $DC = 0.6 \times CL + 0.4 \times \bar{c}$; the 0.6/0.4 split is heuristic and the $\bar{c}$ component relies on uncalibrated LLM self-reported confidence scores, which are known to exhibit overconfidence bias — DC should therefore be interpreted as a directional indicator rather than a calibrated measure. The *Extended Comparison Bandwidth* (ECB) measures the improvement of the collective DQS over the best individual agent's DQS in the same run. A fifth quantity, the *Combined Score* (CS), is the value of the blended selection criterion evaluated at the recommended alternative: $\text{CS}(A^{\ast}) = 0.6 \times m_{\text{agg}}(A^{\ast}) + 0.4 \times C^{\text{norm}}_{A^{\ast}}$, where $m_{\text{agg}}(A^{\ast})$ is the aggregated belief mass assigned to $A^{\ast}$ and $C^{\text{norm}}_{A^{\ast}}$ is its L1-normalised TOPSIS closeness coefficient. CS is the criterion the system maximises to select its recommendation and is distinct from DQS: DQS measures criterion-satisfaction quality alone (range ≈ 0.14–0.78 in the experimental corpus), whereas CS measures the weighted combination of agent consensus and criterion quality (range ≈ 0.10–0.57). CS is used as the primary provider-comparison metric in Section 4.4 because it reflects both dimensions of the recommendation decision.
+**Metrics.** Four primary metrics are reported. The *Decision Quality Score* (DQS) is the weighted criterion-satisfaction value produced by the TOPSIS ranker for the recommended alternative. *Consensus Level* (CL) is the mean pairwise cosine similarity of agent belief vectors before aggregation. *Decision Confidence* (DC) is an exploratory composite metric that blends consensus and mean agent confidence as $DC = 0.6 \times CL + 0.4 \times \bar{c}$; the 0.6/0.4 split is heuristic and the $\bar{c}$ component relies on uncalibrated LLM self-reported confidence scores, which are known to exhibit overconfidence bias — DC should therefore be interpreted as a directional indicator rather than a calibrated measure. The *Extended Comparison Bandwidth* (ECB) measures the improvement of the collective DQS over the best individual agent's DQS in the same run. A fifth quantity, the *Combined Score* (CS), is the value of the blended selection criterion evaluated at the recommended alternative: $\text{CS}(A^{*}) = 0.6 \times m_{\text{agg}}(A^{*}) + 0.4 \times C^{\text{norm}}_{A^{*}}$, where $m_{\text{agg}}(A^{*})$ is the aggregated belief mass assigned to $A^{*}$ and $C^{\text{norm}}_{A^{*}}$ is its L1-normalised TOPSIS closeness coefficient. CS is the criterion the system maximises to select its recommendation and is distinct from DQS: DQS measures criterion-satisfaction quality alone (range ≈ 0.14–0.78 in the experimental corpus), whereas CS measures the weighted combination of agent consensus and criterion quality (range ≈ 0.10–0.57). CS is used as the primary provider-comparison metric in Section 4.4 because it reflects both dimensions of the recommendation decision.
 
 ### 4.2 Overall System Performance
 
