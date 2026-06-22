@@ -582,7 +582,11 @@ class MetricsEvaluator:
         ]
 
         if not agent_confidences:
-            logger.warning("No agent confidences found")
+            _agents_participated = decision.get('agents_participated', -1)
+            if _agents_participated == 0:
+                logger.debug("No agent confidences (MCDA-only run, expected)")
+            else:
+                logger.warning("No agent confidences found in agent_opinions")
             return {
                 'average_confidence': decision_confidence,
                 'decision_confidence': decision_confidence,

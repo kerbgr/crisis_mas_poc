@@ -34,6 +34,7 @@ from agents.coordinator_agent import CoordinatorAgent
 from llm_integration.claude_client import ClaudeClient
 from llm_integration.openai_client import OpenAIClient
 from llm_integration.lmstudio_client import LMStudioClient
+from llm_integration.ollama_client import OllamaClient
 from decision_framework.evidential_reasoning import EvidentialReasoning
 from decision_framework.mcda_engine import MCDAEngine
 from decision_framework.consensus_model import ConsensusModel
@@ -84,6 +85,12 @@ def setup_logging(verbose: bool = False, log_file: Optional[str] = None):
         handlers=handlers,
         force=True  # override any handlers set by imported libs (e.g. numexpr)
     )
+
+    # Suppress noisy third-party loggers
+    logging.getLogger("numexpr").setLevel(logging.WARNING)
+    logging.getLogger("numexpr.utils").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
 
     logger = logging.getLogger(__name__)
     logger.info("="*80)
@@ -189,18 +196,19 @@ def prompt_llm_provider() -> str:
     Interactively ask the user which LLM provider to use.
 
     Returns:
-        Provider string: 'lmstudio', 'claude', or 'openai'
+        Provider string: 'lmstudio', 'ollama', 'claude', or 'openai'
     """
     print("\n" + "=" * 50)
     print("Select LLM Provider:")
-    print("  1. LM Studio  (local, default)")
-    print("  2. Claude API  (Anthropic)")
-    print("  3. OpenAI API")
+    print("  1. LM Studio  (local, port 1234, default)")
+    print("  2. Ollama     (local, port 11434)")
+    print("  3. Claude API  (Anthropic)")
+    print("  4. OpenAI API")
     print("=" * 50)
 
     choice = input("Enter choice [1]: ").strip()
 
-    provider_map = {"1": "lmstudio", "2": "claude", "3": "openai", "": "lmstudio"}
+    provider_map = {"1": "lmstudio", "2": "ollama", "3": "claude", "4": "openai", "": "lmstudio"}
     provider = provider_map.get(choice)
 
     if provider is None:
@@ -211,9 +219,36 @@ def prompt_llm_provider() -> str:
     return provider
 
 
+def prompt_vision_provider() -> str:
+    """
+    Interactively ask the user which vision provider to use.
+
+    Returns:
+        Provider string: 'ollama' or 'lmstudio'
+    """
+    print("\n" + "=" * 50)
+    print("Select Vision Provider:")
+    print("  1. Ollama     (local, port 11434, default)")
+    print("  2. LM Studio  (local, port 1234)")
+    print("=" * 50)
+
+    choice = input("Enter choice [1]: ").strip()
+
+    provider_map = {"1": "ollama", "2": "lmstudio", "": "ollama"}
+    provider = provider_map.get(choice)
+
+    if provider is None:
+        print(f"Invalid choice '{choice}'. Defaulting to Ollama.")
+        provider = "ollama"
+
+    print(f"Selected vision provider: {provider}\n")
+    return provider
+
+
 def initialize_llm_client(
     provider: str = "lmstudio",
-    api_keys: Optional[Dict[str, str]] = None
+    api_keys: Optional[Dict[str, str]] = None,
+    llm_model: Optional[str] = None,
 ):
     """
     Initialize LLM client based on provider.
@@ -221,15 +256,16 @@ def initialize_llm_client(
     Automatically falls back to LM Studio if no API keys are available.
 
     Args:
-        provider: LLM provider ('claude', 'openai', 'lmstudio')
-        api_keys: Dictionary of API keys
+        provider:  LLM provider ('claude', 'openai', 'lmstudio', 'ollama')
+        api_keys:  Dictionary of API keys
+        llm_model: Model name — used by Ollama (required) and optionally by
+                   LM Studio (identifies which loaded model to target).
 
     Returns:
         LLM client instance
     """
     logger = logging.getLogger(__name__)
 
-    # Try requested provider first
     if provider == "claude":
         api_key = api_keys.get('anthropic') if api_keys else None
         if api_key:
@@ -250,10 +286,40 @@ def initialize_llm_client(
             logger.warning("No OPENAI_API_KEY found. Falling back to LM Studio...")
             provider = "lmstudio"
 
-    # LM Studio doesn't require API key
+    elif provider == "ollama":
+        from llm_integration.ollama_client import OllamaClient, DEFAULT_MODEL as OLLAMA_DEFAULT
+        model = llm_model or OLLAMA_DEFAULT
+        client = OllamaClient(model=model)
+        logger.info("Initialized Ollama client (model=%s)", model)
+        client.warmup()
+        return client
+
     if provider == "lmstudio":
-        client = LMStudioClient()
-        logger.info("Initialized LM Studio client (local, no API key required)")
+        client = LMStudioClient(model=llm_model) if llm_model else LMStudioClient()
+        logger.info(
+            "Initialized LM Studio client (model=%s)",
+            llm_model or "auto (whatever is loaded)",
+        )
+        if client.is_available() and not client._probe():
+            if sys.stdin.isatty():
+                print("\n" + "=" * 50)
+                print("No model loaded in LM Studio!")
+                print("Load a model via the Developer tab or: lms load <model>")
+                print("=" * 50)
+                input("Press Enter when the model is ready: ")
+                if not client._probe():
+                    logger.warning(
+                        "Model still not responding - agents may fail. "
+                        "Continuing anyway..."
+                    )
+            else:
+                if not client.warmup():
+                    logger.warning(
+                        "LM Studio is reachable but no model loaded - "
+                        "agents will fail until a model is loaded"
+                    )
+        elif not client.is_available():
+            logger.warning("LM Studio server not reachable at %s", client.base_url)
         return client
 
     raise ValueError(f"Unknown LLM provider: {provider}")
@@ -355,20 +421,32 @@ def initialize_decision_framework() -> Dict[str, Any]:
 def initialize_coordinator(
     expert_agents: List[ExpertAgent],
     framework: Dict[str, Any],
-    aggregation_method: str = "ER"
+    aggregation_method: str = "ER",
+    vision_model: Optional[str] = None,
+    vision_provider: Optional[str] = None,
 ) -> CoordinatorAgent:
     """
     Initialize coordinator agent.
 
     Args:
-        expert_agents: List of expert agents
-        framework: Decision framework components
+        expert_agents:     List of expert agents
+        framework:         Decision framework components
         aggregation_method: Aggregation method ("ER" or "GAT")
+        vision_model:      Vision model name (e.g. 'minicpm-v:latest', 'llava:7b')
+        vision_provider:   Vision provider ('ollama' or 'lmstudio')
 
     Returns:
         CoordinatorAgent instance
     """
     logger = logging.getLogger(__name__)
+
+    from llm_integration.vision_client import VisionClient, DEFAULT_BASE_URL as _OLLAMA_URL
+    _LMSTUDIO_URL = "http://localhost:1234/v1"
+    base_url = _LMSTUDIO_URL if vision_provider == "lmstudio" else _OLLAMA_URL
+    vc_kwargs: dict = {"base_url": base_url}
+    if vision_model:
+        vc_kwargs["model"] = vision_model
+    shared_vision_client = VisionClient(**vc_kwargs)
 
     coordinator = CoordinatorAgent(
         expert_agents=expert_agents,
@@ -377,8 +455,8 @@ def initialize_coordinator(
         consensus_model=framework['consensus_model'],
         parallel_assessment=True,
         aggregation_method=aggregation_method.upper(),
-        vision_agent=GeospatialContextAgent(),
-        camera_agent=CameraFeedAgent(),
+        vision_agent=GeospatialContextAgent(vision_client=shared_vision_client),
+        camera_agent=CameraFeedAgent(vision_client=shared_vision_client),
     )
 
     logger.info(f"Initialized coordinator with {len(expert_agents)} agents (aggregation={aggregation_method.upper()})")
@@ -684,7 +762,8 @@ def evaluate_decision(
     decision: Dict[str, Any],
     individual_decisions: Optional[List[Dict[str, Any]]] = None,
     baseline_assessment: Optional[Dict[str, Any]] = None,
-    ground_truth: Optional[Dict[str, Any]] = None
+    ground_truth: Optional[Dict[str, Any]] = None,
+    silent: bool = False
 ) -> Dict[str, Any]:
     """
     Evaluate decision quality and calculate metrics.
@@ -700,10 +779,11 @@ def evaluate_decision(
     """
     logger = logging.getLogger(__name__)
 
-    logger.info("")
-    logger.info("="*80)
-    logger.info("EVALUATING DECISION QUALITY")
-    logger.info("="*80)
+    if not silent:
+        logger.info("")
+        logger.info("="*80)
+        logger.info("EVALUATING DECISION QUALITY")
+        logger.info("="*80)
 
     evaluator = MetricsEvaluator()
 
@@ -715,36 +795,47 @@ def evaluate_decision(
         decision,
         ground_truth=ground_truth
     )
-    logger.info(f"Decision Quality Score: {metrics['decision_quality']['weighted_score']:.3f}")
+    if not silent:
+        logger.info(f"Decision Quality Score: {metrics['decision_quality']['weighted_score']:.3f}")
 
     # 2. Consensus Level
-    if 'collection_info' in decision and 'assessments' in decision['collection_info']:
-        metrics['consensus'] = evaluator.calculate_consensus_metrics(
-            decision['collection_info']['assessments']
-        )
-        logger.info(f"Consensus Level: {metrics['consensus']['consensus_level']:.3f}")
+    _assessments = (decision.get('collection_info') or {}).get('assessments') or {}
+    if _assessments:
+        metrics['consensus'] = evaluator.calculate_consensus_metrics(_assessments)
+        if not silent:
+            logger.info(f"Consensus Level: {metrics['consensus']['consensus_level']:.3f}")
     else:
-        logger.warning("No assessment data available for consensus calculation")
+        metrics['consensus'] = {
+            'consensus_level': decision.get('consensus_level', 0.0),
+            'message': 'No agent assessments (MCDA-only or no agents responded)'
+        }
+        if not silent:
+            logger.info(f"Consensus Level: {metrics['consensus']['consensus_level']:.3f} (no agent data)")
         metrics['consensus'] = {'consensus_level': 0.0, 'pairwise_agreements': {}}
 
     # 3. Confidence Score
     metrics['confidence'] = evaluator.calculate_confidence_metrics(decision)
-    logger.info(f"Confidence Score: {metrics['confidence']['decision_confidence']:.3f}")
+    if not silent:
+        logger.info(f"Confidence Score: {metrics['confidence']['decision_confidence']:.3f}")
 
     # 4. Expert Contribution Balance
-    if 'collection_info' in decision and 'assessments' in decision['collection_info']:
+    _ecb_assessments = (decision.get('collection_info') or {}).get('assessments') or {}
+    if _ecb_assessments:
         metrics['expert_contribution_balance'] = evaluator.calculate_expert_contribution_balance(
-            decision['collection_info']['assessments']
+            _ecb_assessments
         )
-        logger.info(f"Expert Balance: {metrics['expert_contribution_balance']['balance_score']:.3f}")
+        if not silent:
+            logger.info(f"Expert Balance: {metrics['expert_contribution_balance']['balance_score']:.3f}")
     else:
-        logger.warning("No assessment data available for expert balance calculation")
+        if not silent:
+            logger.debug("No assessment data for expert balance (MCDA-only or no agents)")
         metrics['expert_contribution_balance'] = {'balance_score': 0.0, 'gini_coefficient': 1.0}
 
     # 5. Compare to individual agents if available (NEW - comprehensive comparison)
     if individual_decisions:
-        logger.info("")
-        logger.info("Comparing multi-agent consensus with EACH individual agent...")
+        if not silent:
+            logger.info("")
+            logger.info("Comparing multi-agent consensus with EACH individual agent...")
 
         individual_metrics_list = []
         multi_agent_quality = metrics['decision_quality']['weighted_score']
@@ -801,38 +892,39 @@ def evaluate_decision(
         }
 
         # Log comprehensive comparison
-        logger.info("")
-        logger.info("="*80)
-        logger.info("MULTI-AGENT vs INDIVIDUAL AGENTS COMPARISON")
-        logger.info("="*80)
+        if not silent:
+            logger.info("")
+            logger.info("="*80)
+            logger.info("MULTI-AGENT vs INDIVIDUAL AGENTS COMPARISON")
+            logger.info("="*80)
 
-        logger.info("\nDecision Quality:")
-        logger.info(f"  Multi-agent consensus: {multi_agent_quality:.3f}")
-        logger.info(f"  Individual agents:")
-        logger.info(f"    Average:  {avg_individual_quality:.3f}")
-        logger.info(f"    Range:    {min_individual_quality:.3f} - {max_individual_quality:.3f}")
-        logger.info(f"  Improvement over average: {((multi_agent_quality - avg_individual_quality) / max(avg_individual_quality, 0.001)) * 100:+.1f}%")
+            logger.info("\nDecision Quality:")
+            logger.info(f"  Multi-agent consensus: {multi_agent_quality:.3f}")
+            logger.info(f"  Individual agents:")
+            logger.info(f"    Average:  {avg_individual_quality:.3f}")
+            logger.info(f"    Range:    {min_individual_quality:.3f} - {max_individual_quality:.3f}")
+            logger.info(f"  Improvement over average: {((multi_agent_quality - avg_individual_quality) / max(avg_individual_quality, 0.001)) * 100:+.1f}%")
 
-        logger.info("\nConfidence Levels:")
-        logger.info(f"  Multi-agent consensus: {multi_agent_confidence:.3f}")
-        logger.info(f"  Individual agents (avg): {avg_individual_confidence:.3f}")
+            logger.info("\nConfidence Levels:")
+            logger.info(f"  Multi-agent consensus: {multi_agent_confidence:.3f}")
+            logger.info(f"  Individual agents (avg): {avg_individual_confidence:.3f}")
 
-        logger.info("\nConsensus Agreement:")
-        logger.info(f"  Agents agreeing with consensus: {agreements}/{len(individual_metrics_list)} ({agreement_rate:.1f}%)")
-        logger.info(f"  Multi-agent recommendation: {multi_agent_recommendation}")
+            logger.info("\nConsensus Agreement:")
+            logger.info(f"  Agents agreeing with consensus: {agreements}/{len(individual_metrics_list)} ({agreement_rate:.1f}%)")
+            logger.info(f"  Multi-agent recommendation: {multi_agent_recommendation}")
 
-        # Show individual agent recommendations
-        logger.info("\nIndividual Agent Decisions:")
-        for ind_metrics in sorted(individual_metrics_list, key=lambda x: x['decision_quality']['weighted_score'], reverse=True):
-            agree_marker = "✓" if ind_metrics['agrees_with_consensus'] else "✗"
-            logger.info(
-                f"  [{agree_marker}] {ind_metrics['agent_name']}: "
-                f"{ind_metrics['recommended_alternative']} "
-                f"(quality: {ind_metrics['decision_quality']['weighted_score']:.3f}, "
-                f"confidence: {ind_metrics['confidence']:.2f})"
-            )
+            # Show individual agent recommendations
+            logger.info("\nIndividual Agent Decisions:")
+            for ind_metrics in sorted(individual_metrics_list, key=lambda x: x['decision_quality']['weighted_score'], reverse=True):
+                agree_marker = "✓" if ind_metrics['agrees_with_consensus'] else "✗"
+                logger.info(
+                    f"  [{agree_marker}] {ind_metrics['agent_name']}: "
+                    f"{ind_metrics['recommended_alternative']} "
+                    f"(quality: {ind_metrics['decision_quality']['weighted_score']:.3f}, "
+                    f"confidence: {ind_metrics['confidence']:.2f})"
+                )
 
-        logger.info("")
+            logger.info("")
 
     # 5b. Compare to baseline if available (LEGACY - for backward compatibility)
     elif baseline_assessment:
@@ -952,9 +1044,10 @@ def generate_visualizations(
 
     # Generate standard plots only if not comparison_only mode
     if not comparison_only:
+        assessments = (decision.get('collection_info') or {}).get('assessments', {})
         # Prepare visualization data
         viz_data = {
-            'agent_assessments': decision['collection_info']['assessments'],
+            'agent_assessments': assessments,
             'consensus_history': [decision['consensus_level']],  # Single point for now
             'criteria_weights': {
                 'Safety': 0.35,
@@ -969,7 +1062,7 @@ def generate_visualizations(
                     'name': assessment.get('agent_name', agent_id),
                     'expertise': assessment.get('expertise', 'General')
                 }
-                for agent_id, assessment in decision['collection_info']['assessments'].items()
+                for agent_id, assessment in assessments.items()
             }
         }
 
@@ -1263,7 +1356,9 @@ def run_comparative_analysis(
     scenario: Dict[str, Any],
     alternatives: List[Dict[str, Any]],
     output_dir: Path,
-    verbose: bool = False
+    verbose: bool = False,
+    vision_model: Optional[str] = None,
+    vision_provider: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Run comparative analysis of ER vs GAT aggregation methods.
@@ -1311,6 +1406,15 @@ def run_comparative_analysis(
             "Run 'python scripts/train_gat.py' to generate them.", _weights_path
         )
 
+    # Shared vision client for all method runs (warmup once, reuse)
+    from llm_integration.vision_client import VisionClient, DEFAULT_BASE_URL as _OLLAMA_URL
+    _LMSTUDIO_URL = "http://localhost:1234/v1"
+    _vc_base = _LMSTUDIO_URL if vision_provider == "lmstudio" else _OLLAMA_URL
+    _vc_kwargs: dict = {"base_url": _vc_base}
+    if vision_model:
+        _vc_kwargs["model"] = vision_model
+    _vc = VisionClient(**_vc_kwargs)
+
     # Run with each aggregation method
     for method in methods_to_run:
         logger.info(f"\n--- Running with {method} aggregation ---")
@@ -1328,8 +1432,8 @@ def run_comparative_analysis(
                 consensus_model=framework['consensus_model'],
                 parallel_assessment=True,
                 aggregation_method=method,
-                vision_agent=GeospatialContextAgent(),
-                camera_agent=CameraFeedAgent(),
+                vision_agent=GeospatialContextAgent(vision_client=_vc),
+                camera_agent=CameraFeedAgent(vision_client=_vc),
             )
             decision = method_coordinator.make_final_decision(scenario, alternatives)
 
@@ -1339,10 +1443,9 @@ def run_comparative_analysis(
         metrics = {}
         metrics['decision_quality'] = evaluator.calculate_decision_quality(decision)
 
-        if 'collection_info' in decision and 'assessments' in decision['collection_info']:
-            metrics['consensus'] = evaluator.calculate_consensus_metrics(
-                decision['collection_info']['assessments']
-            )
+        _ca = (decision.get('collection_info') or {}).get('assessments') or {}
+        if _ca:
+            metrics['consensus'] = evaluator.calculate_consensus_metrics(_ca)
         else:
             metrics['consensus'] = {'consensus_level': decision.get('consensus_level', 0.0)}
 
@@ -1578,10 +1681,41 @@ For more information, see README.md
         '--llm-provider',
         type=str,
         default=None,
-        choices=['claude', 'openai', 'lmstudio'],
-        help='LLM provider to use (claude, openai, lmstudio). '
+        choices=['claude', 'openai', 'lmstudio', 'ollama'],
+        help='LLM provider to use (claude, openai, lmstudio, ollama). '
              'If omitted, prompts interactively when run in a terminal; '
              'defaults to lmstudio in non-interactive (scripted) mode.'
+    )
+
+    parser.add_argument(
+        '--llm-model',
+        type=str,
+        default=None,
+        metavar='MODEL',
+        help='Model name for the selected LLM provider. '
+             'For Ollama: e.g. qwen3.5:35b, llama3.1:8b (default: qwen3.5:35b). '
+             'For LM Studio: model identifier as shown in LM Studio '
+             '(optional — LM Studio uses whichever model is loaded if omitted).'
+    )
+
+    parser.add_argument(
+        '--vision-provider',
+        type=str,
+        default=None,
+        choices=['ollama', 'lmstudio'],
+        help='Provider for vision analysis (camera feeds, geospatial). '
+             'ollama: localhost:11434 (default). '
+             'lmstudio: localhost:1234 — load a vision-capable model in LM Studio first.'
+    )
+
+    parser.add_argument(
+        '--vision-model',
+        type=str,
+        default=None,
+        metavar='MODEL',
+        help='Vision model for camera/geospatial analysis. '
+             'For Ollama: e.g. minicpm-v:latest, llava:7b (default: minicpm-v:latest). '
+             'For LM Studio: model identifier as shown in LM Studio.'
     )
 
     parser.add_argument(
@@ -1668,6 +1802,21 @@ For more information, see README.md
     else:
         llm_provider = 'lmstudio'
 
+    # Prompt for vision provider then model interactively if not supplied via CLI
+    if sys.stdin.isatty():
+        if args.vision_provider is None:
+            args.vision_provider = prompt_vision_provider()
+        if args.vision_model is None:
+            from llm_integration.vision_client import DEFAULT_MODEL as _DEFAULT_VISION_MODEL
+            _vp_label = args.vision_provider or "ollama"
+            print("\n" + "=" * 50)
+            print("Vision model for camera/geospatial analysis")
+            print(f"  ({_vp_label}, default: {_DEFAULT_VISION_MODEL})")
+            print("=" * 50)
+            _vm = input(f"Enter model [press Enter for {_DEFAULT_VISION_MODEL}]: ").strip()
+            if _vm:
+                args.vision_model = _vm
+
     # Setup output directory with structure: results/scenario_name/run_X_<provider>
     base_output_dir = Path(args.output_dir)
     scenario_output_dir = base_output_dir / scenario_name
@@ -1724,7 +1873,9 @@ For more information, see README.md
         # ===== 2. INITIALIZE COMPONENTS =====
         logger.info("Step 3/6: Initializing Components")
 
-        llm_client = initialize_llm_client(llm_provider, api_keys)
+        llm_client = initialize_llm_client(
+            llm_provider, api_keys, llm_model=args.llm_model
+        )
 
         # Determine which agents to use based on expert selection mode
         selected_agent_ids = args.agents
@@ -1757,7 +1908,9 @@ For more information, see README.md
         coordinator = initialize_coordinator(
             expert_agents,
             framework,
-            aggregation_method=args.aggregation_method
+            aggregation_method=args.aggregation_method,
+            vision_model=args.vision_model,
+            vision_provider=args.vision_provider,
         )
 
         # ===== 3. RUN DECISION PROCESS =====
@@ -1777,7 +1930,9 @@ For more information, see README.md
                 scenario=scenario,
                 alternatives=alternatives,
                 output_dir=output_dir,
-                verbose=args.verbose
+                verbose=args.verbose,
+                vision_model=args.vision_model,
+                vision_provider=args.vision_provider,
             )
 
             # Use the better-performing method's decision for subsequent evaluation
@@ -1839,12 +1994,20 @@ For more information, see README.md
                     method_decision = comparative_results['methods'][method]['decision']
                     method_metrics = comparative_results['methods'][method]['metrics']
 
+                    if method_decision.get('error'):
+                        logger.warning(
+                            f"Skipping {method} visualization — decision failed: "
+                            f"{method_decision['error']}"
+                        )
+                        continue
+
                     # Enrich method metrics with individual comparisons so the
                     # decision_comparison plot has data to render
                     if individual_decisions:
                         full_method_metrics = evaluate_decision(
                             method_decision,
-                            individual_decisions=individual_decisions
+                            individual_decisions=individual_decisions,
+                            silent=True
                         )
                         method_metrics['individual_comparisons'] = full_method_metrics.get(
                             'individual_comparisons', {}

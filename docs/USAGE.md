@@ -38,7 +38,12 @@ Options:
   --criteria PATH              Criteria weights JSON (default: scenarios/criteria_weights.json)
   --output-dir PATH            Output directory for results (default: results)
   --config PATH                Configuration JSON file
-  --llm-provider PROVIDER      LLM provider: claude, openai, or lmstudio (default: claude)
+  --llm-provider PROVIDER      LLM provider: claude, openai, lmstudio, or ollama (default: claude)
+  --llm-model MODEL            Model name for the selected LLM provider (e.g. qwen3:8b for Ollama,
+                               or a specific model tag for LM Studio)
+  --vision-provider PROVIDER   Vision provider for camera/geospatial agents: ollama or lmstudio (default: ollama)
+  --vision-model MODEL         Vision model name (default: minicpm-v:latest for Ollama)
+                               NOTE: Do NOT use llama3.2-vision -- broken in Ollama 0.30.x (mllama regression)
   --no-llm                     Disable LLM enhancement (use rule-based reasoning)
   --no-viz                     Disable visualization generation
   --no-baseline                Skip single-agent baseline comparison
@@ -75,6 +80,18 @@ python main.py --llm-provider openai
 # First, start LM Studio and load a model (e.g., Llama 2, Mistral)
 # Then run:
 python main.py --llm-provider lmstudio
+# No API key required, runs completely offline
+```
+
+**Using Ollama (Local Model):**
+```bash
+# Pull a model first (one-time):
+ollama pull qwen3:8b          # fast, good quality
+ollama pull llama3.1:8b       # alternative
+
+# Run with Ollama:
+python main.py --llm-provider ollama --llm-model qwen3:8b
+# Ollama loads models lazily -- the client waits automatically (warmup).
 # No API key required, runs completely offline
 ```
 
@@ -515,22 +532,23 @@ See `scenarios/scenario_template.json` for complete template with all options.
 
 The system supports three LLM providers, each with different trade-offs:
 
-| Feature | Claude (Anthropic) | OpenAI (GPT-4) | LM Studio (Local) |
-|---------|-------------------|----------------|-------------------|
-| **Quality** | Excellent | Excellent | Good-Very Good |
-| **Cost per decision** | ~$0.015-0.020 | ~$0.020-0.060 | Free |
-| **Latency** | 2-4s per agent | 2-4s per agent | 1-5s per agent (varies by model) |
-| **Privacy** | Cloud (Anthropic) | Cloud (OpenAI) | 100% Local |
-| **Internet Required** | Yes | Yes | No |
-| **Setup Complexity** | API key only | API key only | Download model + Run LM Studio |
-| **Best For** | Production, complex reasoning | Production, established workflows | Development, privacy-sensitive, offline |
+| Feature | Claude (Anthropic) | OpenAI (GPT-4) | LM Studio (Local) | Ollama (Local) |
+| ------- | ------------------ | -------------- | ----------------- | -------------- |
+| **Quality** | Excellent | Excellent | Good-Very Good | Good-Very Good |
+| **Cost per decision** | ~$0.015-0.020 | ~$0.020-0.060 | Free | Free |
+| **Latency** | 2-4s per agent | 2-4s per agent | 1-5s per agent | 1-10s per agent (model-dependent) |
+| **Privacy** | Cloud (Anthropic) | Cloud (OpenAI) | 100% Local | 100% Local |
+| **Internet Required** | Yes | Yes | No | No |
+| **Model loading** | Instant | Instant | Manual (LM Studio UI) | Lazy (auto on first request; warmup built-in) |
+| **Setup Complexity** | API key only | API key only | Download model + Run LM Studio | `ollama pull <model>` |
+| **Best For** | Production, complex reasoning | Production, established workflows | Development, privacy-sensitive, offline | CLI-first local inference, scripted pipelines |
 
 **Recommendations:**
 - **Production/Critical Decisions**: Claude or OpenAI GPT-4 (best accuracy) or a Private Infrastructure.
-- **Development/Testing**: LM Studio (no costs, fast iteration)
-- **Privacy GDPR Compliance**: LM Studio or Private Infrastructure (data never leaves your machine)
-- **High Volume**: LM Studio or OpenAI GPT-3.5 (lower cost per call)
-- **Offline/Air-Gapped**: LM Studio - Private Infrastructure only for Sensitive Information Handling (like EUCI, no internet connection needed)
+- **Development/Testing**: LM Studio or Ollama (no costs, fast iteration)
+- **Privacy/GDPR Compliance**: LM Studio or Ollama (data never leaves your machine)
+- **High Volume**: LM Studio, Ollama, or OpenAI GPT-3.5 (lower cost per call)
+- **Offline/Air-Gapped**: LM Studio or Ollama (no internet connection needed; required for EUCI-class sensitive information)
 
 ## Programmatic Usage
 

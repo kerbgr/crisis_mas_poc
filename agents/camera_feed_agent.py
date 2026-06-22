@@ -332,11 +332,15 @@ class CameraFeedAgent:
         if not reports:
             return ""
 
+        # Only include reports that actually produced intelligence (Ollama was running)
+        useful = [r for r in reports if r.get("status") == "ok"]
+        if not useful:
+            return ""
+
         lines = ["[Camera Feed Intelligence]"]
-        for r in reports:
+        for r in useful:
             label = r.get("label") or r.get("source", "camera")
             lines.append(f"\n  Feed: {label} ({r.get('mode', 'general')} mode)")
-            lines.append(f"  Status: {r.get('status', 'unknown')}")
             lines.append(f"  Severity: {r.get('situation_severity', 'unknown')}")
             lines.append(f"  Summary: {r.get('situation_summary', 'N/A')}")
 

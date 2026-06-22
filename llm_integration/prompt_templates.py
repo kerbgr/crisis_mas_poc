@@ -2472,6 +2472,10 @@ Provide your expert environmental advisory assessment as a JSON object using the
             lines.append(f"\nAdditional Context:")
             lines.append(f"{scenario['description']}")
 
+        # Vision subsystem intelligence (camera feeds, geospatial) injected by coordinator
+        if scenario.get('additional_context'):
+            lines.append(f"\n{scenario['additional_context']}")
+
         return "\n".join(lines)
 
     def format_alternatives(self, alternatives: List[Dict[str, Any]]) -> str:

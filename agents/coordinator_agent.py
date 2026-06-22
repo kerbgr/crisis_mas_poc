@@ -839,7 +839,8 @@ class CoordinatorAgent:
             >>> print(decision['explanation'])
         """
         logger.info(
-            f"Making final decision for scenario {scenario.get('scenario_id', 'unknown')}"
+            f"Making final decision for scenario "
+            f"{scenario.get('scenario_id') or scenario.get('id', 'unknown')}"
         )
 
         start_time = datetime.now()
@@ -1360,12 +1361,17 @@ class CoordinatorAgent:
             'confidence': 0.0,
             'consensus_level': 0.0,
             'final_scores': {},
+            'er_scores': {},
+            'mcda_scores': {},
             'agent_opinions': {},
+            'agents_participated': 0,
             'consensus_reached': False,
             'conflicts': [],
             'resolution': None,
+            'collection_info': {'assessments': {}},
             'timestamp': datetime.now().isoformat(),
             'scenario_id': scenario.get('scenario_id') or scenario.get('id', 'unknown'),
+            'decision_time_seconds': 0.0,
             'error': error_message,
             'explanation': f"ERROR: {error_message}\n\nUnable to generate decision."
         }

@@ -1409,7 +1409,7 @@ class SystemVisualizer:
         scenario = comparative_results.get('scenario', 'Unknown')
         scenario_type = comparative_results.get('scenario_type', 'Unknown')
 
-        fig = plt.figure(figsize=(16, 10))
+        fig = plt.figure(figsize=(16, 10), layout='constrained')
         fig.suptitle(
             f'Multi-Method Comparative Analysis\nScenario: {scenario} ({scenario_type.upper()})',
             fontsize=15, weight='bold', y=0.99
@@ -1522,7 +1522,6 @@ class SystemVisualizer:
         else:
             ax_delta.axis('off')
 
-        plt.tight_layout()
         full_path = self.output_dir / save_path
         plt.savefig(full_path, dpi=self.dpi, bbox_inches='tight', facecolor='white')
         plt.close()

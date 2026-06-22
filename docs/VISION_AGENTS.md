@@ -370,10 +370,16 @@ frequently wrap JSON in prose or markdown fences; this handles most cases robust
 
 ### Model recommendations
 
-| Model | Size | Geospatial | Camera feed |
-|---|---|---|---|
-| `llama3.2-vision` | 11B, ~7 GB | Reliable for island detection | Full structured output, natural summaries |
-| `moondream` | 1.9B, ~1.8 GB | Not usable — returns template default | Boolean fields only; enums and free-text unreliable |
+| Model | Size | Geospatial | Camera feed | Notes |
+| --- | --- | --- | --- | --- |
+| `minicpm-v` | 5.5 GB | Good island detection | Full structured output, natural summaries | **Recommended.** Works with Ollama 0.30.x. |
+| `llava:7b` | ~4 GB | Adequate | Good instruction following | Solid alternative to minicpm-v. |
+| `moondream` | 1.9B, ~1.8 GB | Not usable - returns template default | Boolean fields only; enums and free-text unreliable | Fast but limited. |
+| `llama3.2-vision` | 11B, ~7 GB | Was reliable pre-0.30 | Was reliable pre-0.30 | **Broken in Ollama 0.30.x** - mllama architecture regression ([issue #16490](https://github.com/ollama/ollama/issues/16490)). Returns HTTP 500. Do not use. |
+
+> **Important:** `minicpm-v` natural-language summaries (`situation_summary`, `reasoning`) are reliable.
+> Binary JSON fields (e.g. `tsunami_indicators_present`) can occasionally contradict the prose — always
+> read the summary alongside the flags when making operational decisions.
 
 ---
 
@@ -460,9 +466,13 @@ Both default to `None` — omitting them leaves the pipeline fully unchanged.
 
 **Ollama setup:**
 ```bash
-ollama pull llama3.2-vision   # 11B — recommended
-ollama pull moondream          # 1.9B — booleans only, much faster
+ollama pull minicpm-v          # 5.5 GB — recommended; works with Ollama 0.30.x
+ollama pull llava:7b           # 4 GB — solid alternative
+ollama pull moondream          # 1.9 GB — booleans only, much faster but limited
+# NOTE: llama3.2-vision is broken in Ollama 0.30.x (mllama regression, issue #16490)
 ```
+
+**LM Studio setup:** Load any vision-capable model (LLaVA, BakLLaVA, etc.) in the LM Studio UI, then pass `--vision-provider lmstudio` at the CLI.
 
 **Optional OpenCV for RTSP:**
 ```bash

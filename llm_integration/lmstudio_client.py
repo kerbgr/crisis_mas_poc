@@ -469,6 +469,84 @@ class LMStudioClient:
             f"LMStudioClient initialized (endpoint={base_url}, model={self.model})"
         )
 
+    def is_available(self) -> bool:
+        """Return True if the server is reachable."""
+        import requests as _requests
+        try:
+            r = _requests.get(f"{self.base_url}/models", timeout=3)
+            return r.status_code == 200
+        except Exception:
+            return False
+
+    def is_serving(self) -> bool:
+        """Return True if at least one model is listed by the server."""
+        import requests as _requests
+        try:
+            r = _requests.get(f"{self.base_url}/models", timeout=5)
+            if r.status_code == 200:
+                return len(r.json().get("data", [])) > 0
+        except Exception:
+            pass
+        return False
+
+    def _probe(self) -> bool:
+        """
+        Return True if the server actually serves a chat completion.
+
+        LM Studio's /v1/models can list models even when none is loaded in RAM.
+        This sends a minimal 1-token request to confirm the model is hot.
+        Returns False quickly (< 200 ms) on a 400 "No models loaded" error.
+        """
+        import requests as _requests
+        try:
+            r = _requests.post(
+                f"{self.base_url}/chat/completions",
+                json={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": "1"}],
+                    "max_tokens": 1,
+                },
+                timeout=10,
+            )
+            return r.status_code == 200
+        except Exception:
+            return False
+
+    def warmup(self, timeout: int = 60) -> bool:
+        """
+        Wait until the server has a model loaded and actually serving (tiers 1+2).
+
+        First checks server reachability, then probes with a real 1-token completion
+        to confirm the model is in RAM. LM Studio lists models via /v1/models even
+        when nothing is loaded, so the probe is necessary to catch the "No models
+        loaded" 400 error before agents start.
+
+        Returns:
+            True when ready, False on timeout or server unreachable.
+        """
+        if not self.is_available():
+            logger.warning("LMStudioClient: server not reachable at %s", self.base_url)
+            return False
+        if self._probe():
+            return True
+        logger.warning(
+            "LMStudioClient: no model loaded at %s — waiting up to %ds. "
+            "Load a model in LM Studio (Developer tab) or run: lms load <model>",
+            self.base_url, timeout,
+        )
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            if self._probe():
+                logger.info("LMStudioClient: model is ready")
+                return True
+            time.sleep(3)
+        logger.warning(
+            "LMStudioClient: no model became ready within %ds — "
+            "agents will fail until a model is loaded",
+            timeout,
+        )
+        return False
+
     def generate_assessment(self, prompt: str, max_tokens: int = 2000,
                           system_prompt: Optional[str] = None,
                           temperature: float = 0.7) -> Dict[str, Any]:
