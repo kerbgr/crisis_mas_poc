@@ -377,7 +377,12 @@ When $CL < 0.75$, the system flags the decision as insufficiently agreed and tri
 
 The reliability tracker maintains a per-agent performance history that is updated after every scenario run and persisted to disk. Because ground truth is unavailable in the simulation setting, a consensus-based proxy is used: the system's own final recommendation is treated as the reference outcome for the current run, and each agent's assessment is scored against it using a three-component accuracy measure:
 
-$$a_k = 0.4 \cdot m_i(A^r) + 0.3 \cdot \mathbf{1}[\text{top}(m_i) = A^r] + 0.3 \cdot \text{margin}(m_i, A^r)$$
+$$
+a_k = 0.4 \cdot m_i(A^r)
+     + 0.3 \cdot \mathbf{1}\!\left[\operatorname{top}(m_i) = A^r\right]
+     + 0.3 \cdot \operatorname{margin}(m_i, A^r)
+$$
+
 
 where $A^r$ is the recommended alternative, $m_i(A^r)$ is the belief mass agent $i$ assigned to it, $\mathbf{1}[\cdot]$ is the indicator of whether $A^r$ was the agent's top choice, and $\text{margin}$ is defined as:
 
