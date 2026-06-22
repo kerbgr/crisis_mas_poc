@@ -134,7 +134,6 @@ AEGIS is organised into seven functional layers, each with clearly demarcated re
 ```mermaid
 flowchart TD
     subgraph UI["User Interface Layer"]
-        direction LR
         CLI[Command Line Interface]
         JSON_IN[JSON Input Scenarios]
         JSON_OUT[JSON Output Results]
@@ -142,38 +141,38 @@ flowchart TD
     end
 
     subgraph Coord["Coordination Layer"]
-        direction LR
         COORD[CoordinatorAgent]
         ORCH[Orchestration Logic]
         CONS_BUILD[Consensus Builder]
     end
 
     subgraph Vision["Vision Pre-Assessment Layer"]
-        direction LR
-        GEO[GeospatialContextAgent - OSM tile terrain classifier]
+        GEO[GeospatialContextAgent - OSM terrain classifier]
         CAM[CameraFeedAgent - Multimodal feed analyser]
     end
 
-    subgraph Agents["Agent Layer - 13 Expert Roles"]
-        direction LR
+    subgraph Silver["Agent Layer - SILVER Level - 8 Agents"]
         BA[BaseAgent]
-        subgraph Silver["SILVER Level - 8 Agents"]
-            direction LR
-            subgraph SilverTactical["Tactical - 4"]
-                T1[Police On-Scene] --- T2[Fire On-Scene] --- T3[Coast Guard On-Scene] --- T4[Medical Expert]
-            end
-            subgraph SilverAdvisory["Advisory - 4"]
-                A1[Meteorologist] --- A2[Logistics] --- A3[PSAP Commander] --- A4[Environmental Scientist]
-            end
-        end
-        subgraph Gold["GOLD Level - 5 Agents"]
-            G1[Police Regional] --- G2[Fire Regional] --- G3[Coast Guard National] --- G4[Civil Protection Director] --- G5[Medical Infrastructure]
-        end
         RT[ReliabilityTracker]
+        T1[Police On-Scene]
+        T2[Fire On-Scene]
+        T3[Coast Guard On-Scene]
+        T4[Medical Expert]
+        A1[Meteorologist]
+        A2[Logistics]
+        A3[PSAP Commander]
+        A4[Environmental Scientist]
+    end
+
+    subgraph Gold["Agent Layer - GOLD Level - 5 Agents"]
+        G1[Police Regional]
+        G2[Fire Regional]
+        G3[Coast Guard National]
+        G4[Civil Protection Director]
+        G5[Medical Infrastructure]
     end
 
     subgraph LLM["LLM Integration Layer"]
-        direction LR
         CLAUDE[Claude Sonnet 4]
         OPENAI[GPT-4o]
         LMSTUDIO[GPT-OSS 20B / LM Studio]
@@ -181,15 +180,13 @@ flowchart TD
     end
 
     subgraph DF["Decision Framework Layer"]
-        direction LR
         ER[Evidential Reasoning]
-        GAT[RBGA Aggregator]
+        RBGA[RBGA Aggregator]
         CONSENSUS[Consensus Model]
         MCDA[MCDA - TOPSIS]
     end
 
-    subgraph Eval["Evaluation & Utilities Layer"]
-        direction LR
+    subgraph Eval["Evaluation and Utilities Layer"]
         METRICS[Metrics Calculator]
         VIS[Visualizations]
         VALID[Validation]
@@ -198,20 +195,25 @@ flowchart TD
     UI -->|Load Scenario| Coord
     Coord -->|Step 0 - Pre-assess| Vision
     Vision -->|Terrain type + eligible agents| Coord
-    Vision -->|Camera intel injected into additional_context| Agents
-    Coord -->|Dispatch Tasks| Agents
-    Agents <-->|LLM Requests / Responses| LLM
-    Agents -->|Expert Assessments| DF
+    Vision -->|Camera intel to additional context| Silver
+    Vision -->|Camera intel to additional context| Gold
+    Coord -->|Dispatch Tasks| Silver
+    Coord -->|Dispatch Tasks| Gold
+    Silver -->|LLM Requests| LLM
+    Gold -->|LLM Requests| LLM
+    LLM -->|LLM Responses| Silver
+    LLM -->|LLM Responses| Gold
+    Silver -->|Expert Assessments| DF
+    Gold -->|Expert Assessments| DF
     DF -->|Aggregated Decision| Coord
     Coord -->|Final Decision| Eval
-    Eval -->|Results & Metrics| UI
+    Eval -->|Results and Metrics| UI
 
     style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style Vision fill:#e0f7fa,stroke:#00838f,stroke-width:2px
     style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
-    style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
+    style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
     style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
     style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px
