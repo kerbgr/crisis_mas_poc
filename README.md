@@ -1,4 +1,6 @@
-# A Multi-Agent System (MAS) for Crisis Management and Decision-Making
+# AEGIS — Adaptive Expert-based Group Intelligence System
+
+> *"The prototype system AEGIS attempts to eliminate the 'black box' problem, offering auditable decisions suitable for operational use."*
 
 A Proof-of-concept system demonstrating the application of **Multi-Agent Systems (MAS)** to crisis management decision-making, developed as part of a Master's thesis in Operational Research & Decision Making with the title:
 
@@ -40,13 +42,15 @@ Department of Military Sciences - School of Production Engineering and Managemen
 
 ### Purpose
 
-This proof-of-concept system demonstrates the application of **Multi-Agent Systems (MAS)** to crisis management decision-making, developed as part of a Master's thesis in Operational Research & Decision Making. The system addresses the complex challenge of coordinating multiple expert perspectives under uncertainty and time pressure during crisis scenarios.
+**AEGIS** (Adaptive Expert-based Group Intelligence System) is a proof-of-concept multi-agent decision support system for crisis management, developed as part of a Master's thesis in Operational Research & Decision Making. Its central design goal is to **eliminate the "black box" problem**: every recommendation produced by AEGIS is fully auditable — traceable back through individual named-agent reasoning, attention weights, MCDA criterion scores, and belief distributions — making it suitable for operational contexts where accountability and explainability are non-negotiable.
 
-The implementation combines classical decision theory with modern Large Language Models (LLMs) to create an intelligent decision support system capable of:
-- Aggregating diverse expert opinions with uncertainty quantification
-- Evaluating alternatives across multiple competing criteria
-- Building consensus through structured negotiation
-- Providing explainable, traceable decision recommendations
+The system addresses the complex challenge of coordinating multiple expert perspectives under uncertainty and time pressure during crisis scenarios. It combines classical decision theory with modern Large Language Models (LLMs) to produce:
+
+- **Auditable recommendations** - every decision includes a full reasoning trail per agent, aggregation weights, and MCDA decomposition
+- Aggregation of diverse expert beliefs with uncertainty quantification (Dempster-Shafer / RBGA)
+- Multi-criteria evaluation of alternatives (TOPSIS)
+- Structured consensus measurement and conflict identification
+- Dynamic per-agent reliability tracking across successive decisions
 
 ### Scenario Design and Ethical Considerations
 
@@ -88,8 +92,8 @@ This PoC investigates the following research questions:
 **RQ2: Uncertainty Handling**
 - *What mechanisms can effectively aggregate expert beliefs under high uncertainty, incomplete information, and conflicting opinions?*
 - Addressed through two approaches:
-  - **Evidential Reasoning (ER)**: Dempster-Shafer theory-based belief aggregation
-  - **Graph Attention Networks (GAT)**: Domain-parameterized, rule-based attention aggregator (untrained GAT variant with fixed attention coefficients) for interpretable expert weighting
+  - **Evidential Reasoning (ER)**: Dempster-Shafer theory-based belief aggregation with proportional conflict redistribution
+  - **Rule-Based Graph Attention (RBGA)**: Domain-parameterised fixed-scalar attention aggregator; fully interpretable from cold-start, no labelled training data required. Optionally refined via L-BFGS-B (RBGA-Opt variant). Implemented via `--aggregation-method gat`.
 
 **RQ3: LLM Enhancement**
 - *Can Large Language Models enhance multi-agent decision-making by providing contextual reasoning, justification generation, and natural language understanding?*
@@ -105,11 +109,12 @@ This PoC investigates the following research questions:
 
 ### Key Contributions
 
-1. **Hybrid Aggregation Framework**: Novel comparison of classical ER vs. rule-based GAT (untrained, domain-parameterized) for belief aggregation
-2. **LLM-Enhanced Agents**: Integration of multiple LLM providers (Claude, OpenAI, LM Studio) for advanced reasoning
-3. **Historical Reliability Tracking**: Dynamic agent weighting based on proven past performance and consistency
-4. **Comprehensive Evaluation**: Multi-dimensional metrics framework for MAS performance
-5. **Open Research Platform**: Extensible codebase for further crisis management research
+1. **Auditable decision pipeline**: Every AEGIS recommendation is traceable through named-agent reasoning traces, RBGA/ER attention weights, MCDA criterion scores, and belief distributions — eliminating the black box
+2. **Controlled ER vs. RBGA comparison**: First head-to-head comparison of Evidential Reasoning and Rule-Based Graph Attention on identical agent assessments across 45 runs and three crisis scenario types
+3. **LLM-enhanced expert agents**: Three LLM providers (Claude Sonnet 4, GPT-4o, GPT-OSS 20B via LM Studio) with structured CoT prompts, three-layer hallucination mitigation, and exponential-backoff retry
+4. **Historical reliability tracking**: Per-agent performance history with temporal decay; scores feed into both ER (combination ordering) and RBGA (9th attention feature); differentiated scores 0.43-0.68 across 1,133 records
+5. **Multimodal pre-assessment layer**: GeospatialContextAgent (OSM terrain classification) and CameraFeedAgent (tsunami/crowd/fire vision analysis) enrich scenario context before expert agents are queried
+6. **Open research platform**: Extensible codebase with four crisis scenarios (Flood, Wildfire, HAZMAT, Santorini volcanic-seismic), full evaluation suite, and training pipeline for RBGA weight optimisation
 
 ---
 
@@ -259,7 +264,7 @@ python main.py --agents all                 # All 13 expert agents
 python main.py --aggregation-method gat     # Use GAT instead of ER
 python main.py --expert-selection auto      # Automatic expert selection
 python main.py --llm-provider lmstudio      # Use local LLM (free, offline)
-python main.py --compare-methods            # Compare ER vs GAT side-by-side
+python main.py --compare-methods            # Compare ER vs RBGA side-by-side
 ```
 
 **Evaluation commands (4 scenarios - training benchmark + held-out evaluation):**
@@ -287,20 +292,22 @@ cd web_tools && python app.py    # Available at http://localhost:5000
 
 ## Architecture
 
-The system consists of six core layers: User Interface, Coordination, Agent (13 experts in Gold-Silver hierarchy), Decision Framework (ER/GAT + MCDA), LLM Integration (Claude/OpenAI/LM Studio), and Evaluation. For detailed component descriptions, diagrams, decision-making flow, and algorithm specifications (Dempster-Shafer, GAT, TOPSIS), see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+AEGIS is organised into seven functional layers: User Interface, Vision Pre-Assessment (Step 0 - terrain classification + camera feed analysis), Coordination, Agent (13 domain-expert agents in a Gold-Silver command hierarchy), Decision Framework (ER / RBGA + TOPSIS-MCDA), LLM Integration (Claude Sonnet 4 / GPT-4o / GPT-OSS 20B), and Evaluation. The Vision Pre-Assessment Layer and the full reasoning-trace audit trail are the two architectural features that directly support the anti-black-box design goal. For detailed component descriptions, Mermaid diagrams, decision-making flow, and algorithm specifications (Dempster-Shafer, RBGA, TOPSIS), see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ---
 
 ## Results
 
-The system was evaluated across **45 controlled runs** (5 replicates × 3 LLM providers × 3 crisis scenarios) using all 13 expert agents with `--compare-methods` mode, producing 135 result records. Key findings:
+The system was evaluated across **45 controlled runs** (5 replicates × 3 LLM providers × 3 crisis scenarios) using all 13 expert agents with `--compare-methods` mode. Key findings:
 
-- **ER and GAT are statistically equivalent** — DQS 0.775 ± 0.032 vs 0.781 ± 0.029 (p > 0.05); 88.9% (40/45) recommendation agreement
-- **GPT-OSS 20B** (local, via LM Studio) achieves the highest mean DQS (0.504 ± 0.051) at zero API cost
-- **Claude Sonnet 4** is 5–9× faster than other providers (mean 11.6 s/run), decisive for real-time use
-- **GPT-4o** yields the most consistent consensus (0.917 ± 0.036, lowest variance)
+- **ER and RBGA are statistically equivalent** — DQS 0.775 ± 0.032 vs 0.781 ± 0.029 (p > 0.05); 88.9% (40/45) recommendation agreement; the five disagreements occur exclusively in the most ambiguous scenario (Wildfire, 12-alternative space)
+- **RBGA-Opt null result**: L-BFGS-B optimisation of the four scalar attention weights converges to within max|delta|=0.014 of the hand-crafted prior with zero accuracy gain, confirming the rule-based prior is already near-optimal within the scalar architecture
+- **Collective beats best individual**: +5.4 pp (HAZMAT), +5.6 pp (Flood), +11.0 pp (Wildfire) — margin scales with decision-space complexity
+- **GPT-OSS 20B** (local, via LM Studio) achieves the highest Combined Score (0.501) at zero API cost — GDPR-compliant sovereign deployment path
+- **Claude Sonnet 4** is fastest (mean 26.5 s/run vs 108.3 s for GPT-OSS), decisive for scenarios with short decision windows
+- **GPT-4o** yields the most consistent consensus (0.930, lowest intra-provider variance)
 - **System consensus** averages 0.902 ± 0.066; run-level recommendation stability is 97.8% (44/45 runs)
-- **HAZMAT convergence**: all three providers converge on `action_integrated_response` across all 15 HAZMAT runs via both ER and GAT — the highest cross-provider agreement of any scenario
+- **TOPSIS L1 normalisation**: raw TOPSIS scores must be L1-normalised before blending with beliefs; without this, MCDA contributes 55-79% of the combined score instead of the intended 40%, shifting 11/30 Wildfire recommendations
 
 See **[docs/RESULTS.md](docs/RESULTS.md)** for full tables, statistical tests, and per-scenario detail.
 
@@ -308,7 +315,7 @@ See **[docs/RESULTS.md](docs/RESULTS.md)** for full tables, statistical tests, a
 
 ## Limitations
 
-Known algorithmic limitations (ER simplifications, static MCDA weights, rule-based GAT), operational constraints (API costs, LLM sensitivity), and scope boundaries (scenario representation, scalability). See **[docs/LIMITATIONS.md](docs/LIMITATIONS.md)**.
+Known algorithmic limitations (ER singleton-focal-element simplification, static MCDA weights, RBGA scalar hypothesis class), operational constraints (API costs, LLM confidence calibration), and scope boundaries (simulated scenarios, no field deployment). See **[docs/LIMITATIONS.md](docs/LIMITATIONS.md)**.
 
 ---
 

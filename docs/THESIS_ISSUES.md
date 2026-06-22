@@ -188,18 +188,18 @@ The paper implies GAT_TRAINED learned a meaningful parameterisation. The trained
 
 ## Summary Matrix
 
-| # | Issue | Severity | Fix target | Effort |
+| # | Issue | Severity | Fix target | Status |
 |---|-------|----------|------------|--------|
-| 1 | GAT naming / hollow multi-head | HIGH | BOTH | High |
-| 2 | 13 vs 12 agents | HIGH | PAPER | Low |
-| 3 | Retroactive best-agent selection | HIGH | PAPER | Medium |
-| 4 | Self-evaluation labelled as expert study | HIGH | PAPER | Low |
-| 5 | Reliability formula mismatch | MEDIUM | BOTH | Medium |
-| 6 | Combined Score undefined | MEDIUM | PAPER | Low |
-| 7 | Attention weights sum to 1.2 | MEDIUM | BOTH | Low |
-| 8 | Singleton DST limitation understated | MEDIUM | PAPER | Low |
-| 9 | Conflict formula ambiguous | MEDIUM | PAPER | Medium |
-| 10 | Pre/post L1 normalisation unclear | MEDIUM | PAPER | Low |
-| 11 | Vision subsystem absent | LOW | PAPER | Medium |
-| 12 | DC formula unjustified | LOW | PAPER | Low |
-| 13 | GAT_TRAINED delta near zero | LOW | BOTH | Low |
+| 1 | GAT naming / hollow multi-head | HIGH | BOTH | ✅ RESOLVED — renamed to RBGA throughout paper |
+| 2 | 13 vs 12 agents | HIGH | PAPER | ✅ RESOLVED — changed to "up to 13 / 12 active" |
+| 3 | Retroactive best-agent selection | HIGH | PAPER | ✅ RESOLVED — post-hoc disclosure + planned future baseline added |
+| 4 | Self-evaluation labelled as expert study | HIGH | PAPER | ✅ RESOLVED — relabelled as "author self-assessment" in abstract |
+| 5 | Reliability formula mismatch | MEDIUM | BOTH | ✅ RESOLVED — formal piecewise margin definition added to §3.6 |
+| 6 | Combined Score undefined | MEDIUM | PAPER | ✅ RESOLVED — formal CS definition added to §4.1 |
+| 7 | Attention weights sum to 1.2 | MEDIUM | BOTH | ✅ RESOLVED — disclosure already present in §3.4 (softmax normalises output) |
+| 8 | Singleton DST limitation understated | MEDIUM | PAPER | ✅ RESOLVED — sentence added to §3.3 noting reduction to weighted Bayesian combination |
+| 9 | Conflict formula ambiguous | MEDIUM | PAPER | ✅ RESOLVED — Option B: original formula retained as intended design; implementation note added |
+| 10 | Pre/post L1 normalisation unclear | MEDIUM | PAPER | ✅ RESOLVED — Table II footnote updated to state all DQS values use L1-normalised TOPSIS |
+| 11 | Vision subsystem absent | LOW | PAPER | ✅ RESOLVED — §3.10 Multimodal Pre-Assessment Layer present; vision layer in all diagrams |
+| 12 | DC formula unjustified | LOW | PAPER | ✅ RESOLVED — DC demoted to "exploratory composite" with uncalibrated-confidence caveat in §4.1 |
+| 13 | GAT_TRAINED delta near zero | LOW | BOTH | ✅ RESOLVED — RBGA-Opt §4.3 subsection added with exact weight deltas and null-result interpretation |

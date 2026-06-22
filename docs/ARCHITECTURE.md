@@ -8,14 +8,19 @@
 
 ## System Components
 
-The Crisis MAS consists of six core layers with integrated evaluation framework and 13 expert agents organized in a two-level Gold-Silver command hierarchy:
+AEGIS consists of **seven functional layers**. The core design principle is **eliminating the black box**: every recommendation is fully traceable through agent-level reasoning traces, RBGA attention weights, MCDA criterion scores, and belief distributions — producing auditable decisions suitable for operational use.
 
 ```mermaid
 graph TB
     subgraph UI["USER INTERFACE LAYER"]
         Main[main.py<br/>CLI & Orchestration]
         Input[JSON I/O<br/>Scenarios & Config]
-        Output[Visualization<br/>Generation]
+        Output[Visualization<br/>+ Audit Trail]
+    end
+
+    subgraph Vision["VISION PRE-ASSESSMENT LAYER - Step 0"]
+        GEO[GeospatialContextAgent<br/>OSM terrain classifier]
+        CAM[CameraFeedAgent<br/>Multimodal feed analyser]
     end
 
     subgraph Coord["COORDINATION LAYER"]
@@ -26,7 +31,7 @@ graph TB
 
     subgraph Agents["AGENT LAYER - 13 Expert Roles"]
         direction TB
-        subgraph Silver["SILVER — Tactical / Advisory (8 Agents)"]
+        subgraph Silver["SILVER - Tactical / Advisory (8 Agents)"]
             T1[Police On-Scene]
             T2[Fire On-Scene]
             T3[Coast Guard Tactical]
@@ -36,7 +41,7 @@ graph TB
             T7[PSAP Coordinator]
             T8[Environmental Expert]
         end
-        subgraph Gold["GOLD — Strategic (5 Agents)"]
+        subgraph Gold["GOLD - Strategic (5 Agents)"]
             S1[Police Regional]
             S2[Fire Regional]
             S3[Coast Guard National]
@@ -50,32 +55,36 @@ graph TB
     subgraph DF["DECISION FRAMEWORK LAYER"]
         direction TB
         ER[EvidentialReasoning<br/>Dempster-Shafer]
-        GAT[GATAggregator<br/>Neural Attention]
-        MCDA[MCDAEngine<br/>TOPSIS]
+        RBGA[RBGAAggregator<br/>Rule-Based Graph Attention]
+        MCDA[MCDAEngine<br/>TOPSIS / L1-norm]
         CM[ConflictModel<br/>Resolution]
     end
 
     subgraph LLM["LLM INTEGRATION LAYER"]
         direction LR
-        Claude[Claude API<br/>Anthropic]
-        OpenAI[OpenAI API<br/>GPT-4]
-        LMStudio[LM Studio<br/>Local Models]
-        Prompt[Prompt<br/>Templates]
-        Parser[Response<br/>Parser]
+        Claude[Claude Sonnet 4<br/>Anthropic]
+        OpenAI[GPT-4o<br/>OpenAI]
+        LMStudio[GPT-OSS 20B<br/>LM Studio - Local]
+        Prompt[Role-Specific<br/>Prompt Templates]
+        Parser[3-Layer Response<br/>Parser & Validator]
     end
 
-    subgraph Eval["EVALUATION & UTILITIES LAYER"]
+    subgraph Eval["EVALUATION & AUDIT LAYER"]
         direction TB
         ME[MetricsEvaluator<br/>DQS, CL, CS, ECB]
         Viz[SystemVisualizer<br/>Charts & Graphs]
+        AUDIT[Audit Trail<br/>Per-agent reasoning + weights]
         Val[Validator<br/>Schema Check]
         Cfg[ConfigManager<br/>Settings]
-        BL[Baseline<br/>Single-Agent]
     end
 
     %% Main flow
     Main -->|Load Scenario| Input
     Input -->|Initialize| CA
+
+    CA -->|Step 0 - Pre-assess| Vision
+    Vision -->|Terrain + eligible agents| CA
+    Vision -->|Camera intel into context| Agents
 
     CA -->|Collect Assessments| Silver & Gold
     Silver -.->|Inherit from| BA
@@ -84,22 +93,18 @@ graph TB
 
     Silver & Gold -->|LLM Reasoning| Prompt
     Prompt -->|Route to| Claude & OpenAI & LMStudio
-    Claude & OpenAI & LMStudio -->|Parse| Parser
+    Claude & OpenAI & LMStudio -->|Parse & Validate| Parser
     Parser -->|Structured Response| Silver & Gold
 
-    CA -->|Aggregate Beliefs| ER & GAT
-    ER & GAT -.->|Use Reliability| RT
+    CA -->|Aggregate Beliefs| ER & RBGA
+    ER & RBGA -.->|Use Reliability| RT
     CA -->|Rank Alternatives| MCDA
     CA -->|Build Consensus| CS
     CS -->|Detect Issues| CR
 
-    ER & GAT & MCDA -->|Combined Decision| CA
-    CA -->|Final Decision| ME
-
-    %% Evaluation flow
-    Main -->|Run Baseline| BL
-    BL -->|Single-Agent| T4
-    BL & CA -->|Compare| ME
+    ER & RBGA & MCDA -->|Combined Decision| CA
+    CA -->|Final Decision + Full Trace| ME
+    ME -->|Reasoning Trail| AUDIT
 
     ME -->|Calculate Metrics| ME
     ME -->|Generate Viz| Viz
@@ -108,8 +113,9 @@ graph TB
     Val -.->|Validate| Input
     Cfg -.->|Configure| Main & CA & LLM
 
-    %% Layer background colors (soft pastels)
+    %% Layer background colors
     style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style Vision fill:#e0f7fa,stroke:#00838f,stroke-width:2px
     style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
@@ -120,12 +126,14 @@ graph TB
 ```
 
 **Architecture Overview:**
-- **User Interface Layer**: Entry point, I/O handling, visualization generation
-- **Coordination Layer**: Orchestrates multi-agent decision-making, builds consensus
-- **Agent Layer**: 13 domain experts in a Gold-Silver hierarchy with LLM-enhanced reasoning and performance tracking
-- **Decision Framework Layer**: Belief aggregation (ER/GAT), multi-criteria analysis (MCDA)
-- **LLM Integration Layer**: Multi-provider support (Claude, OpenAI, LM Studio)
-- **Evaluation Layer**: Metrics calculation, baseline comparison, visualization
+
+- **User Interface Layer**: Entry point, I/O handling, audit trail + visualisation generation
+- **Vision Pre-Assessment Layer (Step 0)**: Terrain classification (GeospatialContextAgent) and camera-feed situational intelligence (CameraFeedAgent) before any expert LLM call
+- **Coordination Layer**: Orchestrates multi-agent decision-making, builds consensus, triggers conflict resolution
+- **Agent Layer**: 13 domain experts in a Gold-Silver command hierarchy with LLM-enhanced reasoning and per-agent reliability tracking
+- **Decision Framework Layer**: Belief aggregation (ER / RBGA with L1-normalised TOPSIS blend), multi-criteria ranking (MCDA), consensus model
+- **LLM Integration Layer**: Three providers (Claude Sonnet 4, GPT-4o, GPT-OSS 20B) with role-specific prompts and three-layer hallucination mitigation
+- **Evaluation & Audit Layer**: Metrics (DQS, CL, CS, ECB), per-agent reasoning trace audit trail, visualisations
 
 ### 1. Agent Layer
 
@@ -193,24 +201,24 @@ A fourteenth agent, `coordinator_01`, orchestrates the pipeline without contribu
 - Confidence-weighted aggregation
 - Outputs combined belief distribution with uncertainty quantification
 
-**GATAggregator** (`decision_framework/gat_aggregator.py`)
-- Graph Attention Network for dynamic expert weighting
+**RBGAAggregator** (`decision_framework/gat_aggregator.py`) — CLI flag: `--aggregation-method gat`
+
+- Rule-Based Graph Attention aggregator; **no W matrix, no backpropagation, no training data required** — fully auditable from cold-start
 - **9-dimensional feature extraction** per agent:
-  1. Confidence score
-  2. Belief certainty (inverse entropy)
-  3. Expertise relevance to scenario
+  1. Confidence score (LLM self-reported)
+  2. Belief certainty (inverse Shannon entropy)
+  3. Expertise relevance to scenario type
   4. Risk tolerance
   5. Severity awareness
-  6. Top choice strength
-  7. Number of concerns
-  8. Reasoning quality
-  9. **Historical reliability** (from ReliabilityTracker)
-- Multi-head attention (4 heads) for robustness
-- Attention mechanism with **learnable/trainable weights** `[w_conf, w_rel, w_cert, w_sim]`:
-  $\alpha_{ij} = \text{softmax}_j(w_0 \cdot f_j^{(1)} + w_1 \cdot f_j^{(3)} + w_2 \cdot f_j^{(2)} + w_3 \cdot \max(\cos(\mathbf{f}_i, \mathbf{f}_j), 0))$
+  6. Top-choice strength (gap between 1st and 2nd belief mass)
+  7. Number of key concerns raised
+  8. Reasoning quality (normalised response length)
+  9. **Historical reliability** from ReliabilityTracker (links attention directly to past performance)
+- Multi-head attention (4 heads); in current implementation all heads share identical scalar coefficients — averaging is an architectural provision for differentiated heads in future extensions
+- Attention score: $e_{ij} = 0.4 \cdot f_j^{(1)} + 0.3 \cdot f_j^{(3)} + 0.3 \cdot f_j^{(2)} + 0.2 \cdot \max(\cos(\mathbf{f}_i, \mathbf{f}_j), 0)$; coefficients sum to 1.2 by design (softmax normalises the output)
 - **Two variants**:
-  - *GAT (untrained)*: Hand-crafted prior weights [0.40, 0.30, 0.30, 0.20] - interpretable, no training data required
-  - *GAT_TRAINED*: Weights learned offline via L-BFGS-B on 46 historical runs - loaded from `models/gat_weights/gat_trained_weights.json`
+  - *RBGA*: Hand-crafted prior weights [0.40, 0.30, 0.30, 0.20] — interpretable, operational from run one
+  - *RBGA-Opt* (`GAT_TRAINED`): Weights refined offline via L-BFGS-B on 46 historical runs; max delta 0.014 from prior, zero accuracy gain — prior confirmed near-optimal. Loaded from `models/gat_weights/gat_trained_weights.json`
 - Methods: `save_weights()`, `load_weights()`, `from_trained()` (factory classmethod)
 
 **MCDAEngine** (`decision_framework/mcda_engine.py`)
@@ -355,10 +363,10 @@ flowchart TD
     Collect --> ChooseAgg{4. Choose<br/>Aggregation Method}
 
     ChooseAgg -->|Classical| ER[Evidential Reasoning<br/>Dempster-Shafer Theory]
-    ChooseAgg -->|Neural| GAT[Graph Attention Network<br/>9-dim features + attention]
+    ChooseAgg -->|Rule-Based| RBGA[Rule-Based Graph Attention<br/>9-dim features, fixed scalars]
 
     ER --> Combined[Combined Belief<br/>Distribution]
-    GAT --> Combined
+    RBGA --> Combined
 
     Combined --> MCDA[5. MCDA Scoring<br/>TOPSIS/WSM]
     MCDA --> Ranked[Ranked Alternatives<br/>with scores]
@@ -455,7 +463,9 @@ flowchart TD
 - Conflict level $K \in [0,1)$
 - Conflict detection flag (true if $K > 0.7$)
 
-### Graph Attention Network (GAT) for Multi-Agent Aggregation
+### Rule-Based Graph Attention (RBGA) for Multi-Agent Aggregation
+
+RBGA is a domain-parameterised graph attention aggregator with **no learnable W matrix, no backpropagation, and no training data requirement**. Four fixed scalar coefficients — set by domain-knowledge rules — compute attention scores over a 9-dimensional agent feature vector. Softmax normalisation enforces a proper probability distribution over agents. Full auditability from the first run is the primary design goal. An L-BFGS-B optimised variant (RBGA-Opt, `--aggregation-method gat` with `GAT_TRAINED` flag) exists; empirical results show the hand-crafted prior is already near-optimal (max weight delta 0.014, zero accuracy gain on 46-run corpus).
 
 **Input:**
 - Agent assessments $\mathcal{A} = \{A_1, A_2, \ldots, A_n\}$
@@ -698,12 +708,12 @@ Outputs:
 
 Running `python main.py --scenario <scenario> --compare-methods` executes all four aggregation methods on the same 13-agent assessments:
 
-| Method | Description |
-|--------|-------------|
-| ER | Dempster-Shafer evidential reasoning (classical baseline) |
-| GAT | Graph attention with hand-crafted prior weights [0.40, 0.30, 0.30, 0.20] |
-| GAT_TRAINED | Graph attention with weights loaded from `models/gat_weights/gat_trained_weights.json` |
-| MCDA | Pure TOPSIS with uniform 1/N beliefs - no agent reasoning, no LLM calls |
+| Method | CLI flag | Description |
+|--------|----------|-------------|
+| ER | `--aggregation-method er` | Dempster-Shafer evidential reasoning — mathematical transparency, full DST audit trail |
+| RBGA | `--aggregation-method gat` | Rule-Based Graph Attention with hand-crafted prior weights [0.40, 0.30, 0.30, 0.20] — auditable attention weights per agent |
+| RBGA-Opt | `--aggregation-method gat` + `GAT_TRAINED` flag | RBGA with L-BFGS-B-optimised weights from `models/gat_weights/gat_trained_weights.json`; empirically near-identical to prior |
+| MCDA | `--aggregation-method mcda` | Pure TOPSIS with uniform 1/N beliefs — no agent reasoning, no LLM calls; useful as a criterion-only baseline |
 
 **Held-out evaluation (Santorini volcanic seismic, 1 run):**
 
