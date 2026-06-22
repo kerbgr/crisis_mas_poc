@@ -381,14 +381,14 @@ The reliability tracker maintains a per-agent performance history that is update
 
 $$
 a_k = 0.4 \cdot m_i(A^r)
-     + 0.3 \cdot \mathbf{1}\!\left[\operatorname{top}(m_i) = A^r\right]
-     + 0.3 \cdot \operatorname{margin}(m_i, A^r)
+     + 0.3 \cdot \mathbf{1}\!\left[\text{top}(m_i) = A^r\right]
+     + 0.3 \cdot \text{margin}(m_i, A^r)
 $$
 
 
 where $A^r$ is the recommended alternative, $m_i(A^r)$ is the belief mass agent $i$ assigned to it, $\mathbf{1}[\cdot]$ is the indicator of whether $A^r$ was the agent's top choice, and $\text{margin}$ is defined as:
 
-$$\text{margin}(m_i, A^r) = \begin{cases} 0.5 + 0.5\,c_i & \text{if } \operatorname{top}(m_i) = A^r \\ 0.5 - 0.5\,c_i & \text{otherwise} \end{cases}$$
+$$\text{margin}(m_i, A^r) = \begin{cases} 0.5 + 0.5\,c_i & \text{if } \text{top}(m_i) = A^r \\ 0.5 - 0.5\,c_i & \text{otherwise} \end{cases}$$
 
 with $c_i \in [0,1]$ the agent's self-reported LLM confidence. This formulation rewards agents that were both correct and confident (maximum $= 1.0$), penalises agents that were wrong and confident (minimum $= 0.0$), and treats uncertain agents symmetrically regardless of outcome (both cases approach $0.5$ as $c_i \to 0$).
 
