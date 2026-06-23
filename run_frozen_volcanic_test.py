@@ -99,6 +99,7 @@ def main():
             sys.executable, "main.py",
             "--scenario", "santorini_volcanic_seismic",
             "--llm-provider", args.provider,
+            "--expert-selection", "auto",
         ]
         print(f"  Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=False)
