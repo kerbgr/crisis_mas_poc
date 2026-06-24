@@ -45,7 +45,7 @@ This paper addresses five interrelated research questions that together characte
 
 ### 1.3 Contributions
 
-This paper makes five concrete contributions:
+This paper makes six concrete contributions:
 
 1. **AEGIS system design.** A complete, open-source multi-agent decision support system for crisis management that integrates 13 domain-expert agents organised in a two-level command hierarchy (GOLD/SILVER), two competing belief-aggregation mechanisms (ER and RBGA), a TOPSIS-based MCDA ranker, and a historical reliability tracker, with multi-provider LLM support and automatic fallback.
 
@@ -81,7 +81,7 @@ The foundational properties of autonomous agents - reactivity to environmental c
 
 In emergency management, agent-based models have been applied to evacuation dynamics [12], resource dispatch optimisation [13], and inter-agency information sharing [14]. The architectural choices in these systems vary considerably: reactive architectures based on condition-action rules offer speed but lack deliberative depth; deliberative architectures grounded in the Belief-Desire-Intention (BDI) model [15] support explicit reasoning but impose computational overhead; and hybrid architectures balance both. AEGIS adopts a deliberative-hybrid design in which the internal reasoning of each agent is performed by an LLM - effectively endowing it with a generative BDI capability - while the outer coordination is handled by a dedicated Coordinator agent.
 
-The application of LLMs as agent reasoning engines is a recent and rapidly developing research direction. Li et al. [16] survey the emerging landscape of LLM-based multi-agent systems, highlighting their capacity for natural-language coordination, structured output generation, and context-sensitive role adoption. Goecks and Waytowich [17] explore their integration into emergency management workflows, while Otal and Canbaz [18] investigate prompt-engineering strategies for disaster-response reasoning. AEGIS builds on this foundation by embedding structured Chain-of-Thought (CoT) prompting [19] in role-specific templates for each of the 13 agent profiles, ensuring that reasoning traces are both domain-grounded and machine-parseable.
+The application of LLMs as agent reasoning engines is a recent and rapidly developing research direction. Li et al. [16] survey the emerging landscape of LLM-based multi-agent systems, highlighting their capacity for natural-language coordination, structured output generation, and context-sensitive role adoption. Goecks and Waytowich [17] demonstrate LLM-generated plans of action for disaster response scenarios, while Otal et al. [18] build LLM-assisted platforms for emergency coordination and public communication. AEGIS builds on this foundation by embedding structured Chain-of-Thought (CoT) prompting [19] in role-specific templates for each of the 13 agent profiles, ensuring that reasoning traces are both domain-grounded and machine-parseable.
 
 ### 2.3 Dempster-Shafer Theory and Evidential Reasoning
 
@@ -133,90 +133,32 @@ AEGIS is organised into seven functional layers, each with clearly demarcated re
 
 ```mermaid
 flowchart TD
-    subgraph UI["User Interface Layer"]
-        CLI[Command Line Interface]
-        JSON_IN[JSON Input Scenarios]
-        JSON_OUT[JSON Output Results]
-        VIZ[Visualization Generator]
-    end
+    UI["User Interface Layer\nScenario JSON · Results JSON · Visualisations"]
+    COORD["Coordination Layer\nCoordinatorAgent · Consensus Builder"]
+    VISION["Vision Pre-Assessment Layer - Step 0\nGeospatialContextAgent · CameraFeedAgent"]
+    AGENTS["Agent Layer · 13 Expert Agents\n5 GOLD Strategic + 8 SILVER Tactical / Advisory\nReliabilityTracker"]
+    LLM["LLM Integration Layer\nClaude Sonnet 4 · GPT-4o · GPT-OSS 20B\n13 Role-Specific Templates · Retry Logic"]
+    DF["Decision Framework Layer\nEvidential Reasoning · RBGA Aggregator\nTOPSIS / MCDA · Consensus Model"]
+    EVAL["Evaluation and Utilities\nMetrics · Validation · JSON Output"]
 
-    subgraph Coord["Coordination Layer"]
-        COORD[CoordinatorAgent]
-        ORCH[Orchestration Logic]
-        CONS_BUILD[Consensus Builder]
-    end
-
-    subgraph Vision["Vision Pre-Assessment Layer"]
-        GEO[GeospatialContextAgent - OSM terrain classifier]
-        CAM[CameraFeedAgent - Multimodal feed analyser]
-    end
-
-    subgraph Silver["Agent Layer - SILVER Level - 8 Agents"]
-        BA[BaseAgent]
-        RT[ReliabilityTracker]
-        T1[Police On-Scene]
-        T2[Fire On-Scene]
-        T3[Coast Guard On-Scene]
-        T4[Medical Expert]
-        A1[Meteorologist]
-        A2[Logistics]
-        A3[PSAP Commander]
-        A4[Environmental Scientist]
-    end
-
-    subgraph Gold["Agent Layer - GOLD Level - 5 Agents"]
-        G1[Police Regional]
-        G2[Fire Regional]
-        G3[Coast Guard National]
-        G4[Civil Protection Director]
-        G5[Medical Infrastructure]
-    end
-
-    subgraph LLM["LLM Integration Layer"]
-        CLAUDE[Claude Sonnet 4]
-        OPENAI[GPT-4o]
-        LMSTUDIO[GPT-OSS 20B / LM Studio]
-        PROMPTS[13 Role-Specific Templates]
-    end
-
-    subgraph DF["Decision Framework Layer"]
-        ER[Evidential Reasoning]
-        RBGA[RBGA Aggregator]
-        CONSENSUS[Consensus Model]
-        MCDA[MCDA - TOPSIS]
-    end
-
-    subgraph Eval["Evaluation and Utilities Layer"]
-        METRICS[Metrics Calculator]
-        VIS[Visualizations]
-        VALID[Validation]
-    end
-
-    UI -->|Load Scenario| Coord
-    Coord -->|Step 0 - Pre-assess| Vision
-    Vision -->|Terrain type + eligible agents| Coord
-    Vision -->|Camera intel to additional context| Silver
-    Vision -->|Camera intel to additional context| Gold
-    Coord -->|Dispatch Tasks| Silver
-    Coord -->|Dispatch Tasks| Gold
-    Silver -->|LLM Requests| LLM
-    Gold -->|LLM Requests| LLM
-    LLM -->|LLM Responses| Silver
-    LLM -->|LLM Responses| Gold
-    Silver -->|Expert Assessments| DF
-    Gold -->|Expert Assessments| DF
-    DF -->|Aggregated Decision| Coord
-    Coord -->|Final Decision| Eval
-    Eval -->|Results and Metrics| UI
+    UI -->|load scenario| COORD
+    COORD -->|Step 0| VISION
+    VISION -.->|terrain label + filtered panel| COORD
+    COORD -->|dispatch parallel assessment| AGENTS
+    AGENTS -->|LLM calls| LLM
+    LLM -->|responses| AGENTS
+    AGENTS -->|belief distributions| DF
+    DF -->|recommendation| COORD
+    COORD -->|final decision| EVAL
+    EVAL -->|results| UI
 
     style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    style Vision fill:#e0f7fa,stroke:#00838f,stroke-width:2px
-    style Coord fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
-    style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    style COORD fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style VISION fill:#e0f7fa,stroke:#00838f,stroke-width:2px
+    style AGENTS fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style LLM fill:#fce4ec,stroke:#c2185b,stroke-width:2px
     style DF fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    style Eval fill:#fffde7,stroke:#f9a825,stroke-width:2px
+    style EVAL fill:#fffde7,stroke:#f9a825,stroke-width:2px
 ```
 
 *Fig. 1. Seven-layer AEGIS architecture and data flow. The Vision Pre-Assessment Layer (Step 0) executes before expert agents receive the scenario, enriching the context with terrain classification and camera intelligence.*
@@ -228,57 +170,40 @@ The interface layer accepts scenario descriptions in JSON format and returns str
 AEGIS deploys 15 agents in two functional categories. Two multimodal pre-assessment agents (described in Section 3.10) execute before expert deliberation begins, providing terrain context and camera intelligence. Thirteen domain-expert agents then conduct the structured assessment; these are organised in a two-level command hierarchy inspired by the Gold-Silver-Bronze incident command structure used in UK and European emergency management, simplified to two levels for the current prototype.
 
 ```mermaid
-graph TB
-    subgraph Vision["Vision Pre-Assessment Layer - Step 0 (Bronze)"]
-        GEO[GeospatialContextAgent\nOSM tile terrain classifier]
-        CAM[CameraFeedAgent\nMultimodal feed analyser]
+graph LR
+    subgraph VIS["Vision Pre-Assessment - Bronze - Step 0"]
+        GEO[GeospatialContextAgent\nOSM terrain classifier]
+        CAM[CameraFeedAgent\nFeed analyser]
     end
 
-    subgraph Agents["Expert Agent Layer - 13 Domain Roles"]
-        BA[BaseAgent - Abstract Interface]
-        subgraph Silver["SILVER Level - 8 Agents"]
-            subgraph SilverTactical["Tactical - 4 On-Scene"]
-                T1[Police On-Scene]
-                T2[Fire-Brigade On-Scene]
-                T3[Coast Guard On-Scene]
-                T4[Medical Expert / Triage]
-            end
-            subgraph SilverAdvisory["Advisory - 4"]
-                A1[Meteorologist]
-                A2[Logistics Coordinator]
-                A3[PSAP Commander / 112]
-                A4[Environmental Scientist]
-            end
-        end
-        subgraph Gold["GOLD Level - 5 Strategic Agents"]
-            G1[Police Regional Commander]
-            G2[Fire-Brigade Regional Director]
-            G3[Coast Guard National Director]
-            G4[Civil Protection Director]
-            G5[Medical Infrastructure Director]
-        end
-        RT[ReliabilityTracker - Performance History]
-        PROFILES[agent_profiles.json - 13 Expert Profiles]
+    subgraph SIL["SILVER Level - 8 Agents"]
+        T1[Police On-Scene]
+        T2[Fire-Brigade On-Scene]
+        T3[Coast Guard On-Scene]
+        T4[Medical Expert / Triage]
+        A1[Meteorologist]
+        A2[Logistics Coordinator]
+        A3[PSAP Commander / 112]
+        A4[Environmental Scientist]
     end
 
-    GEO -->|terrain label + agent filter| BA
-    CAM -->|camera intel injected into context| BA
+    subgraph GOL["GOLD Level - 5 Strategic Agents"]
+        G1[Police Regional Commander]
+        G2[Fire-Brigade Regional Director]
+        G3[Coast Guard National Director]
+        G4[Civil Protection Director]
+        G5[Medical Infrastructure Director]
+    end
 
-    T1 & T2 & T3 & T4 -.->|inherits| BA
-    A1 & A2 & A3 & A4 -.->|inherits| BA
-    G1 & G2 & G3 & G4 & G5 -.->|inherits| BA
-    BA --> RT
-    BA --> PROFILES
+    GEO -->|terrain + agent filter| G1
+    CAM -->|camera context| T1
 
-    style Vision fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    style Agents fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Silver fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
-    style SilverTactical fill:#b3e5fc,stroke:#0288d1,stroke-width:1px
-    style SilverAdvisory fill:#b3e5fc,stroke:#0288d1,stroke-width:1px
-    style Gold fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
+    style VIS fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style SIL fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style GOL fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
 ```
 
-*Fig. 2. AEGIS agent hierarchy. The Vision Pre-Assessment Layer (Step 0, Bronze) runs before the expert panel: GeospatialContextAgent filters ineligible agents by terrain; CameraFeedAgent injects camera intelligence into the shared scenario context. SILVER agents handle tactical and advisory functions at or near the incident scene; GOLD agents manage strategic coordination at regional or national scale.*
+*Fig. 2. AEGIS agent hierarchy. The Vision Pre-Assessment Layer (Step 0, Bronze) runs before the expert panel and enriches the context seen by all 13 domain-expert agents: GeospatialContextAgent classifies terrain and filters domain-ineligible agents; CameraFeedAgent injects structured camera intelligence into the shared scenario context. Arrows show representative routing; both Vision agents provide output to the full expert panel. SILVER agents handle tactical and advisory functions at or near the incident scene; GOLD agents manage strategic coordination at regional or national scale.*
 
 The SILVER level comprises eight agents across two functional categories. Four *tactical* agents - Police On-Scene, Fire-Brigade On-Scene, Coast Guard On-Scene, and Medical Expert - represent agencies with direct operational presence at the incident site and focus on immediate resource deployment, triage, scene security, and life-safety. Four *advisory* agents - Meteorologist, Logistics Coordinator, PSAP Commander, and Environmental Scientist - supply specialised knowledge to all command levels without directly supervising field forces; notably, the PSAP Commander models the national 112 emergency coordination function, including citizen alert systems. The GOLD level comprises five *strategic* agents - Police Regional, Fire Regional, Coast Guard National, Civil Protection Director, and Medical Infrastructure Director - responsible for multi-jurisdictional coordination, inter-agency resource allocation, and national-level policy decisions.
 
@@ -286,7 +211,7 @@ Each agent is defined by a structured profile in `agent_profiles.json` that enco
 
 ### 3.3 Evidential Reasoning Engine
 
-The ER engine implements iterative pairwise combination of Dempster-Shafer BBAs. Agents are sorted in descending order of historical reliability and combined sequentially. Let $m_1$ and $m_2$ denote the BBAs of two agents restricted to singleton focal elements (a simplification that reduces computational complexity from $O(2^n)$ to $O(n)$ while enabling real-time operation). Note that this singleton restriction eliminates the capacity to represent non-specific belief — mass assigned to sets of alternatives — thereby reducing the ER engine to a reliability-weighted Bayesian combination with a conflict patch; full DST expressivity over non-singleton focal elements is reserved for future extensions. The combined mass for alternative $A$ is:
+The ER engine implements iterative pairwise combination of Dempster-Shafer BBAs. Agents are sorted in descending order of historical reliability and combined sequentially. Let $m_1$ and $m_2$ denote the BBAs of two agents restricted to singleton focal elements (a simplification that reduces computational complexity from $O(2^n)$ to $O(n)$ while enabling real-time operation). Note that this singleton restriction eliminates the capacity to represent non-specific belief - mass assigned to sets of alternatives - thereby reducing the ER engine to a reliability-weighted Bayesian combination with a conflict patch; full DST expressivity over non-singleton focal elements is reserved for future extensions. The combined mass for alternative $A$ is:
 
 $$m_{12}(A) = \frac{1}{1-K} \sum_{B \cap C = A} m_1(B) \cdot m_2(C)$$
 
@@ -294,11 +219,11 @@ $$K = \sum_{B \cap C = \emptyset} m_1(B) \cdot m_2(C)$$
 
 When the conflict index $K > 0.7$, the engine activates proportional redistribution rather than simple Dempster normalisation:
 
-$$m_{\text{conflict-adj}}(A) = m(A) + K \cdot \frac{w_i r_i m_i(A)}{\sum_j w_j r_j m_j(A)}$$
+$$m_{\text{conflict-adj}}(A) = m(A) + K \cdot \frac{w_i \rho_i m_i(A)}{\sum_j w_j \rho_j m_j(A)}$$
 
-This prevents the counter-intuitive behaviour documented by Zadeh [21] under high inter-source conflict while preserving the proportionality of the original agent beliefs. In the current implementation the redistribution is applied locally within each pairwise step — between the accumulated combined mass and the incoming agent's BBA — using their simple average as the base; the full reliability-weighted global formulation above represents the intended design and is a planned extension that would more directly leverage the ReliabilityTracker scores at the redistribution stage. Agent reliability already enters the combination indirectly through ordering: agents are combined in descending reliability order, so the most reliable agents' beliefs accumulate first and carry greater influence over the final result.
+This prevents the counter-intuitive behaviour documented by Zadeh [21] under high inter-source conflict while preserving the proportionality of the original agent beliefs. In the current implementation the redistribution is applied locally within each pairwise step - between the accumulated combined mass and the incoming agent's BBA - using their simple average as the base; the full reliability-weighted global formulation above represents the intended design and is a planned extension that would more directly leverage the ReliabilityTracker scores at the redistribution stage. Agent reliability already enters the combination indirectly through ordering: agents are combined in descending reliability order, so the most reliable agents' beliefs accumulate first and carry greater influence over the final result.
 
-Agent-level reliability $r_i \in [0,1]$ enters the combination as an effective mass multiplier: the belief submitted by agent $i$ for combination is scaled by $r_i$ before the Dempster rule is applied, so that a highly reliable agent ($r_i = 0.90$) contributes 80 % more effective belief mass than a marginal one ($r_i = 0.50$). Agent weights $w_i$ are set statically from the agent profile's domain-relevance alignment with the scenario criteria, and remain fixed within a run; reliability is updated dynamically across runs. This design separation ensures full reproducibility within a single scenario while enabling adaptation across scenarios.
+Agent-level reliability $\rho_i \in [0,1]$ enters the combination as an effective mass multiplier: the belief submitted by agent $i$ for combination is scaled by $\rho_i$ before the Dempster rule is applied, so that a highly reliable agent ($\rho_i = 0.90$) contributes 80 % more effective belief mass than a marginal one ($\rho_i = 0.50$). Agent weights $w_i$ are set statically from the agent profile's domain-relevance alignment with the scenario criteria, and remain fixed within a run; reliability is updated dynamically across runs. This design separation ensures full reproducibility within a single scenario while enabling adaptation across scenarios.
 
 ### 3.4 Graph Attention-Inspired Aggregator (RBGA: Rule-Based Graph Attention)
 
@@ -313,15 +238,15 @@ flowchart TB
     START[Agent Assessment + Scenario Context] --> EXTRACT[Extract Features per Agent]
 
     subgraph "9-Dimensional Feature Vector"
-        EXTRACT --> F1["f1: Confidence Score - self-reported certainty, range 0..1"]
-        EXTRACT --> F2["f2: Belief Certainty - 1 minus normalised Shannon entropy"]
-        EXTRACT --> F3["f3: Expertise Relevance - keyword match to scenario type"]
-        EXTRACT --> F4["f4: Risk Tolerance - conservative vs. aggressive stance, range 0..1"]
-        EXTRACT --> F5["f5: Severity Awareness - scenario severity parameter, range 0..1"]
-        EXTRACT --> F6["f6: Top-Choice Strength - gap between 1st and 2nd belief mass"]
-        EXTRACT --> F7["f7: Thoroughness - normalised count of key concerns raised"]
-        EXTRACT --> F8["f8: Reasoning Quality - normalised length of natural-language justification"]
-        EXTRACT --> F9["f9: Historical Reliability - time-decayed accuracy from ReliabilityTracker *"]
+        EXTRACT --> F1["f1: Confidence"]
+        EXTRACT --> F2["f2: Belief Certainty"]
+        EXTRACT --> F3["f3: Expertise Relevance"]
+        EXTRACT --> F4["f4: Risk Tolerance"]
+        EXTRACT --> F5["f5: Severity Awareness"]
+        EXTRACT --> F6["f6: Top-Choice Strength"]
+        EXTRACT --> F7["f7: Thoroughness"]
+        EXTRACT --> F8["f8: Reasoning Quality"]
+        EXTRACT --> F9["f9: Historical Reliability *"]
     end
 
     F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 --> VECTOR["Feature vector f_i in R9"]
@@ -339,7 +264,7 @@ flowchart TB
 
 $$e_{ij} = 0.4 \cdot f_j^{(1)} + 0.3 \cdot f_j^{(3)} + 0.3 \cdot f_j^{(2)} + 0.2 \cdot \max(\cos(\mathbf{f}_i, \mathbf{f}_j), 0)$$
 
-where the cosine similarity term rewards agents whose full feature profiles are aligned, capturing implicit peer consistency. The scalar coefficients sum to 1.2 rather than 1.0 by design: the formula is not required to be a convex combination because the subsequent softmax normalisation enforces a proper probability distribution over neighbours. LeakyReLU non-linearity (negative slope $\alpha = 0.2$) is applied before softmax normalisation:
+where the cosine similarity term rewards agents whose full feature profiles are aligned, capturing implicit peer consistency. The scalar coefficients sum to 1.2 rather than 1.0 by design: the formula is not required to be a convex combination because the subsequent softmax normalisation enforces a proper probability distribution over neighbours. LeakyReLU non-linearity (negative slope $\nu = 0.2$) is applied before softmax normalisation:
 
 $$\alpha_{ij} = \frac{\exp(\text{LeakyReLU}(e_{ij}))}{\sum_{k \in \mathcal{N}_i} \exp(\text{LeakyReLU}(e_{ik}))}$$
 
@@ -367,7 +292,7 @@ $$C_k^{\text{norm}} = \frac{C_k}{\displaystyle\sum_j C_j}$$
 
 This transforms the TOPSIS output into a proper distribution summing to 1.0 while preserving the ranking order among alternatives. The normalised coefficient $C_k^{\text{norm}}$ is used in all analyses throughout this paper. A post-hoc recalculation (Section 4.7) quantifies the impact of this correction across the full experimental corpus.
 
-**What TOPSIS contributes beyond belief aggregation.** Running TOPSIS independently of the belief aggregation step provides two distinct analytical benefits that pure belief combination cannot replicate. First, it correctly handles the directional asymmetry between benefit and cost criteria: safety and social acceptance are drawn toward the positive ideal solution $A^+$, while cost (euros) and response time (hours) are simultaneously drawn away from the negative ideal solution $A^-$. A simple weighted average of agent beliefs contains no mechanism to encode this directionality. Second, TOPSIS reveals cases where collective expert preference and objective criterion optimisation diverge -- the most informative decision points in the output, since they signal trade-offs a decision-maker must consciously accept rather than resolve automatically. In the Elefsina HAZMAT trace (Section 4.6), for example, downwind evacuation achieves the highest TOPSIS closeness coefficient ($C_i = 0.806$) due to its exceptional safety score, but the aggregated agent beliefs strongly favour the integrated multi-layer response (combined score 0.574 vs. 0.459 for evacuation). The 60/40 combination preserves this tension visibly in the output rather than collapsing it, and the accompanying audit trail exposes the specific criterion scores that drive the divergence -- precisely the kind of structured transparency required in safety-critical operational contexts.
+**What TOPSIS contributes beyond belief aggregation.** Running TOPSIS independently of the belief aggregation step provides two distinct analytical benefits that pure belief combination cannot replicate. First, it correctly handles the directional asymmetry between benefit and cost criteria: safety and social acceptance are drawn toward the positive ideal solution $A^+$, while cost (euros) and response time (hours) are simultaneously drawn away from the negative ideal solution $A^-$. A simple weighted average of agent beliefs contains no mechanism to encode this directionality. Second, TOPSIS reveals cases where collective expert preference and objective criterion optimisation diverge -- the most informative decision points in the output, since they signal trade-offs a decision-maker must consciously accept rather than resolve automatically. In the Elefsina HAZMAT trace (Section 4.6), for example, downwind evacuation achieves the highest TOPSIS closeness coefficient ($C_k = 0.806$) due to its exceptional safety score, but the aggregated agent beliefs strongly favour the integrated multi-layer response (combined score 0.574 vs. 0.459 for evacuation). The 60/40 combination preserves this tension visibly in the output rather than collapsing it, and the accompanying audit trail exposes the specific criterion scores that drive the divergence -- precisely the kind of structured transparency required in safety-critical operational contexts.
 
 Consensus level is computed as the mean pairwise cosine similarity of agent belief vectors:
 
@@ -380,7 +305,7 @@ When $CL < 0.75$, the system flags the decision as insufficiently agreed and tri
 The reliability tracker maintains a per-agent performance history that is updated after every scenario run and persisted to disk. Because ground truth is unavailable in the simulation setting, a consensus-based proxy is used: the system's own final recommendation is treated as the reference outcome for the current run, and each agent's assessment is scored against it using a three-component accuracy measure:
 
 $$
-a_k = 0.4 \cdot m_i(A^r)
+a_t = 0.4 \cdot m_i(A^r)
      + 0.3 \cdot \mathbf{1}\!\left[\text{top}(m_i) = A^r\right]
      + 0.3 \cdot \text{margin}(m_i, A^r)
 $$
@@ -394,9 +319,9 @@ with $c_i \in [0,1]$ the agent's self-reported LLM confidence. This formulation 
 
 Reliability is computed as a temporally decayed, confidence-weighted moving average:
 
-$$\rho_j = \frac{\sum_k \gamma^{d_k} (0.5 + 0.5 c_k) \cdot a_k}{\sum_k \gamma^{d_k} (0.5 + 0.5 c_k)}$$
+$$\rho_j = \frac{\sum_t \gamma^{d_t} (0.5 + 0.5 c_t) \cdot a_t}{\sum_t \gamma^{d_t} (0.5 + 0.5 c_t)}$$
 
-with decay factor $\gamma = 0.95$ and $d_k$ the age of assessment $k$ in days. For new agents, the default reliability is $\rho_j = 0.80$.
+with decay factor $\gamma = 0.95$ and $d_t$ the age of assessment $t$ in days. For new agents, the default reliability is $\rho_j = 0.80$.
 
 ```mermaid
 flowchart TB
@@ -619,7 +544,7 @@ Both effects are structurally invisible to the 13 expert agents without Step 0, 
 
 **Reliability tracker holdout evaluation.** To assess the reliability tracker's ability to generalise to an unseen crisis type, a fourth scenario - the Santorini Volcanic-Seismic scenario (5 runs, LM Studio provider, weights frozen) - served as a held-out test set. These runs were executed after the three training scenarios with training weights frozen: the snapshot-restore wrapper in `run_frozen_volcanic_test.py` captures each run's accuracy scores then restores the pre-run reliability files, so all 5 runs start from identical training-phase weights and no cross-run contamination occurs. The Santorini scenario introduces a novel crisis type (volcanic-seismic island emergency) with a distinct agent relevance profile and a 12-alternative action space, making it a meaningful zero-shot test of tracker generalisation. The 65 volcanic-seismic agent records from these 5 runs form the test corpus reported in §4.5; the 1,211 records from the three main scenarios form the training corpus. The 65 frozen-weight test records are stored separately in `results/reliability_test_volcanic/`, preserving the training weights unchanged in `results/reliability/`.
 
-**Metrics.** Four primary metrics are reported. The *Decision Quality Score* (DQS) is the weighted criterion-satisfaction value produced by the TOPSIS ranker for the recommended alternative. *Consensus Level* (CL) is the mean pairwise cosine similarity of agent belief vectors before aggregation. *Decision Confidence* (DC) is an exploratory composite metric that blends consensus and mean agent confidence as $DC = 0.6 \times CL + 0.4 \times \bar{c}$; the 0.6/0.4 split is heuristic and the $\bar{c}$ component relies on uncalibrated LLM self-reported confidence scores, which are known to exhibit overconfidence bias — DC should therefore be interpreted as a directional indicator rather than a calibrated measure. The *Extended Comparison Bandwidth* (ECB) measures the improvement of the collective DQS over the best individual agent's DQS in the same run. A fifth quantity, the *Combined Score* (CS), is the value of the blended selection criterion evaluated at the recommended alternative: $\text{CS}(A^r) = 0.6 \times m_{\text{agg}}(A^r) + 0.4 \times C^{\text{norm}}_{A^r}$, where $m_{\text{agg}}(A^r)$ is the aggregated belief mass assigned to $A^r$ and $C^{\text{norm}}_{A^r}$ is its L1-normalised TOPSIS closeness coefficient. CS is the criterion the system maximises to select its recommendation and is distinct from DQS: DQS measures criterion-satisfaction quality alone (range ≈ 0.14–0.78 in the experimental corpus), whereas CS measures the weighted combination of agent consensus and criterion quality (range ≈ 0.10–0.57). CS is used as the primary provider-comparison metric in Section 4.4 because it reflects both dimensions of the recommendation decision.
+**Metrics.** Four primary metrics are reported. The *Decision Quality Score* (DQS) is the weighted criterion-satisfaction value produced by the TOPSIS ranker for the recommended alternative. *Consensus Level* (CL) is the mean pairwise cosine similarity of agent belief vectors before aggregation. *Decision Confidence* (DC) is an exploratory composite metric that blends consensus and mean agent confidence as $DC = 0.6 \times CL + 0.4 \times \bar{c}$; the 0.6/0.4 split is heuristic and the $\bar{c}$ component relies on uncalibrated LLM self-reported confidence scores, which are known to exhibit overconfidence bias - DC should therefore be interpreted as a directional indicator rather than a calibrated measure. The *Extended Comparison Bandwidth* (ECB) measures the improvement of the collective DQS over the best individual agent's DQS in the same run. A fifth quantity, the *Combined Score* (CS), is the value of the blended selection criterion evaluated at the recommended alternative: $\text{CS}(A^r) = 0.6 \times m_{\text{agg}}(A^r) + 0.4 \times C^{\text{norm}}_{A^r}$, where $m_{\text{agg}}(A^r)$ is the aggregated belief mass assigned to $A^r$ and $C^{\text{norm}}_{A^r}$ is its L1-normalised TOPSIS closeness coefficient. CS is the criterion the system maximises to select its recommendation and is distinct from DQS: DQS measures criterion-satisfaction quality alone (range ≈ 0.14-0.78 in the experimental corpus), whereas CS measures the weighted combination of agent consensus and criterion quality (range ≈ 0.10-0.57). CS is used as the primary provider-comparison metric in Section 4.4 because it reflects both dimensions of the recommendation decision.
 
 ### 4.2 Overall System Performance
 
@@ -673,9 +598,9 @@ A scenario-level breakdown, presented in Table IV, reveals the structural origin
 
 The L-BFGS-B optimiser was applied to all 46 stored assessment records (the 45 controlled runs plus one pre-trial run) to test whether gradient-free scalar optimisation of the four attention coefficients can improve on the hand-crafted prior. The training objective is:
 
-$$\mathcal{L}(w) = -\frac{1}{N}\sum_{k} \log \text{softmax}(T \cdot \text{DQS}_k)[gt_k] + \lambda \lVert w - w_{\text{prior}} \rVert^2$$
+$$\mathcal{L}(w) = -\frac{1}{R}\sum_{n} \log \text{softmax}(T \cdot \text{DQS}_n)[gt_n] + \lambda \lVert w - w_{\text{prior}} \rVert^2$$
 
-where $T = 10$ is a temperature scaling factor, $gt_k$ is the consensus ground-truth alternative for run $k$, $\lambda = 0.1$ regularises toward the hand-crafted prior, and $w_{\text{prior}} = [0.4, 0.3, 0.3, 0.2]$. Box bounds $w_i \in [0, 1]$ are enforced; the optimiser is warm-started from the prior.
+where $T = 10$ is a temperature scaling factor, $R = 46$ is the number of training runs, $gt_n$ is the consensus ground-truth alternative for run $n$, $\lambda = 0.1$ regularises toward the hand-crafted prior, and $w_{\text{prior}} = [0.4, 0.3, 0.3, 0.2]$. Box bounds $w_i \in [0, 1]$ are enforced; the optimiser is warm-started from the prior.
 
 **TABLE IIIb: Prior vs. Trained RBGA Attention Weights**
 
@@ -686,7 +611,7 @@ where $T = 10$ is a temperature scaling factor, $gt_k$ is the consensus ground-t
 | $w_{\text{cert}}$ | Belief certainty | 0.300 | 0.3127 | +0.013 |
 | $w_{\text{sim}}$ | Inter-agent similarity | 0.200 | 0.2007 | +0.001 |
 
-The optimiser converges to weights that are near-identical to the hand-crafted prior: the maximum absolute deviation across all four coefficients is $\max|\Delta| = 0.014$ (on $w_{\text{rel}}$). Top-1 accuracy on the training corpus is unchanged at 86.7 % (40/46 samples agree with consensus) before and after optimisation; mean rank and rank percentile are likewise invariant (mean rank = 1.178 in both cases).
+The optimiser converges to weights that are near-identical to the hand-crafted prior: the maximum absolute deviation across all four coefficients is $\max|\Delta| = 0.014$ (on $w_{\text{rel}}$). Top-1 accuracy on the training corpus is unchanged at 87.0 % (40/46 samples agree with consensus) before and after optimisation; mean rank and rank percentile are likewise invariant (mean rank = 1.178 in both cases).
 
 This null result has a direct architectural interpretation. The four scalar attention coefficients span a low-dimensional hypothesis class: within that class, the rule-based prior is already at or near the optimum -- no reweighting of the four scalars recovers more consensus-ground-truth alternatives from the training corpus. This is not evidence that graph attention cannot improve crisis-decision aggregation; it is evidence that the current scalar architecture lacks the expressiveness to surpass the domain-knowledge prior on 46 samples. The finding directly motivates the proper learned GAT architecture discussed in Section 6, which introduces a full $\mathbf{W} \in \mathbb{R}^{F \times F'}$ projection and a learned pair-wise attention vector $\mathbf{a}$, significantly expanding the hypothesis class. Practically, RBGA-Opt confirms that practitioners can deploy the rule-based RBGA with confidence that the hand-crafted coefficients are not merely heuristic defaults but empirically validated near-optima for the current architecture.
 
@@ -783,7 +708,7 @@ Post-hoc analysis across all 92 stored result files (45 runs × 2 aggregation me
 
 *MCDA contribution computed as $0.4 \bar{C} / (0.6 \bar{m} + 0.4 \bar{C})$ where $\bar{m}$ and $\bar{C}$ are the per-alternative means. Post-normalisation the contribution is always exactly 40% by construction.*
 
-**Manifestation in the Forest Fire scenario.** The distortion was most consequential for the Evia Wildfire scenario ($N=12$), where the widest TOPSIS score dispersion coincided with the flattest belief distributions. `action_combined_assault` had the highest raw TOPSIS score in a substantial fraction of runs (e.g., $C_i = 0.814$ in run 7, Claude, ER path), even in runs where agent consensus favoured evacuation alternatives. The scale-inflated MCDA component elevated it to the top combined score despite being outranked by belief mass from the agent panel.
+**Manifestation in the Forest Fire scenario.** The distortion was most consequential for the Evia Wildfire scenario ($N=12$), where the widest TOPSIS score dispersion coincided with the flattest belief distributions. `action_combined_assault` had the highest raw TOPSIS score in a substantial fraction of runs (e.g., $C_k = 0.814$ in run 7, Claude, ER path), even in runs where agent consensus favoured evacuation alternatives. The scale-inflated MCDA component elevated it to the top combined score despite being outranked by belief mass from the agent panel.
 
 **Illustrative case - forest_fire_evia / run_7_claude / ER:**
 
@@ -940,9 +865,9 @@ At its core, the work is motivated by a straightforward observation: no single e
 
 [16] Z. Li, X. Chen, J. Zhao, and H. Wang, "A survey on LLM-based multi-agent systems: Workflow, infrastructure and challenges," *Vicinagearth*, vol. 1, no. 9, pp. 1-43, 2024.
 
-[17] V. G. Goecks and N. Waytowich, "Integrating large language models into emergency management systems," *AI Crisis Manag.*, vol. 12, no. 2, pp. 134-156, 2023.
+[17] V. G. Goecks and N. R. Waytowich, "DisasterResponseGPT: Large language models for accelerated plan of action development in disaster response scenarios," arXiv preprint arXiv:2306.17271, Jun. 2023.
 
-[18] B. Otal and M. A. Canbaz, "Multi-round prompting strategies for disaster management scenarios," *Emerg. Response Technol. J.*, vol. 7, no. 4, pp. 89-112, 2024.
+[18] H. T. Otal, E. Stern, and M. A. Canbaz, "LLM-Assisted crisis management: Building advanced LLM platforms for effective emergency response and public collaboration," in *Proc. IEEE Conf. Artif. Intell. (CAI)*, Singapore, Jun. 2024, pp. 851-859, doi: 10.1109/CAI59869.2024.00159.
 
 [19] J. Wei, X. Wang, D. Schuurmans, M. Bosma, B. Ichter, F. Xia, and D. Zhou, "Chain-of-thought prompting elicits reasoning in large language models," in *Proc. NeurIPS*, vol. 35, pp. 24824-24837, 2022.
 
