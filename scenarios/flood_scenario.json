@@ -17,6 +17,23 @@
     "affected_area_description": "45 km² of agricultural plain and urban areas along the Pineios River basin"
   },
   "tags": ["flood", "natural_disaster", "urban", "emergency", "infrastructure"],
+  "camera_feeds": [
+    {
+      "url": "scenarios/camera_feeds/karditsa/pineios_bridge.png",
+      "mode": "general",
+      "label": "Pineios River Bridge North — water level and flood extent monitoring"
+    },
+    {
+      "url": "scenarios/camera_feeds/karditsa/karditsa_center_flood.png",
+      "mode": "general",
+      "label": "Karditsa City Center — street flooding depth and stranded vehicle count"
+    },
+    {
+      "url": "scenarios/camera_feeds/karditsa/karditsa_assembly_municipal.png",
+      "mode": "crowd",
+      "label": "Municipal Hall Assembly Point — displaced population density and rescue coordination"
+    }
+  ],
   "casualties": 5,
   "infrastructure_damage": true,
   "available_actions": [

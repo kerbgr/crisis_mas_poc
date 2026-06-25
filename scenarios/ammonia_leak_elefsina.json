@@ -12,6 +12,23 @@
     "coordinates": {"lat": 38.0411, "lon": 23.5461}
   },
   "tags": ["hazmat", "chemical_leak", "ammonia", "industrial_accident", "toxic_cloud", "evacuation"],
+  "camera_feeds": [
+    {
+      "url": "scenarios/camera_feeds/elefsina/elefsina_facility_gate.png",
+      "mode": "general",
+      "label": "Industrial Facility Gate - ammonia cloud visibility and emergency response staging"
+    },
+    {
+      "url": "scenarios/camera_feeds/elefsina/elefsina_residential_plume.png",
+      "mode": "general",
+      "label": "Residential Zone 500m Downwind - haze visibility and public evacuation compliance"
+    },
+    {
+      "url": "scenarios/camera_feeds/elefsina/elefsina_road_response.png",
+      "mode": "crowd",
+      "label": "Sacred Way (Iera Odos) Corridor - emergency vehicle access and population movement"
+    }
+  ],
   "casualties": 8,
   "infrastructure_damage": false,
   "available_actions": [

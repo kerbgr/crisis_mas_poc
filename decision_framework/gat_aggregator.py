@@ -104,7 +104,7 @@ OUTPUTS (aggregate_beliefs_with_gat returns):
 
 - attention_weights: Dict[agent_i, Dict[agent_j, float]]
   * Full attention matrix (who attends to whom)
-  * Diagonal values (self-attention) = agent's overall importance
+  * Column sums (received attention) = agent's influence on collective output
 
 - confidence: float (0-1)
   * Overall confidence (attention-weighted average of agent confidences)
@@ -686,8 +686,8 @@ class GATAggregator:
                     beliefs = assessment.get('belief_distribution', {})
                     belief_value = beliefs.get(alt, 0.0)
 
-                    # Use attention weight from self (diagonal)
-                    agent_weight = attention_weights[i, i]
+                    # Use received attention: total attention directed at agent i by all agents
+                    agent_weight = float(np.sum(attention_weights[:, i]))
 
                     weighted_sum += agent_weight * belief_value
                     total_weight += agent_weight
@@ -709,7 +709,7 @@ class GATAggregator:
             overall_confidence = 0.0
             for i, agent_id in enumerate(agent_ids):
                 agent_confidence = agent_assessments[agent_id].get('confidence', 0.5)
-                agent_weight = attention_weights[i, i]
+                agent_weight = float(np.sum(attention_weights[:, i]))
                 overall_confidence += agent_weight * agent_confidence
 
             # Step 6: Compute uncertainty (entropy of aggregated beliefs)
@@ -826,9 +826,9 @@ class GATAggregator:
             lines.append(f"Top Recommendation: {top_alt[0]} (belief: {top_alt[1]:.3f})")
             lines.append("")
 
-        # Agent importance (self-attention weights)
-        lines.append("Agent Importance (Self-Attention):")
-        agent_importance = [(agent_ids[i], attention_weights[i, i])
+        # Agent importance (received attention: column sum of attention matrix)
+        lines.append("Agent Importance (Received Attention):")
+        agent_importance = [(agent_ids[i], float(np.sum(attention_weights[:, i])))
                            for i in range(len(agent_ids))]
         agent_importance.sort(key=lambda x: x[1], reverse=True)
 
@@ -863,17 +863,18 @@ class GATAggregator:
         attention_weights: Dict[str, Dict[str, float]]
     ) -> Dict[str, float]:
         """
-        Get summary of attention weights (self-attention only).
+        Get summary of attention weights (total received attention per agent).
 
         Args:
             attention_weights: Full attention weight dictionary
 
         Returns:
-            Dictionary mapping agent_id to self-attention weight
+            Dictionary mapping agent_id to total received attention (column sum)
         """
+        agent_ids = list(attention_weights.keys())
         return {
-            agent_i: weights.get(agent_i, 0.0)
-            for agent_i, weights in attention_weights.items()
+            agent_i: sum(attention_weights[agent_j].get(agent_i, 0.0) for agent_j in agent_ids)
+            for agent_i in agent_ids
         }
 
     def __repr__(self) -> str:

@@ -1,5 +1,13 @@
 {
   "decision_criteria": {
+    "effectiveness": {
+      "name": "Effectiveness",
+      "description": "How effectively the action addresses the crisis and achieves the desired outcome",
+      "weight": 0.20,
+      "type": "benefit",
+      "scale": "0.0 (ineffective) to 1.0 (highly effective)",
+      "unit": "score"
+    },
     "safety": {
       "name": "Safety",
       "description": "Safety of the action for both responders and affected population",
@@ -8,24 +16,24 @@
       "scale": "0.0 (unsafe) to 1.0 (very safe)",
       "unit": "score"
     },
+    "speed": {
+      "name": "Response Speed",
+      "description": "How quickly the action can be implemented and produce results (higher = faster deployment)",
+      "weight": 0.20,
+      "type": "benefit",
+      "scale": "0.0 (very slow) to 1.0 (immediate)",
+      "unit": "score"
+    },
     "cost": {
       "name": "Cost",
-      "description": "Economic cost of implementing the action",
+      "description": "Resource intensity score: lower values indicate higher resource deployment intensity (more expensive, comprehensive responses). TOPSIS cost-criterion treatment correctly rewards lower-intensity baselines less than comprehensive multi-modal responses.",
       "weight": 0.25,
       "type": "cost",
-      "scale": "Lower is better",
-      "unit": "euros"
+      "scale": "Lower value = higher resource intensity; higher value = lower resource cost",
+      "unit": "normalized score"
     },
-    "response_time": {
-      "name": "Response Time",
-      "description": "Time required to implement and see results",
-      "weight": 0.25,
-      "type": "cost",
-      "scale": "Lower is better",
-      "unit": "hours"
-    },
-    "social_acceptance": {
-      "name": "Social Acceptance",
+    "public_acceptance": {
+      "name": "Public Acceptance",
       "description": "Likelihood of public cooperation and acceptance of the action",
       "weight": 0.20,
       "type": "benefit",
@@ -33,61 +41,43 @@
       "unit": "score"
     }
   },
-  "legacy_criteria": {
-    "effectiveness": {
-      "name": "Effectiveness",
-      "description": "How effectively the action addresses the crisis and achieves the desired outcome",
-      "weight": 0.30,
-      "type": "benefit",
-      "scale": "0.0 (ineffective) to 1.0 (highly effective)"
-    },
-    "speed": {
-      "name": "Speed of Implementation",
-      "description": "How quickly the action can be implemented and produce results",
-      "weight": 0.20,
-      "type": "benefit",
-      "scale": "0.0 (very slow) to 1.0 (immediate)"
-    },
-    "public_acceptance": {
-      "name": "Public Acceptance",
-      "description": "Likelihood of public cooperation and acceptance of the action",
-      "weight": 0.10,
-      "type": "benefit",
-      "scale": "0.0 (strong resistance) to 1.0 (strong support)"
-    }
-  },
-  "aggregation_method": "weighted_sum",
-  "normalization": "min-max",
+  "aggregation_method": "topsis",
+  "normalization": "vector",
   "notes": [
-    "These weights represent baseline values and may be adjusted based on specific crisis characteristics",
-    "Expert agents may have different weight preferences based on their domain expertise",
-    "Criterion type 'benefit' means higher values are better (e.g., safety score)",
-    "Criterion type 'cost' means lower values are better (e.g., cost in euros, response time)"
+    "All five criteria are derived from scenario criterion_scores fields.",
+    "Criterion type 'benefit' means higher values are better.",
+    "Criterion type 'cost' for the cost field: scenario cost scores encode resource intensity where lower values represent higher resource deployment (expensive, comprehensive responses). TOPSIS cost-criterion distance logic penalises simple low-cost alternatives that do not provide comprehensive crisis coverage.",
+    "Effective normalized weights used by TOPSIS after engine normalisation: effectiveness≈0.174, safety≈0.261, speed≈0.174, cost≈0.217, public_acceptance≈0.174.",
+    "These weights reflect emergency management priority: safety is the dominant criterion, followed by cost-of-inaction (comprehensive responses outperform cheap partial responses)."
   ],
   "alternative_weight_profiles": {
     "medical_focused": {
       "safety": 0.45,
       "cost": 0.15,
-      "response_time": 0.20,
-      "social_acceptance": 0.20
+      "speed": 0.20,
+      "effectiveness": 0.10,
+      "public_acceptance": 0.10
     },
     "cost_focused": {
       "safety": 0.25,
       "cost": 0.40,
-      "response_time": 0.20,
-      "social_acceptance": 0.15
+      "speed": 0.20,
+      "effectiveness": 0.10,
+      "public_acceptance": 0.05
     },
     "speed_focused": {
       "safety": 0.30,
       "cost": 0.15,
-      "response_time": 0.40,
-      "social_acceptance": 0.15
+      "speed": 0.40,
+      "effectiveness": 0.10,
+      "public_acceptance": 0.05
     },
     "balanced": {
       "safety": 0.30,
       "cost": 0.25,
-      "response_time": 0.25,
-      "social_acceptance": 0.20
+      "speed": 0.20,
+      "effectiveness": 0.15,
+      "public_acceptance": 0.10
     }
   }
 }

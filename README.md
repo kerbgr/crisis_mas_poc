@@ -125,10 +125,10 @@ This PoC investigates the following research questions:
 - **Python**: 3.9 or higher
 - **pip**: Package manager (usually included with Python)
 - **LLM Provider** (choose one or more):
-  - **Claude (Anthropic)**: Primary — get API key from [console.anthropic.com](https://console.anthropic.com/)
+  - **LM Studio**: Primary - Local models, no API key required. Free and privacy-focused. Tested with OpenAI GPT-OSS 20B. Download at [lmstudio.ai](https://lmstudio.ai)
+  - **Claude (Anthropic)**: Alternative — get API key from [console.anthropic.com](https://console.anthropic.com/)
   - **OpenAI**: Alternative — get API key from [platform.openai.com](https://platform.openai.com/api-keys)
-  - **LM Studio**: Local models, no API key required. Free and privacy-focused. Tested with OpenAI GPT-OSS 20B. Download at [lmstudio.ai](https://lmstudio.ai)
-  - **Ollama**: Local models, no API key required. Free, CLI-driven. Download at [ollama.com](https://ollama.com). Start with `ollama serve` (macOS: starts automatically via launchd).
+  - **Ollama**: Alternative - Local models, no API key required. Free, CLI-driven. Download at [ollama.com](https://ollama.com). Start with `ollama serve` (macOS: starts automatically via launchd).
 - **Vision Provider** (optional - required only for geospatial terrain analysis and camera-feed situational intelligence):
   - **Ollama** (recommended): `ollama pull minicpm-v` (~5.5 GB). **Do not use `llama3.2-vision`** - it is broken in Ollama 0.30.x due to an mllama architecture regression ([issue #16490](https://github.com/ollama/ollama/issues/16490)).
   - **LM Studio**: Load any vision-capable model (e.g. LLaVA, BakLLaVA) in the LM Studio UI.

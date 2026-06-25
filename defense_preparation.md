@@ -162,6 +162,61 @@ These should be raised proactively if the committee does not ask first. They dem
 | LaTeX symbol inconsistencies (α for both attention weight and LeakyReLU slope; r_i vs ρ_j for same reliability concept; k overloaded as alternative/assessment/run index) | Fixed: unified notation throughout | Attention to formal precision |
 | References [17] and [18] (wrong titles, non-existent journals) | Fixed: replaced with verified real papers (DisasterResponseGPT arXiv:2306.17271; Otal et al. IEEE CAI 2024) | Verification rather than citation of unverified sources |
 | Contribution count ("five" but six listed) and arithmetic error (86.7 % vs 87.0 %) | Fixed | Thoroughness of self-review |
+| RBGA influence metric: self-attention $\alpha_{ii}$ used as agent weight instead of received attention $c_i = \frac{1}{N}\sum_j \bar{\alpha}_{ji}$ | Fixed: code and paper formula updated to column-sum received attention | Correct operationalisation of "influence" in a graph attention architecture |
+
+---
+
+## 11. Sharp Committee Questions — Anticipated Attacks
+
+These five questions were identified during pre-submission analysis as the most technically precise challenges a reviewer with ML or crisis management expertise would raise. Ranked by how much preparation they require.
+
+---
+
+### Q1. Can you demonstrate from one raw run that ER and RBGA received byte-for-byte identical agent assessments?
+
+**The problem:** The `--compare-methods` flag creates a **separate `CoordinatorAgent` for each method** and calls `make_final_decision()` independently. Each coordinator makes its own LLM collection pass. ER and RBGA therefore receive stochastically different assessments — not identical inputs.
+
+**Honest answer for the defence:**
+The paper's phrasing should be corrected to: "ER and RBGA were each applied to independently collected assessments, with 5 replicates per condition to average over assessment sampling variance." This is how most comparative studies operate when LLM outputs cannot be frozen. The design choice is defensible but must be stated accurately.
+
+**For PhD continuation:** Refactor `run_comparative_analysis` to collect assessments once and pass the same dict to both aggregators. Only then can the comparison cleanly isolate the aggregation algorithm as the sole variable. Current results conflate aggregation differences with assessment stochasticity — the 88.9 % agreement figure likely goes up after refactoring.
+
+---
+
+### Q2. Which values in the abstract and tables were generated before versus after the TOPSIS normalisation correction?
+
+**Honest answer:** All quantitative claims in the paper — abstract, tables, figures — use post-correction values. The pre-correction results appear only in §4.7 as impact characterisation. The re-run was complete before any results were written up. §4.7 documents this explicitly, including the 11/30 Wildfire recommendation shifts.
+
+**Supporting detail:** The L1 normalisation fix was applied to `mcda_engine.py` before the experimental corpus was generated. The `results/` directory contains only post-correction JSON files.
+
+---
+
+### Q3. Why is $\alpha_{ii}$, rather than an incoming-attention sum or learned pooling weight, an appropriate measure of global agent influence?
+
+**Status: Fixed before defence.** The code previously used the diagonal (self-attention) as the aggregation weight. This has been corrected to the received-attention column sum $c_i = \frac{1}{N}\sum_j \bar{\alpha}_{ji}$, and the paper formula updated accordingly. Self-attention measures how much an agent trusts itself; received attention measures how much the collective panel defers to that agent — the latter is the correct influence proxy.
+
+**If asked why this wasn't the original design:** The self-attention diagonal is a common shortcut in GAT implementations for interpretability reporting; its use as the aggregation weight was an oversight. In RBGA's attention formula (dominated by agent-intrinsic features), both measures rank agents identically in practice — so no historical results change in direction, only in the precise weight values.
+
+---
+
+### Q4. What independent evidence indicates that the recommended alternatives are operationally better rather than merely more internally consistent?
+
+**See Issue 1 (Circular Validation).** The short answer: there is none at this stage. The honest defence is that ground-truth crisis decisions are structurally unavailable, the consensus proxy is standard practice for PoC systems without deployment data, and §5.3 explicitly identifies tabletop validation with Hellenic Fire Corps / EKAB practitioners as the immediate next step.
+
+**Do not claim** the consensus proxy validates correctness. Claim it validates structural coherence and rank differentiation, and that external validation is scoped and planned.
+
+---
+
+### Q5. How sensitive are the principal recommendations to the 60/40 blend and to the author-selected TOPSIS matrices?
+
+**The gap:** No sensitivity analysis was conducted. The 60/40 weight and the TOPSIS criterion matrices (safety 0.30, cost 0.25, response time 0.25, social acceptance 0.20) are author-set and untested under perturbation.
+
+**Defence:**
+1. The 60/40 split is a design parameter, not a finding. The paper states this explicitly and frames it as a practitioner-configurable value.
+2. The criterion weights reflect the life-safety priority of the Greek scenarios and are documented in `criteria_weights.json` — transparent and reproducible.
+3. Sensitivity analysis is identified as future work in §6. A simple one-way sweep (e.g., 50/50 vs 70/30 blend) over the existing result corpus would be a natural addition for any journal submission.
+
+**For PhD continuation:** Add a sensitivity sweep before any journal submission. It is a low-cost experiment on existing data (no new LLM calls needed) and directly addresses this predictable reviewer challenge.
 
 ---
 

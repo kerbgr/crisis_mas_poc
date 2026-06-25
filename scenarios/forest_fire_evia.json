@@ -21,7 +21,205 @@
     "evacuation",
     "emergency"
   ],
-  "available_actions": [],
+  "camera_feeds": [
+    {
+      "url": "scenarios/camera_feeds/evia/evia_fire_perimeter.png",
+      "mode": "fire",
+      "label": "North Evia Hillside Perimeter - active flame front and smoke column monitoring"
+    },
+    {
+      "url": "scenarios/camera_feeds/evia/evia_village_fire_approach.png",
+      "mode": "fire",
+      "label": "Village Eastern Approach - structures at risk from advancing fire front"
+    },
+    {
+      "url": "scenarios/camera_feeds/evia/evia_evacuation_road.png",
+      "mode": "crowd",
+      "label": "Istiaia-Limni Road - evacuation vehicle and pedestrian flow"
+    }
+  ],
+  "available_actions": [
+    {
+      "id": "action_mass_evacuation",
+      "name": "Immediate Mass Evacuation",
+      "description": "Urgent evacuation of all villages in the fire's projected path, using all available road corridors to safety zones",
+      "required_resources": ["evacuation_buses", "police_escort", "road_clearance_teams", "emergency_shelters", "public_warning_systems"],
+      "estimated_duration": "2-4 hours",
+      "risk_level": 0.35,
+      "criteria_scores": {
+        "effectiveness": 0.90,
+        "safety": 0.92,
+        "speed": 0.75,
+        "cost": 0.35,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_aerial_firefighting",
+      "name": "Aerial Suppression - Water Bombers and Helicopters",
+      "description": "Deploy Canadair CL-415 water bombers and firefighting helicopters to attack the fire front from the air, slowing spread and protecting threatened structures",
+      "required_resources": ["cl415_water_bombers", "firefighting_helicopters", "aerial_coordination", "water_sources", "ground_coordination_teams"],
+      "estimated_duration": "6-12 hours continuous",
+      "risk_level": 0.5,
+      "criteria_scores": {
+        "effectiveness": 0.75,
+        "safety": 0.70,
+        "speed": 0.85,
+        "cost": 0.25,
+        "public_acceptance": 0.88
+      }
+    },
+    {
+      "id": "action_ground_suppression_firebreaks",
+      "name": "Ground Teams with Firebreak Construction",
+      "description": "Deploy ground firefighting crews to construct firebreaks, conduct controlled burns, and suppress the fire perimeter using bulldozers and hand crews",
+      "required_resources": ["firefighting_ground_teams", "bulldozers", "fire_engines", "protective_equipment", "water_tankers"],
+      "estimated_duration": "8-24 hours",
+      "risk_level": 0.70,
+      "criteria_scores": {
+        "effectiveness": 0.68,
+        "safety": 0.55,
+        "speed": 0.50,
+        "cost": 0.60,
+        "public_acceptance": 0.75
+      }
+    },
+    {
+      "id": "action_hybrid_evacuation_suppression",
+      "name": "Hybrid: Selective Evacuation + Aerial + Ground Suppression",
+      "description": "Simultaneous evacuation of highest-risk villages, aerial water-bombing of the fire front, and ground crews establishing defensive perimeters around remaining settlements",
+      "required_resources": ["full_fire_service_mobilization", "aerial_assets", "evacuation_coordination", "regional_police", "civil_protection_headquarters"],
+      "estimated_duration": "4-8 hours",
+      "risk_level": 0.40,
+      "criteria_scores": {
+        "effectiveness": 0.88,
+        "safety": 0.80,
+        "speed": 0.70,
+        "cost": 0.20,
+        "public_acceptance": 0.85
+      }
+    },
+    {
+      "id": "action_targeted_evacuation_vulnerable",
+      "name": "Targeted Evacuation of Vulnerable Populations",
+      "description": "Prioritised evacuation of elderly, mobility-impaired residents, schools, hospitals, and care homes in the fire's projected path, while other residents shelter or self-evacuate using personal vehicles",
+      "required_resources": ["ambulances", "specialised_transport", "police_coordination", "medical_teams", "emergency_shelters"],
+      "estimated_duration": "1-2 hours",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.72,
+        "safety": 0.82,
+        "speed": 0.88,
+        "cost": 0.60,
+        "public_acceptance": 0.78
+      }
+    },
+    {
+      "id": "action_eu_civil_protection_activation",
+      "name": "EU Civil Protection Mechanism Activation",
+      "description": "Request additional aerial firefighting assets through the EU Civil Protection Mechanism - Canadairs and fire helicopters from France, Italy, Spain, and other member states. Greece activated this mechanism during the August 2021 Evia fires.",
+      "required_resources": ["eu_mechanism_request", "international_aerial_assets", "coordination_headquarters", "fuel_logistics", "diplomatic_clearance"],
+      "estimated_duration": "12-24 hours lead time for first assets",
+      "risk_level": 0.30,
+      "criteria_scores": {
+        "effectiveness": 0.82,
+        "safety": 0.75,
+        "speed": 0.35,
+        "cost": 0.30,
+        "public_acceptance": 0.92
+      }
+    },
+    {
+      "id": "action_controlled_backfire_break",
+      "name": "Controlled Backfire and Fuel Break Construction",
+      "description": "Specialist crews conduct a controlled burn ahead of the advancing fire front to remove fuel, combined with mechanical fuel break construction using bulldozers on ridge lines. Requires precise weather conditions and specialist certification.",
+      "required_resources": ["specialist_backfire_crews", "bulldozers", "weather_monitoring", "aerial_observation", "communications"],
+      "estimated_duration": "4-8 hours preparation",
+      "risk_level": 0.75,
+      "criteria_scores": {
+        "effectiveness": 0.65,
+        "safety": 0.45,
+        "speed": 0.40,
+        "cost": 0.55,
+        "public_acceptance": 0.55
+      }
+    },
+    {
+      "id": "action_air_retardant_barrier",
+      "name": "Phosphate Retardant Air Drops - Chemical Barrier Zones",
+      "description": "Air tankers drop long-term fire retardant (Phos-Chek or equivalent) along projected fire perimeter lines to create chemically-treated barrier zones that slow or stop fire spread independent of water availability. Retardant lines remain effective for hours after application.",
+      "required_resources": ["air_tankers", "retardant_supply", "aerial_coordination", "ground_marking_teams", "environmental_clearance"],
+      "estimated_duration": "2-4 hours for initial drops",
+      "risk_level": 0.45,
+      "criteria_scores": {
+        "effectiveness": 0.70,
+        "safety": 0.72,
+        "speed": 0.78,
+        "cost": 0.40,
+        "public_acceptance": 0.70
+      }
+    },
+    {
+      "id": "action_maritime_coastal_evacuation",
+      "name": "Maritime Coast Guard and Ferry Evacuation",
+      "description": "Hellenic Coast Guard vessels and emergency ferry operations evacuate coastal villages whose road access has been cut by the advancing fire. This approach was successfully deployed during the August 2021 Evia fires, evacuating Limni, Rovies, and other coastal settlements by sea.",
+      "required_resources": ["coast_guard_vessels", "ferry_coordination", "port_access", "medical_support_at_sea", "receiving_port_capacity"],
+      "estimated_duration": "2-6 hours continuous",
+      "risk_level": 0.35,
+      "criteria_scores": {
+        "effectiveness": 0.80,
+        "safety": 0.85,
+        "speed": 0.70,
+        "cost": 0.50,
+        "public_acceptance": 0.88
+      }
+    },
+    {
+      "id": "action_critical_infrastructure_protection",
+      "name": "Critical Infrastructure Protection Priority",
+      "description": "Concentrate available firefighting resources on protecting the regional hospital in Istiaia, water treatment plants, fuel depots, and the Mantoudi port (evacuation exit). Peripheral residential areas are defended by volunteer brigades only, accepting higher property loss to preserve strategic assets.",
+      "required_resources": ["fire_service_priority_deployment", "infrastructure_perimeter_teams", "water_tankers", "engineering_support"],
+      "estimated_duration": "6-12 hours",
+      "risk_level": 0.55,
+      "criteria_scores": {
+        "effectiveness": 0.62,
+        "safety": 0.65,
+        "speed": 0.80,
+        "cost": 0.65,
+        "public_acceptance": 0.48
+      }
+    },
+    {
+      "id": "action_monitor_staged_mobilization",
+      "name": "Monitor and Staged Resource Pre-positioning",
+      "description": "Adopt a defensive monitoring posture: pre-position resources at strategic points without committing to offensive action, await updated meteorological data on wind shift, and preserve resource capacity for peak intervention. Appropriate when fire behaviour is highly uncertain and premature commitment could exhaust assets.",
+      "required_resources": ["monitoring_aircraft", "meteorological_support", "staged_fire_crews", "communications_hub", "logistics_reserve"],
+      "estimated_duration": "2-4 hours monitoring before reassessment",
+      "risk_level": 0.60,
+      "criteria_scores": {
+        "effectiveness": 0.42,
+        "safety": 0.55,
+        "speed": 0.95,
+        "cost": 0.80,
+        "public_acceptance": 0.30
+      }
+    },
+    {
+      "id": "action_defensive_perimeter_shelter",
+      "name": "Defensive Perimeter with Structured Shelter Points",
+      "description": "Establish fire-resistant shelter-in-place points in stone-built community buildings while ground teams hold a defensive perimeter; partial evacuation of most vulnerable. Controversial following the Mati 2018 disaster (102 fatalities from shelter-in-place failure).",
+      "required_resources": ["fire_shelter_teams", "water_supply_trucks", "structural_assessment", "medical_standby", "communication_systems"],
+      "estimated_duration": "4-10 hours",
+      "risk_level": 0.80,
+      "criteria_scores": {
+        "effectiveness": 0.45,
+        "safety": 0.30,
+        "speed": 0.90,
+        "cost": 0.70,
+        "public_acceptance": 0.20
+      }
+    }
+  ],
   "expert_selection": {
     "crisis_type": "wildfire",
     "severity": 0.9,
@@ -38,7 +236,12 @@
   },
   "metadata": {
     "created_date": "2026-05-19",
-    "author": "Crisis MAS Web Tools",
-    "version": "1.0"
+    "updated_date": "2026-06-25",
+    "author": "Crisis MAS Research Team",
+    "version": "1.1",
+    "real_event_basis": "August 2021 North Evia wildfire, Greece - largest recorded wildfire in Greek history at the time (120,000+ ha burned)",
+    "scenario_complexity": "very_high",
+    "recommended_expert_domains": ["fire_rescue", "meteorology", "medical", "public_safety", "logistics"],
+    "version_notes": "v1.1: Added available_actions based on GSCP wildfire response doctrine; shelter-in-place risk reflects post-Mati 2018 (102 fatalities) policy position"
   }
 }

@@ -802,7 +802,11 @@ class CoordinatorAgent:
         self,
         scenario: Dict[str, Any],
         alternatives: List[Dict[str, Any]],
-        criteria: Optional[List[str]] = None
+        criteria: Optional[List[str]] = None,
+        _preloaded_assessments: Optional[Dict[str, Any]] = None,
+        _geospatial_context: Optional[Dict[str, Any]] = None,
+        _camera_reports: Optional[List[Any]] = None,
+        _skip_reliability_update: bool = False,
     ) -> Dict[str, Any]:
         """
         Execute complete decision-making workflow and generate final decision.
@@ -845,69 +849,76 @@ class CoordinatorAgent:
 
         start_time = datetime.now()
 
-        # Step 0: Vision pre-assessment (optional — skipped when agents not configured)
-        geospatial_context = None
-        camera_reports = []
-        eligible_agents = self.expert_agents  # default: all agents participate
+        if _preloaded_assessments is not None:
+            # Shared-assessment mode: Steps 0-1 already done by the calling coordinator.
+            # Use the provided data directly and proceed to Step 2.
+            agent_assessments = _preloaded_assessments
+            geospatial_context = _geospatial_context
+            camera_reports = _camera_reports if _camera_reports is not None else []
+            collection_results = {'assessments': agent_assessments}
+        else:
+            # Step 0: Vision pre-assessment (optional — skipped when agents not configured)
+            geospatial_context = None
+            camera_reports = []
+            eligible_agents = self.expert_agents  # default: all agents participate
 
-        if self.vision_agent is not None:
-            logger.info("Step 0/6: Geospatial terrain analysis")
-            try:
-                geospatial_context = self.vision_agent.analyze(scenario, self.expert_agents)
-                eligible_ids = set(geospatial_context.get("eligible_agent_ids", []))
-                ineligible = geospatial_context.get("ineligible_agent_ids", [])
-                if ineligible:
-                    logger.info(
-                        "GeospatialContextAgent excluded %d agent(s): %s "
-                        "(terrain=%s)",
-                        len(ineligible),
-                        ineligible,
-                        geospatial_context.get("terrain_type"),
-                    )
-                    eligible_agents = [
-                        a for a in self.expert_agents if a.agent_id in eligible_ids
-                    ]
-                    if not eligible_agents:
-                        logger.warning(
-                            "All agents excluded by geospatial filter — "
-                            "reverting to full agent set"
-                        )
-                        eligible_agents = self.expert_agents
-            except Exception as e:
-                logger.warning("GeospatialContextAgent failed: %s — using all agents", e)
-
-        if self.camera_agent is not None:
-            camera_feeds = scenario.get("camera_feeds", [])
-            if camera_feeds:
-                logger.info("Step 0/6: Analyzing %d camera feed(s)", len(camera_feeds))
+            if self.vision_agent is not None:
+                logger.info("Step 0/6: Geospatial terrain analysis")
                 try:
-                    camera_reports = self.camera_agent.analyze_feeds(camera_feeds)
-                    camera_context = self.camera_agent.to_scenario_context(camera_reports)
-                    if camera_context:
-                        # Inject camera intelligence into scenario context
-                        existing = scenario.get("additional_context", "")
-                        scenario = dict(scenario)  # shallow copy — don't mutate caller's dict
-                        scenario["additional_context"] = (
-                            f"{existing}\n\n{camera_context}".strip()
+                    geospatial_context = self.vision_agent.analyze(scenario, self.expert_agents)
+                    eligible_ids = set(geospatial_context.get("eligible_agent_ids", []))
+                    ineligible = geospatial_context.get("ineligible_agent_ids", [])
+                    if ineligible:
+                        logger.info(
+                            "GeospatialContextAgent excluded %d agent(s): %s "
+                            "(terrain=%s)",
+                            len(ineligible),
+                            ineligible,
+                            geospatial_context.get("terrain_type"),
                         )
-                        logger.info("Camera feed intelligence injected into scenario context")
+                        eligible_agents = [
+                            a for a in self.expert_agents if a.agent_id in eligible_ids
+                        ]
+                        if not eligible_agents:
+                            logger.warning(
+                                "All agents excluded by geospatial filter — "
+                                "reverting to full agent set"
+                            )
+                            eligible_agents = self.expert_agents
                 except Exception as e:
-                    logger.warning("CameraFeedAgent failed: %s — continuing without camera data", e)
+                    logger.warning("GeospatialContextAgent failed: %s — using all agents", e)
 
-        # Step 1: Collect assessments from all expert agents
-        logger.info("Step 1/6: Collecting expert assessments")
-        collection_results = self.collect_assessments(
-            scenario, alternatives, criteria, agents=eligible_agents
-        )
-        agent_assessments = collection_results['assessments']
+            if self.camera_agent is not None:
+                camera_feeds = scenario.get("camera_feeds", [])
+                if camera_feeds:
+                    logger.info("Step 0/6: Analyzing %d camera feed(s)", len(camera_feeds))
+                    try:
+                        camera_reports = self.camera_agent.analyze_feeds(camera_feeds)
+                        camera_context = self.camera_agent.to_scenario_context(camera_reports)
+                        if camera_context:
+                            existing = scenario.get("additional_context", "")
+                            scenario = dict(scenario)
+                            scenario["additional_context"] = (
+                                f"{existing}\n\n{camera_context}".strip()
+                            )
+                            logger.info("Camera feed intelligence injected into scenario context")
+                    except Exception as e:
+                        logger.warning("CameraFeedAgent failed: %s — continuing without camera data", e)
 
-        if not agent_assessments:
-            logger.error("No assessments collected - cannot make decision")
-            return self._create_error_decision(
-                "No expert assessments available",
-                scenario,
-                alternatives
+            # Step 1: Collect assessments from all expert agents
+            logger.info("Step 1/6: Collecting expert assessments")
+            collection_results = self.collect_assessments(
+                scenario, alternatives, criteria, agents=eligible_agents
             )
+            agent_assessments = collection_results['assessments']
+
+            if not agent_assessments:
+                logger.error("No assessments collected - cannot make decision")
+                return self._create_error_decision(
+                    "No expert assessments available",
+                    scenario,
+                    alternatives
+                )
 
         # Step 2: Aggregate beliefs using configured method (ER or GAT)
         logger.info(f"Step 2/6: Aggregating beliefs with {self.aggregation_method}")
@@ -1066,7 +1077,8 @@ class CoordinatorAgent:
         )
 
         # Update reliability trackers with consensus outcome
-        if recommended_alt:
+        # Skipped in shared-assessment mode to avoid double-recording the same run.
+        if recommended_alt and not _skip_reliability_update:
             for agent_id, assessment in agent_assessments.items():
                 if isinstance(assessment, AgentAssessment):
                     aid = assessment.metadata.get('_reliability_assessment_id')

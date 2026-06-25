@@ -1363,11 +1363,13 @@ def run_comparative_analysis(
     """
     Run comparative analysis of ER vs GAT aggregation methods.
 
-    This function runs the scenario with both aggregation methods and
-    produces a side-by-side comparison for transparency.
+    Agent assessments are collected ONCE (by the ER coordinator, which also runs
+    vision pre-assessment) and then shared across all aggregation methods.  This
+    isolates the aggregation algorithm as the sole variable in the comparison.
+    Reliability is updated only from the ER decision to avoid double-recording.
 
     Args:
-        coordinator: Initial coordinator agent (will be re-initialized for each method)
+        coordinator: Unused — kept for backward-compatible signature
         expert_agents: List of expert agents
         framework: Decision framework components
         scenario: Crisis scenario
@@ -1406,7 +1408,7 @@ def run_comparative_analysis(
             "Run 'python scripts/train_gat.py' to generate them.", _weights_path
         )
 
-    # Shared vision client for all method runs (warmup once, reuse)
+    # Single vision client reused across all coordinators
     from llm_integration.vision_client import VisionClient, DEFAULT_BASE_URL as _OLLAMA_URL
     _LMSTUDIO_URL = "http://localhost:1234/v1"
     _vc_base = _LMSTUDIO_URL if vision_provider == "lmstudio" else _OLLAMA_URL
@@ -1415,64 +1417,89 @@ def run_comparative_analysis(
         _vc_kwargs["model"] = vision_model
     _vc = VisionClient(**_vc_kwargs)
 
-    # Run with each aggregation method
-    for method in methods_to_run:
-        logger.info(f"\n--- Running with {method} aggregation ---")
-
-        start_time = time.time()
-
-        if method == 'MCDA':
-            # MCDA-only: pure TOPSIS ranking, no agent beliefs involved
-            decision = _run_mcda_only(framework['mcda_engine'], alternatives)
-        else:
-            method_coordinator = CoordinatorAgent(
-                expert_agents=expert_agents,
-                er_engine=framework['er_engine'],
-                mcda_engine=framework['mcda_engine'],
-                consensus_model=framework['consensus_model'],
-                parallel_assessment=True,
-                aggregation_method=method,
-                vision_agent=GeospatialContextAgent(vision_client=_vc),
-                camera_agent=CameraFeedAgent(vision_client=_vc),
-            )
-            decision = method_coordinator.make_final_decision(scenario, alternatives)
-
-        processing_time = (time.time() - start_time) * 1000  # Convert to ms
-
-        # Calculate metrics
+    def _store_result(method, decision, processing_time_ms):
         metrics = {}
         metrics['decision_quality'] = evaluator.calculate_decision_quality(decision)
-
         _ca = (decision.get('collection_info') or {}).get('assessments') or {}
         if _ca:
             metrics['consensus'] = evaluator.calculate_consensus_metrics(_ca)
         else:
             metrics['consensus'] = {'consensus_level': decision.get('consensus_level', 0.0)}
-
         metrics['confidence'] = evaluator.calculate_confidence_metrics(decision)
 
-        # Store results
         method_result = {
             'recommended_alternative': decision.get('recommended_alternative'),
             'confidence': decision.get('confidence', 0.0),
             'consensus_level': decision.get('consensus_level', 0.0),
             'decision_quality_score': metrics['decision_quality']['weighted_score'],
-            'processing_time_ms': processing_time,
+            'processing_time_ms': processing_time_ms,
             'decision': decision,
-            'metrics': metrics
+            'metrics': metrics,
         }
-
         if method in ('GAT', 'GAT_TRAINED') and 'gat_analysis' in decision:
             method_result['attention_weights'] = decision['gat_analysis'].get('attention_weights', {})
             method_result['top_influential_agents'] = decision['gat_analysis'].get('top_influential_agents', [])
 
         results['methods'][method] = method_result
-
         logger.info(f"  Recommended: {method_result['recommended_alternative']}")
         logger.info(f"  Confidence: {method_result['confidence']:.3f}")
         logger.info(f"  Consensus: {method_result['consensus_level']:.3f}")
         logger.info(f"  DQS: {method_result['decision_quality_score']:.3f}")
-        logger.info(f"  Processing time: {processing_time:.1f} ms")
+        logger.info(f"  Processing time: {processing_time_ms:.1f} ms")
+
+    # --- Phase 1: ER — full run (vision + collection + aggregation + reliability update) ---
+    logger.info("\n--- Running with ER aggregation (collecting shared assessments) ---")
+    er_coordinator = CoordinatorAgent(
+        expert_agents=expert_agents,
+        er_engine=framework['er_engine'],
+        mcda_engine=framework['mcda_engine'],
+        consensus_model=framework['consensus_model'],
+        parallel_assessment=True,
+        aggregation_method='ER',
+        vision_agent=GeospatialContextAgent(vision_client=_vc),
+        camera_agent=CameraFeedAgent(vision_client=_vc),
+    )
+    er_start = time.time()
+    er_decision = er_coordinator.make_final_decision(scenario, alternatives)
+    er_time = (time.time() - er_start) * 1000
+    _store_result('ER', er_decision, er_time)
+
+    # Extract shared data for subsequent methods
+    shared_assessments = (er_decision.get('collection_info') or {}).get('assessments', {})
+    geospatial_ctx = er_decision.get('geospatial_context')
+    camera_rpts = er_decision.get('camera_feed_reports', [])
+    results['shared_assessment_count'] = len(shared_assessments)
+    logger.info(f"  Shared assessments captured: {len(shared_assessments)} agents")
+
+    # --- Phase 2: remaining aggregation methods (shared assessments, no re-collection) ---
+    for method in [m for m in methods_to_run if m not in ('ER', 'MCDA')]:
+        logger.info(f"\n--- Running with {method} aggregation (shared assessments) ---")
+        method_coordinator = CoordinatorAgent(
+            expert_agents=expert_agents,
+            er_engine=framework['er_engine'],
+            mcda_engine=framework['mcda_engine'],
+            consensus_model=framework['consensus_model'],
+            parallel_assessment=True,
+            aggregation_method=method,
+        )
+        start_time = time.time()
+        decision = method_coordinator.make_final_decision(
+            scenario, alternatives,
+            _preloaded_assessments=shared_assessments,
+            _geospatial_context=geospatial_ctx,
+            _camera_reports=camera_rpts,
+            _skip_reliability_update=True,
+        )
+        processing_time = (time.time() - start_time) * 1000
+        _store_result(method, decision, processing_time)
+
+    # --- Phase 3: MCDA-only (no agent beliefs) ---
+    if 'MCDA' in methods_to_run:
+        logger.info("\n--- Running MCDA-only (pure TOPSIS, no agent beliefs) ---")
+        start_time = time.time()
+        decision = _run_mcda_only(framework['mcda_engine'], alternatives)
+        processing_time = (time.time() - start_time) * 1000
+        _store_result('MCDA', decision, processing_time)
 
     # Build generic comparison metrics (all methods vs ER baseline)
     er_result = results['methods']['ER']

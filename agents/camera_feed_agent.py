@@ -31,7 +31,8 @@ logger = logging.getLogger(__name__)
 _GENERAL_PROMPT = (
     "You are an emergency management analyst reviewing a surveillance camera image.\n"
     "Context: {context}\n\n"
-    "Analyze the image and return ONLY valid JSON:\n"
+    "IMPORTANT: Respond with ONLY a raw JSON object. No markdown, no headers, no bullet points, "
+    "no explanation. Start your response with {{ and end with }}.\n\n"
     "{{\n"
     '  "crowd_density": "none|low|medium|high|critical",\n'
     '  "crowd_count_estimate": 0,\n'
@@ -57,7 +58,8 @@ _TSUNAMI_PROMPT = (
     "- Debris floating in harbor water\n"
     "- Vessels swinging wildly, listing, or breaking moorings\n"
     "- People running away from the waterfront\n\n"
-    "Return ONLY valid JSON:\n"
+    "IMPORTANT: Respond with ONLY a raw JSON object. No markdown, no headers, no bullet points, "
+    "no explanation. Start your response with {{ and end with }}.\n\n"
     "{{\n"
     '  "tsunami_indicators_present": false,\n'
     '  "water_withdrawal_observed": false,\n'
@@ -96,7 +98,8 @@ _CROWD_PROMPT = (
 _FIRE_PROMPT = (
     "You are analyzing a camera image for wildfire or structural fire assessment.\n"
     "Context: {context}\n\n"
-    "Return ONLY valid JSON:\n"
+    "IMPORTANT: Respond with ONLY a raw JSON object. No markdown, no headers, no bullet points, "
+    "no explanation. Start your response with {{ and end with }}.\n\n"
     "{{\n"
     '  "fire_visible": false,\n'
     '  "smoke_visible": false,\n'
@@ -270,6 +273,16 @@ class CameraFeedAgent:
         )
         mime_type = "image/png" if str(source).lower().endswith(".png") else "image/jpeg"
         raw = vc.analyze_image(image_bytes, prompt, max_tokens=512, mime_type=mime_type)
+
+        if raw is None:
+            report["status"] = "inference_failed"
+            report["situation_summary"] = "Vision model returned no response"
+            self.last_report = report
+            logger.warning(
+                "CameraFeedAgent: vision inference returned None for %s", source
+            )
+            return report
+
         parsed = vc.parse_json_response(raw)
 
         if parsed:
@@ -279,6 +292,9 @@ class CameraFeedAgent:
             report["status"] = "parse_failed"
             report["situation_summary"] = "Vision analysis complete but response parsing failed"
             report["raw_response"] = raw
+            logger.warning(
+                "CameraFeedAgent: JSON parse failed for %s — raw: %.200s", source, raw
+            )
 
         self.last_report = report
         logger.info(
