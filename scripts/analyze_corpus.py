@@ -263,6 +263,37 @@ def ecb(runs):
     return rows
 
 
+def dqs_circularity(runs):
+    """Quantify the DQS/selection coupling: how often the recommendation is
+    simply the TOPSIS-argmax alternative (ER path), and the mean DQS shortfall
+    vs the TOPSIS maximum when the belief component overrides it. Supports the
+    construct-validity discussion in §4.1.
+    """
+    rows = []
+    overall_match, overall_n, shortfalls = 0, 0, []
+    for scen, name in SCENARIOS.items():
+        match, n = 0, 0
+        for r in runs:
+            if r["scenario"] != scen or "ER" not in r["methods"]:
+                continue
+            m = r["methods"]["ER"]
+            raw = m["mcda_raw"]
+            if not raw:
+                continue
+            best = max(raw, key=raw.get)
+            n += 1
+            if m["recommended"] == best:
+                match += 1
+            else:
+                shortfalls.append(raw[best] - raw[m["recommended"]])
+        rows.append({"scenario": name, "match": match, "n": n})
+        overall_match += match; overall_n += n
+    return {"per_scenario": rows, "overall_match": overall_match,
+            "overall_n": overall_n,
+            "mean_shortfall_when_overridden":
+                statistics.mean(shortfalls) if shortfalls else 0.0}
+
+
 def training_reliability():
     agents = {}
     total = 0
@@ -394,6 +425,18 @@ def render(runs, problems, out_json):
                  f"{r['margin_vs_best_pp']:+.1f} | {r['margin_vs_mean_pp']:+.1f} | "
                  f"{100*r['solo_agreement_rate']:.1f} % |")
 
+    # DQS construct validity
+    dc = out_json["dqs_circularity"]
+    L.append("\n## DQS construct validity (ER path): recommendation vs TOPSIS-argmax")
+    L.append("| Scenario | rec == TOPSIS-argmax |")
+    L.append("|---|---|")
+    for r in dc["per_scenario"]:
+        L.append(f"| {r['scenario']} | {r['match']}/{r['n']} |")
+    L.append(f"| **Overall** | **{dc['overall_match']}/{dc['overall_n']} "
+             f"({100*dc['overall_match']/max(dc['overall_n'],1):.0f} %)** |")
+    L.append(f"\nMean DQS shortfall vs TOPSIS-max when the belief component "
+             f"overrides the argmax: {dc['mean_shortfall_when_overridden']:.3f}")
+
     # Training reliability
     tr = out_json["training_reliability"]
     L.append(f"\n## §4.5 Training Reliability ({tr['total_records']} records)")
@@ -437,6 +480,7 @@ def main():
         "table4": table4(runs),
         "table5": table5(runs),
         "ecb": ecb(runs),
+        "dqs_circularity": dqs_circularity(runs),
         "training_reliability": training_reliability(),
         "holdout": holdout(),
     }
