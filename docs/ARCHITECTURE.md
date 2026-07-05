@@ -62,7 +62,7 @@ graph TB
 
     subgraph LLM["LLM INTEGRATION LAYER"]
         direction LR
-        Claude[Claude Sonnet 4<br/>Anthropic]
+        Claude[Claude Sonnet 4.5<br/>Anthropic]
         OpenAI[GPT-4o<br/>OpenAI]
         LMStudio[GPT-OSS 20B<br/>LM Studio - Local]
         Prompt[Role-Specific<br/>Prompt Templates]
@@ -132,7 +132,7 @@ graph TB
 - **Coordination Layer**: Orchestrates multi-agent decision-making, builds consensus, triggers conflict resolution
 - **Agent Layer**: 13 domain experts in a Gold-Silver command hierarchy with LLM-enhanced reasoning and per-agent reliability tracking
 - **Decision Framework Layer**: Belief aggregation (ER / RBGA with L1-normalised TOPSIS blend), multi-criteria ranking (MCDA), consensus model
-- **LLM Integration Layer**: Three providers (Claude Sonnet 4, GPT-4o, GPT-OSS 20B) with role-specific prompts and three-layer hallucination mitigation
+- **LLM Integration Layer**: Three providers (Claude Sonnet 4.5, GPT-4o, GPT-OSS 20B) with role-specific prompts and three-layer hallucination mitigation
 - **Evaluation & Audit Layer**: Metrics (DQS, CL, CS, ECB), per-agent reasoning trace audit trail, visualisations
 
 ### 1. Agent Layer

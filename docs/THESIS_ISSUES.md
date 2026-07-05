@@ -203,3 +203,17 @@ The paper implies GAT_TRAINED learned a meaningful parameterisation. The trained
 | 11 | Vision subsystem absent | LOW | PAPER | ✅ RESOLVED — §3.10 Multimodal Pre-Assessment Layer present; vision layer in all diagrams |
 | 12 | DC formula unjustified | LOW | PAPER | ✅ RESOLVED — DC demoted to "exploratory composite" with uncalibrated-confidence caveat in §4.1 |
 | 13 | GAT_TRAINED delta near zero | LOW | BOTH | ✅ RESOLVED — RBGA-Opt §4.3 subsection added with exact weight deltas and null-result interpretation |
+
+---
+
+## Addendum — Round-2 Corpus Regeneration (July 2026)
+
+All 13 issues above were resolved against the pilot corpus and an earlier paper draft. The paper and experimental corpus were subsequently regenerated end-to-end (45 runs, Claude Sonnet 4.5 replacing Sonnet 4, single-collection ER/RBGA design, `scripts/analyze_corpus.py` for reproducible table generation). This did not reopen any of the 13 items above, but is recorded here for traceability:
+
+- **Issue 2 (agent count) sharpened further**: the round-2 corpus shows 11 active agents for the Flood scenario specifically (the geospatial pre-assessment terrain-excludes both Coast Guard agents for the inland site) and 13 for Wildfire/HAZMAT — not a single "12 active" figure. The paper and `docs/RESULTS.md` now report this per-scenario.
+- **A confound not listed above was found and fixed during round-2 preparation**: the original `run_comparative_analysis` collected agent assessments separately for the ER and RBGA coordinators, so the two methods were compared on stochastically different LLM outputs rather than identical inputs, despite the paper's claim of a controlled comparison. This was refactored to a single-collection design (one LLM pass feeds both aggregators). Predicted effect confirmed: ER-RBGA recommendation agreement rose from 88.9% (pre-fix pilot corpus) to 93.3% (post-fix, round-2 corpus).
+- **Issue 3's planned fix (pre-committed individual baseline) was implemented as a same-scale reframing**, not a full pre-commitment analysis: collective vs. individual is now scored on an identical raw-TOPSIS choice-quality scale, showing the collective matches (rather than beats) the post-hoc best individual, while exceeding the mean individual. A true pre-committed baseline (highest-reliability agent selected before the run) remains future work, as before.
+- **RBGA-Opt (Issue 13) was re-fitted on the round-2 corpus**: max weight deviation from the prior narrowed further to 0.0051 (was 0.014 on the pilot corpus), top-1 accuracy unchanged at 97.8% — the null result replicated on independent data.
+- Reference list was independently verified against live sources; 8 of 34 citations contained author/venue/volume errors (2 were substantially misattributed) and were corrected.
+
+See `results/analysis/corpus_analysis.md` for the regenerated tables and `academic_journal_draft_long version.md` for the current paper text.

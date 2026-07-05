@@ -111,8 +111,8 @@ This PoC investigates the following research questions:
 
 1. **Auditable decision pipeline**: Every AEGIS recommendation is traceable through named-agent reasoning traces, RBGA/ER attention weights, MCDA criterion scores, and belief distributions — eliminating the black box
 2. **Controlled ER vs. RBGA comparison**: First head-to-head comparison of Evidential Reasoning and Rule-Based Graph Attention on identical agent assessments across 45 runs and three crisis scenario types
-3. **LLM-enhanced expert agents**: Three LLM providers (Claude Sonnet 4, GPT-4o, GPT-OSS 20B via LM Studio) with structured CoT prompts, three-layer hallucination mitigation, and exponential-backoff retry
-4. **Historical reliability tracking**: Per-agent performance history with temporal decay; scores feed into both ER (combination ordering) and RBGA (9th attention feature); differentiated scores 0.43-0.68 across 1,133 records
+3. **LLM-enhanced expert agents**: Three LLM providers (Claude Sonnet 4.5, GPT-4o, GPT-OSS 20B via LM Studio) with structured CoT prompts, three-layer hallucination mitigation, and exponential-backoff retry
+4. **Historical reliability tracking**: Per-agent performance history with temporal decay; scores feed into both ER (combination ordering) and RBGA (9th attention feature); differentiated scores 0.445-0.665 across 577 training records plus a 65-record frozen-weight holdout, regenerable via `scripts/analyze_corpus.py`
 5. **Multimodal pre-assessment layer**: GeospatialContextAgent (OSM terrain classification) and CameraFeedAgent (tsunami/crowd/fire vision analysis) enrich scenario context before expert agents are queried
 6. **Open research platform**: Extensible codebase with four crisis scenarios (Flood, Wildfire, HAZMAT, Santorini volcanic-seismic), full evaluation suite, and training pipeline for RBGA weight optimisation
 
@@ -292,22 +292,21 @@ cd web_tools && python app.py    # Available at http://localhost:5000
 
 ## Architecture
 
-AEGIS is organised into seven functional layers: User Interface, Vision Pre-Assessment (Step 0 - terrain classification + camera feed analysis), Coordination, Agent (13 domain-expert agents in a Gold-Silver command hierarchy), Decision Framework (ER / RBGA + TOPSIS-MCDA), LLM Integration (Claude Sonnet 4 / GPT-4o / GPT-OSS 20B), and Evaluation. The Vision Pre-Assessment Layer and the full reasoning-trace audit trail are the two architectural features that directly support the anti-black-box design goal. For detailed component descriptions, Mermaid diagrams, decision-making flow, and algorithm specifications (Dempster-Shafer, RBGA, TOPSIS), see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+AEGIS is organised into seven functional layers: User Interface, Vision Pre-Assessment (Step 0 - terrain classification + camera feed analysis), Coordination, Agent (13 domain-expert agents in a Gold-Silver command hierarchy), Decision Framework (ER / RBGA + TOPSIS-MCDA), LLM Integration (Claude Sonnet 4.5 / GPT-4o / GPT-OSS 20B), and Evaluation. The Vision Pre-Assessment Layer and the full reasoning-trace audit trail are the two architectural features that directly support the anti-black-box design goal. For detailed component descriptions, Mermaid diagrams, decision-making flow, and algorithm specifications (Dempster-Shafer, RBGA, TOPSIS), see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ---
 
 ## Results
 
-The system was evaluated across **45 controlled runs** (5 replicates × 3 LLM providers × 3 crisis scenarios) using all 13 expert agents with `--compare-methods` mode. Key findings:
+The system was evaluated across **45 controlled runs** (5 replicates × 3 LLM providers × 3 crisis scenarios), 11-13 active agents per run depending on scenario (terrain filtering excludes 2 Coast Guard agents for the inland Flood scenario), 555 LLM calls total, with `--compare-methods` mode. Key findings:
 
-- **ER and RBGA are statistically equivalent** — DQS 0.775 ± 0.032 vs 0.781 ± 0.029 (p > 0.05); 88.9% (40/45) recommendation agreement; the five disagreements occur exclusively in the most ambiguous scenario (Wildfire, 12-alternative space)
-- **RBGA-Opt null result**: L-BFGS-B optimisation of the four scalar attention weights converges to within max|delta|=0.014 of the hand-crafted prior with zero accuracy gain, confirming the rule-based prior is already near-optimal within the scalar architecture
-- **Collective beats best individual**: +5.4 pp (HAZMAT), +5.6 pp (Flood), +11.0 pp (Wildfire) — margin scales with decision-space complexity
-- **GPT-OSS 20B** (local, via LM Studio) achieves the highest Combined Score (0.501) at zero API cost — GDPR-compliant sovereign deployment path
-- **Claude Sonnet 4** is fastest (mean 26.5 s/run vs 108.3 s for GPT-OSS), decisive for scenarios with short decision windows
-- **GPT-4o** yields the most consistent consensus (0.930, lowest intra-provider variance)
-- **System consensus** averages 0.902 ± 0.066; run-level recommendation stability is 97.8% (44/45 runs)
-- **TOPSIS L1 normalisation**: raw TOPSIS scores must be L1-normalised before blending with beliefs; without this, MCDA contributes 55-79% of the combined score instead of the intended 40%, shifting 11/30 Wildfire recommendations
+- **ER and RBGA are statistically equivalent** — DQS 0.783 ± 0.042 vs 0.790 ± 0.036 (paired Wilcoxon, p > 0.05); 93.3% (42/45) recommendation agreement; the three disagreements occur in the two most contested scenarios (Wildfire, 12-alternative space; one borderline Flood run)
+- **RBGA-Opt null result, replicated**: L-BFGS-B optimisation of the four scalar attention weights on the 45-run corpus converges to within max|delta|=0.0051 of the hand-crafted prior with top-1 accuracy unchanged at 97.8%, confirming the rule-based prior is already near-optimal within the scalar architecture
+- **Collective matches, rather than beats, the best individual expert**: on an identical TOPSIS choice-quality scale the collective is within 2 pp of the post-hoc best individual, while exceeding the *mean* individual by +0.5 pp (Flood), +1.9 pp (Wildfire), +3.2 pp (HAZMAT). Only 67.7% of solo expert choices match the system recommendation in the Wildfire scenario — aggregation reliably selects and stabilises the strongest expert position rather than synthesising beyond it
+- **No significant provider effect on decision quality** (DQS 0.771-0.791 across providers); GPT-OSS 20B (local, via LM Studio) achieves statistically indistinguishable quality at zero API cost — GDPR-compliant sovereign deployment path
+- **GPT-4o is fastest** (mean 32.2 s/run), Claude Sonnet 4.5 intermediate (77.4 s) with the highest mean consensus (0.919), GPT-OSS 20B slowest (137.1 s) but well within all scenario decision windows
+- **System consensus** averages 0.912 ± 0.071; run-level recommendation stability is 93.3% (42/45 runs match the scenario's modal recommendation)
+- **TOPSIS L1 normalisation**: raw TOPSIS scores must be L1-normalised before blending with beliefs; without this, MCDA contributes 55-79% of the combined score instead of the intended 40%. This was discovered and fixed on a pilot corpus before the 45-run corpus above was generated; the fix is integrated into the decision engine.
 
 See **[docs/RESULTS.md](docs/RESULTS.md)** for full tables, statistical tests, and per-scenario detail.
 
