@@ -133,13 +133,13 @@ AEGIS is organised into seven functional layers, each with clearly demarcated re
 
 ```mermaid
 flowchart TD
-    UI["User Interface Layer<br/>Scenario JSON · Results JSON · Visualisations"]
-    COORD["Coordination Layer<br/>CoordinatorAgent · Consensus Builder"]
-    VISION["Vision Pre-Assessment Layer - Step 0<br/>GeospatialContextAgent · CameraFeedAgent"]
-    AGENTS["Agent Layer · 13 Expert Agents<br/>5 GOLD Strategic + 8 SILVER Tactical/Advisory<br/>ReliabilityTracker"]
-    LLM["LLM Integration Layer<br/>Claude Sonnet 4.5 · GPT-4o · GPT-OSS 20B<br/>13 Role-Specific Templates · Retry Logic"]
-    DF["Decision Framework Layer<br/>Evidential Reasoning · RBGA Aggregator<br/>TOPSIS / MCDA · Consensus Model"]
-    EVAL["Evaluation and Utilities<br/>Metrics · Validation · JSON Output"]
+    UI["User Interface Layer<br/>Scenario JSON - Results JSON - Visualisations"]
+    COORD["Coordination Layer<br/>CoordinatorAgent - Consensus Builder"]
+    VISION["Vision Pre-Assessment Layer - Step 0<br/>GeospatialContextAgent - CameraFeedAgent"]
+    AGENTS["Agent Layer - 13 Expert Agents<br/>5 GOLD Strategic + 8 SILVER Tactical/Advisory<br/>ReliabilityTracker"]
+    LLM["LLM Integration Layer<br/>Claude Sonnet 4.5 - GPT-4o - GPT-OSS 20B<br/>13 Role-Specific Templates - Retry Logic"]
+    DF["Decision Framework Layer<br/>Evidential Reasoning - RBGA Aggregator<br/>TOPSIS / MCDA - Consensus Model"]
+    EVAL["Evaluation and Utilities<br/>Metrics - Validation - JSON Output"]
     UI -->|load scenario| COORD
     COORD -->|Step 0| VISION
     VISION -.->|terrain label + filtered panel| COORD
@@ -229,7 +229,7 @@ A key architectural distinction from standard GAT [24] is that RBGA contains no 
 
 ```mermaid
 flowchart TB
-    START[Agent Assessment + Scenario Context] --> EXTRACT[Extract Features per Agent]
+    START["Agent Assessment + Scenario Context"] --> EXTRACT["Extract Features per Agent"]
     subgraph NINEDIM["9-Dimensional Feature Vector"]
         EXTRACT --> F1["f1: Confidence"]
         EXTRACT --> F2["f2: Belief Certainty"]
@@ -244,7 +244,7 @@ flowchart TB
     F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 --> VECTOR["Feature vector f_i in R9"]
     VECTOR --> ATTENTION[Multi-Head Attention - H=4]
     ATTENTION --> AGGREGATE[Weighted Belief Aggregation]
-    AGGREGATE --> OUTPUT[Aggregated Beliefs + Attention Weights + Uncertainty]
+    AGGREGATE --> OUTPUT["Aggregated Beliefs + Attention Weights + Uncertainty"]
     style F9 fill:#c8e6c9,stroke:#388e3c
     style AGGREGATE fill:#ffccbc,stroke:#e64a19
 ```
@@ -318,8 +318,8 @@ with decay factor $\gamma = 0.95$ and $d_t$ the age of assessment $t$ in days. F
 flowchart TB
     subgraph INIT["Startup"]
         LOAD[Load reliability JSON from disk]
-        CHECK{File exists?}
-        RESTORE[Restore history + recompute metrics]
+        CHECK{"File exists?"}
+        RESTORE["Restore history + recompute metrics"]
         FRESH[Initialise at default rho = 0.80]
         LOAD --> CHECK
         CHECK -->|Yes| RESTORE
@@ -327,7 +327,7 @@ flowchart TB
     end
     subgraph COLLECT["Assessment Collection"]
         EVAL[Agent evaluates scenario via LLM]
-        RECORD[Record belief distribution + confidence]
+        RECORD["Record belief distribution + confidence"]
         STASH[Store assessment_id in metadata]
         EVAL --> RECORD --> STASH
     end
