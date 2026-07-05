@@ -200,7 +200,7 @@ class GATTrainingDataExtractor:
         result: Dict[str, Dict[str, Any]] = {}
         for agent_id, value in raw.items():
             if isinstance(value, dict):
-                parsed = value
+                parsed = _normalize_assessment_dict(value)
             elif isinstance(value, str):
                 parsed = _parse_assessment_string(value)
             else:
@@ -210,6 +210,26 @@ class GATTrainingDataExtractor:
                 result[agent_id] = parsed
 
         return result
+
+
+def _normalize_assessment_dict(value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Normalize a JSON-serialized assessment dict for feature extraction.
+
+    Round-2 result files store assessments as real dicts in which
+    belief_distribution is the serialized Pydantic model {"beliefs": {...}}
+    rather than the flat {alternative: mass} mapping the feature extractor
+    expects, and expertise lives under metadata. Flatten both.
+    """
+    parsed = dict(value)
+    bd = parsed.get("belief_distribution")
+    if isinstance(bd, dict) and set(bd.keys()) == {"beliefs"}:
+        bd = bd["beliefs"]
+    if not isinstance(bd, dict) or not bd:
+        return None
+    parsed["belief_distribution"] = bd
+    if "expertise" not in parsed:
+        parsed["expertise"] = (parsed.get("metadata") or {}).get("expertise", "")
+    return parsed
 
 
 # ------------------------------------------------------------------

@@ -8,7 +8,7 @@ advanced reasoning capabilities. It handles API communication, error recovery, J
 parsing, response validation, and usage tracking.
 
 WHY CLAUDE:
-Claude (specifically claude-sonnet-4-20250514) was chosen as the **default LLM provider**
+Claude (specifically claude-sonnet-4-5) was chosen as the **default LLM provider**
 for this crisis management system because:
 
 1. **Superior Reasoning Quality**: Claude excels at complex, multi-dimensional analysis
@@ -47,7 +47,7 @@ from llm_integration import ClaudeClient, PromptTemplates
 # 1. Initialize client
 client = ClaudeClient()  # Reads ANTHROPIC_API_KEY from environment
 # Or with explicit API key:
-# client = ClaudeClient(api_key="sk-ant-...", model="claude-sonnet-4-20250514")
+# client = ClaudeClient(api_key="sk-ant-...", model="claude-sonnet-4-5")
 
 # 2. Create expert prompt
 templates = PromptTemplates()
@@ -121,7 +121,7 @@ On success, returns Dict with:
     'confidence': float,        # Confidence level 0.0-1.0
     'key_concerns': List[str],  # List of 2-4 concerns
     '_metadata': {
-        'model': str,           # Model used (e.g., 'claude-sonnet-4-20250514')
+        'model': str,           # Model used (e.g., 'claude-sonnet-4-5')
         'input_tokens': int,    # Tokens in prompt
         'output_tokens': int,   # Tokens in response
         'stop_reason': str,     # Why generation stopped ('end_turn', 'max_tokens', etc.)
@@ -242,7 +242,7 @@ PERFORMANCE CHARACTERISTICS:
 
 - **Latency**: 2-5 seconds per request (depends on response length, load)
 - **Throughput**: ~50 requests/minute (rate limit)
-- **Token Limits**: 200k context window (claude-sonnet-4-20250514)
+- **Token Limits**: 200k context window (claude-sonnet-4-5)
 - **Timeout**: None (uses default Anthropic SDK timeout)
 - **Retries**: 3 attempts max with exponential backoff (2s, 4s, 8s)
 - **Memory**: Minimal (stateless except counters)
@@ -375,13 +375,13 @@ class ClaudeClient:
         {'A1': 0.7, 'A2': 0.2, 'A3': 0.08, 'A4': 0.02}
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "claude-sonnet-4-20250514"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "claude-sonnet-4-5"):
         """
         Initialize Claude client.
 
         Args:
             api_key: Anthropic API key (if None, reads from ANTHROPIC_API_KEY env var)
-            model: Claude model to use (default: claude-sonnet-4-20250514)
+            model: Claude model to use (default: claude-sonnet-4-5)
 
         Raises:
             ValueError: If API key is not provided or found in environment

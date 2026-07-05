@@ -23,7 +23,33 @@ from pathlib import Path
 
 RELIABILITY_DIR = Path("results/reliability")
 TEST_OUTPUT_DIR = Path("results/reliability_test_volcanic")
+SCENARIO_RESULTS_DIR = Path("results/santorini_volcanic_seismic")
 SNAPSHOT_DIR = Path("/tmp/crisismas_reliability_snapshot")
+
+
+def count_training_records(reliability_dir: Path) -> int:
+    """Count assessment_history entries across all reliability files."""
+    total = 0
+    for f in reliability_dir.glob("*_reliability.json"):
+        with open(f) as fh:
+            total += len(json.load(fh).get("assessment_history", []))
+    return total
+
+
+def git_commit_hash() -> str:
+    try:
+        return subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "unknown"
+
+
+def list_run_dirs() -> set:
+    if not SCENARIO_RESULTS_DIR.exists():
+        return set()
+    return {p.name for p in SCENARIO_RESULTS_DIR.iterdir() if p.is_dir()}
 
 
 def snapshot(src: Path, dst: Path):
@@ -80,12 +106,15 @@ def main():
 
     TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+    training_records = count_training_records(RELIABILITY_DIR)
+
     print(f"Frozen-weight volcanic test: {args.runs} runs, provider={args.provider}")
-    print(f"Training weights frozen from: {RELIABILITY_DIR}")
+    print(f"Training weights frozen from: {RELIABILITY_DIR} ({training_records} records)")
     print(f"Results will be saved to: {TEST_OUTPUT_DIR}\n")
 
     all_run_stats = []
     all_new_records = {}
+    run_dir_info = []
 
     for run_num in range(1, args.runs + 1):
         print(f"--- Run {run_num}/{args.runs} ---")
@@ -95,6 +124,7 @@ def main():
         print(f"  Snapshot saved to {SNAPSHOT_DIR}")
 
         # Step 2: Run the scenario
+        dirs_before = list_run_dirs()
         cmd = [
             sys.executable, "main.py",
             "--scenario", "santorini_volcanic_seismic",
@@ -106,6 +136,24 @@ def main():
 
         if result.returncode != 0:
             print(f"  WARNING: main.py exited with code {result.returncode} on run {run_num}")
+
+        # Mark the run directory created by main.py as a frozen-weight holdout run
+        new_dirs = sorted(list_run_dirs() - dirs_before)
+        frozen_dir_name = None
+        if new_dirs:
+            src = SCENARIO_RESULTS_DIR / new_dirs[-1]
+            dst = SCENARIO_RESULTS_DIR / f"{src.name}_frozen"
+            src.rename(dst)
+            frozen_dir_name = dst.name
+            print(f"  Run directory renamed to {dst}")
+        else:
+            print("  WARNING: no new run directory detected for this run")
+        run_dir_info.append({
+            "run": run_num,
+            "run_dir": frozen_dir_name,
+            "timestamp": datetime.now().isoformat(),
+            "main_py_returncode": result.returncode,
+        })
 
         # Step 3: Extract new volcanic records added by this run
         new_records = extract_new_volcanic_records(SNAPSHOT_DIR, RELIABILITY_DIR)
@@ -171,7 +219,9 @@ def main():
         "runs": args.runs,
         "provider": args.provider,
         "mode": "frozen_weights",
-        "training_records": 1211,
+        "git_commit": git_commit_hash(),
+        "training_records": training_records,
+        "run_directories": run_dir_info,
         "agent_scores": agent_test_scores,
         "per_run_stats": [
             {agent: v for agent, v in run.items()}

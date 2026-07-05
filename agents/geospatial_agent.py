@@ -19,6 +19,7 @@ FALLBACK HIERARCHY:
 import json
 import logging
 import math
+import re
 import urllib.request
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -184,13 +185,40 @@ _TERRAIN_PROMPT = (
     "2. Is there sea/ocean visible anywhere in this map tile?\n"
     "3. Can a coast guard vessel reach this location by sea?\n\n"
     "IMPORTANT: Rivers and inland lakes are NOT sea. Only ocean/sea counts.\n\n"
-    "Respond ONLY with valid JSON — no prose, no markdown:\n"
-    '{"terrain_type":"island|coastal_mainland|inland",'
+    "Respond ONLY with valid JSON — no prose, no markdown.\n"
+    'Set "terrain_type" to exactly ONE word: either "island" or "coastal_mainland" or "inland".\n'
+    "JSON schema (fill in your own values):\n"
+    '{"terrain_type":"...",'
     '"sea_visible_in_tile":true,'
     '"has_maritime_access":true,'
     '"confidence":0.9,'
     '"reasoning":"one sentence describing what you see on the map"}'
 )
+
+
+_VALID_TERRAIN_LABELS = {"island", "coastal_mainland", "inland"}
+
+
+def _normalize_terrain_label(value: Any) -> Optional[str]:
+    """
+    Reduce a vision-model terrain_type value to one valid label, or None.
+
+    Handles models that echo the option list from the prompt (e.g.
+    "island|coastal_mainland|inland") or wrap the label in prose. Matching is
+    token-based, not substring-based: "coastal_mainland" contains "inland" as a
+    substring, so substring tests would misclassify. If zero or multiple
+    distinct labels appear, the value is ambiguous and None is returned.
+    """
+    if not isinstance(value, str):
+        return None
+    cleaned = value.strip().lower()
+    # Unify separator variants of the two-word label before tokenizing
+    cleaned = re.sub(r"coastal[\s_\-]+mainland", "coastal_mainland", cleaned)
+    if cleaned in _VALID_TERRAIN_LABELS:
+        return cleaned
+    tokens = set(re.split(r"[^a-z_]+", cleaned))
+    matches = _VALID_TERRAIN_LABELS & tokens
+    return matches.pop() if len(matches) == 1 else None
 
 
 # ---------------------------------------------------------------------------
@@ -335,7 +363,15 @@ class GeospatialContextAgent:
                 raw = vc.analyze_image(tile_bytes, _TERRAIN_PROMPT, max_tokens=256)
                 parsed = vc.parse_json_response(raw)
                 if parsed and "terrain_type" in parsed:
-                    terrain_type = parsed["terrain_type"].strip().lower().replace(" ", "_")
+                    terrain_type = _normalize_terrain_label(parsed["terrain_type"])
+                    if terrain_type is None:
+                        logger.info(
+                            "GeospatialContextAgent: vision terrain_type %r is ambiguous "
+                            "(echoed option list or unrecognised label) — "
+                            "using deterministic terrain=%s for (%.4f, %.4f)",
+                            parsed["terrain_type"], deterministic["terrain_type"], lat, lon,
+                        )
+                        return deterministic
 
                     # Trust vision only for island classification — most reliable use case
                     if terrain_type == "island":

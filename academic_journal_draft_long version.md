@@ -9,9 +9,9 @@ Email: vkazoukas@tuc.gr, kazoukas@gmail.com
 
 ## Abstract
 
-Effective crisis management requires the rapid coordination of expert judgements across multiple disciplines under conditions of severe uncertainty, time pressure, and incomplete information. This paper presents AEGIS (Adaptive Expert-based Group Intelligence System), a multi-agent decision support framework in which 13 domain-expert agents, modelled on emergency response roles spanning the GOLD strategic and SILVER tactical command levels, generate structured assessments using Large Language Models (LLMs) and aggregate them through two complementary mechanisms: classical Evidential Reasoning (ER) grounded in Dempster-Shafer theory, and a domain-parameterised rule-based graph attention aggregator (RBGA) that applies interpretable, fixed-scalar attention weights over a 9-dimensional agent-feature representation, deliberately designed for full auditability in the absence of labelled crisis-decision training data. A TOPSIS-based multi-criteria ranking procedure and a historical reliability tracker that adjusts agent influence over successive decisions complete the pipeline. Prior to expert assessment, a multimodal pre-assessment layer - comprising a geospatial terrain classifier and a camera-feed vision agent - enriches the scenario context with real-time observational data and filters domain-ineligible agents, grounding subsequent LLM reasoning in current situational evidence.
+Effective crisis management demands rapid coordination of expert knowledge across disciplines under severe uncertainty and time pressure. This paper presents AEGIS (Adaptive Expert-based Group Intelligence System), a multi-agent decision support framework that orchestrates 13 domain-expert agents modelled on emergency response roles at GOLD (strategic) and SILVER (tactical) command levels. Each agent generates structured belief assessments using Large Language Models; these are then aggregated through two complementary mechanisms: classical Evidential Reasoning (ER) grounded in Dempster-Shafer theory, and a rule-based graph attention aggregator (RBGA) that applies interpretable, fixed-scalar weights over a 9-dimensional agent-feature representation. RBGA was deliberately designed for full auditability where labelled crisis-decision training data are unavailable. A TOPSIS-based multi-criteria ranker and a historical reliability tracker that adjusts per-agent influence over successive decisions complete the pipeline. Before expert assessment begins, a multimodal pre-assessment layer-comprising a geospatial terrain classifier and a camera-feed vision agent-enriches the scenario context with real-time observational data and filters domain-ineligible agents.
 
-The system is evaluated on three crisis scenarios inspired by recent Greek emergencies: the Karditsa flash flooding of September 2023, the North Evia wildfires of August 2021, and an industrial ammonia release at the Elefsina petrochemical zone. Across 45 controlled runs - five replicates for each of three LLM providers (Anthropic Claude Sonnet 4, OpenAI GPT-4o, and GPT-OSS 20B deployed locally via LM Studio) across all three scenarios - both aggregation paths produce statistically equivalent decision quality (ER DQS: 0.775 ± 0.032; RBGA DQS: 0.781 ± 0.029; p > 0.05), with an 88.9 % recommendation agreement rate (40/45 runs) and a mean system consensus of 0.902 ± 0.068. All three providers converge on the dominant recommended alternative for every HAZMAT run and every Flood run; the five ER-RBGA disagreements arise exclusively in the most ambiguous scenario (Forest Fire, 12-alternative action space). Collective multi-agent recommendations outperform the best individual agent by margins of +5.4 pp (HAZMAT), +5.6 pp (Flood), and +11.0 pp (Forest Fire), confirming that the value of structured aggregation scales with decision-space complexity. In a preliminary author self-assessment of explainability and auditability, ratings of 4.2/5 and 4.5/5 were recorded; independent practitioner validation remains future work but the structured audit trail is encouraging for operational contexts where accountability is non-negotiable.
+The system is evaluated on three crisis scenarios influenced from recent Greek emergencies: the Karditsa flash flooding (September 2023), the North Evia wildfires (August 2021), and an industrial ammonia release at the Elefsina petrochemical zone. Across 45 controlled runs-five replicates per LLM provider (Anthropic Claude Sonnet 4.5, OpenAI GPT-4o, and GPT-OSS 20B via LM Studio) for each scenario-ER and RBGA produced statistically equivalent decision quality (ER DQS: 0.783 ± 0.042; RBGA DQS: 0.790 ± 0.036; paired Wilcoxon p > 0.05), with 93.3% recommendation agreement (42/45 runs) and a mean consensus of 0.912 ± 0.071. All three providers converged on the dominant alternative for every HAZMAT run; the three ER-RBGA disagreements arose in the two most contested decision spaces (two in the 12-alternative Forest Fire scenario, one borderline Flood run). On an identical TOPSIS choice-quality scale, collective recommendations matched the post-hoc best individual agent (within 2 pp) while outperforming the mean individual expert by +0.5 pp (Flood), +1.9 pp (Forest Fire), and +3.2 pp (HAZMAT) - in the most ambiguous scenario, only 68% of solo expert choices coincided with the system recommendation, quantifying the dispersion that aggregation resolves. Preliminary author self-assessed explainability and auditability ratings of 4.2/5 and 4.5/5 suggest the structured audit trail is well-suited to operational contexts where accountability is non-negotiable; independent practitioner validation remains future work.
 
 **Keywords:** Multi-Agent Systems; Crisis Management; Evidential Reasoning; Dempster-Shafer Theory; Rule-Based Graph Attention Aggregation; Graph Attention Networks; Large Language Models; Group Decision Making; Multi-Criteria Decision Analysis; TOPSIS; Decision Support Systems; Emergency Management; Explainability
 
@@ -51,11 +51,11 @@ This paper makes six concrete contributions:
 
 2. **Controlled aggregation comparison.** A direct, methodologically rigorous comparison of weighted Evidential Reasoning and a rule-based graph attention aggregator (RBGA) operating on byte-for-byte identical agent assessments across 45 runs and three scenario types - guaranteed by a single-collection architecture in which ER and RBGA receive the same assessment dict from one shared LLM pass - providing the first controlled ER-vs-RBGA comparison in the crisis management domain.
 
-3. **Multi-provider LLM evaluation.** Systematic performance characterisation of three LLM providers (Claude Sonnet 4, GPT-4o, GPT-OSS 20B) across speed, decision quality, consistency, and data-sovereignty trade-offs, demonstrating that competitive decision quality is achievable with locally deployed open-source models.
+3. **Multi-provider LLM evaluation.** Systematic performance characterisation of three LLM providers (Claude Sonnet 4.5, GPT-4o, GPT-OSS 20B) across speed, decision quality, consistency, and data-sovereignty trade-offs, demonstrating that competitive decision quality is achievable with locally deployed open-source models.
 
-4. **Historical reliability tracking.** An online reliability tracker that updates per-agent influence weights after each decision using a consensus-based proxy, demonstrating measurable differentiation (reliability scores spanning 0.29-0.73 across 1,276 agent records (1,211 training, 65 frozen-weight holdout)) and structural integration into both aggregation paths.
+4. **Historical reliability tracking.** An online reliability tracker that updates per-agent influence weights after each decision using a consensus-based proxy, demonstrating measurable differentiation (per-agent mean accuracy spanning 0.445-0.665 across 642 agent records (577 training, 65 frozen-weight holdout)) and structural integration into both aggregation paths.
 
-5. **Empirical collective-vs-individual analysis.** Quantitative evidence that the collective system recommendation outperforms the best individual agent on all three scenario types, with the largest advantage (+11.0 pp) arising precisely in the most complex multi-alternative action space.
+5. **Empirical collective-vs-individual analysis.** A same-scale choice-quality comparison showing that the collective recommendation matches the post-hoc best individual agent (within 2 pp) while consistently exceeding the mean individual expert, with only 68% of solo choices coinciding with the system recommendation in the most complex multi-alternative action space - characterising aggregation as a reliable selection-and-stabilisation mechanism.
 
 6. **Multimodal pre-assessment layer.** A two-agent vision subsystem (GeospatialContextAgent and CameraFeedAgent) that runs before expert assessment, classifying terrain from OSM satellite tiles, analysing live camera feeds in scenario-specific modes (tsunami, crowd, fire), and injecting structured observational intelligence into the scenario context seen by all 13 domain-expert agents - demonstrating how real-time visual evidence extends and constrains LLM-based expert reasoning without requiring additional API calls.
 
@@ -133,14 +133,13 @@ AEGIS is organised into seven functional layers, each with clearly demarcated re
 
 ```mermaid
 flowchart TD
-    UI["User Interface Layer\nScenario JSON · Results JSON · Visualisations"]
-    COORD["Coordination Layer\nCoordinatorAgent · Consensus Builder"]
-    VISION["Vision Pre-Assessment Layer - Step 0\nGeospatialContextAgent · CameraFeedAgent"]
-    AGENTS["Agent Layer · 13 Expert Agents\n5 GOLD Strategic + 8 SILVER Tactical / Advisory\nReliabilityTracker"]
-    LLM["LLM Integration Layer\nClaude Sonnet 4 · GPT-4o · GPT-OSS 20B\n13 Role-Specific Templates · Retry Logic"]
-    DF["Decision Framework Layer\nEvidential Reasoning · RBGA Aggregator\nTOPSIS / MCDA · Consensus Model"]
-    EVAL["Evaluation and Utilities\nMetrics · Validation · JSON Output"]
-
+    UI["User Interface Layer<br/>Scenario JSON · Results JSON · Visualisations"]
+    COORD["Coordination Layer<br/>CoordinatorAgent · Consensus Builder"]
+    VISION["Vision Pre-Assessment Layer - Step 0<br/>GeospatialContextAgent · CameraFeedAgent"]
+    AGENTS["Agent Layer · 13 Expert Agents<br/>5 GOLD Strategic + 8 SILVER Tactical/Advisory<br/>ReliabilityTracker"]
+    LLM["LLM Integration Layer<br/>Claude Sonnet 4.5 · GPT-4o · GPT-OSS 20B<br/>13 Role-Specific Templates · Retry Logic"]
+    DF["Decision Framework Layer<br/>Evidential Reasoning · RBGA Aggregator<br/>TOPSIS / MCDA · Consensus Model"]
+    EVAL["Evaluation and Utilities<br/>Metrics · Validation · JSON Output"]
     UI -->|load scenario| COORD
     COORD -->|Step 0| VISION
     VISION -.->|terrain label + filtered panel| COORD
@@ -151,7 +150,6 @@ flowchart TD
     DF -->|recommendation| COORD
     COORD -->|final decision| EVAL
     EVAL -->|results| UI
-
     style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style COORD fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     style VISION fill:#e0f7fa,stroke:#00838f,stroke-width:2px
@@ -172,10 +170,9 @@ AEGIS deploys 15 agents in two functional categories. Two multimodal pre-assessm
 ```mermaid
 graph LR
     subgraph VIS["Vision Pre-Assessment - Bronze - Step 0"]
-        GEO[GeospatialContextAgent\nOSM terrain classifier]
-        CAM[CameraFeedAgent\nFeed analyser]
+        GEO["GeospatialContextAgent<br/>OSM terrain classifier"]
+        CAM["CameraFeedAgent<br/>Feed analyser"]
     end
-
     subgraph SIL["SILVER Level - 8 Agents"]
         T1[Police On-Scene]
         T2[Fire-Brigade On-Scene]
@@ -186,7 +183,6 @@ graph LR
         A3[PSAP Commander / 112]
         A4[Environmental Scientist]
     end
-
     subgraph GOL["GOLD Level - 5 Strategic Agents"]
         G1[Police Regional Commander]
         G2[Fire-Brigade Regional Director]
@@ -194,10 +190,8 @@ graph LR
         G4[Civil Protection Director]
         G5[Medical Infrastructure Director]
     end
-
     GEO -->|terrain + agent filter| G1
     CAM -->|camera context| T1
-
     style VIS fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style SIL fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
     style GOL fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
@@ -236,8 +230,7 @@ A key architectural distinction from standard GAT [24] is that RBGA contains no 
 ```mermaid
 flowchart TB
     START[Agent Assessment + Scenario Context] --> EXTRACT[Extract Features per Agent]
-
-    subgraph "9-Dimensional Feature Vector"
+    subgraph NINEDIM["9-Dimensional Feature Vector"]
         EXTRACT --> F1["f1: Confidence"]
         EXTRACT --> F2["f2: Belief Certainty"]
         EXTRACT --> F3["f3: Expertise Relevance"]
@@ -246,14 +239,12 @@ flowchart TB
         EXTRACT --> F6["f6: Top-Choice Strength"]
         EXTRACT --> F7["f7: Thoroughness"]
         EXTRACT --> F8["f8: Reasoning Quality"]
-        EXTRACT --> F9["f9: Historical Reliability *"]
+        EXTRACT --> F9["f9: Historical Reliability"]
     end
-
     F1 & F2 & F3 & F4 & F5 & F6 & F7 & F8 & F9 --> VECTOR["Feature vector f_i in R9"]
     VECTOR --> ATTENTION[Multi-Head Attention - H=4]
     ATTENTION --> AGGREGATE[Weighted Belief Aggregation]
     AGGREGATE --> OUTPUT[Aggregated Beliefs + Attention Weights + Uncertainty]
-
     style F9 fill:#c8e6c9,stroke:#388e3c
     style AGGREGATE fill:#ffccbc,stroke:#e64a19
 ```
@@ -272,7 +263,7 @@ $$\alpha_{ij} = \frac{\exp(\text{LeakyReLU}(e_{ij}))}{\sum_{k \in \mathcal{N}_i}
 
 $$m_{\text{agg}}(A_k) = \frac{\sum_{i=1}^N c_i \cdot m_i(A_k)}{\sum_{i=1}^N c_i}, \qquad c_i = \frac{1}{N}\sum_{j=1}^N \bar{\alpha}_{ji}$$
 
-where $c_i$ is agent $i$'s **received attention** — the mean attention directed at agent $i$ across all $N$ agents — and serves as its influence weight in the aggregation. Using the column sum of the attention matrix (rather than the diagonal self-attention $\bar{\alpha}_{ii}$) correctly captures how much the collective panel defers to each agent's assessment. The aggregated distribution is normalised to sum to unity, and its Shannon entropy provides an uncertainty measure that is passed to the coordination layer.
+where $c_i$ is agent $i$'s **received attention** - the mean attention directed at agent $i$ across all $N$ agents - and serves as its influence weight in the aggregation. Using the column sum of the attention matrix (rather than the diagonal self-attention $\bar{\alpha}_{ii}$) correctly captures how much the collective panel defers to each agent's assessment. The aggregated distribution is normalised to sum to unity, and its Shannon entropy provides an uncertainty measure that is passed to the coordination layer.
 
 ### 3.5 MCDA Integration and Decision Scoring
 
@@ -292,7 +283,7 @@ $$C_k^{\text{norm}} = \frac{C_k}{\displaystyle\sum_j C_j}$$
 
 This transforms the TOPSIS output into a proper distribution summing to 1.0 while preserving the ranking order among alternatives. The normalised coefficient $C_k^{\text{norm}}$ is used in all analyses throughout this paper. A post-hoc recalculation (Section 4.7) quantifies the impact of this correction across the full experimental corpus.
 
-**What TOPSIS contributes beyond belief aggregation.** Running TOPSIS independently of the belief aggregation step provides two distinct analytical benefits that pure belief combination cannot replicate. First, it correctly handles the directional asymmetry between benefit and cost criteria: safety, effectiveness, response speed, and public acceptance are drawn toward the positive ideal solution $A^+$, while the resource-intensity cost dimension is simultaneously drawn away from the negative ideal solution $A^-$, rewarding comprehensive responses over minimal-cost alternatives. A simple weighted average of agent beliefs contains no mechanism to encode this directionality. Second, TOPSIS reveals cases where collective expert preference and objective criterion optimisation diverge -- the most informative decision points in the output, since they signal trade-offs a decision-maker must consciously accept rather than resolve automatically. In the Elefsina HAZMAT trace (Section 4.6), for example, downwind evacuation achieves the highest TOPSIS closeness coefficient ($C_k = 0.806$) due to its exceptional safety score, but the aggregated agent beliefs strongly favour the integrated multi-layer response (combined score 0.574 vs. 0.459 for evacuation). The 60/40 combination preserves this tension visibly in the output rather than collapsing it, and the accompanying audit trail exposes the specific criterion scores that drive the divergence -- precisely the kind of structured transparency required in safety-critical operational contexts.
+**What TOPSIS contributes beyond belief aggregation.** Running TOPSIS independently of the belief aggregation step provides two distinct analytical benefits that pure belief combination cannot replicate. First, it correctly handles the directional asymmetry between benefit and cost criteria: safety, effectiveness, response speed, and public acceptance are drawn toward the positive ideal solution $A^+$, while the resource-intensity cost dimension is simultaneously drawn away from the negative ideal solution $A^-$, rewarding comprehensive responses over minimal-cost alternatives. A simple weighted average of agent beliefs contains no mechanism to encode this directionality. Second, TOPSIS reveals cases where collective expert preference and objective criterion optimisation diverge -- the most informative decision points in the output, since they signal trade-offs a decision-maker must consciously accept rather than resolve automatically. In the Elefsina HAZMAT trace (Section 4.6), for example, downwind evacuation achieves the highest TOPSIS closeness coefficient ($C_k = 0.806$) due to its exceptional safety score, but the aggregated agent beliefs strongly favour the integrated multi-layer response (ER combined score 0.717 vs. 0.119 for evacuation). The 60/40 combination preserves this tension visibly in the output rather than collapsing it, and the accompanying audit trail exposes the specific criterion scores that drive the divergence -- precisely the kind of structured transparency required in safety-critical operational contexts.
 
 Consensus level is computed as the mean pairwise cosine similarity of agent belief vectors:
 
@@ -334,35 +325,29 @@ flowchart TB
         CHECK -->|Yes| RESTORE
         CHECK -->|No| FRESH
     end
-
     subgraph COLLECT["Assessment Collection"]
         EVAL[Agent evaluates scenario via LLM]
         RECORD[Record belief distribution + confidence]
         STASH[Store assessment_id in metadata]
         EVAL --> RECORD --> STASH
     end
-
     subgraph DECIDE["Aggregation"]
         ER_W[ER path: use rho as normalised weights]
         GAT_F[RBGA path: inject rho as feature f9]
         FINAL[make_final_decision - returns recommended A-star]
         ER_W & GAT_F --> FINAL
     end
-
     subgraph VALIDATE["Consensus Validation"]
         LOOP[For each agent assessment]
         SCORE[Compute 3-component accuracy a_k]
         UPDATE[Update reliability with temporal decay]
         LOOP --> SCORE --> UPDATE
     end
-
     subgraph PERSIST["Persistence"]
         SAVE[Save reliability JSON to disk]
         SAVE --> DONE[Ready for next run]
     end
-
     INIT --> COLLECT --> DECIDE --> VALIDATE --> PERSIST
-
     style ER_W fill:#ffccbc,stroke:#e64a19
     style GAT_F fill:#c8e6c9,stroke:#388e3c
 ```
@@ -377,25 +362,21 @@ Each expert agent issues a single LLM call per scenario evaluation. The call is 
 graph LR
     subgraph LLM["LLM Integration Layer"]
         LLM_INT[Provider Abstraction]
-
         subgraph Providers["Supported Providers"]
-            CLAUDE["Claude Sonnet 4<br/>Anthropic API"]
+            CLAUDE["Claude Sonnet 4.5<br/>Anthropic API"]
             OPENAI["GPT-4o<br/>OpenAI API"]
             LMSTUDIO["GPT-OSS 20B<br/>LM Studio - Local"]
         end
-
         PROMPTS["13 Role-Specific<br/>Prompt Templates"]
         PARSER["Response Parser<br/>Pydantic Validation"]
         RETRY["Retry Logic<br/>Exponential Backoff"]
     end
-
     AGENT[Expert Agent] --> LLM_INT
     LLM_INT --> PROMPTS
     PROMPTS --> CLAUDE & OPENAI & LMSTUDIO
     CLAUDE & OPENAI & LMSTUDIO --> RETRY
     RETRY --> PARSER
     PARSER --> RESPONSE["Structured Response:<br/>belief_distribution<br/>confidence<br/>reasoning<br/>key_concerns"]
-
     style CLAUDE fill:#f8bbd9,stroke:#c2185b
     style OPENAI fill:#f8bbd9,stroke:#c2185b
     style LMSTUDIO fill:#c8e6c9,stroke:#388e3c
@@ -411,7 +392,7 @@ graph LR
 
 *Layer 3 -- Pydantic enforcement.* The validated response is passed to `BeliefDistribution` and `AgentAssessment` Pydantic models, which enforce field types and value ranges at construction time; rankings are normalised to sum to unity at this stage. A fallback assessment (uniform belief, zero confidence, full participation weight penalty) is created if all upstream steps exhaust the retry budget, ensuring the coordinator always receives a structurally valid response.
 
-Retry logic uses exponential backoff with delays of 2 s, 4 s, and 8 s (3 attempts for Claude and LM Studio; 6 attempts for OpenAI to absorb burst rate limits, with jitter to prevent thundering-herd retries when 13 agents fail simultaneously). An important architectural distinction: the three-layer pipeline catches *structural* hallucinations (wrong format, out-of-range values, missing keys) reliably, but cannot detect *semantic* hallucinations -- cases where an LLM produces well-formed JSON with plausible domain vocabulary but factually incorrect crisis management reasoning. Mitigation of semantic hallucinations requires the diversity mechanism inherent in multi-agent aggregation: if a single agent hallucinates a spurious preference, it is overridden by the remaining 11 agents whose consensus drives the aggregated belief distribution. All three providers achieved 100 % structural parse success in the 540-call experimental corpus after the cleaning step.
+Retry logic uses exponential backoff with delays of 2 s, 4 s, and 8 s (3 attempts for Claude and LM Studio; 6 attempts for OpenAI to absorb burst rate limits, with jitter to prevent thundering-herd retries when 13 agents fail simultaneously). An important architectural distinction: the three-layer pipeline catches *structural* hallucinations (wrong format, out-of-range values, missing keys) reliably, but cannot detect *semantic* hallucinations -- cases where an LLM produces well-formed JSON with plausible domain vocabulary but factually incorrect crisis management reasoning. Mitigation of semantic hallucinations requires the diversity mechanism inherent in multi-agent aggregation: if a single agent hallucinates a spurious preference, it is overridden by the remaining 10-12 agents whose consensus drives the aggregated belief distribution. All three providers achieved 100 % structural parse success in the 555-call experimental corpus after the cleaning step.
 
 ### 3.8 End-to-End Decision Pipeline
 
@@ -423,26 +404,21 @@ sequenceDiagram
     participant Coordinator
     participant Geo as GeospatialContextAgent
     participant Cam as CameraFeedAgent
-    participant Silver as SILVER Level (8 Agents)
-    participant Gold as GOLD Level (5 Agents)
+    participant Silver as SILVER Level - 8 Agents
+    participant Gold as GOLD Level - 5 Agents
     participant ER as ER Engine
     participant GAT as RBGA Aggregator
     participant MCDA as MCDA / TOPSIS
     participant Consensus
-
     User->>Coordinator: Submit Crisis Scenario (JSON)
-
     Note over Coordinator: Step 0 - Multimodal Pre-Assessment
-
     Coordinator->>Geo: analyze(scenario, all_agents)
     Geo->>Geo: Fetch OSM tile, run vision model, return terrain type
     Geo-->>Coordinator: terrain_type + eligible_agent_ids
-
     Coordinator->>Cam: analyze_feeds(camera_feeds)
     Cam->>Cam: Fetch frames, run vision model, structured reports
     Cam-->>Coordinator: Camera intelligence (crowd/tsunami/fire)
     Note over Coordinator: Inject camera intel into scenario context
-
     par Step 1 - Parallel Assessment (enriched context)
         Coordinator->>Silver: evaluate_scenario()
         Silver->>Silver: LLM Reasoning to Belief Distribution
@@ -452,9 +428,7 @@ sequenceDiagram
         Gold->>Gold: LLM Reasoning to Belief Distribution
         Gold-->>Coordinator: {belief, confidence, reasoning, key_concerns}
     end
-
     Note over Coordinator: Step 2 - Belief Aggregation (ER and/or RBGA)
-
     alt ER aggregation
         Coordinator->>ER: combine_beliefs(BBAs, weights, reliabilities)
         ER-->>Coordinator: Aggregated Belief Distribution + Confidence
@@ -462,28 +436,21 @@ sequenceDiagram
         Coordinator->>GAT: aggregate(9D features per agent, belief vectors)
         GAT-->>Coordinator: Aggregated Beliefs + Attention Weights
     end
-
     Note over Coordinator: Step 3 - MCDA Scoring (independent of aggregation)
-
     Coordinator->>MCDA: rank_alternatives(criterion_scores, weights)
     MCDA->>MCDA: TOPSIS: normalise, compute ideal solutions, closeness coefficients
     MCDA-->>Coordinator: TOPSIS scores per alternative
-
     Note over Coordinator: Step 4 - Consensus Check
-
     Coordinator->>Consensus: check_consensus(agent_beliefs)
     Consensus->>Consensus: Pairwise cosine similarity to CL
     Consensus-->>Coordinator: Consensus Level + Conflict List
-
-    alt CL < 0.75 - Conflict Resolution
+    alt CL below 0.75 - Conflict Resolution
         Coordinator->>Coordinator: identify divergent agents
         Coordinator->>Coordinator: generate resolution strategy (advisory)
         Note over Coordinator: Single-pass conflict analysis - no agent re-querying
     end
-
     Note over Coordinator: Step 5 - Final Decision
     Note over Coordinator: Score(A_k) = 0.6 x belief_agg(A_k) + 0.4 x TOPSIS(A_k)
-
     Coordinator-->>User: Recommended Alternative + Reasoning + Metrics (JSON)
 ```
 
@@ -497,7 +464,7 @@ The auto-selection system evaluates all 13 agents against 11 scenario-characteri
 
 Two specialised agents execute as Step 0 of the decision pipeline -- before any domain-expert LLM call -- providing real-time situational awareness that enriches the scenario context visible to all 13 expert agents and validates the agent panel composition.
 
-**GeospatialContextAgent.** This agent fetches a 256×256 OpenStreetMap raster tile for the scenario's declared coordinates via the Slippy Map tile service, base64-encodes it, and submits it to a locally hosted Ollama vision model (default: `minicpm-v`, fallback-compatible with `llama3.2-vision` or `moondream`) for terrain classification. The model returns one of three labels -- `island`, `coastal_mainland`, or `inland` -- which the coordinator uses to filter domain-ineligible expert agents before assessment begins. For example, a volcanic scenario on Santorini (coordinates 36.41°N, 25.46°E) is correctly classified as `island`, triggering the exclusion of any agent whose domain expertise is contingent on continental road or rail infrastructure. A deterministic bounding-box fallback covers Greek geographic coordinates when Ollama is unreachable, preserving the filtering function without vision inference and ensuring the pipeline degrades gracefully to zero additional latency.
+**GeospatialContextAgent.** This agent fetches a 256×256 OpenStreetMap raster tile for the scenario's declared coordinates via the Slippy Map tile service, base64-encodes it, and submits it to a locally hosted Ollama vision model (default: `minicpm-v`, fallback-compatible with `llama3.2-vision` or `moondream`) for terrain classification. The model returns one of three labels -- `island`, `coastal_mainland`, or `inland` -- which the coordinator uses to filter domain-ineligible expert agents before assessment begins. For example, a volcanic scenario on Santorini (coordinates 36.41°N, 25.46°E) is correctly classified as `island`, triggering the exclusion of any agent whose domain expertise is contingent on continental road or rail infrastructure; conversely, for the inland Karditsa flood the filter excludes the two Coast Guard agents, reducing the active panel to 11. A deterministic bounding-box fallback covers Greek geographic coordinates whenever Ollama is unreachable or the vision response cannot be reduced to a single valid label, preserving the filtering function without vision inference and ensuring the pipeline degrades gracefully. Both paths were exercised in the experimental corpus: the recorded holdout runs used the deterministic fallback after the vision model echoed the label options verbatim (a failure mode subsequently eliminated by a response-normalisation step and verified against the live model), and in every case the fallback label agreed with the vision classification.
 
 **CameraFeedAgent** (Bronze command level). This agent processes camera feeds declared in the scenario JSON under the key `camera_feeds`, each specifying a source URL (static image, RTSP stream, or local file path), an analysis mode, and a human-readable label. For each feed it fetches a frame -- using OpenCV for RTSP streams -- base64-encodes it, and submits it to the vision model. The response is parsed into a typed report with mode-specific fields:
 
@@ -518,9 +485,9 @@ Both effects are structurally invisible to the 13 expert agents without Step 0, 
 
 **Camera feed coverage.** All four scenarios in the experimental corpus declare camera feeds in their scenario JSON. The three training scenarios each include three feeds: the Karditsa Flood scenario provides two general-mode feeds (Pineios River bridge for water level monitoring; city centre for street flooding depth and vehicle count) and one crowd-mode feed (municipal hall assembly point); the Evia Wildfire scenario provides two fire-mode feeds (hillside flame-front perimeter; village eastern approach) and one crowd-mode evacuation road feed; the Elefsina HAZMAT scenario provides two general-mode feeds (facility gate with visible ammonia cloud; 500 m downwind residential zone) and one crowd-mode emergency corridor feed. The Santorini holdout declares four feeds: two tsunami-mode harbour cameras and two crowd-mode caldera-rim cameras.
 
-**Illustrative case: Santorini volcanic-seismic scenario.** In a representative run with the Ollama vision model active, Step 0 processed the two tsunami-mode harbour feeds and returned wave-surge indicators at Athinios port (abnormal water level, vessels straining at moorings, dock flooding) and sea-withdrawal indicators at Fira Skala (receded waterline, exposed harbour floor). The two crowd-mode feeds returned crowd severity `elevated` at both caldera-rim viewpoints. This context -- "harbour wave surge detected at Athinios; sea withdrawal at Fira Skala; crowds elevated at rim" -- was injected before any of the 12 eligible expert agents generated their belief distributions, directly informing the relative urgency of port evacuation versus caldera-rim dispersal. This trade-off does not appear explicitly in the scenario's static parameters and would otherwise depend entirely on each LLM's priors about volcanic hazard profiles.
+**Illustrative case: Santorini volcanic-seismic scenario.** In a representative holdout run (`run_1_lmstudio_frozen`) with the Ollama vision model active, Step 0 processed the two tsunami-mode harbour feeds and returned an asymmetric picture: at Athinios port, active wave-surge indicators (abnormal wave pattern, estimated 2.5 m wave height, debris in the water, vessels in distress - warning level `warning`), while at Fira Skala the model reported calm water, no withdrawal, and orderly pedestrian movement (warning level `watch`). The two crowd-mode feeds returned severity `elevated` at both caldera-rim viewpoints, with a bottleneck observed in Oia's narrow alleys and crowd movement *toward* the hazard-facing viewpoints. This context -- "wave surge at Athinios but calm at Fira Skala; crowds elevated at the rim, moving toward the caldera" -- was injected before any of the 13 eligible expert agents generated their belief distributions. The spatial asymmetry is exactly the kind of evidence Step 0 exists to provide: it discriminates *which* harbour faces the immediate maritime threat while the calm reading at Fira Skala constrains the threat envelope (Section 3.10, "absence of signal"), directly informing the relative urgency of port evacuation versus caldera-rim dispersal. This trade-off does not appear explicitly in the scenario's static parameters and would otherwise depend entirely on each LLM's priors about volcanic hazard profiles.
 
-**Operational constraints.** Both vision agents are optional: the coordinator accepts `vision_agent=None` and `camera_agent=None` at construction, in which case Step 0 is skipped entirely. When Ollama is reachable but returns a response the vision model cannot parse, the pipeline continues with whatever partial information is available. The full vision path adds approximately 5-40 seconds to Step 0 depending on model size and number of feeds; this is acceptable for scenarios whose decision windows are measured in minutes or hours, and negligible relative to the 45-180 seconds consumed by the 12 parallel LLM expert assessments in Step 1.
+**Operational constraints.** Both vision agents are optional: the coordinator accepts `vision_agent=None` and `camera_agent=None` at construction, in which case Step 0 is skipped entirely. When Ollama is reachable but returns a response the vision model cannot parse, the pipeline continues with whatever partial information is available. The full vision path adds approximately 5-40 seconds to Step 0 depending on model size and number of feeds; this is acceptable for scenarios whose decision windows are measured in minutes or hours, and negligible relative to the 30-140 seconds consumed by the 11-13 parallel LLM expert assessments in Step 1.
 
 ---
 
@@ -540,13 +507,13 @@ Response alternatives and TOPSIS criteria scores for each scenario were derived 
 | Affected population | 15,000 | 8,000 | 12,000 |
 | Decision window | 4 hours | Immediate | 30 minutes |
 | Response alternatives | 5 | 12 | 5 |
-| Active agents | 12 | 12 | 12 |
+| Active agents | 11 (2 terrain-excluded) | 13 | 13 |
 | Criteria (all scenarios) | safety 0.30, cost 0.25, effectiveness 0.20, speed 0.20, public acceptance 0.20 (engine-normalised) | - | - |
-| Dominant response | Hybrid approach | Combined assault | Integrated response |
+| Dominant response | Hybrid approach | Hybrid evacuation-suppression | Integrated response |
 
-**Experimental configuration.** Each scenario was run 5 times per LLM provider (15 runs per scenario, 45 total). Every run executed both ER and RBGA aggregation concurrently using the `--compare-methods` flag. The `run_comparative_analysis` function collects agent assessments exactly once per run — via the ER coordinator, which also executes the vision pre-assessment (Step 0) — and then passes the same assessment dict to the RBGA coordinator without any additional LLM calls. This single-collection design guarantees that both mechanisms operate on byte-for-byte identical inputs, fully isolating aggregation algorithm as the sole variable in the comparison. Each run involved 12 active agents (auto-selection excluded one peripherally relevant agent per scenario) with 1 LLM call per agent, totalling 12 API calls per run and 540 calls across the full experiment; no additional calls are incurred by running both aggregation paths. The vision pre-assessment layer (Step 0) was active in all runs across all three scenarios, with camera feeds providing situational context before expert assessment. Results were stored as structured JSON in the repository at `results/{scenario}/{run_id}/er/results.json` and `results/{scenario}/{run_id}/rbga/results.json`.
+**Experimental configuration.** Each scenario was run 5 times per LLM provider (15 runs per scenario, 45 total). Every run executed both ER and RBGA aggregation concurrently using the `--compare-methods` flag. The `run_comparative_analysis` function collects agent assessments exactly once per run - via the ER coordinator, which also executes the vision pre-assessment (Step 0) - and then passes the same assessment dict to the RBGA coordinator without any additional LLM calls. This single-collection design guarantees that both mechanisms operate on byte-for-byte identical inputs, fully isolating aggregation algorithm as the sole variable in the comparison. Auto-selection activated all 13 agents for the Wildfire and HAZMAT scenarios; for the inland Flood scenario the geospatial terrain filter (Step 0) excluded the two Coast Guard agents, yielding an 11-agent panel. With 1 LLM call per active agent this totals 555 API calls across the full experiment (15 × 11 + 30 × 13); no additional calls are incurred by running both aggregation paths. Exact model versions: `claude-sonnet-4-5` (Anthropic), `gpt-4o` (OpenAI), and GPT-OSS 20B served locally by LM Studio; sampling temperature 0.7 for all providers. The vision pre-assessment layer (Step 0) was active in all runs across all three scenarios, with camera feeds providing situational context before expert assessment. Results were stored as structured JSON in the repository at `results/{scenario}/{run_id}/er/results.json` and `results/{scenario}/{run_id}/gat/results.json` (the `gat` directory name is retained for backward compatibility; it holds the RBGA output). All tables in this section are generated by `scripts/analyze_corpus.py` directly from the stored result files.
 
-**Reliability tracker holdout evaluation.** To assess the reliability tracker's ability to generalise to an unseen crisis type, a fourth scenario - the Santorini Volcanic-Seismic scenario (5 runs, LM Studio provider, weights frozen) - served as a held-out test set. These runs were executed after the three training scenarios with training weights frozen: the snapshot-restore wrapper in `run_frozen_volcanic_test.py` captures each run's accuracy scores then restores the pre-run reliability files, so all 5 runs start from identical training-phase weights and no cross-run contamination occurs. The Santorini scenario introduces a novel crisis type (volcanic-seismic island emergency) with a distinct agent relevance profile and a 12-alternative action space, making it a meaningful zero-shot test of tracker generalisation. The 65 volcanic-seismic agent records from these 5 runs form the test corpus reported in §4.5; the 1,211 records from the three main scenarios form the training corpus. The 65 frozen-weight test records are stored separately in `results/reliability_test_volcanic/`, preserving the training weights unchanged in `results/reliability/`.
+**Reliability tracker holdout evaluation.** To assess the reliability tracker's ability to generalise to an unseen crisis type, a fourth scenario - the Santorini Volcanic-Seismic scenario (5 runs, LM Studio provider, weights frozen) - served as a held-out test set. These runs were executed after the three training scenarios with training weights frozen: the snapshot-restore wrapper in `run_frozen_volcanic_test.py` captures each run's accuracy scores then restores the pre-run reliability files, so all 5 runs start from identical training-phase weights and no cross-run contamination occurs. The Santorini scenario introduces a novel crisis type (volcanic-seismic island emergency) with a distinct agent relevance profile and a 12-alternative action space, making it a meaningful zero-shot test of tracker generalisation. The 65 volcanic-seismic agent records from these 5 runs form the test corpus reported in §4.5; the training corpus comprises 577 records from the three main scenarios (555 from the 45 controlled runs plus 22 from two Flood pilot runs executed under the same configuration before the controlled series). The 65 frozen-weight test records are stored separately in `results/reliability_test_volcanic/`, together with a provenance manifest recording the git commit, the training-corpus size at freeze time (577), and the per-run output directories (`run_*_lmstudio_frozen`), preserving the training weights unchanged in `results/reliability/`.
 
 **Metrics.** Four primary metrics are reported. The *Decision Quality Score* (DQS) is the weighted criterion-satisfaction value produced by the TOPSIS ranker for the recommended alternative. *Consensus Level* (CL) is the mean pairwise cosine similarity of agent belief vectors before aggregation. *Decision Confidence* (DC) is an exploratory composite metric that blends consensus and mean agent confidence as $DC = 0.6 \times CL + 0.4 \times \bar{c}$; the 0.6/0.4 split is heuristic and the $\bar{c}$ component relies on uncalibrated LLM self-reported confidence scores, which are known to exhibit overconfidence bias - DC should therefore be interpreted as a directional indicator rather than a calibrated measure. The *Extended Comparison Bandwidth* (ECB) measures the improvement of the collective DQS over the best individual agent's DQS in the same run. A fifth quantity, the *Combined Score* (CS), is the value of the blended selection criterion evaluated at the recommended alternative: $\text{CS}(A^r) = 0.6 \times m_{\text{agg}}(A^r) + 0.4 \times C^{\text{norm}}_{A^r}$, where $m_{\text{agg}}(A^r)$ is the aggregated belief mass assigned to $A^r$ and $C^{\text{norm}}_{A^r}$ is its L1-normalised TOPSIS closeness coefficient. CS is the criterion the system maximises to select its recommendation and is distinct from DQS: DQS measures criterion-satisfaction quality alone (range ≈ 0.14-0.78 in the experimental corpus), whereas CS measures the weighted combination of agent consensus and criterion quality (range ≈ 0.10-0.57). CS is used as the primary provider-comparison metric in Section 4.4 because it reflects both dimensions of the recommendation decision.
 
@@ -558,129 +525,128 @@ Table II presents scenario-level performance across all 45 runs.
 
 | Metric | Karditsa Flood | Evia Wildfire | Elefsina HAZMAT | Overall |
 |--------|:--------------:|:-------------:|:---------------:|:-------:|
-| DQS (mean ± σ) | 0.743 ± 0.013 | 0.799 ± 0.027 | 0.792 ± 0.000 | 0.778 ± 0.028 |
-| Consensus CL (mean ± σ) | 0.943 ± 0.015 | 0.826 ± 0.064 | 0.939 ± 0.023 | 0.902 ± 0.066 |
-| Confidence DC (mean ± σ) | 0.900 ± 0.009 | 0.832 ± 0.039 | 0.897 ± 0.016 | 0.876 ± 0.039 |
-| Run consistency | 15/15 (100 %) | 14/15 (93.3 %) | 15/15 (100 %) | 97.8 % |
-| Mean processing time (s)† | 45.8 | 90.5 | 48.6 | 61.6 |
+| DQS (mean ± σ) | 0.744 ± 0.008 | 0.823 ± 0.036 | 0.792 ± 0.000 | 0.786 ± 0.039 |
+| Consensus CL (mean ± σ) | 0.959 ± 0.014 | 0.823 ± 0.050 | 0.954 ± 0.012 | 0.912 ± 0.071 |
+| Confidence DC (mean ± σ) | 0.904 ± 0.008 | 0.830 ± 0.032 | 0.903 ± 0.007 | 0.879 ± 0.040 |
+| Run consistency | 14/15 (93.3 %) | 13/15 (86.7 %) | 15/15 (100 %) | 93.3 % |
+| Mean processing time (s)† | 69.5 | 102.8 | 74.3 | 82.2 |
 
-† Averaged across providers and aggregation methods; individual range: 9.9 s (OpenAI, Flood) to 204.0 s (GPT-OSS, Fire). All DQS values use L1-normalised TOPSIS scores as described in Section 3.5 and corrected in Section 4.7.
+† End-to-end ER-path time including the vision pre-assessment (Step 0) and parallel expert collection; in `--compare-methods` mode the RBGA pass reuses the collected assessments and adds only sub-second aggregation time. DQS is the raw TOPSIS closeness coefficient of the recommended alternative; the L1-normalised variant enters only the combined selection score (Sections 3.5, 4.7).
 
-The HAZMAT scenario is the only case where DQS variance is exactly zero - every run across all three providers produced identical DQS values - reflecting the complete convergence of all agents and both aggregation methods on a single dominant alternative. The Evia Wildfire scenario produces the lowest consensus (0.826 ± 0.064) and the largest DQS variance (±0.027), consistent with the genuine ambiguity of a multi-front wildfire where different expert perspectives yield substantially different action preferences. All three scenarios comfortably exceed the operational consensus threshold of 0.75 in all runs, and the overall 97.8 % run consistency confirms the system's reproducibility.
+The HAZMAT scenario is the only case where DQS variance is exactly zero - every run across all three providers produced identical recommendations, and DQS is deterministic given the recommended alternative (it is that alternative's TOPSIS value in a fixed criterion matrix), so identical recommendations necessarily yield identical DQS. The Evia Wildfire scenario produces the lowest consensus (0.823 ± 0.050) and the largest DQS variance (±0.036), consistent with the genuine ambiguity of a multi-front wildfire where different expert perspectives yield substantially different action preferences. All three scenarios comfortably exceed the operational consensus threshold of 0.75 on average - the threshold is missed only in isolated Wildfire runs (Table IV) - and the overall 93.3 % run consistency (42 of 45 runs selecting the scenario's modal recommendation) confirms the system's reproducibility.
 
 ### 4.3 ER vs. RBGA Aggregation Comparison
 
 Table III compares the two aggregation mechanisms across all 45 runs.
 
-**TABLE III: Aggregation Method Comparison (12-agent, 45 runs, both methods per run)**
+**TABLE III: Aggregation Method Comparison (45 runs, both methods per run)**
 
 | Metric | ER | RBGA | Δ (RBGA - ER) |
 |--------|:--:|:----:|:--------------:|
-| DQS (mean ± σ) | 0.775 ± 0.032 | 0.781 ± 0.029 | +0.006 (n.s.) |
-| Consensus CL (mean ± σ) | 0.903 ± 0.068 | 0.902 ± 0.064 | -0.001 (n.s.) |
-| Confidence DC (mean ± σ) | 0.876 ± 0.041 | 0.876 ± 0.039 | +0.000 (n.s.) |
-| Recommendation agreement | - | - | 88.9 % (40/45) |
+| DQS (mean ± σ) | 0.783 ± 0.042 | 0.790 ± 0.036 | +0.007 (n.s., p = 0.102) |
+| Consensus CL (mean ± σ) | 0.912 ± 0.071 | 0.912 ± 0.071 | 0 (identical by construction) |
+| Confidence DC (mean ± σ) | 0.879 ± 0.040 | 0.879 ± 0.040 | 0 (identical by construction) |
+| Recommendation agreement | - | - | 93.3 % (42/45) |
 
-*n.s. = not significant (p > 0.05, Mann-Whitney U). RBGA-Opt (L-BFGS-B optimised variant) produces metrics statistically identical to RBGA; see §4.3.*
+*n.s. = not significant (Wilcoxon signed-rank on paired per-run values; the paired test is appropriate because both methods operate on identical assessments in every run). CL and DC are computed from the pre-aggregation agent beliefs, which the single-collection design makes identical for both paths - they are reported for completeness. RBGA-Opt (L-BFGS-B optimised variant) is discussed below.*
 
-No metric difference between ER and RBGA reaches statistical significance. The 88.9 % recommendation agreement rate - 40 of 45 runs producing the identical recommended alternative from both methods - confirms that the two aggregation paths are largely interchangeable in practice at the 12-agent scale. The five disagreements arise exclusively in the two most ambiguous scenarios: the Evia Wildfire (three disagreements, all from lmstudio or Claude runs in a 12-alternative space) and the Karditsa Flood (two borderline cases where agent beliefs are spread across the top two alternatives). The HAZMAT scenario achieves perfect ER-RBGA agreement across all 15 runs.
+The DQS difference between ER and RBGA does not reach statistical significance. The 93.3 % recommendation agreement rate - 42 of 45 runs producing the identical recommended alternative from both methods - confirms that the two aggregation paths are largely interchangeable in practice at the 11-13-agent scale. The three disagreements arise exclusively in the two most contested decision spaces: the Evia Wildfire (two Claude runs in which ER selects `action_maritime_coastal_evacuation` while RBGA selects the modal `action_hybrid_evacuation_suppression`) and the Karditsa Flood (one borderline OpenAI run splitting between `action_rescue_operations` and `action_hybrid_approach`). The HAZMAT scenario achieves perfect ER-RBGA agreement across all 15 runs.
 
-A scenario-level breakdown, presented in Table IV, reveals the structural origin of these differences. In the Wildfire scenario, RBGA achieves marginally higher consensus (+0.7 pp) and confidence (+0.4 pp) than ER, and crosses the 0.75 consensus threshold in 14/15 runs against ER's 13/15. The reliability-weighted attention mechanism up-weights fire-domain specialists whose feature profiles are most relevant to the scenario, producing more decisive aggregated beliefs in the contested 12-alternative space. In the HAZMAT scenario the relationship inverts modestly (RBGA consensus -0.9 pp), but both methods converge on `action_integrated_response` with zero DQS variance, indicating that the action space is dominated by a single strategy regardless of the aggregation mechanism.
+A scenario-level breakdown, presented in Table IV, reveals the structural origin of these differences. In the Wildfire scenario RBGA produces marginally higher and markedly more stable DQS (0.833 ± 0.004 vs. 0.814 ± 0.050 for ER): the attention mechanism's relevance weighting keeps the recommendation on the modal alternative in runs where ER's reliability-ordered multiplicative combination is swayed toward a minority evacuation preference. In the Flood and HAZMAT scenarios the two methods are statistically indistinguishable, converging on a single dominant strategy with zero or near-zero DQS variance.
 
 **TABLE IV: Scenario-Level ER vs. RBGA Breakdown**
 
-| Scenario | Method | DQS (μ ± σ) | Consensus (μ ± σ) | Confidence (μ ± σ) | Time (s) | CL ≥ 0.75 |
+| Scenario | Method | DQS (μ ± σ) | Consensus (μ ± σ) | Confidence (μ ± σ) | Time (s)† | CL ≥ 0.75 |
 |----------|:------:|:-----------:|:-----------------:|:-------------------:|:--------:|:---------:|
-| Karditsa Flood | ER | 0.740 ± 0.015 | 94.2 % ± 1.4 % | 89.9 % ± 0.8 % | 40.0 ± 29.0 | 15/15 |
-| | RBGA | 0.745 ± 0.000 | 94.4 % ± 1.6 % | 90.0 % ± 0.9 % | 51.5 ± 22.9 | 15/15 |
-| Evia Wildfire | ER | 0.793 ± 0.031 | 82.3 % ± 6.1 % | 83.0 % ± 4.0 % | 84.4 ± 64.4 | 13/15 |
-| | RBGA | 0.805 ± 0.023 | 83.0 % ± 5.7 % | 83.4 % ± 3.7 % | 96.7 ± 59.7 | 14/15 |
-| Elefsina HAZMAT | ER | 0.792 ± 0.000 | 94.3 % ± 1.7 % | 89.9 % ± 1.2 % | 45.3 ± 25.8 | 15/15 |
-| | RBGA | 0.792 ± 0.000 | 93.4 % ± 3.0 % | 89.4 % ± 1.8 % | 51.9 ± 22.1 | 15/15 |
+| Karditsa Flood | ER | 0.742 ± 0.011 | 95.9 % ± 1.4 % | 90.4 % ± 0.8 % | 69.5 ± 34.6 | 15/15 |
+| | RBGA | 0.745 ± 0.000 | 95.9 % ± 1.4 % | 90.4 % ± 0.8 % | < 1 | 15/15 |
+| Evia Wildfire | ER | 0.814 ± 0.050 | 82.3 % ± 5.1 % | 83.0 % ± 3.3 % | 102.8 ± 64.2 | 14/15 |
+| | RBGA | 0.833 ± 0.004 | 82.3 % ± 5.1 % | 83.0 % ± 3.3 % | < 1 | 14/15 |
+| Elefsina HAZMAT | ER | 0.792 ± 0.000 | 95.4 % ± 1.3 % | 90.3 % ± 0.7 % | 74.3 ± 38.6 | 15/15 |
+| | RBGA | 0.792 ± 0.000 | 95.4 % ± 1.3 % | 90.3 % ± 0.7 % | < 1 | 15/15 |
+
+† ER time is the end-to-end run time (Step 0 vision pre-assessment + parallel LLM collection + aggregation). The RBGA pass reuses the same collected assessments in `--compare-methods` mode, so its own cost is aggregation-only (sub-second).
 
 #### RBGA-Opt: Empirical Validation of Rule-Based Priors
 
-The L-BFGS-B optimiser was applied to all 46 stored assessment records (the 45 controlled runs plus one pre-trial run) to test whether gradient-free scalar optimisation of the four attention coefficients can improve on the hand-crafted prior. The training objective is:
+The L-BFGS-B optimiser was applied to the 45 stored runs of the main corpus to test whether gradient-free scalar optimisation of the four attention coefficients can improve on the hand-crafted prior. The training objective is:
 
 $$\mathcal{L}(w) = -\frac{1}{R}\sum_{n} \log \text{softmax}(T \cdot \text{DQS}_n)[gt_n] + \lambda \lVert w - w_{\text{prior}} \rVert^2$$
 
-where $T = 10$ is a temperature scaling factor, $R = 46$ is the number of training runs, $gt_n$ is the consensus ground-truth alternative for run $n$, $\lambda = 0.1$ regularises toward the hand-crafted prior, and $w_{\text{prior}} = [0.4, 0.3, 0.3, 0.2]$. Box bounds $w_i \in [0, 1]$ are enforced; the optimiser is warm-started from the prior.
+where $T = 10$ is a temperature scaling factor, $R = 45$ is the number of training runs, $gt_n$ is the consensus ground-truth alternative for run $n$, $\lambda = 0.1$ regularises toward the hand-crafted prior, and $w_{\text{prior}} = [0.4, 0.3, 0.3, 0.2]$. Box bounds $w_i \in [0, 1]$ are enforced; the optimiser is warm-started from the prior.
 
 **TABLE IIIb: Prior vs. Trained RBGA Attention Weights**
 
 | Coefficient | Role | Prior | Trained | $\Delta$ |
 | ------------- | ------ | :-----: | :-------: | :-------: |
-| $w_{\text{conf}}$ | LLM output confidence | 0.400 | 0.4002 | +0.0002 |
-| $w_{\text{rel}}$ | Domain relevance | 0.300 | 0.2860 | --0.014 |
-| $w_{\text{cert}}$ | Belief certainty | 0.300 | 0.3127 | +0.013 |
-| $w_{\text{sim}}$ | Inter-agent similarity | 0.200 | 0.2007 | +0.001 |
+| $w_{\text{conf}}$ | LLM output confidence | 0.400 | 0.3967 | --0.0033 |
+| $w_{\text{rel}}$ | Domain relevance | 0.300 | 0.3051 | +0.0051 |
+| $w_{\text{cert}}$ | Belief certainty | 0.300 | 0.2992 | --0.0008 |
+| $w_{\text{sim}}$ | Inter-agent similarity | 0.200 | 0.1980 | --0.0020 |
 
-The optimiser converges to weights that are near-identical to the hand-crafted prior: the maximum absolute deviation across all four coefficients is $\max|\Delta| = 0.014$ (on $w_{\text{rel}}$). Top-1 accuracy on the training corpus is unchanged at 87.0 % (40/46 samples agree with consensus) before and after optimisation; mean rank and rank percentile are likewise invariant (mean rank = 1.178 in both cases).
+The optimiser converges to weights that are near-identical to the hand-crafted prior: the maximum absolute deviation across all four coefficients is $\max|\Delta| = 0.0051$ (on $w_{\text{rel}}$). Top-1 accuracy on the training corpus is unchanged at 97.8 % (44/45 samples agree with consensus) before and after optimisation; mean rank is likewise invariant (1.022 in both cases).
+
+*Note on cross-revision transfer.* An earlier RBGA-Opt fit, produced on a 46-run pilot corpus collected before the scenario-enrichment revision, transferred poorly to the current corpus: the pilot-fitted weights diverge from the ER/RBGA consensus recommendation in 15 of 45 current runs. All RBGA-Opt values reported above are therefore from a re-optimisation on the current 45-run corpus. The transfer failure is itself instructive - even mildly tuned scalar attention coefficients are sensitive to the decision-space definition and should be re-validated after any scenario revision - while the re-fit's convergence back to the prior confirms that the instability lies in the tuned deviations, not in the domain-knowledge prior itself.
 
 This null result has a direct architectural interpretation. The four scalar attention coefficients span a low-dimensional hypothesis class: within that class, the rule-based prior is already at or near the optimum -- no reweighting of the four scalars recovers more consensus-ground-truth alternatives from the training corpus. This is not evidence that graph attention cannot improve crisis-decision aggregation; it is evidence that the current scalar architecture lacks the expressiveness to surpass the domain-knowledge prior on 46 samples. The finding directly motivates the proper learned GAT architecture discussed in Section 6, which introduces a full $\mathbf{W} \in \mathbb{R}^{F \times F'}$ projection and a learned pair-wise attention vector $\mathbf{a}$, significantly expanding the hypothesis class. Practically, RBGA-Opt confirms that practitioners can deploy the rule-based RBGA with confidence that the hand-crafted coefficients are not merely heuristic defaults but empirically validated near-optima for the current architecture.
 
 ### 4.4 LLM Provider Comparison
 
-**TABLE V: LLM Provider Performance (n = 15 per provider across 3 scenarios)**
+**TABLE V: LLM Provider Performance (n = 15 per provider across 3 scenarios; ER path)**
 
-| Provider | Model | Combined Score (μ ± σ) | Consensus (μ ± σ) | Confidence (μ ± σ) | Avg time (s) |
-|----------|-------|:----------------------:|:-----------------:|:------------------:|:------------:|
-| Anthropic | Claude Sonnet 4 | 0.472 ± 0.052 | 0.891 ± 0.056 | 0.871 ± 0.031 | 26.5 ± 1.9 |
-| OpenAI | GPT-4o | 0.470 ± 0.032 | 0.930 ± 0.032 | 0.896 ± 0.018 | 50.2 ± 19.2 |
-| Local (LM Studio) | GPT-OSS 20B | 0.501 ± 0.056 | 0.887 ± 0.086 | 0.861 ± 0.051 | 108.3 ± 42.3 |
+| Provider | Model | Combined Score (μ ± σ) | DQS (μ ± σ) | Consensus (μ ± σ) | Confidence (μ ± σ) | Avg time (s) |
+|----------|-------|:----------------------:|:-----------:|:-----------------:|:------------------:|:------------:|
+| Anthropic | Claude Sonnet 4.5 | 0.398 ± 0.229 | 0.771 ± 0.046 | 0.919 ± 0.062 | 0.880 ± 0.030 | 77.4 ± 7.8 |
+| OpenAI | GPT-4o | 0.250 ± 0.062 | 0.787 ± 0.042 | 0.916 ± 0.055 | 0.888 ± 0.032 | 32.2 ± 7.6 |
+| Local (LM Studio) | GPT-OSS 20B | 0.346 ± 0.169 | 0.791 ± 0.038 | 0.901 ± 0.093 | 0.869 ± 0.055 | 137.1 ± 38.0 |
 
-Kruskal-Wallis tests across providers yield significant differences in Combined Score (H = 9.26, p = 0.010) and processing time (H = 36.40, p < 0.001) but not in consensus (H = 2.69, n.s.) or confidence (H = 1.51, n.s.). The marginal Combined Score advantage of GPT-OSS 20B (0.501 vs. 0.472 and 0.470) is numerically small and merits cautious interpretation; the DQS metric, which averages 0.770-0.784 across providers, shows no significant provider effect at all. GPT-4o achieves the highest mean consensus (0.930) and lowest intra-provider variance on both consensus and confidence, making it the most predictable choice for production deployment. Claude Sonnet 4 is the fastest provider (26.5 s vs. 50.2 s and 108.3 s), a decisive advantage in scenarios with time windows of tens of minutes. GPT-OSS 20B demonstrates that locally deployed open-source inference achieves competitive decision quality with no external API dependency - a critical feature for GDPR-sensitive deployments.
+Kruskal-Wallis tests across providers yield a significant difference only in processing time (H = 39.13, p < 0.001); Combined Score (H = 5.24, p = 0.073), consensus (H = 1.00, n.s.), and confidence (H = 1.22, n.s.) show no significant provider effect. The absence of a Combined Score effect - together with DQS means within 2 pp of each other (0.771-0.791) - is the central finding of the provider comparison: decision quality is provider-independent in this corpus, so the choice among providers reduces to operational criteria. The large Combined Score standard deviations reflect the metric's dependence on action-space size (a 12-alternative space dilutes aggregated belief mass), not provider instability. On speed, GPT-4o is the fastest provider in this corpus (32.2 s), Claude Sonnet 4.5 is intermediate (77.4 s), and GPT-OSS 20B is slowest (137.1 s) while remaining well within the decision windows of all three scenarios. GPT-OSS 20B demonstrates that locally deployed open-source inference achieves statistically indistinguishable decision quality with no external API dependency - a critical feature for GDPR-sensitive deployments.
 
-All three providers converge on the identical recommended alternative for every HAZMAT run (`action_integrated_response`). For the Flood scenario, all 15 runs across all providers converge on the hybrid approach. The single divergent run (one Wildfire replicate) involves a borderline case where agent beliefs are spread tightly across `action_combined_assault` and `action_immediate_evacuation`, and the gap between them falls within the margin of normal stochastic variation in LLM outputs.
+All three providers converge on the identical recommended alternative for every HAZMAT run (`action_integrated_response`). The three provider-linked divergences (Table III) are borderline runs in the Flood and Wildfire scenarios where agent beliefs are spread tightly across the top two alternatives and the gap falls within the margin of normal stochastic variation in LLM outputs.
 
 ### 4.5 Collective vs. Individual Expert Performance
 
-A key theoretical claim of the GDM literature - that structured aggregation outperforms the best individual expert - is directly testable in this setting. For each run, the DQS of the recommended alternative after aggregation is compared against the TOPSIS score that the individual agent with the highest belief mass in the winning alternative would have produced as a solo decision-maker. Note that this individual baseline is identified post-hoc -- after the collective outcome is known -- and therefore represents an optimistic upper bound on individual-agent performance. A pre-committed baseline, defined as the highest-reliability agent at the start of each run (before any collective result is observed), would yield a more conservative margin and is planned for future analysis with an expanded corpus.
+A key theoretical claim of the GDM literature - that structured aggregation outperforms the best individual expert - is directly testable in this setting. To keep both sides of the comparison on an identical scale, each decision-maker (collective or solo) is scored by the raw TOPSIS closeness coefficient of the alternative it selects: the collective selects the system recommendation, while each solo agent selects its own top-belief alternative. This choice-quality framing asks the operationally relevant question - does aggregation choose better courses of action than individual experts would? - without mixing belief-mass and criterion-score scales. The best-individual baseline is identified post-hoc, after each agent's choice quality is known, and therefore represents an optimistic upper bound on individual-agent performance; a pre-committed baseline (the highest-reliability agent at the start of each run) would yield a stricter comparison and is planned for future analysis.
 
-Results across the three scenarios are consistent and statistically robust. In the HAZMAT scenario, the mean collective DQS (0.528) exceeds the mean best-individual DQS (0.473) by +5.4 percentage points (range: -0.1 to +14.8 pp across runs). In the Flood scenario the margin is +5.6 pp (mean individual 0.349, collective 0.405). The most striking result occurs in the Wildfire scenario: despite - or because of - the 12-alternative action space, the collective outperforms the best individual by +11.0 pp (mean individual 0.226, collective 0.336). The pattern confirms the theoretical prediction that the value of aggregation scales with decision complexity: the wider the action space and the more divergent the individual perspectives, the more a structured aggregation mechanism contributes beyond the best individual contribution.
+The results are more nuanced than the classical "collective beats best individual" prediction. The collective recommendation statistically matches the post-hoc best individual in all three scenarios (Flood: 0.742 vs. 0.745; Wildfire: 0.814 vs. 0.833; HAZMAT: 0.792 vs. 0.797 - differences of 0.3-1.9 pp, within run-to-run noise), while consistently exceeding the mean individual expert by +0.5 pp (Flood), +1.9 pp (Wildfire), and +3.2 pp (HAZMAT). In other words, aggregation does not discover alternatives that no individual expert saw; its value lies in reliably landing on the strongest expert position without knowing in advance which expert holds it. That guarantee is far from trivial: in the 12-alternative Wildfire scenario only 67.7 % of solo expert choices coincide with the system recommendation (78.5 % Flood, 79.2 % HAZMAT), so an operator delegating to a single arbitrarily chosen expert would receive a below-collective-quality recommendation roughly one time in three in the contested case. The post-hoc best-individual margin being near zero, while the mean-individual margin is positive and the solo dispersion substantial, is precisely the signature expected when aggregation acts as a selection-and-stabilisation mechanism rather than a synthesis mechanism - a distinction the original GDM formulation does not draw but which matters for deployment: the system's contribution is consistency and expert-identification, not superhuman synthesis.
 
-The relative improvement over the mean individual (rather than the best) is even more pronounced: +40.1 % (Flood), +48.7 % (HAZMAT), and +87.2 % (Wildfire). These figures reflect the value of the attention and reliability mechanisms in the aggregation layer, which do not simply average agents but weight them by domain relevance and historical performance.
+At the agent level, training performance (577 records across Flood, Wildfire, and HAZMAT) reveals clear domain specialisation. The Civil Protection Director (GOLD) leads overall (0.665), with strong domain-conditional scores in both Flood (0.668) and HAZMAT (0.732), followed by the PSAP Coordinator (0.632) - the two roles whose remit is precisely cross-domain coordination. Domain-conditional leaders align with expectations: the Police Regional Commander tops the Flood sub-corpus (0.722, ahead of the Fire Regional Director at 0.704), the Fire-Brigade Tactical specialist leads the Wildfire sub-corpus (0.602), and the Civil Protection Director (0.732) and Medical Expert (SILVER-Tactical, 0.710) lead HAZMAT. The Coast Guard Tactical agent records the lowest overall training score (0.445, driven by a 0.198 Wildfire sub-score), consistent with its peripheral role across the three land-based scenario types. GOLD-level agents average 0.588 versus 0.539 for SILVER-level agents - a +4.9 pp training advantage.
 
-At the agent level, training performance (1,211 records across Flood, Wildfire, and HAZMAT) reveals clear domain specialisation. The Civil Protection Director (GOLD) leads overall (0.726) and achieves the highest scores in both the Flood (0.736) and HAZMAT (0.712) scenarios. The Fire-Brigade Tactical specialist leads in the Wildfire scenario (0.518) - the lower absolute score reflecting the greater decision difficulty of the 12-alternative Evia action space. The Medical Expert (SILVER-Tactical) achieves 0.678 in the HAZMAT scenario, confirming expected alignment between agent specialisation and reliability. The Environmental Scientist (0.447) and Coast Guard Tactical (0.292) record the lowest training scores, consistent with their more peripheral roles across the three main scenario types. GOLD-level agents average 0.692 versus 0.562 for SILVER-level agents - a +13.0 pp training advantage.
-
-On the held-out Santorini volcanic-seismic frozen-weight test (65 records, 5 runs with identical training-phase weights), the GOLD-SILVER ordering is broadly preserved but the gap narrows: GOLD agents average 0.656 versus 0.541 for SILVER, a +11.6 pp gap versus +13.0 pp during training. The test-set top performer is the Coast Guard Strategic Commander (0.689), followed closely by the Emergency Communications Coordinator (PSAP, 0.686) - consistent with the maritime mass-evacuation and multi-agency coordination demands of a volcanic island emergency. The Environmental Scientist drops to 0.208 on the test set, reflecting the near-absent environmental monitoring role in a seismic crisis. Several SILVER agents show high within-test variance (min scores 0.07-0.13), indicating that agents whose training domains are loosely coupled to volcanic emergencies produce inconsistent assessments - a signal the tracker correctly captures by assigning them lower weights. The preservation of the GOLD-SILVER gap on a previously unseen crisis type, and the meaningful discrimination between transferable and non-transferable expertise, supports the tracker's design as a generalisation-capable weighting mechanism rather than a scenario-specific lookup table.
+On the held-out Santorini volcanic-seismic frozen-weight test (65 records, 5 runs with identical training-phase weights), the GOLD-SILVER ordering is directionally preserved but largely flattens: GOLD agents average 0.639 versus 0.606 for SILVER, a +3.3 pp gap versus +4.9 pp during training. The test-set ranking is led by coordination-centric roles - the PSAP Coordinator (0.696) and Police On-Scene Commander (0.685), followed by the Fire Regional Director (0.684) and Coast Guard Strategic Commander (0.682) - consistent with the multi-agency coordination and maritime mass-evacuation demands of a volcanic island emergency. The Environmental Scientist records the lowest test score (0.428), reflecting the reduced environmental-monitoring role in a seismic crisis. Five agents - including two GOLD-level agents (Police Regional, 0.121 minimum; Medical Infrastructure Director, 0.064 minimum) - show strongly bimodal test scores: near-ceiling in most runs but near-zero in one run where they confidently backed a non-consensus alternative. The tracker correctly captures this instability as high within-test variance, discriminating between agents whose expertise transfers stably to the unseen crisis type and those whose does not - which, rather than the level-based (GOLD/SILVER) distinction, emerges as the more robust generalisation signal. This supports the tracker's design as a generalisation-capable weighting mechanism rather than a scenario-specific lookup table, while cautioning that command level alone is a weak predictor of out-of-domain reliability.
 
 ### 4.6 Step-by-Step Decision Trace (Elefsina HAZMAT - Run 1, LM Studio)
 
-To ground the quantitative results in a concrete execution trace, we walk through run 1 of the LM Studio provider on the Elefsina HAZMAT scenario - a clean 12/12-agent execution with zero failures.
+To ground the quantitative results in a concrete execution trace, we walk through run 1 of the LM Studio provider on the Elefsina HAZMAT scenario - a clean 13/13-agent execution with zero failures.
 
-**Step 1 - Scenario loading.** The Coordinator receives the HAZMAT scenario JSON (severity 0.85, 12,000 affected population, 30-minute window, five alternatives: downwind evacuation, HAZMAT containment, water curtain installation, shelter-in-place, integrated multi-layer response). Auto-selection activates 12 of 13 agents, excluding `fire_gold_strategic` as the most peripherally relevant given the already-included tactical and regional fire agents.
+**Step 1 - Scenario loading.** The Coordinator receives the HAZMAT scenario JSON (severity 0.85, 12,000 affected population, 30-minute window, five alternatives: downwind evacuation, HAZMAT containment, water curtain installation, shelter-in-place, integrated multi-layer response). Auto-selection activates all 13 agents; the geospatial pre-assessment classifies the coastal Elefsina site with maritime access, so no agent is terrain-excluded.
 
-**Step 2 - Independent agent assessment.** Each of the 12 agents evaluates the scenario independently, with no knowledge of the other agents' positions. Representative outputs from three agents are shown in Table VI.
+**Step 2 - Independent agent assessment.** Each of the 13 agents evaluates the scenario independently, with no knowledge of the other agents' positions; the single collected assessment set feeds both aggregation paths. Representative outputs from three agents are shown in Table VI.
 
 **TABLE VI: Sample Agent Belief Distributions - Elefsina HAZMAT (Run 1, LM Studio)**
 
-| Agent | Method | Integrated Response | Evacuation | Containment | Water Curtain | Shelter-in-Place | Confidence |
-|-------|:------:|:-------------------:|:----------:|:-----------:|:-------------:|:----------------:|:----------:|
-| fire_silver_tactical | ER | 0.40 | 0.25 | 0.10 | 0.15 | 0.10 | 85 % |
-| | RBGA | 0.40 | 0.30 | 0.10 | 0.15 | 0.05 | 85 % |
-| meteorology_silver_advisory | ER | 0.35 | 0.25 | 0.15 | 0.20 | 0.05 | 78 % |
-| | RBGA | 0.55 | 0.15 | 0.10 | 0.15 | 0.10 | 72 % |
-| medical_gold_strategic | ER | 0.40 | 0.25 | 0.05 | 0.20 | 0.08 | 85 % |
-| | RBGA | 0.52 | 0.18 | 0.12 | 0.10 | 0.05 | 82 % |
+| Agent | Integrated Response | Evacuation | Containment | Water Curtain | Shelter-in-Place | Confidence |
+|-------|:-------------------:|:----------:|:-----------:|:-------------:|:----------------:|:----------:|
+| fire_silver_tactical | 0.45 | 0.25 | 0.15 | 0.10 | 0.05 | 88 % |
+| meteorology_silver_advisory | 0.35 | 0.25 | 0.15 | 0.20 | 0.05 | 82 % |
+| medical_gold_strategic | 0.40 | 0.25 | 0.10 | 0.15 | 0.10 | 85 % |
 
-The meteorologist's divergence between ER and RBGA runs is noteworthy: in the ER run, with its emphasis on explicit uncertainty modelling, the agent assigns 0.35 to integrated response while spreading belief across evacuation (0.25) and water curtains (0.20); in the RBGA run, the wind-plume travel-time analysis dominates the reasoning trace, producing a more decisive 0.55 for integrated response. This pattern - the same agent reading the same scenario differently across the two execution contexts - reflects genuine epistemic ambiguity rather than model inconsistency.
+All 13 agents rank the integrated response first (belief mass 0.35-0.55), but with meaningfully different margins over their second choices and different secondary preferences: the meteorologist hedges toward water curtains (0.20, reflecting wind-dispersion reasoning), while tactical agents place their residual mass on evacuation. This unanimity-with-dispersion profile is the input condition under which the two aggregation mechanisms behave most differently, as Step 3 shows.
 
-**Step 3A - ER aggregation.** The 12 agent BBAs are combined iteratively in descending reliability order. The final aggregated distribution is shown in Table VII (left).
+**Step 3A - ER aggregation.** The 13 agent BBAs are combined iteratively in descending reliability order. The final aggregated distribution is shown in Table VII (left).
 
-**Step 3B - RBGA aggregation.** The 9-dimensional feature vectors are extracted for all 12 agents; multi-head attention (K = 4) computes per-agent influence weights. The RBGA aggregated distribution is shown in Table VII (right).
+**Step 3B - RBGA aggregation.** The 9-dimensional feature vectors are extracted for all 13 agents; multi-head attention (K = 4) computes per-agent influence weights. The RBGA aggregated distribution is shown in Table VII (right).
 
 **TABLE VII: Aggregated Belief Distributions - Elefsina HAZMAT (Run 1, LM Studio)**
 
 | Alternative | ER Score | ER Rank | RBGA Score | RBGA Rank |
 |-------------|:--------:|:-------:|:----------:|:---------:|
-| **Integrated response** | **0.428** | **1st** | **0.429** | **1st** |
-| Downwind evacuation | 0.228 | 2nd | 0.186 | 2nd |
-| Water curtain installation | 0.180 | 3rd | 0.140 | 4th |
-| HAZMAT containment | 0.088 | 4th | 0.148 | 3rd |
-| Shelter-in-place | 0.076 | 5th | 0.097 | 5th |
+| **Integrated response** | **0.9995** | **1st** | **0.390** | **1st** |
+| Downwind evacuation | 0.0005 | 2nd | 0.219 | 2nd |
+| HAZMAT containment | < 0.0001 | 3rd | 0.171 | 3rd |
+| Water curtain installation | < 0.0001 | 4th | 0.149 | 4th |
+| Shelter-in-place | < 0.0001 | 5th | 0.072 | 5th |
 
-Both methods agree on the top alternative. The 3rd/4th rank swap between water curtains and containment reflects the different sensitivity of ER (which handles epistemic uncertainty explicitly) and RBGA (which weights agents by domain relevance and reliability) to the agents whose beliefs most distinguish these two middle-ranking alternatives.
+Both methods produce the identical ranking, but with radically different belief concentration. With 13 concordant sources, the multiplicative Dempster combination compounds the shared preference at every pairwise step, concentrating virtually all mass (0.9995) on the common top choice - the aggregated ER mass is best read as a measure of unanimity, not as a calibrated probability that the alternative is correct. RBGA's attention-weighted averaging, by contrast, preserves the shape of the panel's dispersion (0.390 for the leader, meaningful residual mass on evacuation and containment), which retains information about the strength of secondary options. This contrast - invisible in the recommendation-agreement statistics of Table III - is operationally relevant: a decision-maker reading the ER output sees a panel that is certain; one reading the RBGA output sees a panel that agrees on the leader but keeps live alternatives in reserve.
 
 **Step 4 - MCDA/TOPSIS scoring.** TOPSIS is applied independently of the aggregation method, using the five operational criterion weights (safety 0.30/benefit, cost 0.25/cost-type, effectiveness 0.20/benefit, response speed 0.20/benefit, public acceptance 0.20/benefit; effective normalised weights approx. 0.26/0.22/0.17/0.17/0.17). The closeness coefficients rank evacuation highest on the TOPSIS-only metric (Ci = 0.806) due to its exceptional safety score (0.95), but the 60/40 combination with agent beliefs - which strongly favour the integrated response - produces the final ranking shown in Table VIII.
 
@@ -688,17 +654,17 @@ Both methods agree on the top alternative. The 3rd/4th rank swap between water c
 
 | Alternative | ER Final Score | RBGA Final Score | Combined Rank |
 |-------------|:--------------:|:----------------:|:-------------:|
-| **Integrated response** | **0.574** | **0.574** | **1st** |
-| Downwind evacuation | 0.459 | 0.434 | 2nd |
-| Water curtain installation | 0.272 | 0.248 | 3rd (ER) / 4th (RBGA) |
-| HAZMAT containment | 0.253 | 0.289 | 4th (ER) / 3rd (RBGA) |
-| Shelter-in-place | 0.127 | 0.139 | 5th |
+| **Integrated response** | **0.717** | **0.351** | **1st** |
+| Downwind evacuation | 0.119 | 0.250 | 2nd |
+| HAZMAT containment | 0.074 | 0.176 | 3rd |
+| Water curtain installation | 0.061 | 0.150 | 4th |
+| Shelter-in-place | 0.030 | 0.073 | 5th |
 
 The result is that evacuation, though superior on the TOPSIS metric alone, is correctly overridden by the collective expert judgement, which recognises that single-action evacuation without addressing the source of the ammonia release creates ongoing risk. The reasoning traces from multiple agents explicitly articulate this logic, providing a directly auditable explanation for the divergence between the TOPSIS-only and combined rankings.
 
 ### 4.7 MCDA-ER Scale Mismatch: Discovery and Correction
 
-Post-hoc analysis across all 92 stored result files (45 runs × 2 aggregation methods) revealed a systematic scale incompatibility in the original DQS blending formula that had differential impact across scenarios. This section reports the finding, its cause, and the quantified effect of applying the L1 normalisation correction introduced in Section 3.5.
+During the pilot phase of this study, post-hoc analysis across the 92 result files of the pilot corpus (45 runs × 2 aggregation methods, executed with an earlier revision of the scenario definitions) revealed a systematic scale incompatibility in the original score-blending formula that had differential impact across scenarios. The correction was subsequently integrated into the decision engine, so every run in the main corpus of Sections 4.2-4.6 applies L1 normalisation at decision time. This section documents the finding, its cause, and its quantified effect on the pilot corpus, both as a methodological caution for other belief-MCDA hybrid systems and because it motivated a required preprocessing step for future attention-weight training. Alternative identifiers below refer to the pilot-phase scenario revision.
 
 **Root cause.** ER and RBGA aggregated beliefs are proper probability distributions that always sum to 1.0 across all alternatives; their per-alternative average is therefore $1/N$. For $N=5$ (Flood, HAZMAT) this is 0.200; for $N=12$ (Forest Fire) this is 0.083. Raw TOPSIS closeness coefficients are geometric proximity scores that are individually bounded in $[0,1]$ but carry no distributional constraint: in the experimental corpus their cross-alternative sums range from 1.8 to 3.2, giving per-alternative averages of 0.15-0.27 for $N=12$ - two to three times larger than the corresponding belief values. Without L1 normalisation, the MCDA component contributes 55-79% of the blended score per alternative, depending on the action-space size and the specific TOPSIS geometry of that run. Table IX summarises the measured effective MCDA contribution before and after normalisation.
 
@@ -745,13 +711,12 @@ flowchart LR
     NORM["L1 normalise<br/>C_norm = C_k / sum(C)"]
     A1["After L1 norm<br/>Forest Fire dominant rec:<br/>immediate_evacuation<br/>(agent-consensus-driven)"]
     B1 --> NORM --> A1
-
     style B1 fill:#ffebee,stroke:#c62828
     style NORM fill:#fff3e0,stroke:#ef6c00
     style A1 fill:#e8f5e9,stroke:#2e7d32
 ```
 
-**Implication for RBGA training.** The 1,211-record training corpus and the DQS scores derived from it are the intended supervision signal for the warm-started online learning extension described in Section 6. Training on unnormalised DQS would encode the scale bias as a spurious learning target, causing the learned attention weights to over-represent TOPSIS geometry rather than agent-consensus quality. L1 normalisation of all historical DQS labels is therefore a required preprocessing step before any supervised fine-tuning of the attention parameters.
+**Implication for RBGA training.** The 577-record training corpus and the decision scores derived from it are the intended supervision signal for the warm-started online learning extension described in Section 6. Training on unnormalised DQS would encode the scale bias as a spurious learning target, causing the learned attention weights to over-represent TOPSIS geometry rather than agent-consensus quality. L1 normalisation of all historical DQS labels is therefore a required preprocessing step before any supervised fine-tuning of the attention parameters.
 
 ---
 
@@ -759,13 +724,13 @@ flowchart LR
 
 ### 5.1 Addressing the Research Questions
 
-**RQ1 - Multi-agent coordination.** The hierarchical architecture successfully coordinates 12-13 agents within processing times of 22.3-179.4 seconds depending on provider, with cloud providers operating well within the decision windows of all three scenarios tested. The consensus gating mechanism - with an operational threshold of 0.75 - is satisfied in every run for the Flood and HAZMAT scenarios (CL ≈ 0.94 in both) and in 93 % of Wildfire runs (mean CL 0.826). The lower consensus in the Wildfire scenario reflects genuine deliberative tension in a 12-alternative action space and does not constitute a system failure; it is precisely the kind of situation where the system's conflict-identification function would direct a human decision-maker's attention to the agents most responsible for the disagreement.
+**RQ1 - Multi-agent coordination.** The hierarchical architecture successfully coordinates 11-13 agents within mean end-to-end times of 32.2-137.1 seconds depending on provider (including the Step 0 vision pre-assessment), with all providers operating well within the decision windows of all three scenarios tested. The consensus gating mechanism - with an operational threshold of 0.75 - is satisfied in every run for the Flood and HAZMAT scenarios (CL ≈ 0.96 and 0.95) and in 93 % of Wildfire runs (mean CL 0.823). The lower consensus in the Wildfire scenario reflects genuine deliberative tension in a 12-alternative action space and does not constitute a system failure; it is precisely the kind of situation where the system's conflict-identification function would direct a human decision-maker's attention to the agents most responsible for the disagreement.
 
-**RQ2 - Belief aggregation.** The near-identical DQS values of ER and RBGA (0.775 vs. 0.781, p > 0.05) and their 88.9 % recommendation agreement rate confirm that, at the 12-agent scale with well-structured LLM prompting, the choice of aggregation mechanism has less influence on the final recommendation than the quality of the individual assessments. The two methods disagree only in the most ambiguous scenario - the Wildfire - where the RBGA's reliability-weighted attention resolves ambiguity slightly more decisively (+1.3 pp DQS, +1 run meeting the consensus threshold). The RBGA-Opt experiment (§4.3) reinforces this result from a different angle: L-BFGS-B optimisation of the four scalar attention coefficients on the full 46-run corpus converges to weights within $\max|\Delta| = 0.014$ of the hand-crafted prior and yields zero accuracy gain, confirming that the rule-based coefficients are near-optimal within the scalar architecture and that any further performance ceiling requires a richer hypothesis class. This suggests a deployment strategy of using ER as the primary method for its mathematical transparency, with RBGA as a secondary check in high-ambiguity, multi-alternative scenarios.
+**RQ2 - Belief aggregation.** The near-identical DQS values of ER and RBGA (0.783 vs. 0.790, paired Wilcoxon p = 0.102) and their 93.3 % recommendation agreement rate confirm that, at the 11-13-agent scale with well-structured LLM prompting, the choice of aggregation mechanism has less influence on the final recommendation than the quality of the individual assessments. The methods differ in two second-order respects. First, in the contested Wildfire scenario RBGA is markedly more stable (DQS 0.833 ± 0.004 vs. ER's 0.814 ± 0.050), holding the modal recommendation in the two runs where ER's reliability-ordered combination follows a minority evacuation preference. Second, the §4.6 trace shows the mechanisms produce structurally different belief profiles from identical inputs: ER's multiplicative combination concentrates near-unit mass on the consensus choice (unanimity signal), while RBGA's attention-weighted averaging preserves the panel's dispersion (calibrated-spread signal) - complementary readings for a human decision-maker. The RBGA-Opt experiment (§4.3) adds that L-BFGS-B optimisation of the four scalar attention coefficients on the current 45-run corpus converges to weights within $\max|\Delta| = 0.005$ of the hand-crafted prior with zero accuracy gain (top-1 accuracy 97.8 % before and after) - while pilot-fitted weights from the earlier scenario revision transfer poorly (§4.3 note) - underscoring that the rule-based coefficients are near-optimal within the scalar architecture and that any further performance ceiling requires a richer hypothesis class. This suggests a deployment strategy of using ER as the primary method for its mathematical transparency, with RBGA as a stabilising secondary check in high-ambiguity, multi-alternative scenarios.
 
-**RQ3 - LLM contribution.** All three providers achieve 100 % JSON parse success (after cleaning) and produce structured belief distributions that appropriately reflect each agent's domain emphasis: the Medical Expert concentrates belief mass on life-safety alternatives regardless of provider; the Logistics Coordinator more evenly distributes across speed and cost-efficient options. Provider differences are operationally significant in terms of latency (Claude: 26.5 s vs. GPT-OSS: 108.3 s) but not decision quality - a result with important implications for system designers choosing between cloud and on-premise deployments.
+**RQ3 - LLM contribution.** All three providers achieve 100 % JSON parse success (after cleaning) and produce structured belief distributions that appropriately reflect each agent's domain emphasis: the Medical Expert concentrates belief mass on life-safety alternatives regardless of provider; the Logistics Coordinator more evenly distributes across speed and cost-efficient options. Provider differences are operationally significant in terms of latency (GPT-4o: 32.2 s vs. GPT-OSS: 137.1 s) but not decision quality (no significant provider effect on Combined Score or DQS) - a result with important implications for system designers choosing between cloud and on-premise deployments.
 
-**RQ4 - Collective vs. individual.** Collective recommendations outperform the best individual agent by +5.4 pp (HAZMAT), +5.6 pp (Flood), and +11.0 pp (Wildfire), with the largest margin in the most complex scenario. The pattern is robust across providers and replications. The relative advantage over the mean individual reaches +87.2 % in the Wildfire scenario - confirming, in the crisis management domain, the long-standing GDM theoretical result that structured aggregation of diverse specialists produces better decisions than any individual expert.
+**RQ4 - Collective vs. individual.** On an identical TOPSIS choice-quality scale, collective recommendations match the post-hoc best individual agent within noise (0.3-1.9 pp) while consistently exceeding the mean individual expert (+0.5 pp Flood, +1.9 pp Wildfire, +3.2 pp HAZMAT), with solo-expert choices coinciding with the system recommendation in only 67.7 % of cases in the most ambiguous scenario. The classical GDM claim therefore holds in a qualified form in this setting: aggregation does not synthesise alternatives beyond the best expert's reach, but it reliably identifies and stabilises the strongest expert position without prior knowledge of which expert holds it - a selection-and-stabilisation contribution whose operational value grows with the dispersion of solo opinions, and which a pre-committed individual baseline (future work) would quantify more strictly.
 
 **RQ5 - Explainability.** The combination of RBGA attention-weight visualisation, MCDA score decomposition, and natural-language reasoning traces from each agent provides multiple complementary layers of auditability. In the preliminary self-evaluation, auditability received the highest rating (4.5/5), with evaluator comments highlighting the value of being able to trace any recommended alternative back to its component contributions from individual named agents. The HAZMAT trace in Section 4.6 illustrates this capability: the divergence between the TOPSIS-only ranking and the final recommendation is fully explained by agent-level reasoning accessible in the output JSON.
 
@@ -775,9 +740,9 @@ The empirical results support a structured set of practical recommendations for 
 
 *Aggregation method.* Begin with ER as the default: its full mathematical transparency satisfies legal and regulatory auditability requirements from day one, its performance is statistically equivalent to RBGA across all scenarios and metrics, and it has no convergence or initialisation concerns. Introduce the RBGA path for high-ambiguity scenarios (more than 8 alternatives, anticipated inter-agent conflict) or as a secondary validation mechanism. A hybrid future direction - in which RBGA's rule-based attention coefficients are warm-started from ER weights and updated incrementally via the reliability tracker's consensus signal - would combine the transparency advantages of ER with the adaptability of data-driven attention.
 
-*Provider selection.* Choose Claude Sonnet 4 when operational speed is the primary constraint (mean 26.5 s/run, fastest of the three providers). Choose GPT-4o when output consistency and predictability are paramount (lowest inter-run variance on both consensus and confidence). Deploy GPT-OSS 20B via LM Studio when GDPR compliance or data-sovereignty requirements preclude cloud APIs; this path achieves competitive decision quality (Combined Score 0.501 vs. 0.472/0.470 for cloud providers) at a 4× time penalty that is tolerable for scenarios with decision windows exceeding 15 minutes.
+*Provider selection.* Decision quality shows no significant provider effect in this corpus (DQS 0.771-0.791 across providers), so the choice reduces to operational criteria. Choose GPT-4o when speed is the primary constraint (mean 32.2 s/run, fastest of the three, and lowest run-time variance). Claude Sonnet 4.5 offers intermediate latency (77.4 s) with the highest mean consensus (0.919) and low variance on consensus and confidence. Deploy GPT-OSS 20B via LM Studio when GDPR compliance or data-sovereignty requirements preclude cloud APIs; this path achieves statistically indistinguishable decision quality at a ~4× time penalty relative to GPT-4o (137.1 s) that is tolerable for scenarios with decision windows exceeding 15 minutes.
 
-*Panel size and composition.* The auto-selection mechanism selects 12 of 13 agents for all three scenarios tested, suggesting that the full panel is near-optimal for the breadth of crisis types modelled. For narrowly scoped incidents - a maritime search-and-rescue with no fire or flood component - a smaller panel (5-7 agents) would reduce latency while preserving coverage of the dominant expertise dimensions. The minimum-panel default of 3 core agents (Meteorologist, Logistics Coordinator, Medical Expert) ensures operational continuity even in degraded connectivity.
+*Panel size and composition.* The auto-selection mechanism activates the full 13-agent panel for the Wildfire and HAZMAT scenarios, while the geospatial terrain filter prunes the two Coast Guard agents from the inland Flood panel (11 agents) - demonstrating evidence-based rather than fixed panel composition. For narrowly scoped incidents - a maritime search-and-rescue with no fire or flood component - a smaller panel (5-7 agents) would reduce latency while preserving coverage of the dominant expertise dimensions. The minimum-panel default of 3 core agents (Meteorologist, Logistics Coordinator, Medical Expert) ensures operational continuity even in degraded connectivity.
 
 ### 5.3 Limitations
 
@@ -787,7 +752,7 @@ Several limitations must be acknowledged before drawing operational conclusions 
 
 *Circular validation.* The reliability tracker uses the system's own consensus recommendation as the proxy ground truth for computing agent accuracy. This creates a circularity: agents that consistently agree with the majority are rewarded regardless of whether the majority is correct. This limitation is intrinsic to the absence of external ground truth, which is itself a fundamental challenge for crisis decision support systems, and should be addressed in future work through tabletop exercises with documented expert ground truth.
 
-*Individual comparison baseline.* The collective-vs-individual margins (+5.4/+5.6/+11.0 pp) use a post-hoc best-individual identified after the collective outcome is known. This represents an upper bound on individual performance; a pre-committed baseline defined by the reliability tracker's per-agent score prior to each run would produce a stricter and more defensible comparison. The direction of the collective advantage is expected to hold given the consistent pattern across all three scenarios and providers, but the exact margins remain to be verified against a pre-committed selection criterion.
+*Individual comparison baseline.* The collective-vs-individual analysis (§4.5) uses a post-hoc best-individual identified after each agent's choice quality is known - an optimistic upper bound on individual performance. Against this deliberately strict bound the collective matches rather than exceeds the best individual; a pre-committed baseline defined by the reliability tracker's per-agent score prior to each run would produce the operationally relevant comparison (can the tracker pre-identify the expert whose solo choice matches collective quality?) and remains future work. The margins over the mean individual, and the substantial dispersion of solo choices in the contested scenario, are unaffected by this caveat.
 
 *Single-evaluator explainability study.* The explainability and auditability ratings of 4.2/5 and 4.5/5 were produced by a single evaluator who is also the system's designer, creating a substantial risk of confirmation bias. An independent panel study with practitioners from diverse agencies and roles is required before these findings can be considered externally valid.
 
@@ -795,7 +760,7 @@ Several limitations must be acknowledged before drawing operational conclusions 
 
 *Static decision assumption.* Each scenario is treated as a single-point decision with fixed parameters. Real crises evolve continuously; the system does not model how recommendations should adapt as new information arrives, as resources are committed, or as the hazard itself changes. This is a significant gap between the current prototype and operational deployment.
 
-*LLM biases.* The agents inherit whatever biases, hallucination tendencies, and knowledge gaps are present in their underlying language models. The three-layer validation pipeline (Section 3.7) reliably catches structural hallucinations -- malformed JSON, missing fields, out-of-range values -- but cannot detect semantic hallucinations where an agent produces well-formed, domain-plausible output that is factually incorrect. The primary defence against semantic hallucinations is architectural: with 12 agents, a single spurious assessment is overridden by the remaining 11, so the aggregated belief distribution is robust provided failures are independent and not correlated across agents (e.g., a shared systematic bias in a given LLM). No systematic bias testing has been conducted; it is possible that certain scenario types or institutional contexts elicit correlated skewed outputs across multiple agents that remain invisible in the consensus and reliability metrics.
+*LLM biases.* The agents inherit whatever biases, hallucination tendencies, and knowledge gaps are present in their underlying language models. The three-layer validation pipeline (Section 3.7) reliably catches structural hallucinations -- malformed JSON, missing fields, out-of-range values -- but cannot detect semantic hallucinations where an agent produces well-formed, domain-plausible output that is factually incorrect. The primary defence against semantic hallucinations is architectural: with 11-13 agents, a single spurious assessment is overridden by the rest of the panel, so the aggregated belief distribution is robust provided failures are independent and not correlated across agents (e.g., a shared systematic bias in a given LLM). No systematic bias testing has been conducted; it is possible that certain scenario types or institutional contexts elicit correlated skewed outputs across multiple agents that remain invisible in the consensus and reliability metrics.
 
 *Result quality and requirement for further verification.* The primary quality metrics reported -- DQS, consensus level, decision confidence, and recommendation agreement rate -- are all internally computed from the same agent assessments. They measure *self-consistency* rather than *decision accuracy*, and therefore do not constitute external evidence of recommendation quality. Three categories of further verification are required before the system's outputs can be considered externally valid:
 
@@ -811,15 +776,15 @@ Several limitations must be acknowledged before drawing operational conclusions 
 
 This paper has presented AEGIS, a multi-agent decision support system for crisis management that integrates LLM-powered expert reasoning with two complementary formal belief-aggregation mechanisms - weighted Evidential Reasoning and a domain-parameterised, untrained graph attention aggregator - evaluated systematically across 45 controlled runs on three Greek emergency scenarios using three LLM providers.
 
-The principal empirical finding is that ER and RBGA produce effectively equivalent outcomes at the 12-agent scale (DQS 0.775 vs. 0.781, 88.9 % recommendation agreement, all differences non-significant at p = 0.05), confirming that the quality of agent reasoning dominates over the choice of aggregation algorithm when agents are well-prompted. A methodological finding with direct practical consequences is that TOPSIS closeness coefficients must be L1-normalised before blending with ER/RBGA beliefs; without this step, the MCDA component contributes 55-79% of the combined score despite its nominal 40% weight, an artefact that shifted 11 of 30 Evia Wildfire recommendations away from the agent-consensus-supported alternatives. Provider comparisons reveal that Claude Sonnet 4 is fastest (mean 26.5 s/run), GPT-4o is most consistent (highest consensus 0.930, lowest intra-provider variance), and GPT-OSS 20B achieves the highest mean Combined Score (0.501) with zero API dependency - all three being viable choices with distinct operational trade-offs. Collective recommendations outperform the best individual agent in all three scenarios, with the margin scaling from +5.4 pp (HAZMAT) to +11.0 pp (Wildfire) as decision-space complexity increases. The historical reliability tracker produces differentiated per-agent scores (0.29-0.73 across 1,211 training records), with the Civil Protection Director achieving the highest training reliability (0.726) and leading domain-conditional scores in Flood (0.736) and HAZMAT (0.712), while the Fire-Brigade Tactical specialist leads in the Wildfire scenario (0.518). On the 65-record frozen-weight holdout (Santorini volcanic-seismic), the GOLD-SILVER gap of +11.6 pp confirms that the learned rankings transfer to an unseen crisis type, with the Coast Guard Strategic Commander and PSAP Coordinator rising to the top as expected for a maritime mass-evacuation scenario.
+The principal empirical finding is that ER and RBGA produce effectively equivalent outcomes at the 11-13-agent scale (DQS 0.783 vs. 0.790, 93.3 % recommendation agreement, paired differences non-significant at p = 0.05), confirming that the quality of agent reasoning dominates over the choice of aggregation algorithm when agents are well-prompted - though the two mechanisms yield structurally different belief profiles from identical inputs (ER concentrates near-unit mass under unanimity; RBGA preserves the panel's dispersion), and RBGA is markedly more stable in the contested 12-alternative Wildfire space (DQS σ 0.004 vs. 0.050). A methodological finding with direct practical consequences, established on the pilot corpus and integrated into the engine for all main-corpus runs, is that TOPSIS closeness coefficients must be L1-normalised before blending with ER/RBGA beliefs; without this step, the MCDA component contributes 55-79% of the combined score despite its nominal 40% weight. Provider comparisons reveal no significant provider effect on decision quality; operationally, GPT-4o is fastest (mean 32.2 s/run), Claude Sonnet 4.5 is intermediate (77.4 s) with the highest mean consensus (0.919), and GPT-OSS 20B (137.1 s) achieves statistically indistinguishable quality with zero API dependency - all three being viable choices with distinct operational trade-offs. On an identical choice-quality scale, collective recommendations match the post-hoc best individual agent (within 2 pp) while exceeding the mean individual by up to +3.2 pp, with only 67.7 % of solo choices coinciding with the system recommendation in the most ambiguous scenario - aggregation acts as a reliable selection-and-stabilisation mechanism rather than a synthesis mechanism. The historical reliability tracker produces differentiated per-agent scores (0.445-0.665 across 577 training records), with the Civil Protection Director achieving the highest training reliability (0.665) and clear domain-conditional specialisation (Police Regional leads Flood at 0.722; Fire-Brigade Tactical leads Wildfire at 0.602). On the 65-record frozen-weight holdout (Santorini volcanic-seismic), the GOLD-SILVER ordering is directionally preserved (+3.3 pp) but largely flattens, with coordination-centric roles (PSAP Coordinator, 0.696) rising to the top; the tracker's within-test variance - not command level - emerges as the robust discriminator of expertise that transfers to an unseen crisis type.
 
 ### Future Research Directions
 
 Several directions for future work follow naturally from the current results and limitations.
 
-*Warm-started online learning.* The most immediate technical priority is extending the RBGA rule-based attention to a semi-supervised online learning variant. Rather than replacing the domain-knowledge initialisation, this approach would use it as a starting point and update the attention coefficients incrementally using the reliability tracker's consensus signal after each real decision cycle. This would combine the cold-start interpretability of the current system with data-driven adaptation as operational experience accumulates, and avoids the circular-label problem inherent in training from scratch on self-generated outputs. The 1,276-record corpus from the current experiment (1,211 training, 65 frozen-weight test) provides a natural initialisation baseline.
+*Warm-started online learning.* The most immediate technical priority is extending the RBGA rule-based attention to a semi-supervised online learning variant. Rather than replacing the domain-knowledge initialisation, this approach would use it as a starting point and update the attention coefficients incrementally using the reliability tracker's consensus signal after each real decision cycle. This would combine the cold-start interpretability of the current system with data-driven adaptation as operational experience accumulates, and avoids the circular-label problem inherent in training from scratch on self-generated outputs. The 642-record corpus from the current experiment (577 training, 65 frozen-weight test) provides a natural initialisation baseline.
 
-*Proper learned GAT.* The RBGA aggregator used in this study deliberately replaces the learnable weight matrix $\mathbf{W}$ and attention vector $\mathbf{a}$ of a standard GAT with fixed domain-knowledge scalars, because the 45-run corpus is insufficient to train a gradient-based model without overfitting to the rule-based prior. Preliminary weight optimisation via L-BFGS-B confirmed this: the trained scalars deviated by less than 0.014 from the hand-crafted initialisation and produced no improvement in top-1 accuracy, indicating that the synthetic corpus is too small and too homogeneous for data-driven methods to outlearn the prior. A genuine learned GAT - with backpropagation over $\mathbf{W} \in \mathbb{R}^{F \times F'}$ and $\mathbf{a} \in \mathbb{R}^{2F'}$ - becomes viable once two conditions are met: (1) a labelled corpus of at least 300-500 scenario runs with externally verified ground-truth decisions, such as those generated by the tabletop exercises described above; and (2) diverse scenario coverage across crisis type, geographic context, and agent-panel composition to prevent the attention parameters from collapsing to the dominant prior. This transition from RBGA to a fully learned GAT is the central empirical challenge for the next research phase and the point at which the neural-network framing of the aggregation step becomes fully justified.
+*Proper learned GAT.* The RBGA aggregator used in this study deliberately replaces the learnable weight matrix $\mathbf{W}$ and attention vector $\mathbf{a}$ of a standard GAT with fixed domain-knowledge scalars, because the 45-run corpus is insufficient to train a gradient-based model without overfitting to the rule-based prior. Preliminary weight optimisation via L-BFGS-B confirmed this: the trained scalars deviated by less than 0.006 from the hand-crafted initialisation and produced no improvement in top-1 accuracy, indicating that the synthetic corpus is too small and too homogeneous for data-driven methods to outlearn the prior. A genuine learned GAT - with backpropagation over $\mathbf{W} \in \mathbb{R}^{F \times F'}$ and $\mathbf{a} \in \mathbb{R}^{2F'}$ - becomes viable once two conditions are met: (1) a labelled corpus of at least 300-500 scenario runs with externally verified ground-truth decisions, such as those generated by the tabletop exercises described above; and (2) diverse scenario coverage across crisis type, geographic context, and agent-panel composition to prevent the attention parameters from collapsing to the dominant prior. This transition from RBGA to a fully learned GAT is the central empirical challenge for the next research phase and the point at which the neural-network framing of the aggregation step becomes fully justified.
 
 *Hybrid ER-RBGA integration.* Rather than treating ER and RBGA as alternatives, a future architecture could employ RBGA to compute dynamic attention weights that are then passed to the ER combination rule as the $w_i \cdot r_i$ multipliers, merging the mathematical transparency of ER with the adaptability of graph-based attention. This would represent a genuine methodological advance over the parallel-path comparison reported here.
 
