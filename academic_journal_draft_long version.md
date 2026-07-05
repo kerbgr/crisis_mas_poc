@@ -177,10 +177,10 @@ graph LR
         T1[Police On-Scene]
         T2[Fire-Brigade On-Scene]
         T3[Coast Guard On-Scene]
-        T4[Medical Expert / Triage]
+        T4["Medical Expert / Triage"]
         A1[Meteorologist]
         A2[Logistics Coordinator]
-        A3[PSAP Commander / 112]
+        A3["PSAP Commander / 112"]
         A4[Environmental Scientist]
     end
     subgraph GOL["GOLD Level - 5 Strategic Agents"]
@@ -332,8 +332,8 @@ flowchart TB
         EVAL --> RECORD --> STASH
     end
     subgraph DECIDE["Aggregation"]
-        ER_W[ER path: use rho as normalised weights]
-        GAT_F[RBGA path: inject rho as feature f9]
+        ER_W["ER path: use rho as normalised weights"]
+        GAT_F["RBGA path: inject rho as feature f9"]
         FINAL[make_final_decision - returns recommended A-star]
         ER_W & GAT_F --> FINAL
     end
