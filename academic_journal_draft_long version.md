@@ -9,9 +9,9 @@ Email: vkazoukas@tuc.gr, kazoukas@gmail.com
 
 ## Abstract
 
-Effective crisis management demands rapid coordination of expert knowledge across disciplines under severe uncertainty and time pressure. This paper presents AEGIS (Adaptive Expert-based Group Intelligence System), a multi-agent decision support framework that orchestrates 13 domain-expert agents modelled on emergency response roles at GOLD (strategic) and SILVER (tactical) command levels. Each agent generates structured belief assessments using Large Language Models; these are then aggregated through two complementary mechanisms: classical Evidential Reasoning (ER) grounded in Dempster-Shafer theory, and a rule-based graph attention aggregator (RBGA) that applies interpretable, fixed-scalar weights over a 9-dimensional agent-feature representation. RBGA was deliberately designed for full auditability where labelled crisis-decision training data are unavailable. A TOPSIS-based multi-criteria ranker and a historical reliability tracker that adjusts per-agent influence over successive decisions complete the pipeline. Before expert assessment begins, a multimodal pre-assessment layer-comprising a geospatial terrain classifier and a camera-feed vision agent-enriches the scenario context with real-time observational data and filters domain-ineligible agents.
+Effective crisis management demands rapid coordination of expert knowledge across disciplines under severe uncertainty and time pressure. This paper presents AEGIS (Adaptive Expert-based Group Intelligence System), a multi-agent decision support framework that orchestrates 13 domain-expert agents modelled on emergency response roles at GOLD (strategic) and SILVER (tactical) command levels. Each agent generates structured belief assessments using Large Language Models; these are then aggregated through two complementary mechanisms: classical Evidential Reasoning (ER) grounded in Dempster-Shafer theory, and a rule-based graph attention aggregator (RBGA) that applies interpretable, fixed-scalar weights over a 9-dimensional agent-feature representation. RBGA was deliberately designed for full auditability where labelled crisis-decision training data are unavailable. A TOPSIS-based multi-criteria ranker and a historical reliability tracker that adjusts per-agent influence over successive decisions complete the pipeline. Before expert assessment begins, a multimodal pre-assessment layer - comprising a geospatial terrain classifier and a camera-feed vision agent - enriches the scenario context with real-time observational data and filters domain-ineligible agents.
 
-The system is evaluated on three crisis scenarios influenced from recent Greek emergencies: the Karditsa flash flooding (September 2023), the North Evia wildfires (August 2021), and an industrial ammonia release at the Elefsina petrochemical zone. Across 45 controlled runs-five replicates per LLM provider (Anthropic Claude Sonnet 4.5, OpenAI GPT-4o, and GPT-OSS 20B via LM Studio) for each scenario-ER and RBGA produced statistically equivalent decision quality (ER DQS: 0.783 ± 0.042; RBGA DQS: 0.790 ± 0.036; paired Wilcoxon p > 0.05), with 93.3% recommendation agreement (42/45 runs) and a mean consensus of 0.912 ± 0.071. All three providers converged on the dominant alternative for every HAZMAT run; the three ER-RBGA disagreements arose in the two most contested decision spaces (two in the 12-alternative Forest Fire scenario, one borderline Flood run). On an identical TOPSIS choice-quality scale, collective recommendations matched the post-hoc best individual agent (within 2 pp) while outperforming the mean individual expert by +0.5 pp (Flood), +1.9 pp (Forest Fire), and +3.2 pp (HAZMAT) - in the most ambiguous scenario, only 68% of solo expert choices coincided with the system recommendation, quantifying the dispersion that aggregation resolves. Preliminary author self-assessed explainability and auditability ratings of 4.2/5 and 4.5/5 suggest the structured audit trail is well-suited to operational contexts where accountability is non-negotiable; independent practitioner validation remains future work.
+The system is evaluated on three crisis scenarios inspired by recent Greek emergencies: the Karditsa flash flooding (September 2023), the North Evia wildfires (August 2021), and an industrial ammonia release at the Elefsina petrochemical zone. Across 45 controlled runs - five replicates per LLM provider (Anthropic Claude Sonnet 4.5, OpenAI GPT-4o, and GPT-OSS 20B via LM Studio) for each scenario - ER and RBGA produced statistically equivalent decision quality (ER DQS: 0.783 ± 0.042; RBGA DQS: 0.790 ± 0.036; paired Wilcoxon p > 0.05), with 93.3% recommendation agreement (42/45 runs) and a mean consensus of 0.912 ± 0.071. All three providers converged on the dominant alternative for every HAZMAT run; the three ER-RBGA disagreements arose in the two most contested decision spaces (two in the 12-alternative Forest Fire scenario, one borderline Flood run). On an identical TOPSIS choice-quality scale, collective recommendations matched the post-hoc best individual agent (within 2 pp) while outperforming the mean individual expert by +0.5 pp (Flood), +1.9 pp (Forest Fire), and +3.2 pp (HAZMAT) - in the most ambiguous scenario, only 68% of solo expert choices coincided with the system recommendation, quantifying the dispersion that aggregation resolves. Preliminary author self-assessed explainability and auditability ratings of 4.2/5 and 4.5/5 suggest the structured audit trail is well-suited to operational contexts where accountability is non-negotiable; independent practitioner validation remains future work.
 
 **Keywords:** Multi-Agent Systems; Crisis Management; Evidential Reasoning; Dempster-Shafer Theory; Rule-Based Graph Attention Aggregation; Graph Attention Networks; Large Language Models; Group Decision Making; Multi-Criteria Decision Analysis; TOPSIS; Decision Support Systems; Emergency Management; Explainability
 
@@ -804,7 +804,7 @@ At its core, the work is motivated by a straightforward observation: no single e
 
 ## References
 
-[1] L. K. Comfort, B. Wisner, S. Cutter, R. Pulwarty, K. Hewitt, A. Oliver-Smith, and F. Krimgold, "Reframing disaster policy: The global evolution of vulnerable communities," *Environ. Hazards*, vol. 5, no. 4, pp. 39-44, 2004.
+[1] L. K. Comfort, B. Wisner, S. Cutter, R. Pulwarty, K. Hewitt, A. Oliver-Smith, J. Wiener, M. Fordham, W. Peacock, and F. Krimgold, "Reframing disaster policy: The global evolution of vulnerable communities," *Environ. Hazards*, vol. 1, no. 1, pp. 39-44, 1999.
 
 [2] N. Kapucu and V. Garayev, "Collaborative decision-making in emergency and disaster management," *Int. J. Public Admin.*, vol. 34, no. 6, pp. 366-375, 2011.
 
@@ -816,25 +816,25 @@ At its core, the work is motivated by a straightforward observation: no single e
 
 [6] C. L. Hwang and M. J. Lin, *Group Decision Making under Multiple Criteria*. Berlin: Springer-Verlag, 1987.
 
-[7] R. L. Keeney, H. Raiffa, and R. F. Meyer, *Decisions with Multiple Objectives: Preferences and Value Trade-offs*. Cambridge: Cambridge University Press, 1993.
+[7] R. L. Keeney and H. Raiffa, *Decisions with Multiple Objectives: Preferences and Value Trade-offs*. Cambridge: Cambridge University Press, 1993.
 
 [8] E. Herrera-Viedma, F. J. Cabrerizo, J. Kacprzyk, and W. Pedrycz, "A review of soft consensus models in a fuzzy environment," *Inf. Fusion*, vol. 17, pp. 4-13, 2014.
 
-[9] J. Pajasmaa, Y. Zulueta, and M. Collan, "Group decision making in multiobjective optimization: A systematic literature review," *Group Decis. Negot.*, vol. 33, pp. 329-371, 2024.
+[9] J. Pajasmaa, K. Miettinen, and J. Silvennoinen, "Group decision making in multiobjective optimization: A systematic literature review," *Group Decis. Negot.*, vol. 34, no. 2, pp. 329-371, 2025, doi: 10.1007/s10726-024-09915-8.
 
-[10] M. Zhou, Y. Zhang, X. Y. Fan, T. Wu, B. Y. Cheng, and J. Wu, "A novel consensus reaching approach for large-scale multi-attribute emergency group decision-making under social network clustering based on graph attention mechanism," *Appl. Intell.*, vol. 55, p. 453, 2025.
+[10] M. Zhou, Y. Zhang, X. Y. Fan, T. Wu, B. Y. Cheng, and J. Wu, "A novel consensus reaching approach for large-scale multi-attribute emergency group decision-making under social network clustering based on graph attention mechanism," *Appl. Intell.*, vol. 55, no. 6, art. no. 453, 2025, doi: 10.1007/s10489-024-05992-z.
 
-[11] B. Zhou, Q. Xu, Y. Chen, and H. Li, "A large-scale group decision making consensus model considering the experts' adjustment willingness based on interactive weights," *Expert Syst. Appl.*, vol. 237, p. 121547, 2025.
+[11] S. Bai, H. He, D. Luo, M. Ge, R. Yang, and X. Bi, "A large-scale group decision-making consensus model considering the experts' adjustment willingness based on the interactive weights' determination," *Complexity*, vol. 2022, art. no. 2691804, 2022, doi: 10.1155/2022/2691804.
 
-[12] Z. Ren, C. J. Zhu, and S. J. Cao, "Agent-based evacuation model of large public buildings under fire conditions," *Autom. Constr.*, vol. 20, no. 7, pp. 921-930, 2011.
+[12] J. Shi, A. Ren, and C. Chen, "Agent-based evacuation model of large public buildings under fire conditions," *Autom. Constr.*, vol. 18, no. 3, pp. 338-347, 2009.
 
 [13] M. Hashemipour, S. Stuban, and J. Dever, "A disaster multiagent coordination simulation system to evaluate the design of a first-response team," *Syst. Eng.*, vol. 21, no. 4, pp. 322-344, 2018.
 
-[14] M. Abramson, W. Chao, J. Macker, and R. Mittu, "Coordination in disaster management and response: A unified approach," in *Advanced Data Mining and Applications*, pp. 123-137, Springer, 2008.
+[14] M. Abramson, W. Chao, J. Macker, and R. Mittu, "Coordination in disaster management and response: A unified approach," in *Massively Multi-Agent Technology* (Lecture Notes in Computer Science, vol. 5043), Berlin: Springer, 2008, pp. 162-175.
 
 [15] A. S. Rao and M. P. Georgeff, "BDI agents: From theory to practice," in *Proc. 1st Int. Conf. Multiagent Systems*, pp. 312-319, 1995.
 
-[16] Z. Li, X. Chen, J. Zhao, and H. Wang, "A survey on LLM-based multi-agent systems: Workflow, infrastructure and challenges," *Vicinagearth*, vol. 1, no. 9, pp. 1-43, 2024.
+[16] X. Li, S. Wang, S. Zeng, Y. Wu, and Y. Yang, "A survey on LLM-based multi-agent systems: Workflow, infrastructure, and challenges," *Vicinagearth*, vol. 1, art. no. 9, 2024, doi: 10.1007/s44336-024-00009-2.
 
 [17] V. G. Goecks and N. R. Waytowich, "DisasterResponseGPT: Large language models for accelerated plan of action development in disaster response scenarios," arXiv preprint arXiv:2306.17271, Jun. 2023.
 
@@ -854,7 +854,7 @@ At its core, the work is motivated by a straightforward observation: no single e
 
 [25] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, and I. Polosukhin, "Attention is all you need," in *Proc. NeurIPS*, vol. 30, pp. 5998-6008, 2017.
 
-[26] J. Carneiro, P. Alves, G. Marreiros, and P. Novais, "A multiple criteria decision analysis framework for dispersed group decision-making contexts," *Appl. Sci.*, vol. 10, no. 14, p. 4614, 2020.
+[26] J. Carneiro, P. Alves, G. Marreiros, and P. Novais, "A multiple criteria decision analysis framework for dispersed group decision-making contexts," *Appl. Sci.*, vol. 10, no. 13, art. no. 4614, 2020, doi: 10.3390/app10134614.
 
 [27] T. B. Brown, B. Mann, N. Ryder, M. Subbiah, J. Kaplan, P. Dhariwal, and D. Amodei, "Language models are few-shot learners," in *Proc. NeurIPS*, vol. 33, pp. 1877-1901, 2020.
 
@@ -866,7 +866,7 @@ At its core, the work is motivated by a straightforward observation: no single e
 
 [31] L. Panait and S. Luke, "Cooperative multi-agent learning: The state of the art," *Auton. Agents Multi-Agent Syst.*, vol. 11, no. 3, pp. 387-434, 2005.
 
-[32] X. Zhang, L. He, K. Chen, Y. Luo, J. Zhou, and F. Wang, "Deep learning on graphs: A survey," *IEEE Trans. Knowl. Data Eng.*, vol. 34, no. 1, pp. 249-270, 2020.
+[32] Z. Zhang, P. Cui, and W. Zhu, "Deep learning on graphs: A survey," *IEEE Trans. Knowl. Data Eng.*, vol. 34, no. 1, pp. 249-270, 2022, doi: 10.1109/TKDE.2020.2981333.
 
 [33] E. K. Zavadskas and Z. Turskis, "Multiple criteria decision making (MCDM) methods in economics: An overview," *Technol. Econ. Dev. Econ.*, vol. 17, no. 2, pp. 397-427, 2011.
 
