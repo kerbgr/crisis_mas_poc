@@ -149,7 +149,6 @@ flowchart TD
     AGENTS -->|belief distributions| DF
     DF -->|recommendation| COORD
     COORD -->|final decision| EVAL
-    EVAL -->|results| UI
     style UI fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style COORD fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     style VISION fill:#e0f7fa,stroke:#00838f,stroke-width:2px
@@ -190,8 +189,6 @@ graph LR
         G4[Civil Protection Director]
         G5[Medical Infrastructure Director]
     end
-    GEO -->|terrain + agent filter| G1
-    CAM -->|camera context| T1
     style VIS fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style SIL fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
     style GOL fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
