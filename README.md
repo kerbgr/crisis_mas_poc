@@ -273,10 +273,12 @@ python main.py --compare-methods            # Compare ER vs RBGA side-by-side
 python main.py --scenario flood_scenario --compare-methods --expert-selection auto
 python main.py --scenario forest_fire_evia --compare-methods --expert-selection auto
 python main.py --scenario ammonia_leak_elefsina --compare-methods --expert-selection auto
-python main.py --scenario santorini_volcanic_seismic --compare-methods --expert-selection auto
+python run_frozen_volcanic_test.py --runs 5 --provider lmstudio
 ```
 
-Add `--llm-provider claude|openai|lmstudio` to select the LLM backend (default: claude).
+Add `--llm-provider claude|openai|lmstudio` to select the LLM backend (default: claude) for the three training-scenario commands.
+
+**Do not** run `santorini_volcanic_seismic` directly via `main.py` — it is the held-out scenario for reliability-tracker evaluation, and a direct run would append `volcanic_seismic` records into `results/reliability/`, contaminating the training corpus and breaking the train/test split. Always use `run_frozen_volcanic_test.py`, which snapshots the training weights before each run and restores them afterward, so all runs start from identical frozen weights and the training corpus is never touched. Results land in `results/reliability_test_volcanic/` with a provenance manifest (git commit, training-corpus size at freeze time, per-run output directories).
 
 ---
 
