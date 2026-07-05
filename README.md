@@ -17,9 +17,9 @@ Department of Military Sciences - School of Production Engineering and Managemen
 
 **Author:** ***Vasileios Kazoukas***
 **Contact:** kazoukas@gmail.com, vkazoukas@tuc.gr\
-**Version:** 0.9.1
-**Last Updated:** February 2026
-**Status:** Research Prototype
+**Version:** 1.5
+**Last Updated:** July 2026
+**Status:** Thesis Approved
 
 ---
 
