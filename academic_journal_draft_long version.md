@@ -101,7 +101,7 @@ Graph Convolutional Networks (GCNs) [23] extended convolutional neural networks 
 
 $$e_{ij} = a(\mathbf{W}\mathbf{h}_i \| \mathbf{W}\mathbf{h}_j)$$
 
-$$\alpha_{ij} = \text{softmax}_j\!\left(\text{LeakyReLU}(e_{ij})\right)$$
+$$\alpha_{ij} = \text{softmax}_j\left(\text{LeakyReLU}(e_{ij})\right)$$
 
 where $\mathbf{W}$ is a shared linear projection and $a$ is a single-layer feed-forward network. Multi-head attention (MHA) with $K$ parallel heads provides stability and allows the network to capture different relational aspects simultaneously [25].
 
