@@ -25,6 +25,16 @@ def get_canary_weight():
 
     return 0.0  # No canary yet
 
-# In your server
-AB_TEST_CONFIG["model_b_weight"] = get_canary_weight()
-AB_TEST_CONFIG["model_a_weight"] = 1.0 - get_canary_weight()
+def apply_canary_weight(ab_test_config):
+    """Update an AB_TEST_CONFIG dict (e.g. ab_testing_server.AB_TEST_CONFIG)
+    in place with the current canary weight."""
+    weight = get_canary_weight()
+    ab_test_config["model_b_weight"] = weight
+    ab_test_config["model_a_weight"] = 1.0 - weight
+    return ab_test_config
+
+
+if __name__ == "__main__":
+    from ab_testing_server import AB_TEST_CONFIG
+    apply_canary_weight(AB_TEST_CONFIG)
+    print(AB_TEST_CONFIG)

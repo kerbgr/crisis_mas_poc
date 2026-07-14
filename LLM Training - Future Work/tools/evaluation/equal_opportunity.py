@@ -14,12 +14,16 @@ def equal_opportunity(true_labels_a, pred_labels_a, true_labels_b, pred_labels_b
     """
     import numpy as np
 
-    # True positive rate (recall) for each group
-    tpr_a = np.sum((true_labels_a == 1) & (pred_labels_a == 1)) / np.sum(true_labels_a == 1)
-    tpr_b = np.sum((true_labels_b == 1) & (pred_labels_b == 1)) / np.sum(true_labels_b == 1)
+    # True positive rate (recall) for each group. Guard against a group
+    # having zero positive labels in this sample (division by zero), the
+    # same way equalized_odds.py already guards its FPR ratio.
+    pos_a = np.sum(true_labels_a == 1)
+    pos_b = np.sum(true_labels_b == 1)
+    tpr_a = np.sum((true_labels_a == 1) & (pred_labels_a == 1)) / pos_a if pos_a > 0 else 1.0
+    tpr_b = np.sum((true_labels_b == 1) & (pred_labels_b == 1)) / pos_b if pos_b > 0 else 1.0
 
     # Equal opportunity ratio
-    eo_ratio = min(tpr_a, tpr_b) / max(tpr_a, tpr_b)
+    eo_ratio = min(tpr_a, tpr_b) / max(tpr_a, tpr_b) if max(tpr_a, tpr_b) > 0 else 1.0
 
     print(f"True Positive Rate (Group A): {tpr_a:.2%}")
     print(f"True Positive Rate (Group B): {tpr_b:.2%}")

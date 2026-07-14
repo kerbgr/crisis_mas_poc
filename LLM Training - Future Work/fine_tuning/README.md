@@ -5,10 +5,10 @@
 This guide provides step-by-step instructions for fine-tuning Large Language Models on domain-specific emergency response data using **LoRA (Low-Rank Adaptation)** - the recommended approach for most practitioners.
 
 **Expected Results**:
-- Training time: 6-24 hours on RTX 4090 / 2-8 hours on A100
+- Training time: 6-24 hours on RTX 4090 / 2-8 hours on A100 / **~13-15 hours on M4 Pro (48GB) via MLX** ([Apple Silicon guide](../APPLE_SILICON_GUIDE.md))
 - Final model size: Base model + 100-500MB LoRA adapter
 - Performance: 20-40% improvement on domain benchmarks vs. base model
-- Cost: $50-200 (cloud GPU) or free (local GPU)
+- Cost: $50-200 (cloud GPU) or free (local GPU, including Apple Silicon)
 
 ---
 
@@ -17,9 +17,12 @@ This guide provides step-by-step instructions for fine-tuning Large Language Mod
 | Training Method | GPU Required | Dataset Size | Training Time | Cost | Quality |
 |-----------------|--------------|--------------|---------------|------|---------|
 | **LoRA** (Recommended) | RTX 4090 (24GB) | 1K-10K | 6-24h | $50-200 | ★★★★☆ |
+| **LoRA** (Apple Silicon) | M4 Pro (48GB) via MLX | 1K-10K | 13-15h *(est.)* | $0 | ★★★★☆ |
 | QLoRA | RTX 3090 (16GB) | 1K-10K | 12-48h | $100-300 | ★★★☆☆ |
 | Full Fine-Tuning | A100 (40GB+) | 10K+ | 2-7 days | $500-2K | ★★★★★ |
 | Short LLM (sLLM) | RTX 4090 | 500-5K | 2-6h | $20-50 | ★★★☆☆ |
+
+> **Apple Silicon note**: QLoRA requires `bitsandbytes` (CUDA-only) and isn't available on Apple Silicon — use standard LoRA there instead. Everything else on this page assumes an NVIDIA/CUDA setup; for the Apple Silicon equivalent of each step (MLX or PyTorch-MPS), see **[../APPLE_SILICON_GUIDE.md](../APPLE_SILICON_GUIDE.md)**, which mirrors this same LoRA workflow.
 
 ---
 
@@ -241,16 +244,27 @@ Merged model is a standard Hugging Face model (14.2GB) that can be used anywhere
 Quick inference test:
 
 ```python
+import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # Load model
 model_path = "./outputs/firefighter-lora-llama3.1-8b"
 tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
-model = AutoModelForCausalLM.from_pretrained(
-    "meta-llama/Meta-Llama-3.1-8B-Instruct",
-    load_in_8bit=True,  # Quantize to fit in memory
-    device_map="auto"
-)
+
+# load_in_8bit (bitsandbytes) is CUDA-only. On Apple Silicon, load in fp16
+# instead (see APPLE_SILICON_GUIDE.md -- bf16 isn't supported on MPS either).
+device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+if device == "cuda":
+    model = AutoModelForCausalLM.from_pretrained(
+        "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        load_in_8bit=True,  # Quantize to fit in memory
+        device_map="auto"
+    )
+else:
+    model = AutoModelForCausalLM.from_pretrained(
+        "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        torch_dtype=torch.float16,
+    ).to(device)
 
 # Load LoRA adapter
 from peft import PeftModel
@@ -262,11 +276,13 @@ messages = [
     {"role": "user", "content": "A wildfire is approaching a village. Wind is 40 km/h. What do I do?"}
 ]
 
-input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
+input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to(device)
 outputs = model.generate(input_ids, max_new_tokens=512, temperature=0.7)
 response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 print(response)
 ```
+
+> On Apple Silicon, running this same test via **MLX** instead of PyTorch is faster (see [../APPLE_SILICON_GUIDE.md](../APPLE_SILICON_GUIDE.md) Step 4).
 
 ---
 
@@ -282,6 +298,8 @@ print(response)
 3. Reduce `sequence_len` (try 1024)
 4. Use QLoRA instead (4-bit quantization)
 5. Use smaller base model (7B instead of 13B)
+
+**On Apple Silicon**: the equivalent error is `RuntimeError: MPS backend out of memory` — same fixes apply (1-3, 5), except QLoRA isn't available (CUDA-only `bitsandbytes`). See [../APPLE_SILICON_GUIDE.md](../APPLE_SILICON_GUIDE.md#troubleshooting).
 
 ---
 

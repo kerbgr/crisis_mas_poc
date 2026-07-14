@@ -49,6 +49,9 @@ reliability/
 # Claude Code session files
 .claude/
 
+# Personal notes — never commit
+AEGIS_apla_logia.md
+
 # Media / recordings
 *.mp4
 *.mov

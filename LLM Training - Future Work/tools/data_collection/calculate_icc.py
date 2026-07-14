@@ -44,14 +44,12 @@ def interpret_icc(icc):
     else:
         return "Excellent reliability"
 
-# Example usage
-data = {
-    'Example': ['EX1', 'EX1', 'EX1', 'EX2', 'EX2', 'EX2', 'EX3', 'EX3', 'EX3'],
-    'Expert':  ['A',   'B',   'C',   'A',   'B',   'C',   'A',   'B',   'C'],
-    'Rating':  [0.85,  0.90,  0.80,  0.70,  0.75,  0.72,  0.95,  0.92,  0.94]
-}
-df = pd.DataFrame(data)
-
-icc = calculate_icc(df)
-
-# Target: ICC > 0.75 (good reliability)
+if __name__ == "__main__":
+    # Target: ICC > 0.75 (good reliability)
+    data = {
+        'Example': ['EX1', 'EX1', 'EX1', 'EX2', 'EX2', 'EX2', 'EX3', 'EX3', 'EX3'],
+        'Expert':  ['A',   'B',   'C',   'A',   'B',   'C',   'A',   'B',   'C'],
+        'Rating':  [0.85,  0.90,  0.80,  0.70,  0.75,  0.72,  0.95,  0.92,  0.94],
+    }
+    df = pd.DataFrame(data)
+    calculate_icc(df)

@@ -29,16 +29,17 @@ def resolve_with_context(question, answers):
     print(f"✅ Created {len(examples)} context-specific examples")
     return examples
 
-# Example: Tactical disagreement
-examples = resolve_with_context(
-    question="Should we defend the structure or evacuate?",
-    answers=[
-        "Evacuate immediately - insufficient resources",
-        "Defend structure - we have the capability"
-    ]
-)
+if __name__ == "__main__":
+    # Example: Tactical disagreement
+    examples = resolve_with_context(
+        question="Should we defend the structure or evacuate?",
+        answers=[
+            "Evacuate immediately - insufficient resources",
+            "Defend structure - we have the capability",
+        ],
+    )
 
-for ex in examples:
-    print(f"\nQ: {ex['question']}")
-    print(f"A: {ex['answer']}")
-    print(f"Context: {ex['context']}")
+    for ex in examples:
+        print(f"\nQ: {ex['question']}")
+        print(f"A: {ex['answer']}")
+        print(f"Context: {ex['context']}")

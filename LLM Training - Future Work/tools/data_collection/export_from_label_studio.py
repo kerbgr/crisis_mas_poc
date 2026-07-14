@@ -35,8 +35,8 @@ def convert_label_studio_to_training(export_file, output_file):
     with open(output_file, 'w') as f:
         json.dump(training_data, f, indent=2, ensure_ascii=False)
 
-# Usage
-convert_label_studio_to_training(
-    "label_studio_export.json",
-    "training_data.json"
-)
+if __name__ == "__main__":
+    convert_label_studio_to_training(
+        "label_studio_export.json",
+        "training_data.json",
+    )

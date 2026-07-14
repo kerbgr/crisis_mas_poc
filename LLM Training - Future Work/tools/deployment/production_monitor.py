@@ -11,6 +11,7 @@ from collections import deque
 from dataclasses import dataclass
 from typing import Dict, List
 import numpy as np
+from flask import request, jsonify
 
 @dataclass
 class ResponseMetrics:
@@ -197,55 +198,78 @@ class ProductionMonitor:
             "total_requests": len(self.recent_metrics)
         }
 
-# Usage in production server
+# Shared singleton so monitoring_dashboard.py's /api/metrics endpoint (and
+# anything else in the same process) can import the same instance.
 monitor = ProductionMonitor(window_size=1000)
 
-@app.route("/v1/chat/completions", methods=["POST"])
-def chat():
-    data = request.json
-    request_id = str(time.time())
 
-    start_time = time.time()
+def default_extract_confidence(response_text):
+    """Heuristic confidence estimate when the model doesn't expose logprobs.
+    Replace with real logprob-based confidence if your model exposes it."""
+    hedges = ["might", "possibly", "not sure", "i think", "probably", "unclear"]
+    return 0.5 if any(h in response_text.lower() for h in hedges) else 0.9
 
-    # Generate response
-    response = model.generate(data["messages"])
 
-    latency_ms = (time.time() - start_time) * 1000
+def default_detect_safety_issues(response_text):
+    """Heuristic safety-flag scan. Replace with a real safety classifier for
+    production use."""
+    unsafe_keywords = ["do not evacuate", "ignore warning", "not dangerous"]
+    text = response_text.lower()
+    return [kw for kw in unsafe_keywords if kw in text]
 
-    # Extract confidence (if model provides it)
-    confidence = extract_confidence(response)
 
-    # Detect safety issues
-    safety_flags = detect_safety_issues(response)
+def register_routes(app, model, tokenizer, monitor=monitor,
+                     extract_confidence=default_extract_confidence,
+                     detect_safety_issues=default_detect_safety_issues):
+    """Register the monitored chat + feedback routes on an existing Flask app."""
 
-    # Log metrics
-    metrics = ResponseMetrics(
-        timestamp=time.time(),
-        request_id=request_id,
-        latency_ms=latency_ms,
-        input_tokens=len(tokenizer.encode(str(data["messages"]))),
-        output_tokens=len(tokenizer.encode(response)),
-        user_feedback=0,  # Updated later via feedback endpoint
-        safety_flags=safety_flags,
-        confidence_score=confidence
-    )
+    @app.route("/v1/chat/completions", methods=["POST"])
+    def chat():
+        data = request.json
+        request_id = str(time.time())
 
-    monitor.log_response(metrics)
+        start_time = time.time()
 
-    return jsonify({"choices": [{"message": {"content": response}}]})
+        # Generate response
+        response = model.generate(data["messages"])
 
-# Feedback endpoint
-@app.route("/feedback", methods=["POST"])
-def feedback():
-    """Collect user feedback (thumbs up/down)."""
-    data = request.json
-    request_id = data["request_id"]
-    feedback_value = data["feedback"]  # 1 or -1
+        latency_ms = (time.time() - start_time) * 1000
 
-    # Update metrics for this request
-    for metrics in monitor.recent_metrics:
-        if metrics.request_id == request_id:
-            metrics.user_feedback = feedback_value
-            break
+        # Extract confidence (if model provides it)
+        confidence = extract_confidence(response)
 
-    return jsonify({"status": "feedback recorded"})
+        # Detect safety issues
+        safety_flags = detect_safety_issues(response)
+
+        # Log metrics
+        response_metrics = ResponseMetrics(
+            timestamp=time.time(),
+            request_id=request_id,
+            latency_ms=latency_ms,
+            input_tokens=len(tokenizer.encode(str(data["messages"]))),
+            output_tokens=len(tokenizer.encode(response)),
+            user_feedback=0,  # Updated later via feedback endpoint
+            safety_flags=safety_flags,
+            confidence_score=confidence
+        )
+
+        monitor.log_response(response_metrics)
+
+        return jsonify({"choices": [{"message": {"content": response}}]})
+
+    @app.route("/feedback", methods=["POST"])
+    def feedback():
+        """Collect user feedback (thumbs up/down)."""
+        data = request.json
+        request_id = data["request_id"]
+        feedback_value = data["feedback"]  # 1 or -1
+
+        # Update metrics for this request
+        for response_metrics in monitor.recent_metrics:
+            if response_metrics.request_id == request_id:
+                response_metrics.user_feedback = feedback_value
+                break
+
+        return jsonify({"status": "feedback recorded"})
+
+    return app

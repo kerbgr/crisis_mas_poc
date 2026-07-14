@@ -71,6 +71,37 @@ sequence_len: 2048
 
 ---
 
+### Recommended+: M4 Pro (48GB RAM)
+
+This is the sweet-spot config referenced throughout this project (this doc, `fine_tuning/README.md`, `examples/firefighter_example/`) alongside the RTX 4090 numbers — **not a replacement for them**, just the Apple-Silicon-native path for the same training run.
+
+**Capabilities**:
+- Train: 7B-8B models with LoRA ✅ (comfortably, more headroom than 32GB M-Pro chips)
+- Train: 13B with LoRA at reduced batch size (tight but workable)
+- Inference: 7B-13B models (quantized), 8B at full precision
+- LoRA: r=32-64
+
+**Recommended use**: Same LoRA fine-tuning workflow as the RTX 4090 examples in this repo, run locally via MLX or PyTorch MPS instead of a cloud/desktop CUDA box.
+
+**Example Configuration** (mirrors `examples/firefighter_example/configs/firefighter_lora_llama3.1_8b.yml`, adapted for MPS):
+```yaml
+base_model: meta-llama/Meta-Llama-3.1-8B-Instruct
+lora_r: 32
+lora_alpha: 64
+batch_size: 2
+gradient_accumulation_steps: 8
+sequence_len: 2048
+gradient_checkpointing: true
+bf16: false  # not supported on MPS
+fp16: true
+```
+
+**Expected Training Time**: ~13-15 hours for 2,000 examples via MLX (**estimated** by interpolating from M2 Pro and M3 Max benchmarks below — M4 Pro has a smaller GPU core count than M3 *Max*, so don't expect Max-tier speed; this project hasn't benchmarked M4 Pro directly yet. If you run this config, please record actual numbers and fold them back into this table.)
+
+**Note on the 48GB config**: M4 Pro's 48GB is unified memory shared with the OS and everything else running, same tradeoff as every other Apple Silicon tier in this guide — leave headroom (close other apps) rather than assuming all 48GB is available to the training process.
+
+---
+
 ### Optimal: M2/M3/M4 Max or Ultra (64GB-192GB RAM)
 
 **Capabilities**:
@@ -510,14 +541,18 @@ python -m mlx_lm.convert \
 |----------|---------------|------|-------|------------|
 | **M1 Max (64GB)** | 22 hours | $0 | 50W | 800 |
 | **M2 Pro (32GB)** | 18 hours | $0 | 45W | 950 |
+| **M4 Pro (48GB)** *(estimated)* | 13-15 hours | $0 | 45W | 1,100-1,200 |
 | **M3 Max (48GB)** | 12 hours | $0 | 55W | 1,400 |
 | **M3 Max (128GB)** | 10 hours | $0 | 60W | 1,650 |
 | **M2 Ultra (192GB)** | 8 hours | $0 | 100W | 2,100 |
 | RTX 4090 (24GB) | 8 hours | $0 | 400W | 2,300 |
 | A100 (40GB) | 4 hours | $400 | 300W | 4,500 |
 
+*M4 Pro's row is **estimated** by interpolating generational improvements over M2 Pro (same GPU-core class, ~2 generations newer, faster memory bandwidth) — it is not yet directly benchmarked by this project. Note M4 Pro has a smaller GPU than M3 **Max**, so despite being newer silicon it should not be expected to beat the M3 Max row above. If you run training on an M4 Pro, please replace this estimate with a measured number.*
+
 **Energy Cost** (at $0.12/kWh):
 - M3 Max (12h @ 55W): $0.08
+- M4 Pro (14h @ 45W, estimated): $0.08
 - RTX 4090 (8h @ 400W): $0.38
 - **Apple Silicon is 5x more energy efficient!**
 
@@ -529,6 +564,7 @@ python -m mlx_lm.convert \
 |----------|------------|---------------------|
 | M1 Max (64GB) | 65 | 7.8s |
 | M2 Pro (32GB) | 75 | 6.8s |
+| M4 Pro (48GB) *(estimated)* | 85-95 | 5.6s |
 | M3 Max (48GB) | 110 | 4.7s |
 | M2 Ultra (192GB) | 145 | 3.5s |
 | RTX 4090 (24GB) | 125 | 4.1s |
@@ -631,6 +667,37 @@ num_epochs: 3
 ```
 
 **Expected**: 12-16 hours for 2,000 examples
+
+---
+
+### MacBook Pro M4 Pro (48GB)
+
+**Use case**: Standard LoRA training (7B-8B models) — the same firefighter-example workflow this repo demonstrates on RTX 4090 (`examples/firefighter_example/`), run locally via MLX instead.
+
+```yaml
+base_model: meta-llama/Meta-Llama-3.1-8B-Instruct
+lora_r: 32
+lora_alpha: 64
+batch_size: 2
+gradient_accumulation_steps: 8
+sequence_len: 2048
+num_epochs: 3
+fp16: true  # bf16 not supported on MPS
+```
+
+```bash
+# Via MLX (recommended for Apple Silicon -- see "Framework Comparison" above)
+python -m mlx_lm.lora \
+  --model meta-llama/Meta-Llama-3.1-8B-Instruct \
+  --data ./firefighter_train.jsonl \
+  --train \
+  --iters 1000 \
+  --lora-layers 32 \
+  --batch-size 2 \
+  --learning-rate 2e-5
+```
+
+**Expected**: 13-15 hours for 2,000 examples *(estimated — see the Performance Benchmarks table above; not yet directly measured on this project's hardware)*. The extra headroom over the 36GB M3 Pro tier mostly helps with longer `sequence_len` and slightly larger batch sizes rather than unlocking a bigger model class — this tier is still an 7B-8B LoRA sweet spot, not a 13B tier.
 
 ---
 
@@ -790,10 +857,12 @@ pip install --upgrade mlx mlx-lm
 
 **Recommended hardware**:
 - **Minimum**: M2/M3 Pro (32GB) for 7B training
+- **Sweet spot**: M4 Pro (48GB) — this project's reference config alongside the RTX 4090 examples
 - **Optimal**: M3 Max (48GB+) or M2 Ultra for production use
 
 ---
 
 **Generated**: 2025-11-13
-**Version**: 1.0
+**Last updated**: 2026-07-14 (added M4 Pro 48GB tier throughout)
+**Version**: 1.1
 **Optimized for**: M1, M2, M3, M4 (all variants)

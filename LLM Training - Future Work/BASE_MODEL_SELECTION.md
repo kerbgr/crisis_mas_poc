@@ -5,7 +5,7 @@
 Choosing the right **base model** is the most critical decision in your LLM training pipeline. The base model determines:
 - **Maximum capability ceiling** (even perfect training can't exceed base model's reasoning ability)
 - **Inference speed** (7B vs 70B is 10x speed difference)
-- **Hardware requirements** (7B runs on RTX 4090, 70B needs A100)
+- **Hardware requirements** (7B runs on RTX 4090 or Apple Silicon M4 Pro/48GB, 70B needs A100 or M2 Ultra — see [APPLE_SILICON_GUIDE.md](APPLE_SILICON_GUIDE.md) for Mac-specific tiers)
 - **Licensing restrictions** (can you deploy commercially?)
 - **Multilingual ability** (critical for Greek emergency response)
 
@@ -70,21 +70,23 @@ Choosing the right **base model** is the most critical decision in your LLM trai
 | **30-34B** | 30-34B | 64GB | 15-25 tok/s | ★★★★★ | Maximum quality |
 | **70B+** | 70B+ | 160GB | 5-10 tok/s | ★★★★★ | Research/benchmarking |
 
+*VRAM column is NVIDIA-framed (dedicated GPU memory); on Apple Silicon these map to unified memory instead — a 16GB "VRAM" model comfortably fits with room to spare on the 48GB M4 Pro this project targets. See [APPLE_SILICON_GUIDE.md](APPLE_SILICON_GUIDE.md)'s "Model Size in Memory" table for the Apple Silicon-native breakdown (full/8-bit/4-bit).*
+
 **For Greek Emergency Response**:
 - **Primary recommendation**: **7-8B** (Llama 3.1 8B, Qwen2-7B, Mistral 7B)
-  - Runs on RTX 4090 (24GB VRAM)
+  - Runs on RTX 4090 (24GB VRAM) **or Apple Silicon M4 Pro (48GB unified memory)**
   - Fast enough for real-time response (<5s)
   - Excellent reasoning for domain-specific tasks
-  - Training time: 6-12 hours
+  - Training time: 6-12 hours (RTX 4090) / ~13-15 hours *(estimated)* on M4 Pro via MLX
 
 - **Alternative (faster)**: **3B** (Qwen2-3B, Phi-3-mini-3.8B)
-  - Runs on RTX 3060 (12GB VRAM)
+  - Runs on RTX 3060 (12GB VRAM) **or any Apple Silicon Mac (M1 and up)**
   - Ultra-fast (<2s response)
   - Good for narrow tasks (HAZMAT lookup, protocol retrieval)
   - Training time: 2-4 hours
 
 - **Alternative (highest quality)**: **13B** (Qwen2-14B, Llama 3.1 13B - when released)
-  - Requires RTX 4090 or A100
+  - Requires RTX 4090 or A100, **or Apple Silicon M3 Max (128GB) / M2 Ultra** (48GB M4 Pro is tight for 13B — see APPLE_SILICON_GUIDE.md)
   - Best reasoning ability
   - Training time: 12-24 hours
 

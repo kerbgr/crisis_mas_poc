@@ -141,16 +141,22 @@ For complete agent profiles and architecture details, see [../agents/agent_profi
 - Google Colab Pro+ (A100 access)
 - AWS SageMaker
 
+**Apple Silicon (local, no cloud GPU needed):**
+- MacBook Pro **M4 Pro (48GB)** — this project's reference local config for LoRA fine-tuning (7B-8B models), see [APPLE_SILICON_GUIDE.md](APPLE_SILICON_GUIDE.md)
+- Minimum: M2/M3 Pro (32GB) for 7B LoRA
+- Optimal: M3 Max (48GB+) or M2 Ultra for larger models / full fine-tuning
+- Full hardware tiers, benchmarks, and MLX/PyTorch-MPS setup: **[APPLE_SILICON_GUIDE.md](APPLE_SILICON_GUIDE.md)**
+
 ### Software Requirements
 
 - **Python**: 3.10+
-- **CUDA**: 11.8+ or 12.1+
-- **PyTorch**: 2.0+
+- **CUDA**: 11.8+ or 12.1+ (NVIDIA only — not needed on Apple Silicon, see [APPLE_SILICON_GUIDE.md](APPLE_SILICON_GUIDE.md))
+- **PyTorch**: 2.0+ (includes MPS backend for Apple Silicon)
 - **Transformers**: 4.36+
-- **Training frameworks**: Axolotl, LLaMA Factory, Unsloth, or TRL
-- **Inference**: LM Studio, Ollama, vLLM, or llama.cpp
+- **Training frameworks**: Axolotl, LLaMA Factory, Unsloth, or TRL (NVIDIA); **MLX** or PyTorch-MPS (Apple Silicon)
+- **Inference**: LM Studio, Ollama, vLLM, or llama.cpp (llama.cpp and LM Studio/Ollama both run natively on Apple Silicon via Metal)
 
-See `tools/requirements.txt` for complete dependencies.
+See `tools/requirements.txt` for complete dependencies (NVIDIA-oriented) or `APPLE_SILICON_GUIDE.md`'s `requirements_apple_silicon.txt` snippet for the Apple Silicon equivalent.
 
 ### Knowledge Requirements
 
@@ -178,6 +184,7 @@ See `tools/requirements.txt` for complete dependencies.
 
 **Estimated Time**: 3-7 days on A100
 **Estimated Cost**: $500-2,000 (cloud GPU rental)
+**Apple Silicon**: Not practical at this model size on Mac hardware — use full fine-tuning only on NVIDIA cloud GPUs, then deploy the resulting model locally on Apple Silicon for inference.
 
 ---
 
@@ -196,6 +203,7 @@ See `tools/requirements.txt` for complete dependencies.
 
 **Estimated Time**: 6-24 hours on RTX 4090
 **Estimated Cost**: $50-200 (cloud GPU rental) or free (local GPU)
+**Apple Silicon**: ~13-15 hours on M4 Pro (48GB) via MLX, free (local) — this is the approach used in `examples/firefighter_example/`. See [APPLE_SILICON_GUIDE.md](APPLE_SILICON_GUIDE.md).
 
 **Recommended for Greek Emergency Response System** ✅
 
@@ -215,6 +223,7 @@ See `tools/requirements.txt` for complete dependencies.
 
 **Estimated Time**: 12-48 hours on RTX 3090
 **Estimated Cost**: $100-300 or free (local GPU)
+**Apple Silicon**: QLoRA needs `bitsandbytes`, which is CUDA-only — not available on Apple Silicon. Use standard LoRA instead (see above) or a smaller base model; see APPLE_SILICON_GUIDE.md's "No bitsandbytes (QLoRA)" limitation.
 
 ---
 
@@ -239,6 +248,7 @@ See `tools/requirements.txt` for complete dependencies.
 
 **Estimated Time**: 2-6 hours on RTX 4090
 **Estimated Cost**: $20-50 or free (local GPU)
+**Apple Silicon**: Comfortably runs on any Apple Silicon Mac (M1 and up) given the small model size — M4 Pro (48GB) has plenty of headroom for 1B-3B models with fast iteration.
 
 **Use case**: Deploy separate sLLMs for each of the 13 specialized Greek expert agents (see system architecture with 14 total agents including orchestrator)
 

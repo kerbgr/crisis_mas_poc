@@ -25,6 +25,8 @@ This example demonstrates **end-to-end training** of a domain-specific LLM for G
 | **Final Loss** | 0.423 (train) / 0.456 (validation) |
 | **Model Size** | 14.3GB base + 287MB LoRA adapter |
 
+> **Running this example on Apple Silicon**: this specific 11.2-hour run was measured on an RTX 4090; it has not yet been re-run on Apple Silicon, so there's no measured Mac number to report here. Based on the benchmarks in [../../APPLE_SILICON_GUIDE.md](../../APPLE_SILICON_GUIDE.md), the same config (same data, same `lora_r=32`) would be expected to take **~13-15 hours on an M4 Pro (48GB)** via MLX — free, local, no cloud GPU needed. If you reproduce this example on Apple Silicon, please record the actual time/loss here.
+
 ---
 
 ## Dataset Composition
@@ -143,11 +145,21 @@ output_dir: ./outputs/pyragos-lora-llama3.1-8b
 
 ---
 
-### Phase 2: Training (11.2 hours on RTX 4090)
+### Phase 2: Training (11.2 hours on RTX 4090 / ~13-15 hours estimated on M4 Pro 48GB)
 
 ```bash
-# Training command
+# Training command (NVIDIA/CUDA, via Axolotl)
 accelerate launch -m axolotl.cli.train configs/firefighter_lora_llama3.1_8b.yml
+
+# Apple Silicon equivalent (via MLX -- see ../../APPLE_SILICON_GUIDE.md)
+python -m mlx_lm.lora \
+  --model meta-llama/Meta-Llama-3.1-8B-Instruct \
+  --data ./firefighter_train.jsonl \
+  --train \
+  --iters 1000 \
+  --lora-layers 32 \
+  --batch-size 2 \
+  --learning-rate 2e-5
 ```
 
 **Training Log (Abbreviated)**:
@@ -276,19 +288,31 @@ DO NOT: Attempt direct fire attack with insufficient personnel. Life safety is a
 
 ```python
 # agents/expert_agent.py (modified to use fine-tuned model)
+#
+# load_in_8bit (bitsandbytes) is CUDA-only -- on Apple Silicon, load in fp16
+# instead (see tools/deployment/device_utils.py and ../../APPLE_SILICON_GUIDE.md).
 
+import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
 class FirefighterAgent:
     def __init__(self):
+        device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+
         # Load base model + LoRA
         self.tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
-        base_model = AutoModelForCausalLM.from_pretrained(
-            "meta-llama/Meta-Llama-3.1-8B-Instruct",
-            load_in_8bit=True,
-            device_map="auto"
-        )
+        if device == "cuda":
+            base_model = AutoModelForCausalLM.from_pretrained(
+                "meta-llama/Meta-Llama-3.1-8B-Instruct",
+                load_in_8bit=True,
+                device_map="auto"
+            )
+        else:
+            base_model = AutoModelForCausalLM.from_pretrained(
+                "meta-llama/Meta-Llama-3.1-8B-Instruct",
+                torch_dtype=torch.float16,
+            ).to(device)
         self.model = PeftModel.from_pretrained(
             base_model,
             "./LLM Training/examples/firefighter_example/outputs/pyragos-lora-llama3.1-8b"
@@ -369,8 +393,13 @@ firefighter_example/
 # 1. Get full dataset (not public, contains confidential fire dept info)
 # Contact: pyrosvestiki-research@example.gr
 
-# 2. Train
+# 2. Train (NVIDIA/CUDA)
 accelerate launch -m axolotl.cli.train configs/firefighter_lora_llama3.1_8b.yml
+
+# 2. Train (Apple Silicon, e.g. M4 Pro 48GB -- see ../../APPLE_SILICON_GUIDE.md)
+# python -m mlx_lm.lora --model meta-llama/Meta-Llama-3.1-8B-Instruct \
+#   --data ./firefighter_train.jsonl --train --iters 1000 --lora-layers 32 \
+#   --batch-size 2 --learning-rate 2e-5
 
 # 3. Evaluate
 python ../../evaluation/scripts/run_benchmark.py \

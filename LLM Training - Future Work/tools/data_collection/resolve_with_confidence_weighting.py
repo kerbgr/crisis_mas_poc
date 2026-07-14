@@ -11,14 +11,20 @@ def resolve_with_confidence_weighting(answers_with_confidence):
     # Group by answer text
     from collections import defaultdict
     answer_scores = defaultdict(float)
+    answer_votes = defaultdict(int)
 
     for answer, confidence in answers_with_confidence:
         answer_scores[answer] += confidence
+        answer_votes[answer] += 1
 
     # Select answer with highest weighted confidence
     best_answer = max(answer_scores.items(), key=lambda x: x[1])
 
-    avg_confidence = best_answer[1] / len(answers_with_confidence)
+    # Average confidence among the experts who actually chose the winning
+    # answer (NOT the total number of raters -- dividing by the full rater
+    # count would understate confidence any time there's dissent, since
+    # raters who picked a *different* answer would still dilute the average).
+    avg_confidence = best_answer[1] / answer_votes[best_answer[0]]
 
     print(f"Confidence-weighted resolution:")
     print(f"  Selected: {best_answer[0]}")
@@ -33,10 +39,11 @@ def resolve_with_confidence_weighting(answers_with_confidence):
         }
     }
 
-# Example
-resolve_with_confidence_weighting([
-    ("Evacuate", 0.95),  # Expert A: very confident
-    ("Defend", 0.50),    # Expert B: uncertain
-    ("Evacuate", 0.80)   # Expert C: confident
-])
-# Result: "Evacuate" with weighted confidence 0.75
+
+if __name__ == "__main__":
+    # Result: "Evacuate" with weighted confidence 0.875 ((0.95 + 0.80) / 2)
+    resolve_with_confidence_weighting([
+        ("Evacuate", 0.95),  # Expert A: very confident
+        ("Defend", 0.50),    # Expert B: uncertain
+        ("Evacuate", 0.80),  # Expert C: confident
+    ])

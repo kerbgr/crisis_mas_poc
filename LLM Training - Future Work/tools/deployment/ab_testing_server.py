@@ -12,11 +12,8 @@ import json
 
 app = Flask(__name__)
 
-# Load both models
-model_a = load_model("./models/firefighter-v1.0-production")  # Current
-model_b = load_model("./models/firefighter-v1.1-candidate")   # New
-
-# A/B test configuration
+# A/B test configuration -- shared state imported by get_canary_weight.py,
+# rollback_to_model_a.py, and check_health_and_rollback.py.
 AB_TEST_CONFIG = {
     "model_a_weight": 0.8,  # 80% traffic to A (current model)
     "model_b_weight": 0.2,  # 20% traffic to B (new model)
@@ -28,6 +25,21 @@ metrics = {
     "model_a": {"requests": 0, "total_latency": 0, "errors": 0},
     "model_b": {"requests": 0, "total_latency": 0, "errors": 0}
 }
+
+# Populated by init_models() -- kept as None until then so importing this
+# module (e.g. for AB_TEST_CONFIG/metrics) doesn't require real model
+# checkpoints to exist.
+model_a = None
+model_b = None
+
+
+def init_models(load_model_fn, model_a_path="./models/firefighter-v1.0-production",
+                model_b_path="./models/firefighter-v1.1-candidate"):
+    """Load both models. Call this once before serving requests."""
+    global model_a, model_b
+    model_a = load_model_fn(model_a_path)   # Current
+    model_b = load_model_fn(model_b_path)   # New
+
 
 def select_model():
     """Randomly select model based on weights."""
@@ -126,5 +138,14 @@ def get_metrics():
         }
     })
 
+def load_model(model_path):
+    """Default model loader (HF transformers pipeline). Swap for your own
+    loader (vLLM client, LMStudio client, etc.) if you call init_models()
+    with a different callable."""
+    from transformers import pipeline
+    return pipeline("text-generation", model=model_path)
+
+
 if __name__ == "__main__":
+    init_models(load_model)
     app.run(host="0.0.0.0", port=8000)

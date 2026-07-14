@@ -60,6 +60,8 @@ curl http://localhost:1234/v1/chat/completions \
 
 ## Production Deployment: vLLM Server
 
+> **Apple Silicon**: vLLM requires CUDA (or ROCm) and does not run on Apple Silicon. For local production serving on Mac hardware, use `tools/deployment/deployment_server.py` (Flask + transformers, MPS-aware — see below) or llama.cpp's server mode with Metal (see [APPLE_SILICON_GUIDE.md](APPLE_SILICON_GUIDE.md)) instead of this section.
+
 ### Why vLLM?
 
 - **Fast**: PagedAttention optimization, 10x faster than Hugging Face
@@ -195,10 +197,15 @@ def _load_fine_tuned_model(self, model_path):
 - RAM: 32GB
 - GPU: RTX 4090 24GB or A100
 
+**Apple Silicon (llama.cpp with Metal, no discrete GPU needed)**:
+- M4 Pro (48GB) — this project's reference local hardware
+- See [APPLE_SILICON_GUIDE.md](APPLE_SILICON_GUIDE.md) for the full tier breakdown (M1 through M4)
+
 **Performance**:
 - **CPU (q4_k_m)**: 5-10 tokens/sec (slow but works)
 - **RTX 4090 (q4_k_m)**: 80-120 tokens/sec (excellent)
 - **A100 (q4_k_m)**: 150-200 tokens/sec (production)
+- **M4 Pro 48GB (q4_k_m, Metal)**: 85-95 tokens/sec *(estimated — see APPLE_SILICON_GUIDE.md's Inference Speed table; M3 Max measured 110 tok/s for reference)*
 
 ---
 
@@ -278,21 +285,37 @@ with ThreadPoolExecutor(max_workers=13) as executor:
 ### Custom Flask API
 
 ```python
-# tools/deployment_server.py
+# tools/deployment/deployment_server.py
+#
+# Runs on NVIDIA (CUDA, load_in_8bit) or Apple Silicon (MPS, fp16) --
+# device_utils.get_device() picks cuda > mps > cpu automatically.
 
+import torch
 from flask import Flask, request, jsonify
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
+from device_utils import get_device
+
+DEVICE = get_device()
+
 app = Flask(__name__)
 
-# Load model at startup
+# Load model at startup.
+# load_in_8bit (bitsandbytes) is CUDA-only -- on Apple Silicon/CPU, load in
+# fp16 instead (bf16 isn't supported on MPS; see APPLE_SILICON_GUIDE.md).
 tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
-base_model = AutoModelForCausalLM.from_pretrained(
-    "meta-llama/Meta-Llama-3.1-8B-Instruct",
-    load_in_8bit=True,
-    device_map="auto"
-)
+if DEVICE == "cuda":
+    base_model = AutoModelForCausalLM.from_pretrained(
+        "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        load_in_8bit=True,
+        device_map="auto"
+    )
+else:
+    base_model = AutoModelForCausalLM.from_pretrained(
+        "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        torch_dtype=torch.float16,
+    ).to(DEVICE)
 model = PeftModel.from_pretrained(base_model, "./lora/firefighter")
 
 @app.route("/v1/chat/completions", methods=["POST"])
@@ -301,7 +324,7 @@ def chat():
     messages = data["messages"]
 
     # Generate response
-    input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
+    input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to(DEVICE)
     outputs = model.generate(
         input_ids,
         max_new_tokens=data.get("max_tokens", 512),
@@ -318,6 +341,8 @@ def chat():
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
 ```
+
+This matches the actual, runnable `tools/deployment/deployment_server.py` in this repo — see it directly rather than re-copying this snippet.
 
 **Run server**:
 ```bash

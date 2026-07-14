@@ -21,11 +21,22 @@ numpy>=1.24.0
 jsonlines>=3.1.0
 scikit-learn>=1.3.0
 
+# Inter-rater reliability (data_collection/calculate_fleiss_kappa.py, calculate_icc.py)
+statsmodels>=0.14.0
+pingouin>=0.5.4
+
 # Evaluation
 nltk>=3.8.0
 rouge-score>=0.1.2
 bert-score>=0.3.13
 sacrebleu>=2.3.1
+scipy>=1.11.0  # significance tests (should_promote_model_b.py, ab_test_evaluation.py)
+evaluate>=0.4.1  # example_exact_match_metric.py
+
+# Deployment servers and A/B testing / scheduling
+flask>=3.0.0
+schedule>=1.2.0
+openai>=1.0.0  # example_vllm_openai_client.py (OpenAI-compatible vLLM client)
 
 # Model optimization
 optimum>=1.16.0
@@ -36,6 +47,7 @@ llama-cpp-python>=0.2.0  # For GGUF quantization
 wandb>=0.16.0  # Optional: for experiment tracking
 tensorboard>=2.15.0
 tqdm>=4.66.0
+argilla>=1.20.0  # Optional: for setup_argilla.py annotation workflow
 
 # Inference
 vllm>=0.2.7  # Fast inference server

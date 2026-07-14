@@ -17,13 +17,22 @@ incomplete_tests = [
 ]
 
 def test_incomplete_robustness(model, tests):
-    """Test if model handles incomplete info gracefully."""
+    """Test if model handles incomplete info gracefully.
+
+    Returns the fraction of tests where the model asked for clarification
+    instead of hallucinating the missing information (used by
+    calculate_robustness_score.py's weighted average).
+    """
+    graceful_count = 0
     for test in tests:
         response = model.generate(test["input"])
 
         # Model should NOT hallucinate missing info
         if any(phrase in response.lower() for phrase in test["good_responses"]):
+            graceful_count += 1
             print(f"✅ PASS: {test['input']} → Asked for clarification")
         else:
             print(f"❌ FAIL: {test['input']} → {response}")
             print("   Model should ask for missing information, not guess!")
+
+    return graceful_count / len(tests)

@@ -47,9 +47,14 @@ def expected_calibration_error(predictions, labels, confidences, n_bins=10):
 
     return ece, (accuracies_in_bins, confidences_in_bins, proportions_in_bins)
 
-# Usage
-ece, plot_data = expected_calibration_error(predictions, labels, confidences)
-print(f"ECE: {ece:.3f}")
+if __name__ == "__main__":
+    # Target: ECE < 0.1 (well-calibrated)
+    # Warning: ECE > 0.15 (poorly calibrated, unsafe)
+    rng = np.random.default_rng(0)
+    demo_labels = rng.integers(0, 2, 500)
+    demo_confidences = rng.uniform(0.5, 1.0, 500)
+    correct_mask = rng.random(500) < demo_confidences
+    demo_predictions = np.where(correct_mask, demo_labels, 1 - demo_labels)
 
-# Target: ECE < 0.1 (well-calibrated)
-# Warning: ECE > 0.15 (poorly calibrated, unsafe)
+    ece, plot_data = expected_calibration_error(demo_predictions, demo_labels, demo_confidences)
+    print(f"ECE: {ece:.3f}")

@@ -39,4 +39,5 @@ Actions:
 3. Periodically re-check agreement (every 500 examples)
 """
 
-print(recommend_action(fleiss_k))
+if __name__ == "__main__":
+    print(recommend_action(0.55))  # example: moderate agreement

@@ -131,12 +131,14 @@ Score: 1/1 (100% factual accuracy)
 
 **What it measures**: How "surprised" the model is by the test data (proxy for domain knowledge)
 
-**Calculation**:
+**Calculation** (runnable version: `tools/evaluation/example_perplexity_calculation.py`, works on NVIDIA CUDA, Apple Silicon MPS, or CPU):
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
-model = AutoModelForCausalLM.from_pretrained("./firefighter-llama3.1-8b")
+device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+
+model = AutoModelForCausalLM.from_pretrained("./firefighter-llama3.1-8b").to(device)
 tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
 
 # Test set
@@ -149,7 +151,7 @@ test_texts = [
 # Calculate perplexity
 total_loss = 0
 for text in test_texts:
-    inputs = tokenizer(text, return_tensors="pt").to("cuda")
+    inputs = tokenizer(text, return_tensors="pt").to(device)
     with torch.no_grad():
         outputs = model(**inputs, labels=inputs["input_ids"])
         total_loss += outputs.loss.item()

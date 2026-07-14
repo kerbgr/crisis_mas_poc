@@ -32,4 +32,5 @@ def analyze_shadow_logs(log_file="shadow_comparison.jsonl"):
         print(f"Model A: {log['model_a']['response'][:100]}...")
         print(f"Model B: {log['model_b']['response'][:100]}...")
 
-analyze_shadow_logs()
+if __name__ == "__main__":
+    analyze_shadow_logs()
