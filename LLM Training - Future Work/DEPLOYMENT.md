@@ -120,7 +120,7 @@ print(response.choices[0].message.content)
 
 ---
 
-## Integration with Crisis MAS
+## Integration with AEGIS
 
 ### Option 1: LMStudioClient Wrapper (Existing)
 

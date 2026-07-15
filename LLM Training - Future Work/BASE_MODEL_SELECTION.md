@@ -85,7 +85,7 @@ Choosing the right **base model** is the most critical decision in your LLM trai
   - Good for narrow tasks (HAZMAT lookup, protocol retrieval)
   - Training time: 2-4 hours
 
-- **Alternative (highest quality)**: **13B** (Qwen2-14B, Llama 3.1 13B - when released)
+- **Alternative (highest quality)**: **13-14B** (Qwen2-14B; note the Llama 3.1 line has no 13B — it ships as 8B/70B/405B only)
   - Requires RTX 4090 or A100, **or Apple Silicon M3 Max (128GB) / M2 Ultra** (48GB M4 Pro is tight for 13B — see APPLE_SILICON_GUIDE.md)
   - Best reasoning ability
   - Training time: 12-24 hours
@@ -358,6 +358,17 @@ tokens_qwen = tokenizer_qwen.encode(text)  # → 8 tokens
 ---
 
 ## Recommended Base Models for Greek Emergency Response
+
+> **2026 refresh note**: the tier list below dates from 2025 and must be
+> re-validated against current models before Stage 2 (see
+> [PROJECT_PLAN.md](PROJECT_PLAN.md)). One addition is already decided:
+> **`gpt-oss-20b`** (OpenAI open-weight MoE, 21B total / ~3.6B active,
+> Apache 2.0, harmony format) is AEGIS's **designated evaluation baseline** —
+> it is already a runtime provider in the framework, sits on local disk in
+> MLX form, and demonstrated fluent Greek crisis-command output at ~50 tok/s
+> on the M4 Pro (measured 2026-07-15). Whether it also becomes the
+> *fine-tuning* base is a separate Stage 2 decision: MoE + harmony format
+> make it heavier and more complex to train than a dense 7–8B.
 
 ### 🥇 **Top Recommendation: Qwen2-7B-Instruct**
 

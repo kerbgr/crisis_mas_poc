@@ -62,3 +62,7 @@ AEGIS_apla_logia.md
 *.doc
 *.pdf
 AEGIS_Presentation_Script_v2.txt
+.venv/
+LLM Training - Future Work/local_training/stage0/fused_model/
+LLM Training - Future Work/local_training/stage0/server_log.txt
+LLM Training - Future Work/local_training/stage0/adapters/0000*

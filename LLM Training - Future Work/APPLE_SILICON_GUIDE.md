@@ -334,8 +334,11 @@ MLX expects **JSON Lines format**:
 **Convert from ChatML**:
 ```python
 # tools/convert_to_mlx.py
-import json
 from datasets import load_dataset
+from transformers import AutoTokenizer
+
+# Tokenizer must exist BEFORE dataset.map() calls format_for_mlx below
+tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
 
 # Load your ChatML dataset
 dataset = load_dataset("json", data_files="firefighter_train.jsonl")
@@ -343,14 +346,15 @@ dataset = load_dataset("json", data_files="firefighter_train.jsonl")
 # Convert to MLX format (full conversation as single text)
 def format_for_mlx(example):
     messages = example['messages']
-    # Use Llama 3.1 chat template
+    # Use the base model's chat template
     text = tokenizer.apply_chat_template(messages, tokenize=False)
     return {"text": text}
 
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
 mlx_dataset = dataset.map(format_for_mlx)
-mlx_dataset.to_json("firefighter_mlx.jsonl")
+mlx_dataset["train"].to_json("firefighter_mlx.jsonl")
 ```
+
+> **Note**: recent `mlx-lm` versions also accept `{"messages": [...]}` chat format directly and expect `--data` to point to a **directory** containing `train.jsonl` / `valid.jsonl` (not a single file). Check `python -m mlx_lm.lora --help` against your installed version — the flags in this guide were written against the 2025 CLI. A runnable, version-verified pipeline lives in `local_training/` (see PROJECT_PLAN.md).
 
 ### Step 3: Train with MLX
 

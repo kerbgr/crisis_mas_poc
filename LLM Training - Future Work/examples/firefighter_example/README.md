@@ -1,5 +1,8 @@
 # Firefighter LLM Training Example
 
+> ⚠️ **STATUS: ILLUSTRATIVE PROJECTION — NOT AN EXECUTED RUN.**
+> This document describes what a completed training project for this agent **would look like**, written as a design target. The training run, dataset (2,847 examples), loss curves, benchmark scores, expert evaluations, and Turing-test results below are **projected/illustrative figures, not measured results**, and the artifacts listed in the Reproducibility section (`dataset_sample.jsonl`, `configs/`, `evaluation_results.json`, `training_log.txt`) **do not exist yet**. None of these numbers may be cited as experimental results. The real, executed pipeline starts in `../../local_training/` (see `../../PROJECT_PLAN.md`); as real stages complete, this document should be rewritten around measured values.
+
 ## Overview
 
 This example demonstrates **end-to-end training** of a domain-specific LLM for Greek fire operations, creating **Pyragos Ioanna Michaelidou**, an AI expert with 15+ years of firefighting experience.
@@ -284,7 +287,7 @@ DO NOT: Attempt direct fire attack with insufficient personnel. Life safety is a
 
 ---
 
-### Integration with Crisis MAS
+### Integration with AEGIS
 
 ```python
 # agents/expert_agent.py (modified to use fine-tuned model)
@@ -375,17 +378,17 @@ class FirefighterAgent:
 
 ## Reproducibility
 
-All code, data (sample), and configs available in this folder:
+**Planned** folder contents once this example is actually executed (currently only this README exists — see status banner at top):
 
 ```
 firefighter_example/
-├── README.md (this file)
-├── dataset_sample.jsonl (50 examples for demo)
+├── README.md (this file — currently the ONLY file present)
+├── dataset_sample.jsonl (50 examples for demo)      [TO BE PRODUCED]
 ├── configs/
-│   └── firefighter_lora_llama3.1_8b.yml
-├── outputs/ (not included due to size, recreate via training)
-├── evaluation_results.json (full benchmark scores)
-└── training_log.txt (complete training output)
+│   └── firefighter_lora_llama3.1_8b.yml             [TO BE PRODUCED — full YAML is inlined above]
+├── outputs/ (not included due to size)              [TO BE PRODUCED]
+├── evaluation_results.json (full benchmark scores)  [TO BE PRODUCED]
+└── training_log.txt (complete training output)      [TO BE PRODUCED]
 ```
 
 **To reproduce**:
