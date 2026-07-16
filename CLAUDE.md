@@ -5,6 +5,8 @@ Master's thesis PoC: **AEGIS** (Adaptive Expert-based Group Intelligence System)
 
 **Naming rule**: the framework is called **AEGIS** — always and only that name in prose, comments, commits, and reports. Do not use "CrisisMAS", "Crisis MAS", or any other name (older documents/code may still contain them; treat those as legacy, not as license to reuse them). Repo: `kerbgr/crisis_mas_poc`.
 
+**Attribution rule**: NEVER add `Co-Authored-By`, "Generated with Claude Code", or any other AI-attribution lines to commits, PRs, or files in this repository. All work is attributed solely to the repository owner.
+
 **Run:** `python main.py [--scenario flood_scenario|forest_fire_evia|ammonia_leak_elefsina] [--aggregation-method ER|GAT] [--agents all|auto] [--compare-methods]`
 **Venv:** `venv/` — activate before running. Results land in `results/`.
 
