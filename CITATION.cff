@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software in your research, please cite it as below."
 type: software
-title: "Crisis Management Multi-Agent System: Graph Attention Networks and Evidential Reasoning for Emergency Response Coordination"
+title: "AEGIS (Adaptive Expert-based Group Intelligence System): Graph Attention Networks and Evidential Reasoning for Emergency Response Coordination"
 version: 1.5
 date-released: 2026-07-05
 authors:
@@ -10,10 +10,10 @@ authors:
     email: kazoukas@gmail.com
     affiliation: Technical University of Crete - Military Academy
     orcid: "https://orcid.org/0000-0001-6962-7977"
-repository-code: "https://github.com/kerbgr/CrisisMAS"
-url: "https://github.com/kerbgr/CrisisMAS"
+repository-code: "https://github.com/kerbgr/crisis_mas_poc"
+url: "https://github.com/kerbgr/crisis_mas_poc"
 abstract: >
-  A multi-agent system for crisis management and emergency response coordination
+  AEGIS, a multi-agent system for crisis management and emergency response coordination
   using Graph Attention Networks (GAT) and Evidential Reasoning (ER) for belief
   aggregation across 13 specialized expert agents. The system supports Greek
   emergency services including fire brigades, police, coast guard, medical services,
@@ -31,4 +31,4 @@ keywords:
   - belief aggregation
   - consensus building
 license: "Proprietary"
-license-url: "https://github.com/kerbgr/CrisisMAS/blob/Main/LICENSE"
+license-url: "https://github.com/kerbgr/crisis_mas_poc/blob/Main/LICENSE"
