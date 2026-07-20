@@ -1,9 +1,13 @@
 # A Collaborative Multi-Agent Framework for Crisis Management Decision Support Using Evidential Reasoning and Rule-Based Graph Attention Aggregation
 
-**Vasileios Kazoukas**
-*Military Academy (SSE), Department of Military Sciences*
-*Technical University of Crete (TUC), School of Production Engineering and Management*
-Email: vkazoukas@tuc.gr, kazoukas@gmail.com
+**Vasileios Kazoukas¹ ², Evangelos Siskos², Nikolaos Papadakis¹, Nikolaos Matsatsinis²**
+
+¹ Military Academy (SSE), Department of Military Sciences, Athens, Greece  
+² Technical University of Crete (TUC), School of Production Engineering and Management, Chania, Greece  
+
+**Corresponding Author:** Vasileios Kazoukas  
+Emails: vkazoukas@tuc.gr, kazoukas@gmail.com
+
 
 ---
 
