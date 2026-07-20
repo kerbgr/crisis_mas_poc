@@ -10,7 +10,7 @@ A Proof-of-concept system demonstrating the application of **Multi-Agent Systems
 
 Military Academy (sse.gr) - Technical University of Crete (tuc.gr)
 
-  ![sse2](https://github.com/user-attachments/assets/efbffb32-2926-4803-af6e-dbc92237c776)  <img width="166" height="166" alt="tuc2" src="https://github.com/user-attachments/assets/babf4568-4a60-4412-a7bf-4ca322f78197" />
+  <img width="166" height="166" alt="sse" src="docs/images/sse.jpg" />  <img width="166" height="166" alt="tuc" src="docs/images/tuc.png" />
 
 Department of Military Sciences - School of Production Engineering and Management
 
