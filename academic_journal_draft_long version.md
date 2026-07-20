@@ -630,9 +630,9 @@ To ground the quantitative results in a concrete execution trace, we walk throug
 
 | Agent | Integrated Response | Evacuation | Containment | Water Curtain | Shelter-in-Place | Confidence |
 |-------|:-------------------:|:----------:|:-----------:|:-------------:|:----------------:|:----------:|
-| fire_silver_tactical | 0.45 | 0.25 | 0.15 | 0.10 | 0.05 | 88 % |
-| meteorology_silver_advisory | 0.35 | 0.25 | 0.15 | 0.20 | 0.05 | 82 % |
-| medical_gold_strategic | 0.40 | 0.25 | 0.10 | 0.15 | 0.10 | 85 % |
+| fire_silver_tactical | 0.55 | 0.15 | 0.10 | 0.12 | 0.08 | 85 % |
+| meteorology_silver_advisory | 0.35 | 0.25 | 0.15 | 0.20 | 0.05 | 70 % |
+| medical_gold_strategic | 0.35 | 0.25 | 0.20 | 0.15 | 0.05 | 80 % |
 
 All 13 agents rank the integrated response first (belief mass 0.35-0.55), but with meaningfully different margins over their second choices and different secondary preferences: the meteorologist hedges toward water curtains (0.20, reflecting wind-dispersion reasoning), while tactical agents place their residual mass on evacuation. This unanimity-with-dispersion profile is the input condition under which the two aggregation mechanisms behave most differently, as Step 3 shows.
 
@@ -649,6 +649,8 @@ All 13 agents rank the integrated response first (belief mass 0.35-0.55), but wi
 | HAZMAT containment | < 0.0001 | 3rd | 0.171 | 3rd |
 | Water curtain installation | < 0.0001 | 4th | 0.149 | 4th |
 | Shelter-in-place | < 0.0001 | 5th | 0.072 | 5th |
+
+*RBGA Score column sums to 1.001 due to 3-decimal rounding of the underlying distribution, which sums to 1.000 exactly.*
 
 Both methods produce the identical ranking, but with radically different belief concentration. With 13 concordant sources, the multiplicative Dempster combination compounds the shared preference at every pairwise step, concentrating virtually all mass (0.9995) on the common top choice - the aggregated ER mass is best read as a measure of unanimity, not as a calibrated probability that the alternative is correct. RBGA's attention-weighted averaging, by contrast, preserves the shape of the panel's dispersion (0.390 for the leader, meaningful residual mass on evacuation and containment), which retains information about the strength of secondary options. This contrast - invisible in the recommendation-agreement statistics of Table III - is operationally relevant: a decision-maker reading the ER output sees a panel that is certain; one reading the RBGA output sees a panel that agrees on the leader but keeps live alternatives in reserve.
 
@@ -668,7 +670,7 @@ The result is that evacuation, though superior on the TOPSIS metric alone, is co
 
 ### 4.7 MCDA-ER Scale Mismatch: Discovery and Correction
 
-During the pilot phase of this study, post-hoc analysis across the 92 result files of the pilot corpus (45 runs × 2 aggregation methods, executed with an earlier revision of the scenario definitions) revealed a systematic scale incompatibility in the original score-blending formula that had differential impact across scenarios. The correction was subsequently integrated into the decision engine, so every run in the main corpus of Sections 4.2-4.6 applies L1 normalisation at decision time. This section documents the finding, its cause, and its quantified effect on the pilot corpus, both as a methodological caution for other belief-MCDA hybrid systems and because it motivated a required preprocessing step for future attention-weight training. Alternative identifiers below refer to the pilot-phase scenario revision.
+During the pilot phase of this study, post-hoc analysis across the 92 result files of the pilot corpus (46 runs × 2 aggregation methods, executed with an earlier revision of the scenario definitions) revealed a systematic scale incompatibility in the original score-blending formula that had differential impact across scenarios. The correction was subsequently integrated into the decision engine, so every run in the main corpus of Sections 4.2-4.6 applies L1 normalisation at decision time. This section documents the finding, its cause, and its quantified effect on the pilot corpus, both as a methodological caution for other belief-MCDA hybrid systems and because it motivated a required preprocessing step for future attention-weight training. Alternative identifiers below refer to the pilot-phase scenario revision.
 
 **Root cause.** ER and RBGA aggregated beliefs are proper probability distributions that always sum to 1.0 across all alternatives; their per-alternative average is therefore $1/N$. For $N=5$ (Flood, HAZMAT) this is 0.200; for $N=12$ (Forest Fire) this is 0.083. Raw TOPSIS closeness coefficients are geometric proximity scores that are individually bounded in $[0,1]$ but carry no distributional constraint: in the experimental corpus their cross-alternative sums range from 1.8 to 3.2, giving per-alternative averages of 0.15-0.27 for $N=12$ - two to three times larger than the corresponding belief values. Without L1 normalisation, the MCDA component contributes 55-79% of the blended score per alternative, depending on the action-space size and the specific TOPSIS geometry of that run. Table IX summarises the measured effective MCDA contribution before and after normalisation.
 
@@ -678,7 +680,7 @@ During the pilot phase of this study, post-hoc analysis across the 92 result fil
 |----------|---|---------------------|----------------|------------------------|----------------------|
 | Karditsa Flood | 5 | 0.200 | ~0.40 | ~58 % | 40 % |
 | Elefsina HAZMAT | 5 | 0.200 | ~0.40 | ~58 % | 40 % |
-| Evia Wildfire | 12 | 0.083 | ~0.21 | ~72 % | 40 % |
+| Evia Wildfire | 12 | 0.083 | ~0.21 | ~63 % | 40 % |
 
 *MCDA contribution computed as $0.4 \bar{C} / (0.6 \bar{m} + 0.4 \bar{C})$ where $\bar{m}$ and $\bar{C}$ are the per-alternative means. Post-normalisation the contribution is always exactly 40% by construction.*
 
@@ -686,12 +688,12 @@ During the pilot phase of this study, post-hoc analysis across the 92 result fil
 
 **Illustrative case - forest_fire_evia / run_7_claude / ER:**
 
-| Alternative | ER belief | TOPSIS raw | TOPSIS norm | Old DQS | New DQS |
+| Alternative | ER belief | TOPSIS raw | TOPSIS norm | Old Combined Score | New Combined Score |
 |-------------|:---------:|:----------:|:-----------:|:-------:|:-------:|
 | action_combined_assault | 0.1425 | **0.8139** | 0.1314 | **0.4110 (rec)** | 0.1380 |
-| action_immediate_evacuation | **0.1549** | 0.7891 | 0.1274 | 0.3987 | **0.1414 (rec)** |
+| action_immediate_evacuation | **0.1549** | 0.7891 | 0.1274 | 0.4086 | **0.1439 (rec)** |
 
-Before normalisation, `combined_assault` was recommended despite carrying lower agent belief mass than `immediate_evacuation`. Its TOPSIS raw advantage of 0.025 translated into a 0.013 DQS advantage, overriding the signal from the expert panel. After L1 normalisation the TOPSIS advantage shrinks to 0.004, the correct agent-consensus-driven alternative is selected, and the combined score magnitude drops from 0.41 to 0.14 - a level commensurate with the true belief concentration in a 12-alternative space.
+Before normalisation, `combined_assault` was recommended despite carrying lower agent belief mass than `immediate_evacuation`. Its TOPSIS raw advantage of 0.025 translated into a 0.002 combined-score advantage, overriding the signal from the expert panel. After L1 normalisation the TOPSIS advantage shrinks to 0.004, the correct agent-consensus-driven alternative is selected, and the combined score magnitude drops from 0.41 to 0.14 - a level commensurate with the true belief concentration in a 12-alternative space.
 
 **Recalculation results across all 92 files.** The standalone script `scripts/recalculate_dqs.py` applied L1 normalisation to all stored result files without modifying the originals. Results are summarised in Table X.
 
