@@ -6,8 +6,8 @@
 ² Technical University of Crete (TUC), School of Production Engineering and Management, Chania, Greece  
 
 **Corresponding Author:** Vasileios Kazoukas  
-Emails: vkazoukas@tuc.gr, kazoukas@gmail.com
-
+Emails: vkazoukas@tuc.gr, kazoukas@gmail.com ; ; ORCID: https://orcid.org/0000-0001-6962-7977)
+2026
 
 ---
 
